@@ -472,7 +472,7 @@ bool PresetManager::loadCorpusFromPath(const File& directory) {
 bool PresetManager::exportForFAISS(const File& outputFile) {
     ScopedLock lock(corpusLock);
     
-    DynamicObject::Ptr root = new DynamicObject();
+    DynamicObject::Ptr root(new DynamicObject());
     Array<var> presets;
     
     for (const auto& preset : corpus) {

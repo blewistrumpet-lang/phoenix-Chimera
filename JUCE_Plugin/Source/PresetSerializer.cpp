@@ -1,7 +1,7 @@
 #include "PresetSerializer.h"
 
 juce::var PresetSerializer::presetToJSON(const GoldenPreset& preset) {
-    auto* obj = new DynamicObject();
+    DynamicObject::Ptr obj(new DynamicObject());
     
     // Identification
     obj->setProperty("id", preset.id);
@@ -18,7 +18,7 @@ juce::var PresetSerializer::presetToJSON(const GoldenPreset& preset) {
     auto engines = Array<var>();
     for (int i = 0; i < 6; ++i) {
         if (preset.engineTypes[i] >= 0) {
-            auto* engine = new DynamicObject();
+            DynamicObject::Ptr engine(new DynamicObject());
             engine->setProperty("slot", i);
             engine->setProperty("type", preset.engineTypes[i]);
             engine->setProperty("mix", preset.engineMix[i]);
@@ -214,7 +214,7 @@ GoldenPreset PresetSerializer::loadPresetFromFile(const File& file) {
 }
 
 bool PresetSerializer::saveCorpusToJSON(const std::vector<GoldenPreset>& corpus, const File& file) {
-    auto* root = new DynamicObject();
+    DynamicObject::Ptr root(new DynamicObject());
     root->setProperty("version", BINARY_FORMAT_VERSION);
     root->setProperty("presetCount", static_cast<int>(corpus.size()));
     root->setProperty("timestamp", Time::getCurrentTime().toISO8601(true));
@@ -252,7 +252,7 @@ std::vector<GoldenPreset> PresetSerializer::loadCorpusFromJSON(const File& file)
 
 // Helper method implementations
 juce::var PresetSerializer::sonicProfileToJSON(const SonicProfile& profile) {
-    auto* obj = new DynamicObject();
+    DynamicObject::Ptr obj(new DynamicObject());
     obj->setProperty("brightness", profile.brightness);
     obj->setProperty("density", profile.density);
     obj->setProperty("movement", profile.movement);
@@ -276,7 +276,7 @@ SonicProfile PresetSerializer::sonicProfileFromJSON(const juce::var& json) {
 }
 
 juce::var PresetSerializer::emotionalProfileToJSON(const EmotionalProfile& profile) {
-    auto* obj = new DynamicObject();
+    DynamicObject::Ptr obj(new DynamicObject());
     obj->setProperty("energy", profile.energy);
     obj->setProperty("mood", profile.mood);
     obj->setProperty("tension", profile.tension);
@@ -298,7 +298,7 @@ EmotionalProfile PresetSerializer::emotionalProfileFromJSON(const juce::var& jso
 }
 
 juce::var PresetSerializer::sourceAffinityToJSON(const SourceAffinity& affinity) {
-    auto* obj = new DynamicObject();
+    DynamicObject::Ptr obj(new DynamicObject());
     obj->setProperty("vocals", affinity.vocals);
     obj->setProperty("guitar", affinity.guitar);
     obj->setProperty("drums", affinity.drums);

@@ -693,7 +693,7 @@ bool generateCompleteGoldenCorpus(const File& outputDirectory) {
     
     // Generate corpus statistics
     File statsFile = outputDirectory.getChildFile("corpus_statistics.json");
-    auto* stats = new DynamicObject();
+    DynamicObject::Ptr stats(new DynamicObject());
     stats->setProperty("totalPresets", static_cast<int>(corpus.size()));
     stats->setProperty("generatedDate", Time::getCurrentTime().toISO8601(true));
     
@@ -703,7 +703,7 @@ bool generateCompleteGoldenCorpus(const File& outputDirectory) {
         categoryCounts[preset->category]++;
     }
     
-    auto* categories = new DynamicObject();
+    DynamicObject::Ptr categories(new DynamicObject());
     for (const auto& [cat, count] : categoryCounts) {
         categories->setProperty(cat, count);
     }
