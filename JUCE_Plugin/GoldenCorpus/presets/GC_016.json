@@ -1,0 +1,80 @@
+{
+  "id": "GC_016",
+  "name": "Digital Erosion",
+  "technicalHint": "Bit Crusher + Buffer Repeat + Frequency Shifter",
+  "category": "Creative Sound Design",
+  "subcategory": "Digital Degradation",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 33,
+      "typeName": "Bit Crusher",
+      "mix": 0.764,
+      "params": [
+        0.333,
+        0.25,
+        0.618,
+        0.472,
+        0.708,
+        0.382,
+        0.854
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 40,
+      "typeName": "Buffer Repeat",
+      "mix": 0.618,
+      "params": [
+        0.064,
+        0.708,
+        0.382,
+        0.236,
+        0.618,
+        0.854,
+        0.472
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 19,
+      "typeName": "Frequency Shifter",
+      "mix": 0.382,
+      "params": [
+        0.511,
+        0.618,
+        0.708,
+        0.146,
+        0.382,
+        0.236,
+        0.472
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.382,
+    "density": 0.854,
+    "movement": 0.764,
+    "space": 0.236,
+    "aggression": 0.708,
+    "vintage": 0.146
+  },
+  "keywords": [
+    "digital",
+    "erosion",
+    "glitch",
+    "bit",
+    "crush",
+    "corrupt",
+    "degradation",
+    "cyberpunk",
+    "dystopian",
+    "buffer",
+    "stutter",
+    "alias",
+    "artifacts",
+    "broken",
+    "technological"
+  ],
+  "cpuTier": "MEDIUM"
+}

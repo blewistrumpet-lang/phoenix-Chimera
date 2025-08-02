@@ -1,0 +1,47 @@
+{
+  "id": "GC_028",
+  "name": "Mycelial Network",
+  "technicalHint": "Feedback Network + Granular Cloud + Phased Vocoder",
+  "category": "Experimental Laboratory",
+  "subcategory": "Organic Systems",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 49,
+      "typeName": "Feedback Network",
+      "mix": 0.72,
+      "params": [
+        0.68,
+        0.45,
+        0.73,
+        0.85,
+        0.52,
+        0.78,
+        0.35
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.32,
+    "density": 0.85,
+    "movement": 0.73,
+    "space": 0.78,
+    "aggression": 0.15,
+    "vintage": 0.08
+  },
+  "keywords": [
+    "mycelial",
+    "fungal",
+    "network",
+    "organic",
+    "underground",
+    "spores",
+    "growth",
+    "biological",
+    "ecosystem",
+    "feedback",
+    "granular",
+    "living"
+  ],
+  "cpuTier": "MEDIUM"
+}

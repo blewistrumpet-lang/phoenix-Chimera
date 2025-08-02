@@ -1,0 +1,80 @@
+{
+  "id": "GC_011",
+  "name": "Dust & Echoes",
+  "technicalHint": "Granular Cloud + Magnetic Drum Echo + Vintage Opto Compressor",
+  "category": "Textural Effects",
+  "subcategory": "Granular Processing",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 16,
+      "typeName": "Granular Cloud",
+      "mix": 0.528,
+      "params": [
+        0.089,
+        0.618,
+        0.382,
+        0.708,
+        0.236,
+        0.472,
+        0.667
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 8,
+      "typeName": "Magnetic Drum Echo",
+      "mix": 0.618,
+      "params": [
+        0.144,
+        0.233,
+        0.377,
+        0.618,
+        0.708,
+        0.854,
+        0.528
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 6,
+      "typeName": "Opto Compressor",
+      "mix": 1.0,
+      "params": [
+        0.618,
+        0.382,
+        0.146,
+        0.854,
+        0.333,
+        0.667,
+        0.708
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.382,
+    "density": 0.764,
+    "movement": 0.854,
+    "space": 0.833,
+    "aggression": 0.146,
+    "vintage": 0.916
+  },
+  "keywords": [
+    "dust",
+    "echoes",
+    "granular",
+    "memories",
+    "nostalgic",
+    "vintage",
+    "tape",
+    "magnetic",
+    "particles",
+    "dissolving",
+    "fading",
+    "melancholic",
+    "cinematic",
+    "emotional",
+    "texture"
+  ],
+  "cpuTier": "HEAVY"
+}

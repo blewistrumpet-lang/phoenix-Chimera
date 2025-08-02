@@ -1,0 +1,77 @@
+{
+  "id": "GC_027",
+  "name": "Brass Furnace",
+  "technicalHint": "Multiband Saturator + Wave Folder + Formant Filter",
+  "category": "Character & Color",
+  "subcategory": "Harmonic Enhancement",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 34,
+      "typeName": "Multiband Saturator",
+      "mix": 0.78,
+      "params": [
+        0.82,
+        0.45,
+        0.73,
+        0.88,
+        0.25,
+        0.65,
+        0.65
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 31,
+      "typeName": "Wave Folder",
+      "mix": 0.55,
+      "params": [
+        0.75,
+        0.62,
+        0.88,
+        0.45,
+        0.73,
+        0.35,
+        0.82
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 17,
+      "typeName": "Vocal Formant Filter",
+      "mix": 0.65,
+      "params": [
+        0.52,
+        0.73,
+        0.58,
+        0.88,
+        0.42,
+        0.67,
+        0.35
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.85,
+    "density": 0.78,
+    "movement": 0.35,
+    "space": 0.28,
+    "aggression": 0.82,
+    "vintage": 0.65
+  },
+  "keywords": [
+    "brass",
+    "furnace",
+    "hot",
+    "metallic",
+    "saturated",
+    "harmonic",
+    "powerful",
+    "industrial",
+    "molten",
+    "heat",
+    "aggressive",
+    "thick"
+  ],
+  "cpuTier": "LIGHT"
+}

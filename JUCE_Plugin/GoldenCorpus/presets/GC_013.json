@@ -1,0 +1,79 @@
+{
+  "id": "GC_013",
+  "name": "Quantum Garden",
+  "technicalHint": "Chaos Generator + Buffer Repeat + Resonant Chorus",
+  "category": "Experimental",
+  "subcategory": "Glitch & Chaos",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 41,
+      "typeName": "Chaos Generator",
+      "mix": 0.618,
+      "params": [
+        0.906,
+        0.382,
+        0.618,
+        0.472,
+        0.708,
+        0.333,
+        0.854
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 40,
+      "typeName": "Buffer Repeat",
+      "mix": 0.472,
+      "params": [
+        0.146,
+        0.764,
+        0.382,
+        0.618,
+        0.528,
+        0.708,
+        0.236
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 52,
+      "typeName": "Resonant Chorus",
+      "mix": 0.708,
+      "params": [
+        0.089,
+        0.854,
+        0.618,
+        0.472,
+        0.764,
+        0.667,
+        0.382
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.618,
+    "density": 0.854,
+    "movement": 0.958,
+    "space": 0.764,
+    "aggression": 0.382,
+    "vintage": 0.236
+  },
+  "keywords": [
+    "quantum",
+    "garden",
+    "chaos",
+    "fractal",
+    "glitch",
+    "buffer",
+    "repeat",
+    "experimental",
+    "evolving",
+    "organic",
+    "strange",
+    "attractor",
+    "unpredictable",
+    "generative"
+  ],
+  "cpuTier": "MEDIUM"
+}

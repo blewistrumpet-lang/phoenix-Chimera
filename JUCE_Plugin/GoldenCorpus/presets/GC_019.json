@@ -1,0 +1,79 @@
+{
+  "id": "GC_019",
+  "name": "Cosmic Strings",
+  "technicalHint": "Intelligent Harmonizer + Comb Resonator + Phased Vocoder",
+  "category": "Experimental",
+  "subcategory": "Quantum Effects",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 42,
+      "typeName": "Intelligent Harmonizer",
+      "mix": 0.618,
+      "params": [
+        0.75,
+        0.416,
+        0.916,
+        0.708,
+        0.146,
+        0.618,
+        0.854
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 23,
+      "typeName": "Comb Resonator",
+      "mix": 0.708,
+      "params": [
+        0.137,
+        0.618,
+        0.764,
+        0.382,
+        0.507,
+        0.854,
+        0.916
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 45,
+      "typeName": "Phased Vocoder",
+      "mix": 0.472,
+      "params": [
+        0.272,
+        0.618,
+        0.764,
+        0.382,
+        0.916,
+        0.528,
+        0.089
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.764,
+    "density": 0.854,
+    "movement": 0.708,
+    "space": 0.916,
+    "aggression": 0.236,
+    "vintage": 0.089
+  },
+  "keywords": [
+    "cosmic",
+    "strings",
+    "quantum",
+    "dimensional",
+    "harmonizer",
+    "resonance",
+    "theoretical",
+    "physics",
+    "vibration",
+    "celestial",
+    "evolving",
+    "intelligent",
+    "space",
+    "ethereal"
+  ],
+  "cpuTier": "HEAVY"
+}

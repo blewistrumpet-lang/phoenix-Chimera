@@ -1,0 +1,66 @@
+{
+  "keyword_rules": {
+    "dark": {
+      "slot1_param2": -0.2,
+      "slot2_param1": 0.1
+    },
+    "bright": {
+      "slot1_param2": 0.2,
+      "slot2_param2": -0.1
+    },
+    "aggressive": {
+      "slot1_param1": 0.3,
+      "slot1_param3": 0.1
+    },
+    "subtle": {
+      "slot1_param1": -0.2,
+      "slot2_param3": -0.1
+    },
+    "warm": {
+      "slot1_param1": 0.1,
+      "slot1_param2": -0.1
+    },
+    "vintage": {
+      "slot2_param4": 0.2,
+      "slot2_param5": 0.1
+    },
+    "modern": {
+      "slot2_param4": -0.1,
+      "slot2_param5": -0.1
+    },
+    "spacious": {
+      "slot2_param1": 0.2,
+      "slot2_param3": 0.1
+    },
+    "tight": {
+      "slot2_param1": -0.2,
+      "slot2_param2": 0.1
+    }
+  },
+  "engine_specific_rules": {
+    "0": {
+      "description": "K-Style Overdrive",
+      "default_adjustments": {
+        "slot1_param1": 0.0,
+        "slot1_param2": 0.0,
+        "slot1_param3": 0.0
+      }
+    },
+    "1": {
+      "description": "Tape Echo",
+      "default_adjustments": {
+        "slot2_param1": 0.0,
+        "slot2_param2": 0.0,
+        "slot2_param3": 0.0
+      }
+    },
+    "2": {
+      "description": "Plate Reverb",
+      "default_adjustments": {
+        "slot2_param1": 0.0,
+        "slot2_param2": 0.0,
+        "slot2_param3": 0.0
+      }
+    }
+  }
+}

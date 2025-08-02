@@ -1,0 +1,80 @@
+{
+  "id": "GC_015",
+  "name": "Aurora Borealis",
+  "technicalHint": "Phased Vocoder + Pitch Shifter + Detune Doubler",
+  "category": "Spatial Design",
+  "subcategory": "Atmospheric Effects",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 45,
+      "typeName": "Phased Vocoder",
+      "mix": 0.764,
+      "params": [
+        0.428,
+        0.558,
+        0.382,
+        0.618,
+        0.854,
+        0.708,
+        0.236
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 14,
+      "typeName": "Pitch Shifter",
+      "mix": 0.382,
+      "params": [
+        0.583,
+        0.25,
+        0.708,
+        0.618,
+        0.472,
+        0.528,
+        0.854
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 44,
+      "typeName": "Detune Doubler",
+      "mix": 0.618,
+      "params": [
+        0.146,
+        0.236,
+        0.089,
+        0.144,
+        0.708,
+        0.618,
+        0.118
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.854,
+    "density": 0.618,
+    "movement": 0.916,
+    "space": 0.958,
+    "aggression": 0.089,
+    "vintage": 0.236
+  },
+  "keywords": [
+    "aurora",
+    "borealis",
+    "northern",
+    "lights",
+    "shimmer",
+    "ethereal",
+    "vocoder",
+    "pitch",
+    "shift",
+    "detune",
+    "atmospheric",
+    "celestial",
+    "colorful",
+    "morphing",
+    "beautiful"
+  ],
+  "cpuTier": "HEAVY"
+}

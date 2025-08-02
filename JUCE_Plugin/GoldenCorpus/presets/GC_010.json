@@ -1,0 +1,80 @@
+{
+  "id": "GC_010",
+  "name": "Solar Flare",
+  "technicalHint": "Intelligent Harmonizer + Spectral Freeze + Feedback Network",
+  "category": "Creative Sound Design",
+  "subcategory": "Spectral Manipulation",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 42,
+      "typeName": "Intelligent Harmonizer",
+      "mix": 0.618,
+      "params": [
+        0.667,
+        0.333,
+        0.764,
+        0.618,
+        0.236,
+        0.708,
+        0.5
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 39,
+      "typeName": "Spectral Freeze",
+      "mix": 0.472,
+      "params": [
+        0.618,
+        0.854,
+        0.382,
+        0.708,
+        0.528,
+        0.667,
+        0.146
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 49,
+      "typeName": "Feedback Network",
+      "mix": 0.382,
+      "params": [
+        0.764,
+        0.618,
+        0.472,
+        0.708,
+        0.854,
+        0.333,
+        0.528
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.916,
+    "density": 0.854,
+    "movement": 0.764,
+    "space": 0.708,
+    "aggression": 0.618,
+    "vintage": 0.146
+  },
+  "keywords": [
+    "solar",
+    "flare",
+    "explosive",
+    "harmonic",
+    "intelligent",
+    "freeze",
+    "spectral",
+    "feedback",
+    "radiant",
+    "bright",
+    "energy",
+    "burst",
+    "futuristic",
+    "expansive",
+    "blooming"
+  ],
+  "cpuTier": "HEAVY"
+}

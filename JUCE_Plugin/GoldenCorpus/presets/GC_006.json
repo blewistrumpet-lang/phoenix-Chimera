@@ -1,0 +1,80 @@
+{
+  "id": "GC_006",
+  "name": "Neon Dreams",
+  "technicalHint": "Frequency Shifter + Stereo Chorus + Digital Delay",
+  "category": "Creative Sound Design",
+  "subcategory": "Synthetic Textures",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 19,
+      "typeName": "Frequency Shifter",
+      "mix": 0.4,
+      "params": [
+        0.52,
+        0.3,
+        0.6,
+        0.0,
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 11,
+      "typeName": "Digital Chorus",
+      "mix": 0.7,
+      "params": [
+        0.3,
+        0.7,
+        0.4,
+        0.8,
+        0.5,
+        0.6,
+        0.5
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 53,
+      "typeName": "Digital Delay",
+      "mix": 0.3,
+      "params": [
+        0.375,
+        0.4,
+        0.7,
+        0.5,
+        0.0,
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.8,
+    "density": 0.5,
+    "movement": 0.7,
+    "space": 0.6,
+    "aggression": 0.2,
+    "vintage": 0.7
+  },
+  "keywords": [
+    "neon",
+    "dreams",
+    "80s",
+    "synthwave",
+    "vaporwave",
+    "retro",
+    "chorus",
+    "wide",
+    "synthetic",
+    "colorful",
+    "bright",
+    "nostalgic",
+    "future",
+    "cyber",
+    "miami"
+  ],
+  "cpuTier": "LIGHT"
+}

@@ -1,0 +1,80 @@
+{
+  "id": "GC_014",
+  "name": "Copper Resonance",
+  "technicalHint": "Analog Ring Modulator + Ladder Filter + Multiband Saturator",
+  "category": "Character & Color",
+  "subcategory": "Metallic Tones",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 15,
+      "typeName": "Ring Modulator",
+      "mix": 0.472,
+      "params": [
+        0.276,
+        0.854,
+        0.618,
+        0.146,
+        0.708,
+        0.382,
+        0.528
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 28,
+      "typeName": "Ladder Filter",
+      "mix": 1.0,
+      "params": [
+        0.54,
+        0.893,
+        0.382,
+        0.236,
+        0.618,
+        0.146,
+        0.764
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 34,
+      "typeName": "Multiband Saturator",
+      "mix": 0.618,
+      "params": [
+        0.472,
+        0.708,
+        0.382,
+        0.276,
+        0.893,
+        0.618,
+        0.764
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.618,
+    "density": 0.708,
+    "movement": 0.472,
+    "space": 0.382,
+    "aggression": 0.528,
+    "vintage": 0.764
+  },
+  "keywords": [
+    "copper",
+    "resonance",
+    "metallic",
+    "warm",
+    "analog",
+    "ring",
+    "modulator",
+    "ladder",
+    "filter",
+    "musical",
+    "bell",
+    "organic",
+    "harmonic",
+    "saturated",
+    "vintage"
+  ],
+  "cpuTier": "MEDIUM"
+}

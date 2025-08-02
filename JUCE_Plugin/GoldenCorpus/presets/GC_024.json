@@ -1,0 +1,79 @@
+{
+  "id": "GC_024",
+  "name": "Amber Preservation",
+  "technicalHint": "Vintage Tube Preamp + Parametric EQ + Vintage Opto Compressor",
+  "category": "Studio Essentials",
+  "subcategory": "Vintage Enhancement",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 0,
+      "typeName": "Vintage Tube",
+      "mix": 1.0,
+      "params": [
+        0.472,
+        0.618,
+        0.59,
+        0.764,
+        0.146,
+        0.667,
+        0.708
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 27,
+      "typeName": "Parametric EQ",
+      "mix": 1.0,
+      "params": [
+        0.916,
+        0.618,
+        0.382,
+        0.59,
+        0.472,
+        0.618,
+        0.1
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 6,
+      "typeName": "Opto Compressor",
+      "mix": 1.0,
+      "params": [
+        0.764,
+        0.333,
+        0.236,
+        0.618,
+        0.764,
+        0.472,
+        0.618
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.708,
+    "density": 0.618,
+    "movement": 0.236,
+    "space": 0.528,
+    "aggression": 0.146,
+    "vintage": 0.854
+  },
+  "keywords": [
+    "amber",
+    "preservation",
+    "warm",
+    "golden",
+    "vintage",
+    "tube",
+    "timeless",
+    "organic",
+    "natural",
+    "beautiful",
+    "nostalgic",
+    "analog",
+    "preserved",
+    "clarity"
+  ],
+  "cpuTier": "LIGHT"
+}

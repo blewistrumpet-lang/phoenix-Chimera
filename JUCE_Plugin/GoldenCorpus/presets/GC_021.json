@@ -1,0 +1,80 @@
+{
+  "id": "GC_021",
+  "name": "Silk Road Echo",
+  "technicalHint": "Bucket Brigade Delay + Formant Filter + Rotary Speaker",
+  "category": "World Music",
+  "subcategory": "Eastern Flavors",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 9,
+      "typeName": "Bucket Brigade Delay",
+      "mix": 0.618,
+      "params": [
+        0.245,
+        0.708,
+        0.382,
+        0.618,
+        0.472,
+        0.764,
+        0.528
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 17,
+      "typeName": "Vocal Formant Filter",
+      "mix": 0.854,
+      "params": [
+        0.37,
+        0.555,
+        0.618,
+        0.764,
+        0.382,
+        0.472,
+        0.089
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 24,
+      "typeName": "Rotary Speaker",
+      "mix": 0.472,
+      "params": [
+        0.138,
+        0.618,
+        0.708,
+        0.472,
+        0.854,
+        0.382,
+        0.667
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.618,
+    "density": 0.708,
+    "movement": 0.764,
+    "space": 0.854,
+    "aggression": 0.236,
+    "vintage": 0.764
+  },
+  "keywords": [
+    "silk",
+    "road",
+    "echo",
+    "eastern",
+    "exotic",
+    "mystical",
+    "journey",
+    "sitar",
+    "formant",
+    "rotary",
+    "caravan",
+    "ancient",
+    "trade",
+    "organic",
+    "world"
+  ],
+  "cpuTier": "MEDIUM"
+}

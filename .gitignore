@@ -1,0 +1,100 @@
+# JUCE Plugin Build Files
+Builds/
+JuceLibraryCode/
+*.mode1v3
+*.mode2v3
+*.pbxuser
+*.perspectivev3
+*.xcuserstate
+*.xcworkspace/
+xcuserdata/
+
+# Build directories
+build/
+Build/
+Debug/
+Release/
+bin/
+obj/
+
+# Generated files
+*.component/
+*.vst/
+*.vst3/
+*.au/
+*.aaxplugin/
+*.app/
+
+# IDE files
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.iml
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+.venv
+
+# FAISS indexes
+*.faiss
+*.pkl
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Audio files (if you don't want to track them)
+*.wav
+*.aiff
+*.mp3
+*.flac
+
+# Compiled binaries
+*.exe
+*.dll
+*.dylib
+*.a
+*.lib
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Documentation build
+docs/_build/
+docs/.doctrees/
+
+# Tools output
+/JUCE_Plugin/Tools/export_presets_standalone
+/JUCE_Plugin/Tools/simple_preset_exporter
+/JUCE_Plugin/Tools/*.o
