@@ -1,4 +1,5 @@
 #include "EngineFactory.h"
+#include "EngineTypes.h"
 #include "BypassEngine.h"
 #include "KStyleOverdrive.h"
 #include "TapeEcho.h"
@@ -51,6 +52,8 @@
 #include "SpringReverb.h"
 #include "ResonantChorus.h"
 #include "StereoWidener.h"
+#include "DynamicEQ.h"
+#include "StereoImager.h"
 
 std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
     switch (engineID) {
@@ -197,6 +200,12 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
             
         case ENGINE_STEREO_WIDENER:
             return std::make_unique<StereoWidener>();
+            
+        case ENGINE_STEREO_IMAGER:
+            return std::make_unique<StereoImager>();
+            
+        case ENGINE_DYNAMIC_EQ:
+            return std::make_unique<DynamicEQ>();
             
         case ENGINE_VINTAGE_TUBE_PREAMP:
             return std::make_unique<VintageTubePreamp>();
