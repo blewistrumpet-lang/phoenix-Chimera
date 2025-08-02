@@ -1,0 +1,29 @@
+{
+  "name": "Engine Mapping Test",
+  "engines": [
+    {
+      "slot": 1,
+      "engine": 48,
+      "params": {
+        "slot1_param1": 0.3,
+        "slot1_param2": 0.5
+      }
+    },
+    {
+      "slot": 2,
+      "engine": 5,
+      "params": {
+        "slot2_param1": 0.7,
+        "slot2_param2": 0.4
+      }
+    },
+    {
+      "slot": 3,
+      "engine": 41,
+      "params": {
+        "slot3_param1": 0.5,
+        "slot3_param2": 0.6
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "name": "Engine Mapping Test",
+  "engines": [
+    {
+      "slot": 1,
+      "engine": 0,
+      "params": {
+        "slot1_param1": 0.3,
+        "slot1_param2": 0.5,
+        "slot1_param3": 0.7,
+        "slot1_param4": 0.2,
+        "slot1_param5": 0.0,
+        "slot1_param6": 0.5,
+        "slot1_param7": 0.5,
+        "slot1_param8": 0.5,
+        "slot1_param9": 0.5,
+        "slot1_param10": 0.5
+      }
+    },
+    {
+      "slot": 2,
+      "engine": 1,
+      "params": {
+        "slot2_param1": 0.7,
+        "slot2_param2": 0.4,
+        "slot2_param3": 0.6,
+        "slot2_param4": 0.3,
+        "slot2_param5": 0.5,
+        "slot2_param6": 0.5,
+        "slot2_param7": 0.5,
+        "slot2_param8": 0.5,
+        "slot2_param9": 0.5,
+        "slot2_param10": 0.5
+      }
+    },
+    {
+      "slot": 3,
+      "engine": 41,
+      "params": {
+        "slot3_param1": 0.5,
+        "slot3_param2": 0.6,
+        "slot3_param3": 0.4,
+        "slot3_param4": 0.7,
+        "slot3_param5": 0.3,
+        "slot3_param6": 0.5,
+        "slot3_param7": 0.5,
+        "slot3_param8": 0.5,
+        "slot3_param9": 0.5,
+        "slot3_param10": 0.5
+      }
+    }
+  ]
+}
