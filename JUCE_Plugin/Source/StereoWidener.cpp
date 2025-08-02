@@ -31,17 +31,45 @@ void StereoWidener::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& blocker : m_dcBlockers) {
         blocker.reset();
     }
-
-void StereoWidener::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for StereoWidener
-}
-
     
     // Initialize channel states
     for (auto& channel : m_channelStates) {
         channel.prepare(sampleRate);
     }
+}
+
+void StereoWidener::reset() {
+    // Reset all smoothed parameters to their current targets
+    m_width.current = m_width.target;
+    m_bassMonoFreq.current = m_bassMonoFreq.target;
+    m_highShelfFreq.current = m_highShelfFreq.target;
+    m_highShelfGain.current = m_highShelfGain.target;
+    m_delayTime.current = m_delayTime.target;
+    m_delayGain.current = m_delayGain.target;
+    m_correlation.current = m_correlation.target;
+    m_mix.current = m_mix.target;
+    
+    // Reset DC blockers
+    for (auto& blocker : m_dcBlockers) {
+        blocker.reset();
+    }
+    
+    // Reset channel states
+    for (auto& channel : m_channelStates) {
+        channel.allPass1.reset();
+        channel.allPass2.reset();
+        channel.haasDelay.reset();
+        channel.shelfFilter.reset();
+        channel.bassMonoFilter.reset();
+    }
+    
+    // Reset thermal model
+    m_thermalModel.temperature = 25.0f;
+    m_thermalModel.thermalNoise = 0.0f;
+    m_thermalModel.thermalDrift = 0.0f;
+    
+    // Reset component aging
+    m_componentAge = 0.0f;
 }
 
 void StereoWidener::process(juce::AudioBuffer<float>& buffer) {

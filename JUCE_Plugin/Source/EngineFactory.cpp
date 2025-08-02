@@ -50,6 +50,7 @@
 #include "VintageTubePreamp.h"
 #include "SpringReverb.h"
 #include "ResonantChorus.h"
+#include "StereoWidener.h"
 
 std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
     switch (engineID) {
@@ -193,6 +194,9 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
             
         case ENGINE_MID_SIDE_PROCESSOR:
             return std::make_unique<MidSideProcessor>();
+            
+        case ENGINE_STEREO_WIDENER:
+            return std::make_unique<StereoWidener>();
             
         case ENGINE_VINTAGE_TUBE_PREAMP:
             return std::make_unique<VintageTubePreamp>();
