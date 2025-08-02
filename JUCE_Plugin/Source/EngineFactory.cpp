@@ -99,13 +99,13 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
         case ENGINE_FORMANT_FILTER:
             return std::make_unique<FormantFilter>();
             
-        case ENGINE_CLASSIC_COMPRESSOR:
+        case ENGINE_VCA_COMPRESSOR:
             return std::make_unique<ClassicCompressor>();
             
         case ENGINE_STATE_VARIABLE_FILTER:
             return std::make_unique<StateVariableFilter>();
             
-        case ENGINE_STEREO_CHORUS:
+        case ENGINE_DIGITAL_CHORUS:
             return std::make_unique<StereoChorus>();
             
         case ENGINE_SPECTRAL_FREEZE:
@@ -114,7 +114,7 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
         case ENGINE_GRANULAR_CLOUD:
             return std::make_unique<GranularCloud>();
             
-        case ENGINE_ANALOG_RING_MODULATOR:
+        case ENGINE_RING_MODULATOR:
             return std::make_unique<AnalogRingModulator>();
             
         case ENGINE_MULTIBAND_SATURATOR:
@@ -144,7 +144,7 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
         case ENGINE_SHIMMER_REVERB:
             return std::make_unique<ShimmerReverb>();
             
-        case ENGINE_VOCAL_FORMANT_FILTER:
+        case ENGINE_VOCAL_FORMANT:
             return std::make_unique<VocalFormantFilter>();
             
         case ENGINE_TRANSIENT_SHAPER:
@@ -180,7 +180,7 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
         case ENGINE_NOISE_GATE:
             return std::make_unique<NoiseGate>();
             
-        case ENGINE_VINTAGE_OPTO_COMPRESSOR:
+        case ENGINE_OPTO_COMPRESSOR:
             return std::make_unique<VintageOptoCompressor>();
             
         case ENGINE_SPECTRAL_GATE:
@@ -207,7 +207,7 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
         case ENGINE_DYNAMIC_EQ:
             return std::make_unique<DynamicEQ>();
             
-        case ENGINE_VINTAGE_TUBE_PREAMP:
+        case ENGINE_VINTAGE_TUBE:
             return std::make_unique<VintageTubePreamp>();
             
         case ENGINE_SPRING_REVERB:
