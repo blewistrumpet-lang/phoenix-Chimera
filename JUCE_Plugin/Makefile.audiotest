@@ -1,0 +1,82 @@
+# Makefile for ChimeraPhoenix Engine Audio Test
+
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -O2 -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -DJUCE_STANDALONE_APPLICATION=0
+INCLUDES = -I. -I./Source -I./JuceLibraryCode -I/Users/Branden/Downloads/JUCE/modules
+FRAMEWORKS = -framework CoreFoundation -framework CoreAudio -framework AudioToolbox -framework Accelerate -framework CoreMIDI
+
+# All engine source files
+ENGINE_SOURCES = Source/EngineFactory.cpp \
+    Source/BypassEngine.cpp \
+    Source/KStyleOverdrive.cpp \
+    Source/TapeEcho.cpp \
+    Source/PlateReverb.cpp \
+    Source/RodentDistortion.cpp \
+    Source/MuffFuzz.cpp \
+    Source/ClassicTremolo.cpp \
+    Source/MagneticDrumEcho.cpp \
+    Source/BucketBrigadeDelay.cpp \
+    Source/DigitalDelay.cpp \
+    Source/HarmonicTremolo.cpp \
+    Source/RotarySpeaker.cpp \
+    Source/DetuneDoubler.cpp \
+    Source/LadderFilter.cpp \
+    Source/FormantFilter.cpp \
+    Source/ClassicCompressor.cpp \
+    Source/StateVariableFilter.cpp \
+    Source/StereoChorus.cpp \
+    Source/SpectralFreeze.cpp \
+    Source/GranularCloud.cpp \
+    Source/AnalogRingModulator.cpp \
+    Source/MultibandSaturator.cpp \
+    Source/CombResonator.cpp \
+    Source/PitchShifter.cpp \
+    Source/PhasedVocoder.cpp \
+    Source/ConvolutionReverb.cpp \
+    Source/BitCrusher.cpp \
+    Source/FrequencyShifter.cpp \
+    Source/WaveFolder.cpp \
+    Source/ShimmerReverb.cpp \
+    Source/VocalFormantFilter.cpp \
+    Source/TransientShaper.cpp \
+    Source/DimensionExpander.cpp \
+    Source/AnalogPhaser.cpp \
+    Source/EnvelopeFilter.cpp \
+    Source/GatedReverb.cpp \
+    Source/HarmonicExciter.cpp \
+    Source/FeedbackNetwork.cpp \
+    Source/IntelligentHarmonizer.cpp \
+    Source/ParametricEQ.cpp \
+    Source/MasteringLimiter.cpp \
+    Source/NoiseGate.cpp \
+    Source/VintageOptoCompressor.cpp \
+    Source/SpectralGate.cpp \
+    Source/ChaosGenerator.cpp \
+    Source/BufferRepeat.cpp \
+    Source/VintageConsoleEQ.cpp \
+    Source/MidSideProcessor.cpp \
+    Source/VintageTubePreamp.cpp \
+    Source/SpringReverb.cpp \
+    Source/ResonantChorus.cpp \
+    Source/StereoWidener.cpp \
+    Source/DynamicEQ.cpp \
+    Source/StereoImager.cpp
+
+# Object files
+OBJECTS = $(ENGINE_SOURCES:.cpp=.o)
+
+# Target
+TARGET = test_engine_audio
+
+all: $(TARGET)
+
+$(TARGET): test_engine_audio.o $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(FRAMEWORKS) -o $@ $^
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+clean:
+	rm -f $(TARGET) test_engine_audio.o $(OBJECTS)
+
+.PHONY: all clean

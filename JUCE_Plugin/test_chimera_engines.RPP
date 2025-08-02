@@ -1,0 +1,15 @@
+<REAPER_PROJECT 0.1 "6.82" 1703344525
+  <TRACK {DCAE3A1B-A8B5-4D4C-8B03-38505CDC4B7C}
+    NAME "Chimera Test"
+    <FXCHAIN
+      WNDRECT 50 50 800 600
+      SHOW 1
+      LASTSEL 0
+      DOCKED 0
+      BYPASS 0 0 0
+      <VST "VST3: ChimeraPhoenix" "ChimeraPhoenix.vst3" 0 ""
+        {12345678-9ABC-DEF0-1234-567890ABCDEF}
+      >
+    >
+  >
+>
