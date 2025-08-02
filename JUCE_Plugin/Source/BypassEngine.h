@@ -12,6 +12,10 @@ public:
     
     void updateParameters(const std::map<int, float>& params) override {}
     
+    void reset() override {
+        // No internal state to clear
+    }
+    
     juce::String getName() const override { return "Bypass"; }
     
     int getNumParameters() const override { return 0; }

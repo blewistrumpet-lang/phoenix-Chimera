@@ -82,7 +82,7 @@
 #define ENGINE_STEREO_IMAGER            55  // Stereo Imager
 
 // Engine Count - UPDATE when adding new engines
-#define ENGINE_COUNT                    53  // 3 engines commented out (10, 13, 37)
+#define ENGINE_COUNT                    56  // Total slots 0-55, with 3 engines commented out (10, 13, 37)
 
 // Engine Categories for UI organization
 namespace EngineCategory {
@@ -180,7 +180,7 @@ inline const char* getEngineTypeName(int engineType) {
 inline int getEngineCategory(int engineType) {
     if (engineType >= ENGINE_VINTAGE_TUBE && engineType <= ENGINE_BUCKET_BRIGADE_DELAY)
         return EngineCategory::VINTAGE_EFFECTS;
-    else if (engineType >= ENGINE_ANALOG_CHORUS && engineType <= ENGINE_CLASSIC_TREMOLO)
+    else if (engineType >= ENGINE_DIGITAL_CHORUS && engineType <= ENGINE_CLASSIC_TREMOLO)
         return EngineCategory::MODULATION;
     else if (engineType >= ENGINE_COMB_RESONATOR && engineType <= ENGINE_FORMANT_FILTER)
         return EngineCategory::FILTERS_EQ;

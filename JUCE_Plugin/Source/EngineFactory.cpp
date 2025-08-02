@@ -1,5 +1,6 @@
 #include "EngineFactory.h"
 #include "EngineTypes.h"
+#include "ParameterDefinitions.h"
 #include "BypassEngine.h"
 #include "KStyleOverdrive.h"
 #include "TapeEcho.h"
@@ -57,6 +58,9 @@
 
 std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
     switch (engineID) {
+        case ENGINE_BYPASS:
+            return std::make_unique<BypassEngine>();
+            
         case ENGINE_K_STYLE:
             return std::make_unique<KStyleOverdrive>();
             
@@ -216,8 +220,8 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
         case ENGINE_RESONANT_CHORUS:
             return std::make_unique<ResonantChorus>();
             
-        case ENGINE_BYPASS:
         default:
-            return std::make_unique<BypassEngine>();
+            // Return null for invalid engine types
+            return nullptr;
     }
 }

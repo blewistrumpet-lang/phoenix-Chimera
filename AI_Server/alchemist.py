@@ -1,5 +1,6 @@
 import logging
-from typing import Dict, Any, Tuple
+import random
+from typing import Dict, Any, Tuple, List
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +11,68 @@ class Alchemist:
     """
     
     def __init__(self):
+        # Name generation components - organized by vibe/context
+        self.vibe_adjectives = {
+            # Warm/Vintage vibes
+            "warm": ["Warm", "Cozy", "Smooth", "Mellow", "Golden", "Amber", "Honey"],
+            "vintage": ["Vintage", "Retro", "Classic", "Analog", "Antique", "Old School", "Nostalgic"],
+            "tube": ["Tube", "Valve", "Glowing", "Saturated", "Creamy", "Rich", "Full"],
+            
+            # Aggressive/Metal vibes
+            "aggressive": ["Brutal", "Savage", "Fierce", "Crushing", "Raging", "Vicious", "Relentless"],
+            "metal": ["Heavy", "Iron", "Steel", "Chrome", "Titanium", "Molten", "Forged"],
+            "distorted": ["Distorted", "Mangled", "Twisted", "Shredded", "Torn", "Warped", "Mutated"],
+            
+            # Spacious/Ambient vibes
+            "spacious": ["Vast", "Expansive", "Infinite", "Boundless", "Wide", "Open", "Panoramic"],
+            "ambient": ["Floating", "Drifting", "Ethereal", "Atmospheric", "Weightless", "Suspended", "Hovering"],
+            "ethereal": ["Celestial", "Heavenly", "Angelic", "Divine", "Transcendent", "Otherworldly", "Sacred"],
+            
+            # Dynamic/Punchy vibes
+            "punchy": ["Punchy", "Snappy", "Tight", "Crisp", "Sharp", "Quick", "Responsive"],
+            "dynamic": ["Dynamic", "Powerful", "Energetic", "Vibrant", "Alive", "Active", "Kinetic"],
+            
+            # Lo-fi/Character vibes
+            "lofi": ["Lo-Fi", "Dusty", "Worn", "Faded", "Weathered", "Degraded", "Nostalgic"],
+            "character": ["Textured", "Gritty", "Raw", "Organic", "Natural", "Imperfect", "Authentic"],
+            
+            # Clean/Pristine vibes
+            "clean": ["Crystal", "Pure", "Clear", "Transparent", "Pristine", "Polished", "Refined"],
+            "modern": ["Digital", "Future", "Cyber", "Neon", "Quantum", "Neural", "Binary"],
+            
+            # Default/Generic
+            "default": ["Sonic", "Audio", "Sound", "Tonal", "Harmonic", "Musical", "Acoustic"]
+        }
+        
+        self.vibe_nouns = {
+            # Effect-based nouns
+            "delay": ["Echo", "Repeat", "Reflection", "Bounce", "Trail", "Ghost", "Memory"],
+            "reverb": ["Space", "Chamber", "Hall", "Cathedral", "Cave", "Room", "Sanctuary"],
+            "distortion": ["Crusher", "Grinder", "Shredder", "Destroyer", "Annihilator", "Devastator", "Obliterator"],
+            "modulation": ["Swirl", "Wave", "Pulse", "Cycle", "Motion", "Flow", "Current"],
+            "filter": ["Sculptor", "Shaper", "Carver", "Former", "Molder", "Designer", "Architect"],
+            "compression": ["Squeezer", "Tightener", "Controller", "Limiter", "Governor", "Restrainer", "Compactor"],
+            
+            # Instrument-based nouns
+            "guitar": ["Axe", "Strings", "Frets", "Riff", "Lick", "Chord", "Strum"],
+            "drums": ["Beat", "Groove", "Rhythm", "Pulse", "Thunder", "Boom", "Impact"],
+            "vocal": ["Voice", "Whisper", "Shout", "Call", "Song", "Harmony", "Melody"],
+            "bass": ["Foundation", "Bottom", "Depth", "Sub", "Low", "Rumble", "Growl"],
+            
+            # Abstract/Creative nouns
+            "ambient": ["Dreams", "Clouds", "Mist", "Fog", "Haze", "Aura", "Atmosphere"],
+            "experimental": ["Laboratory", "Experiment", "Discovery", "Innovation", "Creation", "Invention", "Breakthrough"],
+            
+            # Default nouns
+            "default": ["Engine", "Machine", "Processor", "Generator", "Creator", "Builder", "Former"]
+        }
+        
+        self.suffixes = [
+            "X", "Pro", "Plus", "Max", "Ultra", "Prime", "Elite", 
+            "2000", "3000", "MK2", "MK3", "V2", "V3", "Deluxe", 
+            "Studio", "Master", "Signature", "Custom", "Special"
+        ]
+        
         # Parameter ranges for each engine type
         self.parameter_ranges = {
             # K-Style Overdrive
@@ -58,7 +121,11 @@ class Alchemist:
             # Step 3: Ensure preset structure is complete
             self._ensure_complete_structure(finalized)
             
-            # Step 4: Add validation metadata
+            # Step 4: Generate fresh name based on vibe
+            # Always generate a new name to reflect the current prompt/vibe
+            finalized["name"] = self.generate_preset_name(finalized)
+            
+            # Step 5: Add validation metadata
             finalized["alchemist_validated"] = True
             finalized["validation_warnings"] = self._check_for_warnings(finalized)
             
@@ -69,6 +136,98 @@ class Alchemist:
             logger.error(f"Error in finalize_preset: {str(e)}")
             # Return a safe default preset on error
             return self._create_safe_default()
+    
+    def generate_preset_name(self, preset: Dict[str, Any]) -> str:
+        """
+        Generate a creative name for the preset based on its characteristics and vibe
+        """
+        try:
+            # Get the vibe from Visionary's analysis
+            vibe = preset.get("vibe", "").lower()
+            parameters = preset.get("parameters", {})
+            active_engines = []
+            
+            # Find active engines
+            for slot in range(1, 7):
+                if parameters.get(f"slot{slot}_bypass", 1.0) < 0.5:
+                    engine_id = int(parameters.get(f"slot{slot}_engine", 0))
+                    if engine_id > 0:
+                        active_engines.append(engine_id)
+            
+            # Analyze vibe and select appropriate word pools
+            selected_adjectives = []
+            selected_nouns = []
+            
+            # Parse vibe keywords
+            vibe_words = vibe.split()
+            
+            # Match adjectives based on vibe
+            for word in vibe_words:
+                # Check for adjective matches
+                for vibe_key, adj_list in self.vibe_adjectives.items():
+                    if vibe_key in word or word in vibe_key:
+                        selected_adjectives.extend(adj_list)
+                
+                # Check for noun context
+                for noun_key, noun_list in self.vibe_nouns.items():
+                    if noun_key in word or word in noun_key:
+                        selected_nouns.extend(noun_list)
+            
+            # Also check for effect types based on active engines
+            effect_types = []
+            for engine_id in active_engines:
+                if engine_id in [1, 8, 9, 10]:  # Delay engines
+                    effect_types.append("delay")
+                elif engine_id in [2, 3, 26, 30, 36, 51]:  # Reverb engines
+                    effect_types.append("reverb")
+                elif engine_id in [4, 5, 36]:  # Distortion engines
+                    effect_types.append("distortion")
+                elif engine_id in [6, 11, 18]:  # Modulation engines
+                    effect_types.append("modulation")
+                elif engine_id in [7, 16, 43, 44]:  # Compression engines
+                    effect_types.append("compression")
+                elif engine_id in [14, 17, 31]:  # Filter engines
+                    effect_types.append("filter")
+            
+            # Add effect-based nouns
+            for effect_type in set(effect_types):
+                if effect_type in self.vibe_nouns:
+                    selected_nouns.extend(self.vibe_nouns[effect_type])
+            
+            # Fallback to defaults if no matches
+            if not selected_adjectives:
+                selected_adjectives = self.vibe_adjectives["default"]
+            if not selected_nouns:
+                selected_nouns = self.vibe_nouns["default"]
+            
+            # Remove duplicates while preserving some variety
+            selected_adjectives = list(set(selected_adjectives))
+            selected_nouns = list(set(selected_nouns))
+            
+            # Generate name
+            adj = random.choice(selected_adjectives)
+            noun = random.choice(selected_nouns)
+            
+            # Add suffix based on intensity or special characteristics
+            name = f"{adj} {noun}"
+            
+            # Add suffix occasionally (higher chance for certain vibes)
+            suffix_chance = 0.2
+            if any(word in vibe for word in ["extreme", "ultimate", "maximum", "professional"]):
+                suffix_chance = 0.7
+            
+            if random.random() < suffix_chance:
+                suffix = random.choice(self.suffixes)
+                name = f"{name} {suffix}"
+            
+            return name
+                
+        except Exception as e:
+            logger.error(f"Error generating preset name: {str(e)}")
+            # Fallback name generation
+            fallback_adj = random.choice(["Custom", "User", "Generated", "New"])
+            fallback_noun = random.choice(["Preset", "Sound", "Patch", "Setting"])
+            return f"{fallback_adj} {fallback_noun} {random.randint(1000, 9999)}"
     
     def _validate_parameters(self, preset: Dict[str, Any]):
         """Validate and clamp all parameters to valid ranges"""

@@ -43,6 +43,16 @@ public:
     std::unique_ptr<EngineBase>& getEngine(int slot) { 
         return m_activeEngines[slot]; 
     }
+    
+    // Engine ID mapping functions
+    static int engineIDToChoiceIndex(int engineID);
+    static int choiceIndexToEngineID(int choiceIndex);
+    
+    // Initialize mappings in constructor
+    static void initializeEngineMappings();
+    
+    // Validation
+    static bool isValidEngineID(int engineID);
 
 private:
     juce::AudioProcessorValueTreeState parameters;
