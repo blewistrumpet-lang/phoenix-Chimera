@@ -6,20 +6,22 @@ Run this separately to handle OpenAI requests from the VisionaryClient
 import asyncio
 import json
 import logging
-import openai
+import os
+from openai import OpenAI
 from typing import Dict, Any
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # OpenAI API configuration
-OPENAI_API_KEY = "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"
-openai.api_key = OPENAI_API_KEY
+# First try environment variable, then use the provided key
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
 
 class OpenAIBridgeServer:
     def __init__(self, host: str = "0.0.0.0", port: int = 9999):
         self.host = host
         self.port = port
+        self.client = OpenAI(api_key=OPENAI_API_KEY)
         
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """Handle individual client connections"""
@@ -61,48 +63,79 @@ class OpenAIBridgeServer:
             system_prompt = message.get("system", "")
             user_prompt = message.get("user", "")
             
-            # Call OpenAI API
+            # Call OpenAI API with new client
             response = await asyncio.to_thread(
-                openai.ChatCompletion.create,
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.7,
-                max_tokens=500
+                lambda: self.client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.7,
+                    max_tokens=500,
+                    response_format={"type": "json_object"}  # Request JSON response
+                )
             )
             
-            # Extract JSON from response
+            # Extract content from response
             content = response.choices[0].message.content
             
             # Try to parse as JSON
             try:
-                # Find JSON in the response (it might be wrapped in markdown or text)
-                import re
-                json_match = re.search(r'\{.*\}', content, re.DOTALL)
-                if json_match:
-                    blueprint = json.loads(json_match.group())
-                else:
-                    # Fallback to parsing the whole content
-                    blueprint = json.loads(content)
-                    
-                return blueprint
+                # The response should already be valid JSON due to response_format
+                blueprint = json.loads(content)
                 
+                # Validate the blueprint structure
+                if self._validate_blueprint(blueprint):
+                    return blueprint
+                else:
+                    logger.warning(f"Invalid blueprint structure: {blueprint}")
+                    return self._get_default_blueprint()
+                    
             except json.JSONDecodeError:
                 logger.warning(f"Failed to parse OpenAI response as JSON: {content}")
-                # Return a default blueprint
-                return {
-                    "slots": [
-                        {"slot": 1, "engine_id": 0, "character": "neutral"},
-                        {"slot": 2, "engine_id": -1, "character": "bypass"}
-                    ],
-                    "overall_vibe": "default preset"
-                }
+                return self._get_default_blueprint()
                 
         except Exception as e:
             logger.error(f"OpenAI API error: {str(e)}")
-            raise
+            # Return a safe default on error
+            return self._get_default_blueprint()
+    
+    def _validate_blueprint(self, blueprint: Dict[str, Any]) -> bool:
+        """Validate that the blueprint has the correct structure"""
+        if not isinstance(blueprint, dict):
+            return False
+        
+        if "slots" not in blueprint or "overall_vibe" not in blueprint:
+            return False
+        
+        if not isinstance(blueprint["slots"], list):
+            return False
+        
+        # Check each slot
+        for slot in blueprint["slots"]:
+            if not isinstance(slot, dict):
+                return False
+            if "slot" not in slot or "engine_id" not in slot or "character" not in slot:
+                return False
+            if not isinstance(slot["slot"], int) or not isinstance(slot["engine_id"], int):
+                return False
+        
+        return True
+    
+    def _get_default_blueprint(self) -> Dict[str, Any]:
+        """Return a safe default blueprint"""
+        return {
+            "slots": [
+                {"slot": 1, "engine_id": 0, "character": "warm"},
+                {"slot": 2, "engine_id": 27, "character": "balanced"},
+                {"slot": 3, "engine_id": 3, "character": "spacious"},
+                {"slot": 4, "engine_id": -1, "character": "bypass"},
+                {"slot": 5, "engine_id": -1, "character": "bypass"},
+                {"slot": 6, "engine_id": -1, "character": "bypass"}
+            ],
+            "overall_vibe": "balanced warmth"
+        }
     
     async def start_server(self):
         """Start the TCP server"""
@@ -114,6 +147,7 @@ class OpenAIBridgeServer:
         
         addr = server.sockets[0].getsockname()
         logger.info(f"OpenAI Bridge Server running on {addr[0]}:{addr[1]}")
+        logger.info(f"Using OpenAI API key: {OPENAI_API_KEY[:20]}...")
         
         async with server:
             await server.serve_forever()

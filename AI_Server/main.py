@@ -5,8 +5,8 @@ import asyncio
 import json
 import logging
 
-from visionary_client import VisionaryClient
-from oracle import Oracle
+from visionary_openai_direct import VisionaryOpenAIDirect as VisionaryClient
+from oracle_faiss import OracleFAISS as Oracle
 from calculator import Calculator
 from alchemist import Alchemist
 

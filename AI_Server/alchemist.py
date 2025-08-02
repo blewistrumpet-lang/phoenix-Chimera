@@ -75,7 +75,15 @@ class Alchemist:
         parameters = preset.get("parameters", {})
         
         for param_name, value in parameters.items():
-            # Ensure value is a float
+            # Special handling for engine selectors - must be integers
+            if "_engine" in param_name:
+                if isinstance(value, (int, float)):
+                    parameters[param_name] = int(value)
+                else:
+                    parameters[param_name] = 0
+                continue
+            
+            # Ensure value is a float for other parameters
             if not isinstance(value, (int, float)):
                 parameters[param_name] = 0.5
                 continue
@@ -84,14 +92,14 @@ class Alchemist:
             parameters[param_name] = self._clamp(float(value), 0.0, 1.0)
             
             # Engine-specific validation
-            if "param" in param_name:
+            if "param" in param_name and "slot" in param_name:
                 slot_num = int(param_name[4])  # Extract slot number
                 param_num = int(param_name.split("param")[1])
                 
                 # Get engine ID for this slot
                 engine_param = f"slot{slot_num}_engine"
                 if engine_param in parameters:
-                    engine_id = int(parameters[engine_param]) - 1
+                    engine_id = int(parameters[engine_param])
                     
                     # Apply engine-specific ranges if available
                     if engine_id in self.parameter_ranges:
@@ -106,40 +114,49 @@ class Alchemist:
         
         # Check 1: Limit total gain to prevent clipping
         total_gain = 0.0
-        for slot in [1, 2]:
+        active_slots = 0
+        for slot in range(1, 7):  # All 6 slots
             if f"slot{slot}_bypass" not in parameters or parameters[f"slot{slot}_bypass"] < 0.5:
                 # Slot is active
-                level_param = f"slot{slot}_param3"  # Assuming param3 is level/mix
-                if level_param in parameters:
-                    total_gain += parameters[level_param]
+                active_slots += 1
+                mix_param = f"slot{slot}_mix"
+                if mix_param in parameters:
+                    total_gain += parameters[mix_param]
         
-        if total_gain > self.safety_limits["max_total_gain"]:
-            # Scale down levels proportionally
+        # Scale based on active slots to prevent clipping
+        if active_slots > 0 and total_gain > self.safety_limits["max_total_gain"]:
+            # Scale down mix levels proportionally
             scale_factor = self.safety_limits["max_total_gain"] / total_gain
-            for slot in [1, 2]:
-                level_param = f"slot{slot}_param3"
-                if level_param in parameters:
-                    parameters[level_param] *= scale_factor
-            logger.warning(f"Scaled down levels to prevent clipping (total gain was {total_gain:.2f})")
+            for slot in range(1, 7):
+                mix_param = f"slot{slot}_mix"
+                if mix_param in parameters and parameters.get(f"slot{slot}_bypass", 1.0) < 0.5:
+                    parameters[mix_param] *= scale_factor
+            logger.warning(f"Scaled down mix levels to prevent clipping (total gain was {total_gain:.2f})")
         
         # Check 2: Ensure at least one slot is active
-        slot1_bypass = parameters.get("slot1_bypass", 0.0)
-        slot2_bypass = parameters.get("slot2_bypass", 0.0)
+        all_bypassed = True
+        for slot in range(1, 7):
+            if parameters.get(f"slot{slot}_bypass", 1.0) < 0.5:
+                all_bypassed = False
+                break
         
-        if slot1_bypass > 0.5 and slot2_bypass > 0.5:
-            # Both slots bypassed - activate slot 1 with safe defaults
+        if all_bypassed:
+            # All slots bypassed - activate slot 1 with safe defaults
             parameters["slot1_bypass"] = 0.0
-            parameters["slot1_engine"] = 1  # K-Style Overdrive
-            logger.warning("Both slots were bypassed - activated slot 1")
+            parameters["slot1_engine"] = 0  # Vintage Tube
+            logger.warning("All slots were bypassed - activated slot 1")
         
-        # Check 3: Prevent feedback runaway in delay effects
-        for slot in [1, 2]:
-            feedback_param = f"slot{slot}_param2"
-            if feedback_param in parameters:
-                engine_param = f"slot{slot}_engine"
-                if engine_param in parameters and parameters[engine_param] == 2:  # Tape Echo
-                    parameters[feedback_param] = min(parameters[feedback_param], 
-                                                   self.safety_limits["max_feedback"])
+        # Check 3: Prevent feedback runaway in delay/echo effects
+        delay_engines = [1, 8, 9, 53]  # Tape Echo, Magnetic Drum Echo, Bucket Brigade, Digital Delay
+        for slot in range(1, 7):
+            engine_param = f"slot{slot}_engine"
+            if engine_param in parameters and parameters[engine_param] in delay_engines:
+                # Check for feedback parameter (usually param2 or param4)
+                for feedback_param_num in [2, 4]:
+                    feedback_param = f"slot{slot}_param{feedback_param_num}"
+                    if feedback_param in parameters:
+                        parameters[feedback_param] = min(parameters[feedback_param], 
+                                                       self.safety_limits["max_feedback"])
     
     def _ensure_complete_structure(self, preset: Dict[str, Any]):
         """Ensure the preset has all required fields"""
@@ -153,7 +170,7 @@ class Alchemist:
         # Ensure all parameter slots exist
         parameters = preset["parameters"]
         
-        for slot in [1, 2]:
+        for slot in range(1, 7):  # All 6 slots
             # Ensure all 10 parameters exist for each slot
             for param in range(1, 11):
                 param_name = f"slot{slot}_param{param}"
@@ -163,12 +180,25 @@ class Alchemist:
             # Ensure engine selector exists
             engine_param = f"slot{slot}_engine"
             if engine_param not in parameters:
-                parameters[engine_param] = 0 if slot == 1 else -1
+                parameters[engine_param] = 0  # Bypass
             
             # Ensure bypass exists
             bypass_param = f"slot{slot}_bypass"
             if bypass_param not in parameters:
-                parameters[bypass_param] = 0.0 if slot == 1 else 1.0
+                parameters[bypass_param] = 1.0  # Default to bypassed
+            
+            # Ensure mix exists
+            mix_param = f"slot{slot}_mix"
+            if mix_param not in parameters:
+                parameters[mix_param] = 0.5
+        
+        # Ensure master parameters exist
+        if "master_input" not in parameters:
+            parameters["master_input"] = 0.7
+        if "master_output" not in parameters:
+            parameters["master_output"] = 0.7
+        if "master_mix" not in parameters:
+            parameters["master_mix"] = 1.0
     
     def _check_for_warnings(self, preset: Dict[str, Any]) -> list:
         """Check for potential issues and return warnings"""
