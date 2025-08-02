@@ -26,10 +26,10 @@
 #define ENGINE_BUCKET_BRIGADE_DELAY     9   // Bucket Brigade Delay
 
 // Modulation Effects
-#define ENGINE_ANALOG_CHORUS            10  // Analog Chorus
+// #define ENGINE_ANALOG_CHORUS            10  // Analog Chorus - NOT IMPLEMENTED
 #define ENGINE_DIGITAL_CHORUS           11  // Digital/Stereo Chorus
 #define ENGINE_ANALOG_PHASER            12  // Analog Phaser
-#define ENGINE_DIGITAL_PHASER           13  // Digital Phaser
+// #define ENGINE_DIGITAL_PHASER           13  // Digital Phaser - NOT IMPLEMENTED
 #define ENGINE_PITCH_SHIFTER            14  // Pitch Shifter
 #define ENGINE_RING_MODULATOR           15  // Ring Modulator
 #define ENGINE_GRANULAR_CLOUD           16  // Granular Cloud Processor
@@ -57,7 +57,7 @@
 #define ENGINE_MULTIBAND_SATURATOR      34  // Multiband Saturator
 #define ENGINE_MUFF_FUZZ                35  // Muff-style Fuzz
 #define ENGINE_RODENT_DISTORTION        36  // Rodent-style Distortion
-#define ENGINE_TUBE_SCREAMER            37  // Tube Screamer
+// #define ENGINE_TUBE_SCREAMER            37  // Tube Screamer - NOT IMPLEMENTED
 #define ENGINE_K_STYLE                  38  // K-style Overdrive
 
 // Spatial & Time Effects
@@ -82,7 +82,7 @@
 #define ENGINE_STEREO_IMAGER            55  // Stereo Imager
 
 // Engine Count - UPDATE when adding new engines
-#define ENGINE_COUNT                    56
+#define ENGINE_COUNT                    53  // 3 engines commented out (10, 13, 37)
 
 // Engine Categories for UI organization
 namespace EngineCategory {
@@ -118,10 +118,10 @@ inline const char* getEngineTypeName(int engineType) {
         case ENGINE_BUCKET_BRIGADE_DELAY:   return "Bucket Brigade Delay";
         
         // Modulation
-        case ENGINE_ANALOG_CHORUS:          return "Analog Chorus";
+        // case ENGINE_ANALOG_CHORUS:          return "Analog Chorus"; // NOT IMPLEMENTED
         case ENGINE_DIGITAL_CHORUS:         return "Digital Chorus";
         case ENGINE_ANALOG_PHASER:          return "Analog Phaser";
-        case ENGINE_DIGITAL_PHASER:         return "Digital Phaser";
+        // case ENGINE_DIGITAL_PHASER:         return "Digital Phaser"; // NOT IMPLEMENTED
         case ENGINE_PITCH_SHIFTER:          return "Pitch Shifter";
         case ENGINE_RING_MODULATOR:         return "Ring Modulator";
         case ENGINE_GRANULAR_CLOUD:         return "Granular Cloud";
@@ -149,7 +149,7 @@ inline const char* getEngineTypeName(int engineType) {
         case ENGINE_MULTIBAND_SATURATOR:    return "Multiband Saturator";
         case ENGINE_MUFF_FUZZ:              return "Muff Fuzz";
         case ENGINE_RODENT_DISTORTION:      return "Rodent Distortion";
-        case ENGINE_TUBE_SCREAMER:          return "Tube Screamer";
+        // case ENGINE_TUBE_SCREAMER:          return "Tube Screamer"; // NOT IMPLEMENTED
         case ENGINE_K_STYLE:                return "K-Style Overdrive";
         
         // Spatial & Time
