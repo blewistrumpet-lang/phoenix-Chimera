@@ -37,11 +37,13 @@ private:
         std::vector<float> buffer;
         int writePos = 0;
         int size = 0;
+        float hfState = 0.0f;  // High frequency state for aging simulation
         
         void resize(int newSize);
         void clear();
         void write(float sample);
         float readInterpolated(float delaySamples);
+        float readInterpolatedWithAging(float delaySamples, float aging);
     };
     
     // Per-channel chorus state

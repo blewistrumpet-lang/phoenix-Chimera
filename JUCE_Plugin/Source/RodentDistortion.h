@@ -86,6 +86,9 @@ private:
     std::array<ZDFFilter, 2> m_inputFilters;
     std::array<ZDFFilter, 2> m_toneFilters;
     
+    // Per-channel presence state
+    std::array<float, 2> m_presenceState = {0.0f, 0.0f};
+    
     // DC Blocking
     struct DCBlocker {
         float x1 = 0.0f;

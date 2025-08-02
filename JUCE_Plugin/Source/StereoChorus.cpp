@@ -185,6 +185,7 @@ void StereoChorus::DelayLine::resize(int newSize) {
 void StereoChorus::DelayLine::clear() {
     std::fill(buffer.begin(), buffer.end(), 0.0f);
     writePos = 0;
+    hfState = 0.0f;
 }
 
 void StereoChorus::DelayLine::write(float sample) {
@@ -219,7 +220,6 @@ float StereoChorus::DelayLine::readInterpolatedWithAging(float delaySamples, flo
         interpolated = interpolated * (1.0f - aging * 0.3f) + jittered * (aging * 0.3f);
         
         // Add slight high frequency roll-off due to aging
-        static float hfState = 0.0f;
         float cutoff = 0.1f * (1.0f - aging * 0.4f);
         hfState += (interpolated - hfState) * cutoff;
         interpolated = interpolated * 0.7f + hfState * 0.3f;

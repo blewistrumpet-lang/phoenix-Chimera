@@ -33,15 +33,23 @@ void RodentDistortion::prepareToPlay(double sampleRate, int samplesPerBlock) {
     }
 
 void RodentDistortion::reset() {
-    // Reset distortion state
-    for (auto& channel : m_channelStates) {
-        channel.reset();
+    // Reset smooth parameters to their current targets
+    m_gain.current = m_gain.target;
+    m_filter.current = m_filter.target;
+    m_clipping.current = m_clipping.target;
+    m_tone.current = m_tone.target;
+    m_output.current = m_output.target;
+    m_mix.current = m_mix.target;
+    m_distortionType.current = m_distortionType.target;
+    m_presence.current = m_presence.target;
+    
+    // Reset filters
+    for (auto& filter : m_inputFilters) {
+        filter.reset();
     }
-}
-
+    
     for (auto& filter : m_toneFilters) {
         filter.reset();
-        filter.updateCoefficients(5000.0f, 0.3f, sampleRate);
     }
     
     // Reset DC blockers
@@ -52,12 +60,22 @@ void RodentDistortion::reset() {
         blocker.reset();
     }
     
-    // Prepare oversampler
-    m_oversampler.prepare(samplesPerBlock);
+    // Reset presence state
+    m_presenceState.fill(0.0f);
     
-    // Reset aging and thermal
+    // Reset thermal model
+    m_thermalModel.temperature = 25.0f;
+    m_thermalModel.thermalNoise = 0.0f;
+    
+    // Reset aging and sample count
     m_componentAge = 0.0f;
     m_sampleCount = 0;
+    
+    // Reset oversampler filter states
+    m_oversampler.upsampleFilter.x.fill(0.0f);
+    m_oversampler.upsampleFilter.y.fill(0.0f);
+    m_oversampler.downsampleFilter.x.fill(0.0f);
+    m_oversampler.downsampleFilter.y.fill(0.0f);
 }
 
 void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
@@ -122,9 +140,8 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
             if (m_presence.current > 0.01f) {
                 float presenceGain = 1.0f + m_presence.current * 2.0f;
                 // Simple high-shelf approximation
-                static float presenceState = 0.0f;
-                float highFreq = clipped - presenceState;
-                presenceState += highFreq * 0.1f;
+                float highFreq = clipped - m_presenceState[channel];
+                m_presenceState[channel] += highFreq * 0.1f;
                 clipped += highFreq * presenceGain * 0.3f;
             }
             
