@@ -156,9 +156,6 @@ void AnalogPhaser::process(juce::AudioBuffer<float>& buffer) {
             float input = channelData[sample];
             float drySignal = input;
             
-            float input = channelData[sample];
-            float drySignal = input;
-            
             // DC block input
             input = m_inputDCBlockers[channel].process(input);
             

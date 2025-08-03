@@ -27,12 +27,6 @@ void MultibandSaturator::prepareToPlay(double sampleRate, int samplesPerBlock) {
         channel.init(sampleRate);
         channel.reset();
     }
-
-void MultibandSaturator::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for MultibandSaturator
-}
-
     
     // Initialize DC blockers
     m_inputDCBlockers.resize(2);
@@ -49,6 +43,13 @@ void MultibandSaturator::reset() {
     
     // Reset thermal model
     m_thermalModel = ThermalModel();
+}
+
+void MultibandSaturator::reset() {
+    // Reset all internal state
+    for (auto& channel : m_channels) {
+        channel.reset();
+    }
 }
 
 void MultibandSaturator::process(juce::AudioBuffer<float>& buffer) {

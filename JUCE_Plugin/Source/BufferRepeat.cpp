@@ -30,16 +30,39 @@ void BufferRepeat::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& channel : m_channelStates) {
         channel.prepare(sampleRate);
     }
+}
 
 void BufferRepeat::reset() {
     // Reset all internal state
-    // TODO: Implement specific reset logic for BufferRepeat
-}
-
-    
-    // Initialize component aging
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
+    for (auto& channel : m_channelStates) {
+        std::fill(channel.recordBuffer.begin(), channel.recordBuffer.end(), 0.0f);
+        channel.writePos = 0;
+        
+        // Reset all slice players
+        for (auto& player : channel.slicePlayers) {
+            player.buffer.clear();
+            player.bufferSize = 0;
+            player.writePos = 0;
+            player.readPos = 0.0f;
+            player.isPlaying = false;
+            player.isReversed = false;
+            player.pitchRatio = 1.0f;
+            player.feedback = 0.0f;
+            player.sliceStart = 0;
+            player.sliceLength = 0;
+            player.repeatCount = 0;
+        }
+        
+        channel.currentPlayer = 0;
+        channel.samplesSinceLastSlice = 0;
+        channel.nextSliceTime = 0;
+        
+        // Reset effects
+        channel.stutterGate.phase = 0.0f;
+        channel.filter.reset();
+        channel.inputDCBlocker.reset();
+        channel.outputDCBlocker.reset();
+    }
 }
 
 void BufferRepeat::process(juce::AudioBuffer<float>& buffer) {
@@ -77,7 +100,7 @@ void BufferRepeat::process(juce::AudioBuffer<float>& buffer) {
         float* channelData = buffer.getWritePointer(channel);
         
         // Update effects
-        state.stutterGate.setRate(m_division);
+        state.stutterGate.setRate(m_division.current);
         state.filter.setCutoff(filterCutoff);
         
         // Get thermal and aging factors

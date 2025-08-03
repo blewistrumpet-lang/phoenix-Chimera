@@ -31,6 +31,7 @@ void RodentDistortion::prepareToPlay(double sampleRate, int samplesPerBlock) {
         filter.reset();
         filter.updateCoefficients(2000.0f, 0.5f, sampleRate);
     }
+}
 
 void RodentDistortion::reset() {
     // Reset smooth parameters to their current targets

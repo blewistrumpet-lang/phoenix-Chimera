@@ -285,27 +285,27 @@ float WaveFolder::processHarmonicEmphasis(float input, ChannelState& state) {
     
     // 2nd harmonic emphasis (around 1-2kHz for typical audio)
     float freq1 = 1500.0f / m_sampleRate;
-    float res1 = 2.0f + m_harmonics * 3.0f;
+    float res1 = 2.0f + m_harmonics.current * 3.0f;
     float band1 = input - state.harmonicFilter1;
     state.harmonicFilter1 += band1 * freq1 * 2.0f;
     float peak1 = band1 * res1;
     
     // 3rd harmonic emphasis (around 2-3kHz)
     float freq2 = 2500.0f / m_sampleRate;
-    float res2 = 2.0f + m_harmonics * 2.5f;
+    float res2 = 2.0f + m_harmonics.current * 2.5f;
     float band2 = input - state.harmonicFilter2;
     state.harmonicFilter2 += band2 * freq2 * 2.0f;
     float peak2 = band2 * res2;
     
     // 4th harmonic emphasis (around 3-4kHz)
     float freq3 = 3500.0f / m_sampleRate;
-    float res3 = 2.0f + m_harmonics * 2.0f;
+    float res3 = 2.0f + m_harmonics.current * 2.0f;
     float band3 = input - state.harmonicFilter3;
     state.harmonicFilter3 += band3 * freq3 * 2.0f;
     float peak3 = band3 * res3;
     
     // Mix emphasized harmonics back with original
-    return input + (peak1 + peak2 * 0.7f + peak3 * 0.5f) * m_harmonics * 0.3f;
+    return input + (peak1 + peak2 * 0.7f + peak3 * 0.5f) * m_harmonics.current * 0.3f;
 }
 
 float WaveFolder::processDCBlocker(float input, ChannelState& state) {

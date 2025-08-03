@@ -40,12 +40,11 @@ void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
         state.hopCounter = 0;
         state.isFrozen = false;
     }
+}
 
 void PhasedVocoder::reset() {
     // Reset all internal state
     // TODO: Implement specific reset logic for PhasedVocoder
-}
-
 }
 
 void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {

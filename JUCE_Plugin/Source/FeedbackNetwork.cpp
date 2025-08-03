@@ -3,6 +3,18 @@
 
 FeedbackNetwork::FeedbackNetwork() = default;
 
+void FeedbackNetwork::reset() {
+    // Reset all delay nodes
+    for (auto& channel : m_channelStates) {
+        for (auto& node : channel.nodes) {
+            std::fill(node.delay.buffer.begin(), node.delay.buffer.end(), 0.0f);
+            node.delay.writeIndex = 0;
+            node.delay.readIndex = 0.0f;
+            node.delay.lfoPhase = 0.0f;
+        }
+    }
+}
+
 void FeedbackNetwork::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
     
@@ -29,10 +41,10 @@ void FeedbackNetwork::process(juce::AudioBuffer<float>& buffer) {
     
     // Calculate delay times
     float delayTimes[NUM_DELAYS] = {
-        0.11f + m_delayTime * 0.4f,  // 0.11 - 0.51 sec
-        0.17f + m_delayTime * 0.6f,  // 0.17 - 0.77 sec
-        0.29f + m_delayTime * 0.8f,  // 0.29 - 1.09 sec
-        0.47f + m_delayTime * 1.0f   // 0.47 - 1.47 sec
+        0.11f + m_delayTime.current * 0.4f,  // 0.11 - 0.51 sec
+        0.17f + m_delayTime.current * 0.6f,  // 0.17 - 0.77 sec
+        0.29f + m_delayTime.current * 0.8f,  // 0.29 - 1.09 sec
+        0.47f + m_delayTime.current * 1.0f   // 0.47 - 1.47 sec
     };
     
     for (int channel = 0; channel < numChannels; ++channel) {
@@ -69,28 +81,28 @@ void FeedbackNetwork::process(juce::AudioBuffer<float>& buffer) {
                 }
                 
                 // Apply diffusion
-                if (m_diffusion > 0.0f) {
-                    signal = node.diffusers[0].process(signal) * (1.0f - m_diffusion * 0.5f) +
-                            node.diffusers[1].process(signal) * m_diffusion * 0.5f;
+                if (m_diffusion.current > 0.0f) {
+                    signal = node.diffusers[0].process(signal) * (1.0f - m_diffusion.current * 0.5f) +
+                            node.diffusers[1].process(signal) * m_diffusion.current * 0.5f;
                 }
                 
                 // Apply freeze (infinite sustain)
-                float feedbackAmount = m_feedback;
-                if (m_freeze > 0.5f) {
+                float feedbackAmount = m_feedback.current;
+                if (m_freeze.current > 0.5f) {
                     feedbackAmount = 0.99f;
                     signal *= 0.1f; // Reduce input when frozen
                 }
                 
                 // Apply shimmer (octave up)
-                if (m_shimmer > 0.0f) {
+                if (m_shimmer.current > 0.0f) {
                     float shimmerSignal = node.shimmer.process(signal, 2.0f); // Octave up
                     
                     // High-pass filter the shimmer
                     float highpassed = shimmerSignal - node.highpassState;
                     node.highpassState += highpassed * 0.99f;
                     
-                    signal = signal * (1.0f - m_shimmer * 0.5f) + 
-                            highpassed * m_shimmer * 0.5f;
+                    signal = signal * (1.0f - m_shimmer.current * 0.5f) + 
+                            highpassed * m_shimmer.current * 0.5f;
                 }
                 
                 // Damping (gentle lowpass)
@@ -99,7 +111,7 @@ void FeedbackNetwork::process(juce::AudioBuffer<float>& buffer) {
                 signal = node.lowpassState;
                 
                 // Cross-feed to other delays
-                float crossFeedAmount = m_crossFeed * 0.5f;
+                float crossFeedAmount = m_crossFeed.current * 0.5f;
                 for (int j = 0; j < NUM_DELAYS; ++j) {
                     if (i != j) {
                         float crossSignal = signal * crossFeedAmount * HADAMARD[i][j];
@@ -125,7 +137,7 @@ void FeedbackNetwork::process(juce::AudioBuffer<float>& buffer) {
             output = softClip(output);
             
             // Mix with dry signal
-            channelData[sample] = drySignal * (1.0f - m_mix) + output * m_mix;
+            channelData[sample] = drySignal * (1.0f - m_mix.current) + output * m_mix.current;
         }
     }
 }
@@ -175,22 +187,22 @@ float FeedbackNetwork::applyVintageWarmth(float input, float thermalFactor) {
 }
 
 void FeedbackNetwork::updateParameters(const std::map<int, float>& params) {
-    if (params.count(0)) m_delayTime = params.at(0);
-    if (params.count(1)) m_feedback = params.at(1) * 0.98f; // Max 98% to prevent runaway
-    if (params.count(2)) m_crossFeed = params.at(2);
-    if (params.count(3)) m_diffusion = params.at(3);
+    if (params.count(0)) m_delayTime.target = params.at(0);
+    if (params.count(1)) m_feedback.target = params.at(1) * 0.98f; // Max 98% to prevent runaway
+    if (params.count(2)) m_crossFeed.target = params.at(2);
+    if (params.count(3)) m_diffusion.target = params.at(3);
     if (params.count(4)) {
-        m_modulation = params.at(4);
+        m_modulation.target = params.at(4);
         // Update modulation depth for all delays
         for (auto& channel : m_channelStates) {
             for (auto& node : channel.nodes) {
-                node.delay.modDepth = 5.0f + m_modulation * 20.0f; // 5-25 samples
+                node.delay.modDepth = 5.0f + m_modulation.current * 20.0f; // 5-25 samples
             }
         }
     }
-    if (params.count(5)) m_freeze = params.at(5);
-    if (params.count(6)) m_shimmer = params.at(6);
-    if (params.count(7)) m_mix = params.at(7);
+    if (params.count(5)) m_freeze.target = params.at(5);
+    if (params.count(6)) m_shimmer.target = params.at(6);
+    if (params.count(7)) m_mix.target = params.at(7);
 }
 
 juce::String FeedbackNetwork::getParameterName(int index) const {

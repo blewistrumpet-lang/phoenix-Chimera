@@ -38,12 +38,6 @@ void PitchShifter::prepareToPlay(double sampleRate, int samplesPerBlock) {
     if (m_useOversampling) {
         m_oversampler.prepare(samplesPerBlock);
     }
-
-void PitchShifter::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for PitchShifter
-}
-
     
     // Reset component aging
     m_componentAge = 0.0f;
@@ -73,6 +67,18 @@ void PitchShifter::reset() {
     
     // Reset thermal model
     m_thermalModel = ThermalModel();
+}
+
+void PitchShifter::reset() {
+    // Reset all internal state
+    for (auto& state : m_channelStates) {
+        std::fill(state.inputBuffer.begin(), state.inputBuffer.end(), 0.0f);
+        std::fill(state.outputBuffer.begin(), state.outputBuffer.end(), 0.0f);
+        std::fill(state.phaseLast.begin(), state.phaseLast.end(), 0.0f);
+        std::fill(state.phaseSum.begin(), state.phaseSum.end(), 0.0f);
+        state.inputPos = 0;
+        state.outputPos = 0;
+    }
 }
 
 void PitchShifter::process(juce::AudioBuffer<float>& buffer) {

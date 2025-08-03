@@ -44,6 +44,11 @@ private:
         float state1 = 0.0f;
         float state2 = 0.0f;
         
+        void reset() {
+            state1 = 0.0f;
+            state2 = 0.0f;
+        }
+        
         float process(float input, float freq, float q, double sampleRate) {
             float w = 2.0f * std::sin(M_PI * freq / sampleRate);
             float q_inv = 1.0f / q;
@@ -63,6 +68,8 @@ private:
         
         // Envelope follower for dynamic response
         float envelope = 0.0f;
+        float envelopeAttack = 0.99f;
+        float envelopeRelease = 0.995f;
         
         // High shelf for brightness control
         float highShelfState = 0.0f;
@@ -71,8 +78,23 @@ private:
     std::vector<ChannelState> m_channelStates;
     double m_sampleRate = 44100.0;
     
+    // DC blockers for each channel
+    struct DCBlocker {
+        float x1 = 0.0f;
+        float y1 = 0.0f;
+        const float R = 0.995f;
+        
+        float process(float input) {
+            float output = input - x1 + R * y1;
+            x1 = input;
+            y1 = output;
+            return output;
+        }
+    };
+    std::array<DCBlocker, 2> m_dcBlockers;
+    
     FormantSet interpolateFormants(float vowelIndex);
-    float processHighShelf(float input, float& state, float frequency, float gain, float thermalFactor = 1.0f);
+    float processHighShelf(float input, float& state, float freq, float gain, float thermalFactor);
     
     // Nonlinear processing
     float analogSaturation(float input, float amount);

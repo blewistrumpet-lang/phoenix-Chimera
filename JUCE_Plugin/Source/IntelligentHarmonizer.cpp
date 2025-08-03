@@ -38,26 +38,12 @@ void IntelligentHarmonizer::prepareToPlay(double sampleRate, int samplesPerBlock
         for (auto& voice : channel.voices) {
             voice.prepare(sampleRate);
         }
+    }
+}
 
 void IntelligentHarmonizer::reset() {
     // Reset all internal state
     // TODO: Implement specific reset logic for IntelligentHarmonizer
-}
-
-        
-        // Initialize pitch detection
-        channel.pitchDetector = PitchDetector();
-        
-        // Initialize boutique filters
-        channel.antiAliasingFilter.setCutoff(sampleRate * 0.45f, sampleRate); // Anti-aliasing
-        channel.dcBlockingFilter.setCutoff(20.0f, sampleRate); // DC blocking
-        
-        // Initialize boutique components
-        channel.inputDCBlocker.reset();
-        channel.outputDCBlocker.reset();
-        channel.thermalModel = ThermalModel();
-        channel.componentAging = ComponentAging();
-    }
 }
 
 void IntelligentHarmonizer::process(juce::AudioBuffer<float>& buffer) {

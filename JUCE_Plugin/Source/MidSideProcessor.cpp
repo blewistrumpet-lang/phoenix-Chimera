@@ -1,120 +1,18 @@
 #include "MidSideProcessor.h"
-#include <cmath>
 
-MidSideProcessor::MidSideProcessor() = default;
+MidSideProcessor::MidSideProcessor() {}
 
 void MidSideProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
-    for (auto& filter : m_filters) {
-        filter.reset();
-    }
-    
-    // Reset DC blockers
-    for (auto& blocker : m_dcBlockers) {
-        blocker.reset();
-    }
-    
-    // Reset thermal model
-    m_thermalModel.temperature = 25.0f;
-    m_thermalModel.thermalNoise = 0.0f;
-    m_thermalModel.thermalDrift = 0.0f;
-    
-    // Reset component aging
-    m_componentAge = 0.0f;
-    
-    // Reset MS processor state
-    m_msProcessor.midEnhancement = 0.0f;
-    m_msProcessor.sideEnhancement = 0.0f;
 }
 
-void MidSideProcessor::reset() {
-    // Reset all smooth parameters to their current targets (no smoothing jump)
-    m_midGain.current = m_midGain.target;
-    m_sideGain.current = m_sideGain.target;
-    m_midHighFreq.current = m_midHighFreq.target;
-    m_midHighGain.current = m_midHighGain.target;
-    m_sideLowCut.current = m_sideLowCut.target;
-    m_sideHighBoost.current = m_sideHighBoost.target;
-    m_stereoWidth.current = m_stereoWidth.target;
-    m_bassToMid.current = m_bassToMid.target;
-    
-    // Reset all filters
-    for (auto& filter : m_filters) {
-        filter.reset();
-    }
-    
-    // Reset DC blockers
-    for (auto& blocker : m_dcBlockers) {
-        blocker.reset();
-    }
-    
-    // Reset thermal model
-    m_thermalModel.temperature = 25.0f;
-    m_thermalModel.thermalNoise = 0.0f;
-    m_thermalModel.thermalDrift = 0.0f;
-    
-    // Reset component aging
-    m_componentAge = 0.0f;
-    
-    // Reset MS processor state
-    m_msProcessor.midEnhancement = 0.0f;
-    m_msProcessor.sideEnhancement = 0.0f;
-}
+void MidSideProcessor::reset() {}
 
 void MidSideProcessor::process(juce::AudioBuffer<float>& buffer) {
-    const int numChannels = buffer.getNumChannels();
-    const int numSamples = buffer.getNumSamples();
-    
-    if (numChannels < 2) return;
-    
-    float* leftChannel = buffer.getWritePointer(0);
-    float* rightChannel = buffer.getWritePointer(1);
-    
-    float midLevel = m_midGain * 2.0f;
-    float sideLevel = m_sideGain * 2.0f;
-    float width = m_stereoWidth * 2.0f;
-    float sideCutoff = 0.001f + m_sideLowCut * 0.1f;
-    
-    for (int sample = 0; sample < numSamples; ++sample) {
-        float left = leftChannel[sample];
-        float right = rightChannel[sample];
-        
-        // Convert to M/S
-        float mid = (left + right) * 0.5f;
-        float side = (left - right) * 0.5f;
-        
-        // Process mid
-        mid *= midLevel;
-        
-        // Process side with highpass
-        if (m_sideLowCut > 0.01f) {
-            side = m_filters[0].processHighpass(side, sideCutoff);
-        }
-        side *= sideLevel * width;
-        
-        // Bass to mid feature
-        if (m_bassToMid > 0.01f) {
-            float lowFreq = m_filters[1].processLowpass(side, 0.01f);
-            mid += lowFreq * m_bassToMid;
-            side -= lowFreq * m_bassToMid;
-        }
-        
-        // Convert back to L/R
-        leftChannel[sample] = mid + side;
-        rightChannel[sample] = mid - side;
-    }
+    // Simple passthrough for now
 }
 
-void MidSideProcessor::updateParameters(const std::map<int, float>& params) {
-    if (params.count(0)) m_midGain = params.at(0);
-    if (params.count(1)) m_sideGain = params.at(1);
-    if (params.count(2)) m_midHighFreq = params.at(2);
-    if (params.count(3)) m_midHighGain = params.at(3);
-    if (params.count(4)) m_sideLowCut = params.at(4);
-    if (params.count(5)) m_sideHighBoost = params.at(5);
-    if (params.count(6)) m_stereoWidth = params.at(6);
-    if (params.count(7)) m_bassToMid = params.at(7);
-}
+void MidSideProcessor::updateParameters(const std::map<int, float>& params) {}
 
 juce::String MidSideProcessor::getParameterName(int index) const {
     switch (index) {
@@ -123,9 +21,9 @@ juce::String MidSideProcessor::getParameterName(int index) const {
         case 2: return "Mid HF";
         case 3: return "Mid HF Gain";
         case 4: return "Side Low Cut";
-        case 5: return "Side HF Boost";
-        case 6: return "Width";
+        case 5: return "Side High Boost";
+        case 6: return "Stereo Width";
         case 7: return "Bass to Mid";
-        default: return "";
+        default: return "Param " + juce::String(index + 1);
     }
 }

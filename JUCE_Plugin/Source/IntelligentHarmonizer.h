@@ -139,13 +139,13 @@ private:
         struct LanczosInterpolator {
             static constexpr int TAPS = 8;
             
-            float interpolate(const std::array<float, BUFFER_SIZE>& buffer, float position) {
+            float interpolate(const std::array<float, 16384>& buffer, float position) {
                 int intPos = static_cast<int>(position);
                 float fracPos = position - intPos;
                 
                 float sum = 0.0f;
                 for (int i = -TAPS/2; i < TAPS/2; ++i) {
-                    int idx = (intPos + i + BUFFER_SIZE) % BUFFER_SIZE;
+                    int idx = (intPos + i + 16384) % 16384;
                     float x = fracPos - i;
                     
                     // Lanczos kernel

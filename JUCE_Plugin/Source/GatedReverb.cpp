@@ -27,16 +27,7 @@ void GatedReverb::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
     
     // Comb filter tunings (based on classic reverb algorithms)
-    const int combTunings[8] = {1557, 1617, 1491, 1422, 1277, 1356, 1188, 1116}
-
-void GatedReverb::reset() {
-    // Clear all reverb buffers
-    for (auto& channel : m_channelStates) {
-        channel.clear();
-    }
-    // Reset any additional reverb state
-}
-;
+    const int combTunings[8] = {1557, 1617, 1491, 1422, 1277, 1356, 1188, 1116};
     
     // All-pass tunings
     const int allpassTunings[4] = {225, 341, 441, 556};
@@ -90,6 +81,24 @@ void GatedReverb::reset() {
     // Reset component aging
     m_componentAge = 0.0f;
     m_sampleCount = 0;
+}
+
+void GatedReverb::reset() {
+    // Clear all reverb buffers
+    for (auto& channel : m_channelStates) {
+        // Reset comb filters
+        for (auto& comb : channel.combFilters) {
+            std::fill(comb.buffer.begin(), comb.buffer.end(), 0.0f);
+        }
+        // Reset allpass filters
+        for (auto& allpass : channel.allpassFilters) {
+            std::fill(allpass.buffer.begin(), allpass.buffer.end(), 0.0f);
+        }
+        // Reset predelay
+        std::fill(channel.predelayBuffer.begin(), channel.predelayBuffer.end(), 0.0f);
+        channel.predelayIndex = 0;
+    }
+    // Reset any additional reverb state
 }
 
 void GatedReverb::process(juce::AudioBuffer<float>& buffer) {

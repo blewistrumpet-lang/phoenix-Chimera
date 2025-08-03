@@ -1,6 +1,110 @@
 #include "VintageTubePreamp.h"
 #include <cmath>
 
+// Implementation of tube saturation function
+float VintageTubePreamp::AdvancedTubeStage::processTubeSaturation(float input, TubeType type, float bias) {
+    // Simple tube saturation model
+    float biased = input + bias * 0.1f;
+    float output;
+    
+    switch (type) {
+        case TUBE_12AX7:
+            output = std::tanh(biased * 3.0f) / 3.0f;
+            break;
+        case TUBE_12AU7:
+            output = std::tanh(biased * 2.0f) / 2.0f;
+            break;
+        case TUBE_6V6:
+            output = std::tanh(biased * 1.5f) / 1.5f;
+            break;
+        case TUBE_EL34:
+        default:
+            output = std::tanh(biased * 1.8f) / 1.8f;
+            break;
+    }
+    
+    return output - bias * 0.1f;
+}
+
+// Implementation of tube transconductance function
+float VintageTubePreamp::AdvancedTubeStage::getTubeGm(TubeType type) {
+    switch (type) {
+        case TUBE_12AX7:
+            return 1.6f;  // mA/V typical
+        case TUBE_12AU7:
+            return 2.2f;
+        case TUBE_6V6:
+            return 4.1f;
+        case TUBE_EL34:
+        default:
+            return 11.0f;
+    }
+}
+
+// Implementation of tube amplification factor
+float VintageTubePreamp::AdvancedTubeStage::getTubeMu(TubeType type) {
+    switch (type) {
+        case TUBE_12AX7:
+            return 100.0f;  // Typical amplification factor
+        case TUBE_12AU7:
+            return 20.0f;
+        case TUBE_6V6:
+            return 12.6f;
+        case TUBE_EL34:
+        default:
+            return 10.5f;
+    }
+}
+
+// Implementation of tube plate resistance
+float VintageTubePreamp::AdvancedTubeStage::getTubeRp(TubeType type) {
+    switch (type) {
+        case TUBE_12AX7:
+            return 62500.0f;  // Ohms typical
+        case TUBE_12AU7:
+            return 7700.0f;
+        case TUBE_6V6:
+            return 50000.0f;
+        case TUBE_EL34:
+        default:
+            return 15000.0f;
+    }
+}
+
+// Implementation of tube harmonics function
+float VintageTubePreamp::AdvancedTubeStage::addTubeHarmonics(float input, float drive, TubeType type, float aging) {
+    // Simple harmonic generation based on tube type
+    float output = input;
+    float harmonic2, harmonic3;
+    
+    switch (type) {
+        case TUBE_12AX7:
+            harmonic2 = input * input * 0.1f * drive;
+            harmonic3 = input * input * input * 0.03f * drive;
+            break;
+        case TUBE_12AU7:
+            harmonic2 = input * input * 0.08f * drive;
+            harmonic3 = input * input * input * 0.04f * drive;
+            break;
+        case TUBE_6V6:
+            harmonic2 = input * input * 0.05f * drive;
+            harmonic3 = input * input * input * 0.08f * drive;
+            break;
+        case TUBE_EL34:
+        default:
+            harmonic2 = input * input * 0.06f * drive;
+            harmonic3 = input * input * input * 0.07f * drive;
+            break;
+    }
+    
+    // Aging affects harmonic content
+    harmonic2 *= (1.0f + aging * 0.2f);
+    harmonic3 *= (1.0f + aging * 0.15f);
+    
+    output += harmonic2 - harmonic3;
+    return output;
+}
+
 VintageTubePreamp::VintageTubePreamp() {
     // Initialize smoothed parameters with boutique defaults
     m_inputGain.setImmediate(0.5f);
@@ -34,12 +138,6 @@ void VintageTubePreamp::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& toneStack : m_toneStacks) {
         toneStack.reset();
     }
-
-void VintageTubePreamp::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for VintageTubePreamp
-}
-
     
     // Reset DC blockers
     for (auto& blocker : m_inputDCBlockers) {
@@ -57,12 +155,25 @@ void VintageTubePreamp::reset() {
     m_sampleCount = 0;
 }
 
+void VintageTubePreamp::reset() {
+    // Reset all internal state
+    for (auto& toneStack : m_toneStacks) {
+        toneStack.reset();
+    }
+    for (auto& blocker : m_inputDCBlockers) {
+        blocker.reset();
+    }
+    for (auto& blocker : m_outputDCBlockers) {
+        blocker.reset();
+    }
+}
+
 void VintageTubePreamp::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
-    float inputLevel = std::pow(10.0f, (m_inputGain - 0.5f) * 2.0f);
-    float outputLevel = std::pow(10.0f, (m_outputGain - 0.5f) * 2.0f);
+    float inputLevel = std::pow(10.0f, (m_inputGain.current - 0.5f) * 2.0f);
+    float outputLevel = std::pow(10.0f, (m_outputGain.current - 0.5f) * 2.0f);
     
     for (int channel = 0; channel < numChannels; ++channel) {
         if (channel >= 2) break;
@@ -78,16 +189,17 @@ void VintageTubePreamp::process(juce::AudioBuffer<float>& buffer) {
             input *= inputLevel;
             
             // Warmth (low frequency emphasis)
-            if (m_warmth > 0.5f) {
-                float warmthAmount = (m_warmth - 0.5f) * 2.0f;
+            if (m_warmth.current > 0.5f) {
+                float warmthAmount = (m_warmth.current - 0.5f) * 2.0f;
                 input *= (1.0f + warmthAmount * 0.3f);
             }
             
             // Tube processing
-            float processed = tubeStage.process(input, m_tubeDrive, m_bias);
+            float processed = tubeStage.process(input, m_tubeDrive.current, m_bias.current, 
+                                                VintageTubePreamp::AdvancedTubeStage::TUBE_12AX7, 1.0f);
             
-            // Tone stack
-            processed = toneStack.process(processed, m_tone, m_presence);
+            // Tone stack - using m_tone for all three bands
+            processed = toneStack.process(processed, m_tone.current, 0.5f, m_presence.current, m_sampleRate);
             
             // Output stage
             processed *= outputLevel;
@@ -97,7 +209,7 @@ void VintageTubePreamp::process(juce::AudioBuffer<float>& buffer) {
                 processed = std::tanh(processed * 0.8f) * 1.125f;
             }
             
-            channelData[sample] = processed * m_mix + dry * (1.0f - m_mix);
+            channelData[sample] = processed * m_mix.current + dry * (1.0f - m_mix.current);
         }
     }
 }

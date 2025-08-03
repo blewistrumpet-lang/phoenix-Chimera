@@ -31,16 +31,20 @@ void DynamicEQ::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& blocker : m_dcBlockers) {
         blocker.reset();
     }
-
-void DynamicEQ::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for DynamicEQ
-}
-
     
     // Initialize channel states
     for (auto& channel : m_channelStates) {
         channel.prepare(sampleRate);
+    }
+}
+
+void DynamicEQ::reset() {
+    // Reset all internal state
+    for (auto& channel : m_channelStates) {
+        channel.reset();
+    }
+    for (auto& blocker : m_dcBlockers) {
+        blocker.reset();
     }
 }
 

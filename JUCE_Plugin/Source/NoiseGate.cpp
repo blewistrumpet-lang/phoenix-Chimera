@@ -68,15 +68,14 @@ void NoiseGate::prepareToPlay(double sampleRate, int samplesPerBlock) {
         channel.transientDetected = 0.0f;
         channel.sustainDetected = 0.0f;
     }
-
-void NoiseGate::reset() {
-    // Reset dynamics processing state
-    for (auto& channel : m_channelStates) {
-        channel.envelope = 0.0f;
-        channel.gainReduction = 0.0f;
-    }
 }
 
+void NoiseGate::reset() {
+    // Reset channel states
+    for (auto& channel : m_channelStates) {
+        channel.envelopeFollower.reset();
+        channel.state = CLOSED;
+    }
 }
 
 void NoiseGate::process(juce::AudioBuffer<float>& buffer) {

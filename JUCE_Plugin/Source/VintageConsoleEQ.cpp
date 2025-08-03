@@ -35,10 +35,6 @@ void VintageConsoleEQ::prepareToPlay(double sampleRate, int samplesPerBlock) {
         channel.updateFilters(sampleRate);
     }
 
-void VintageConsoleEQ::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for VintageConsoleEQ
-}
 
     
     // Reset DC blockers
@@ -54,20 +50,33 @@ void VintageConsoleEQ::reset() {
     m_sampleCount = 0;
 }
 
+void VintageConsoleEQ::reset() {
+    // Reset all internal state
+    for (auto& channel : m_channelStates) {
+        channel.reset();
+    }
+    for (auto& blocker : m_inputDCBlockers) {
+        blocker.reset();
+    }
+    for (auto& blocker : m_outputDCBlockers) {
+        blocker.reset();
+    }
+}
+
 void VintageConsoleEQ::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
     // Convert parameters to actual values
-    double lowFreq = 30.0 + m_lowFreq * 270.0;    // 30-300Hz
-    double lowGain = (m_lowGain - 0.5) * 30.0;    // +/- 15dB
+    double lowFreq = 30.0 + m_lowFreq.current * 270.0;    // 30-300Hz
+    double lowGain = (m_lowGain.current - 0.5) * 30.0;    // +/- 15dB
     
-    double midFreq = 200.0 * std::pow(40.0, m_midFreq); // 200Hz-8kHz
-    double midGain = (m_midGain - 0.5) * 30.0;    // +/- 15dB
-    double midQ = 0.3 + m_midQ * 2.7;              // 0.3 to 3.0
+    double midFreq = 200.0 * std::pow(40.0, m_midFreq.current); // 200Hz-8kHz
+    double midGain = (m_midGain.current - 0.5) * 30.0;    // +/- 15dB
+    double midQ = 0.3 + m_midQ.current * 2.7;              // 0.3 to 3.0
     
-    double highFreq = 3000.0 + m_highFreq * 13000.0; // 3k-16kHz
-    double highGain = (m_highGain - 0.5) * 30.0;   // +/- 15dB
+    double highFreq = 3000.0 + m_highFreq.current * 13000.0; // 3k-16kHz
+    double highGain = (m_highGain.current - 0.5) * 30.0;   // +/- 15dB
     
     ConsoleType consoleType = getConsoleType();
     
@@ -88,8 +97,8 @@ void VintageConsoleEQ::process(juce::AudioBuffer<float>& buffer) {
             double input = static_cast<double>(channelData[sample]);
             
             // Pre-saturation (input stage coloration)
-            if (m_drive > 0.1f && consoleType == NEVE_1073) {
-                input = state.saturation.processNeve(input, m_drive * 0.3f);
+            if (m_drive.current > 0.1f && consoleType == NEVE_1073) {
+                input = state.saturation.processNeve(input, m_drive.current * 0.3f);
             }
             
             // EQ processing chain
@@ -111,20 +120,20 @@ void VintageConsoleEQ::process(juce::AudioBuffer<float>& buffer) {
             }
             
             // Post-EQ saturation
-            if (m_drive > 0.01f) {
+            if (m_drive.current > 0.01f) {
                 switch (consoleType) {
                     case NEVE_1073:
-                        output = state.saturation.processNeve(output, m_drive);
+                        output = state.saturation.processNeve(output, m_drive.current);
                         break;
                     case API_550:
-                        output = state.saturation.processAPI(output, m_drive);
+                        output = state.saturation.processAPI(output, m_drive.current);
                         break;
                     case SSL_4000:
-                        output = state.saturation.processSSL(output, m_drive);
+                        output = state.saturation.processSSL(output, m_drive.current);
                         break;
                     case PULTEC:
                         // Pultec-style gentle saturation
-                        output = std::tanh(output * (1.0 + m_drive * 0.5)) / (1.0 + m_drive * 0.3);
+                        output = std::tanh(output * (1.0 + m_drive.current * 0.5)) / (1.0 + m_drive.current * 0.3);
                         break;
                 }
             }
@@ -142,11 +151,11 @@ void VintageConsoleEQ::process(juce::AudioBuffer<float>& buffer) {
 VintageConsoleEQ::ConsoleType VintageConsoleEQ::getConsoleType() const {
     // Determine console type based on drive parameter
     // Lower drive = cleaner consoles, higher drive = more colored
-    if (m_drive < 0.25f) {
+    if (m_drive.current < 0.25f) {
         return SSL_4000;  // Clean, surgical
-    } else if (m_drive < 0.5f) {
+    } else if (m_drive.current < 0.5f) {
         return API_550;   // Punchy, musical
-    } else if (m_drive < 0.75f) {
+    } else if (m_drive.current < 0.75f) {
         return NEVE_1073; // Warm, transformer-coupled
     } else {
         return PULTEC;    // Smooth, passive curves

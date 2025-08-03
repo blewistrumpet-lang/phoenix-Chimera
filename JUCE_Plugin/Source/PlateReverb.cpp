@@ -306,7 +306,7 @@ void PlateReverb::HighShelf::updateCoefficients(float freq, float gainDB, double
     a1 = b1 * a0_inv;
     float a2 = b2 * a0_inv;
     b1 = -a1_raw * a0_inv;
-    float b2 = -a2_raw * a0_inv;
+    b2 = -a2_raw * a0_inv;
     
     // Store for process (we only need first order for efficiency)
     this->a1 = a1 / a0;

@@ -11,6 +11,7 @@ public:
     
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void process(juce::AudioBuffer<float>& buffer) override;
+    void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     
     int getNumParameters() const override { return 8; }

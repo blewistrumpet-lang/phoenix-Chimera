@@ -52,7 +52,7 @@ void TapeEcho::reset() {
         state.filter.reset();
         
         // Reset compression state
-        state.compression.reset();
+        state.compression.envelope = 0.0f;
         
         // Reset feedback filters
         state.feedbackHighpass = 0.0f;

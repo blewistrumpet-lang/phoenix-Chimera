@@ -267,7 +267,7 @@ void FrequencyShifter::processResonator(std::complex<float>& signal,
                                        float frequency) {
     // Simple complex resonator
     float omega = 2.0f * M_PI * frequency / m_sampleRate;
-    float resonanceAmount = 0.95f * m_resonance;
+    float resonanceAmount = 0.95f * m_resonance.current;
     
     // Complex exponential rotation
     float cosOmega = std::cos(omega);
@@ -281,7 +281,7 @@ void FrequencyShifter::processResonator(std::complex<float>& signal,
     state.resonatorImag = newImag * resonanceAmount + signal.imag() * (1.0f - resonanceAmount);
     
     // Add resonance to signal
-    signal += std::complex<float>(state.resonatorReal, state.resonatorImag) * m_resonance * 0.5f;
+    signal += std::complex<float>(state.resonatorReal, state.resonatorImag) * m_resonance.current * 0.5f;
 }
 
 void FrequencyShifter::updateParameters(const std::map<int, float>& params) {

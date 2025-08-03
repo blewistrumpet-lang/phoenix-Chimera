@@ -29,14 +29,17 @@ void VintageOptoCompressor::prepareToPlay(double sampleRate, int samplesPerBlock
     for (auto& channel : m_channelStates) {
         channel.prepare();
     }
+}
 
 void VintageOptoCompressor::reset() {
     // Reset dynamics processing state
     for (auto& channel : m_channelStates) {
-        channel.envelope = 0.0f;
-        channel.gainReduction = 0.0f;
+        channel.optoCell.brightness = 0.0f;
+        channel.optoCell.resistance = 1000000.0f;
+        channel.gainSmoother.currentGain = 1.0f;
+        channel.peakDetector.reset();
+        channel.prevSample = 0.0f;
     }
-}
 
     
     // Reset DC blockers

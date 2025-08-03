@@ -55,24 +55,15 @@ void HarmonicExciter::prepareToPlay(double sampleRate, int samplesPerBlock) {
         // Initialize aging parameters
         channel.updateAging(0.0f);
     }
+}
 
 void HarmonicExciter::reset() {
     // Reset all internal state
-    // TODO: Implement specific reset logic for HarmonicExciter
-}
-
-    
-    // Prepare oversampler
-    if (m_useOversampling) {
-        m_oversampler.prepare(samplesPerBlock);
+    for (auto& channel : m_channelStates) {
+        channel.warmthState = 0.0f;
+        channel.presenceState = 0.0f;
+        channel.phaseIndex = 0;
     }
-    
-    // Reset component aging
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
-    
-    // Reset thermal model
-    m_thermalModel = ThermalModel();
 }
 
 void HarmonicExciter::process(juce::AudioBuffer<float>& buffer) {
@@ -218,7 +209,7 @@ void HarmonicExciter::process(juce::AudioBuffer<float>& buffer) {
 float HarmonicExciter::processPresenceFilter(float input, float& state) {
     // High shelf at ~8kHz for air
     float freq = 8000.0f / m_sampleRate;
-    float gain = 1.0f + m_presence * 0.5f;
+    float gain = 1.0f + m_presence.current * 0.5f;
     
     float w = 2.0f * std::sin(M_PI * freq);
     float a = (gain - 1.0f) * 0.5f;
@@ -248,7 +239,7 @@ float HarmonicExciter::processPresenceFilterWithAging(float input, float& state,
 float HarmonicExciter::processWarmthFilter(float input, float& state) {
     // Low shelf at ~100Hz for warmth
     float freq = 100.0f / m_sampleRate;
-    float gain = 1.0f + m_warmth * 0.3f;
+    float gain = 1.0f + m_warmth.current * 0.3f;
     
     float w = 2.0f * std::sin(M_PI * freq);
     float a = (gain - 1.0f) * 0.5f;

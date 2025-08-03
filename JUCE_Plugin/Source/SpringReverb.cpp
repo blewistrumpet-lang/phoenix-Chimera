@@ -42,16 +42,21 @@ void SpringReverb::prepareToPlay(double sampleRate, int samplesPerBlock) {
         for (int i = 0; i < MAX_SPRINGS; ++i) {
             channel.springs[i].setSpringCharacteristics(SPRING_TYPES[i], sampleRate);
         }
+    }
+}
 
 void SpringReverb::reset() {
     // Clear all reverb buffers
     for (auto& channel : m_channelStates) {
-        channel.clear();
+        for (auto& spring : channel.springs) {
+            spring.reset();
+        }
+        // PreDelay doesn't have reset, just reinitialize
+        channel.preDelay.prepare(MAX_DELAY_SIZE);
+        channel.dcBlocker.reset();
+        channel.springAging = 0.0f;
     }
     // Reset any additional reverb state
-}
-
-    }
 }
 
 void SpringReverb::process(juce::AudioBuffer<float>& buffer) {

@@ -1,0 +1,462 @@
+#pragma once
+#include "EngineBase.h"
+#include <vector>
+#include <array>
+#include <cmath>
+#include <random>
+
+class ResonantChorus : public EngineBase {
+public:
+    ResonantChorus();
+    ~ResonantChorus() override = default;
+    
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
+    void process(juce::AudioBuffer<float>& buffer) override;
+    void reset() override;
+    void updateParameters(const std::map<int, float>& params) override;
+    
+    int getNumParameters() const override { return 8; }
+    juce::String getParameterName(int index) const override;
+    juce::String getName() const override { return "Resonant Chorus"; }
+    
+private:
+    // Smoothed parameters for boutique quality
+    struct SmoothParam {
+        float target = 0.5f;
+        float current = 0.5f;
+        float smoothing = 0.995f;
+        
+        void update() {
+            current = target + (current - target) * smoothing;
+        }
+        
+        void reset(float value) {
+            target = current = value;
+        }
+        
+        void setSmoothingTime(float timeMs, float sampleRate) {
+            float samples = timeMs * 0.001f * sampleRate;
+            smoothing = std::exp(-1.0f / samples);
+        }
+    };
+    
+    SmoothParam m_mode;           // Dimension mode (1-4)
+    SmoothParam m_depth;          // Modulation depth
+    SmoothParam m_resonance;      // Filter resonance
+    SmoothParam m_brightness;     // High frequency content
+    SmoothParam m_stereoWidth;    // Stereo field enhancement
+    SmoothParam m_warmth;         // Low frequency enhancement
+    SmoothParam m_mix;            // Dry/wet mix
+    SmoothParam m_level;          // Output level compensation
+    
+    // Dimension D characteristics
+    static constexpr int NUM_DELAY_LINES = 4;
+    static constexpr int MAX_DELAY_SAMPLES = 2048;
+    
+    // Mode presets (based on Dimension D analysis)
+    struct DimensionMode {
+        float delays[NUM_DELAY_LINES];      // Delay times in ms
+        float modDepths[NUM_DELAY_LINES];   // Modulation depths
+        float modRates[NUM_DELAY_LINES];    // LFO rates in Hz
+        float phases[NUM_DELAY_LINES];      // LFO phase offsets
+        float gains[NUM_DELAY_LINES];       // Mix levels
+        bool stereoConfig[NUM_DELAY_LINES]; // L/R routing
+    };
+    
+    static constexpr DimensionMode DIMENSION_MODES[4] = {
+        // Mode 1 - Subtle spatial enhancement
+        {{0.5f, 1.7f, 2.3f, 3.1f}, 
+         {0.15f, 0.12f, 0.10f, 0.08f}, 
+         {0.513f, 0.737f, 1.011f, 1.217f},
+         {0.0f, 0.25f, 0.5f, 0.75f},
+         {0.7f, 0.5f, 0.3f, 0.2f},
+         {true, false, true, false}},
+         
+        // Mode 2 - Classic dimension
+        {{1.0f, 2.3f, 3.7f, 5.1f},
+         {0.20f, 0.18f, 0.15f, 0.12f},
+         {0.417f, 0.633f, 0.894f, 1.133f},
+         {0.0f, 0.33f, 0.67f, 1.0f},
+         {0.6f, 0.5f, 0.4f, 0.3f},
+         {true, false, false, true}},
+         
+        // Mode 3 - Wide spatial
+        {{1.5f, 3.3f, 5.7f, 7.3f},
+         {0.25f, 0.22f, 0.18f, 0.15f},
+         {0.311f, 0.517f, 0.794f, 1.011f},
+         {0.0f, 0.5f, 0.25f, 0.75f},
+         {0.5f, 0.5f, 0.5f, 0.5f},
+         {true, true, false, false}},
+         
+        // Mode 4 - Maximum dimension
+        {{2.0f, 4.7f, 7.1f, 9.8f},
+         {0.30f, 0.25f, 0.20f, 0.18f},
+         {0.213f, 0.433f, 0.697f, 0.911f},
+         {0.0f, 0.6f, 0.3f, 0.9f},
+         {0.6f, 0.5f, 0.5f, 0.4f},
+         {false, true, true, false}}
+    };
+    
+    // Resonant filter (for that characteristic brightness)
+    struct ResonantFilter {
+        double x1 = 0.0, x2 = 0.0;
+        double y1 = 0.0, y2 = 0.0;
+        double a0 = 1.0, a1 = 0.0, a2 = 0.0;
+        double b0 = 1.0, b1 = 0.0, b2 = 0.0;
+        
+        void calculateCoefficients(double freq, double resonance, double sampleRate) {
+            double omega = 2.0 * M_PI * freq / sampleRate;
+            double sin_omega = std::sin(omega);
+            double cos_omega = std::cos(omega);
+            double q = 1.0 + resonance * 9.0; // Q from 1 to 10
+            double alpha = sin_omega / (2.0 * q);
+            
+            // High-shelf filter for brightness
+            double A = std::pow(10.0, 2.0 / 40.0); // +2dB boost
+            double beta = std::sqrt(A) / q;
+            
+            b0 = A * ((A + 1.0) + (A - 1.0) * cos_omega + beta * sin_omega);
+            b1 = -2.0 * A * ((A - 1.0) + (A + 1.0) * cos_omega);
+            b2 = A * ((A + 1.0) + (A - 1.0) * cos_omega - beta * sin_omega);
+            a0 = (A + 1.0) - (A - 1.0) * cos_omega + beta * sin_omega;
+            a1 = 2.0 * ((A - 1.0) - (A + 1.0) * cos_omega);
+            a2 = (A + 1.0) - (A - 1.0) * cos_omega - beta * sin_omega;
+            
+            // Normalize
+            double norm = 1.0 / a0;
+            b0 *= norm;
+            b1 *= norm;
+            b2 *= norm;
+            a1 *= norm;
+            a2 *= norm;
+            a0 = 1.0;
+        }
+        
+        double process(double input) {
+            double output = b0 * input + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+            
+            x2 = x1;
+            x1 = input;
+            y2 = y1;
+            y1 = output;
+            
+            // Soft saturation in feedback path (adds warmth)
+            if (std::abs(output) > 0.95) {
+                output = std::tanh(output);
+            }
+            
+            return output;
+        }
+        
+        void reset() {
+            x1 = x2 = y1 = y2 = 0.0;
+        }
+    };
+    
+    // BBD-style delay line with interpolation
+    struct BBDDelayLine {
+        std::vector<float> buffer;
+        float writePos = 0.0f;
+        int size = 0;
+        
+        // BBD characteristics
+        float clockNoise = 0.0f;
+        float sampleAndHold = 0.0f;
+        
+        void prepare(int maxSize) {
+            size = maxSize;
+            buffer.resize(size);
+            std::fill(buffer.begin(), buffer.end(), 0.0f);
+            writePos = 0.0f;
+        }
+        
+        float process(float input, float delaySamples) {
+            // Write with BBD-style degradation
+            int writeIdx = static_cast<int>(writePos);
+            buffer[writeIdx] = input + clockNoise * 0.0001f;
+            
+            // Read with cubic interpolation for smooth modulation
+            float readPos = writePos - delaySamples;
+            while (readPos < 0) readPos += size;
+            
+            int idx0 = static_cast<int>(readPos);
+            int idx1 = (idx0 + 1) % size;
+            int idx2 = (idx0 + 2) % size;
+            int idx3 = (idx0 + 3) % size;
+            
+            float frac = readPos - idx0;
+            
+            // Cubic interpolation
+            float y0 = buffer[idx0];
+            float y1 = buffer[idx1];
+            float y2 = buffer[idx2];
+            float y3 = buffer[idx3];
+            
+            float c0 = y1;
+            float c1 = 0.5f * (y2 - y0);
+            float c2 = y0 - 2.5f * y1 + 2.0f * y2 - 0.5f * y3;
+            float c3 = 0.5f * (y3 - y0) + 1.5f * (y1 - y2);
+            
+            float output = ((c3 * frac + c2) * frac + c1) * frac + c0;
+            
+            // Update position
+            writePos += 1.0f;
+            if (writePos >= size) writePos -= size;
+            
+            // Update clock noise (subtle BBD artifacts)
+            clockNoise = (clockNoise * 0.999f) + ((rand() / (float)RAND_MAX) - 0.5f) * 0.001f;
+            
+            return output;
+        }
+        
+        void reset() {
+            std::fill(buffer.begin(), buffer.end(), 0.0f);
+            writePos = 0.0f;
+            clockNoise = 0.0f;
+        }
+    };
+    
+    // LFO for modulation
+    struct LFO {
+        float phase = 0.0f;
+        float rate = 1.0f;
+        
+        float process(double sampleRate) {
+            float output = std::sin(2.0f * M_PI * phase);
+            phase += rate / sampleRate;
+            if (phase >= 1.0f) phase -= 1.0f;
+            return output;
+        }
+        
+        void setPhase(float p) {
+            phase = p;
+        }
+    };
+    
+    // Processing unit for each delay line
+    struct DelayUnit {
+        BBDDelayLine delayLine;
+        ResonantFilter filter;
+        LFO lfo;
+        
+        float baseDelay = 1.0f;
+        float modDepth = 0.2f;
+        float gain = 0.5f;
+        
+        void prepare(double sampleRate) {
+            delayLine.prepare(MAX_DELAY_SAMPLES);
+            filter.reset();
+        }
+        
+        float process(float input, double sampleRate) {
+            // Calculate modulated delay time
+            float modulation = lfo.process(sampleRate) * modDepth;
+            float delaySamples = (baseDelay + modulation) * sampleRate * 0.001f;
+            delaySamples = std::max(1.0f, std::min(delaySamples, 
+                                   static_cast<float>(MAX_DELAY_SAMPLES - 1)));
+            
+            // Process through delay
+            float delayed = delayLine.process(input, delaySamples);
+            
+            // Apply resonant filter
+            delayed = filter.process(delayed);
+            
+            return delayed * gain;
+        }
+    };
+    
+    // DC Blocking filter
+    struct DCBlocker {
+        float x1 = 0.0f, y1 = 0.0f;
+        static constexpr float R = 0.995f;
+        
+        float process(float input) {
+            float output = input - x1 + R * y1;
+            x1 = input;
+            y1 = output;
+            return output;
+        }
+        
+        void reset() { x1 = y1 = 0.0f; }
+    };
+    
+    // Thermal modeling for analog drift simulation
+    struct ThermalModel {
+        float temperature = 25.0f;  // Celsius
+        float thermalNoise = 0.0f;
+        std::mt19937 rng;
+        std::uniform_real_distribution<float> dist{-0.5f, 0.5f};
+        
+        ThermalModel() : rng(std::random_device{}()) {}
+        
+        void update(double sampleRate) {
+            // Slow thermal drift
+            thermalNoise += (dist(rng) * 0.001f) / sampleRate;
+            thermalNoise = std::max(-0.02f, std::min(0.02f, thermalNoise));
+        }
+        
+        float getThermalFactor() const {
+            return 1.0f + thermalNoise;
+        }
+    };
+    
+    // Component aging simulation
+    struct ComponentAging {
+        float age = 0.0f;
+        float drift = 0.0f;
+        float toleranceShift = 0.0f;
+        
+        void update(float aging) {
+            age = aging;
+            drift = aging * 0.015f;  // 1.5% max drift
+            toleranceShift = aging * 0.008f;  // Component tolerance changes
+        }
+        
+        float applyDrift(float value) const {
+            return value * (1.0f + drift);
+        }
+        
+        float applyTolerance(float value) const {
+            return value * (1.0f + toleranceShift);
+        }
+    };
+    
+    // Channel state
+    struct ChannelState {
+        std::array<DelayUnit, NUM_DELAY_LINES> delayUnits;
+        
+        // Input/output filters
+        ResonantFilter inputFilter;
+        ResonantFilter outputFilter;
+        
+        // DC blockers for input and output
+        DCBlocker inputDCBlocker;
+        DCBlocker outputDCBlocker;
+        
+        // Thermal and aging models
+        ThermalModel thermalModel;
+        ComponentAging componentAging;
+        
+        // Oversampling for high-quality processing
+        struct Oversampler {
+            static constexpr int OVERSAMPLE_FACTOR = 2;
+            std::vector<float> upsampleBuffer;
+            std::vector<float> downsampleBuffer;
+            
+            // Anti-aliasing filters (4th order Butterworth)
+            struct AAFilter {
+                std::array<float, 4> x = {0.0f};
+                std::array<float, 4> y = {0.0f};
+                
+                float process(float input) {
+                    // Butterworth lowpass coefficients for Nyquist/2
+                    const float a0 = 0.0947f, a1 = 0.3789f, a2 = 0.5684f, a3 = 0.3789f, a4 = 0.0947f;
+                    const float b1 = -0.0000f, b2 = 0.4860f, b3 = -0.0000f, b4 = -0.0177f;
+                    
+                    float output = a0 * input + a1 * x[0] + a2 * x[1] + a3 * x[2] + a4 * x[3]
+                                 - b1 * y[0] - b2 * y[1] - b3 * y[2] - b4 * y[3];
+                    
+                    // Shift delay lines
+                    x[3] = x[2]; x[2] = x[1]; x[1] = x[0]; x[0] = input;
+                    y[3] = y[2]; y[2] = y[1]; y[1] = y[0]; y[0] = output;
+                    
+                    return output;
+                }
+            };
+            
+            AAFilter upsampleFilter;
+            AAFilter downsampleFilter;
+            
+            void prepare(int blockSize) {
+                upsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
+                downsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
+            }
+            
+            void upsample(const float* input, float* output, int numSamples) {
+                for (int i = 0; i < numSamples; ++i) {
+                    output[i * 2] = upsampleFilter.process(input[i] * 2.0f);
+                    output[i * 2 + 1] = upsampleFilter.process(0.0f);
+                }
+            }
+            
+            void downsample(const float* input, float* output, int numSamples) {
+                for (int i = 0; i < numSamples; ++i) {
+                    downsampleFilter.process(input[i * 2]);
+                    output[i] = downsampleFilter.process(input[i * 2 + 1]) * 0.5f;
+                }
+            }
+        };
+        
+        Oversampler oversampler;
+        bool useOversampling = true;
+        
+        // Noise floor simulation
+        float noiseFloor = 0.0f;
+        
+        void prepare(double sampleRate) {
+            for (auto& unit : delayUnits) {
+                unit.prepare(sampleRate);
+            }
+            inputFilter.reset();
+            outputFilter.reset();
+            inputDCBlocker.reset();
+            outputDCBlocker.reset();
+            
+            // Initialize thermal model
+            thermalModel = ThermalModel();
+            
+            // Initialize component aging
+            componentAging.update(0.0f);
+            
+            // Prepare oversampler
+            oversampler.prepare(512);  // Default block size
+            
+            // Set noise floor
+            noiseFloor = -96.0f;  // dB
+        }
+    };
+    
+    std::array<ChannelState, 2> m_channelStates;
+    double m_sampleRate = 44100.0;
+    int m_currentMode = 0;
+    
+    // Component aging tracking
+    float m_componentAge = 0.0f;
+    int m_sampleCount = 0;
+    
+    // Enhanced processing flags
+    bool m_enableOversampling = true;
+    bool m_enableThermalModeling = true;
+    bool m_enableComponentAging = true;
+    
+    // Crossfeed for enhanced stereo
+    struct StereoCrossfeed {
+        float state = 0.0f;
+        
+        void process(float& left, float& right, float amount) {
+            float mono = (left + right) * 0.5f;
+            float side = (left - right) * 0.5f;
+            
+            // Enhance side signal
+            side *= (1.0f + amount);
+            
+            // Reconstruct with enhanced width
+            left = mono + side;
+            right = mono - side;
+        }
+    };
+    
+    StereoCrossfeed m_crossfeed;
+    
+    // Helper methods
+    void updateMode(int mode);
+    void updateAllSmoothParams();
+    void updateComponentAging();
+    float applyAnalogCharacter(float input, float thermalFactor, float aging);
+    
+    // Advanced BBD modeling with component variations
+    float processBBDWithAging(float input, float& clockNoise, float aging, float thermalFactor);
+    
+    // Enhanced stereo processing with phase relationships
+    void processEnhancedStereo(float& left, float& right, float width, float aging);
+};

@@ -158,37 +158,6 @@ float LadderFilter::processOversampled(float input, int channel) {
     return output / ChannelState::Oversampler::OVERSAMPLE_FACTOR;
 }
 
-float LadderFilter::processLadderCore(float input, int channel) {
-    auto& state = m_channelStates[channel];
-    
-    // Apply input drive with thermal compensation
-    float thermalFactor = m_thermalModel.getThermalFactor();
-    float driveAmount = (m_drive.current * 5.0f + 0.1f) * thermalFactor;
-    
-    float drivenInput;
-    if (m_vintageMode.current > 0.5f) {
-        drivenInput = vintageSaturation(input, driveAmount);
-    } else {
-        drivenInput = transistorSaturation(input, driveAmount, m_asymmetry.current);
-    }
-    
-    // Calculate feedback
-    float feedback = calculateFeedback(state, m_coeffs.k, m_coeffs.alpha);
-    
-    // Input with feedback subtraction
-    float inputWithFeedback = drivenInput - feedback;
-    
-    // Process through 4 cascaded stages
-    float stageInput = inputWithFeedback;
-    for (int i = 0; i < 4; ++i) {
-        stageInput = processLadderStage(stageInput, state.stages[i], 
-                                      m_coeffs.g * thermalFactor, driveAmount, i == 0);
-    }
-    
-    // Calculate different filter responses
-    return calculateFilterResponse(state, inputWithFeedback, m_filterType.current);
-}
-
 float LadderFilter::processLadderStage(float input, LadderStage& stage, float g, 
                                        float drive, bool isFirst) {
     // Huovilainen's improved model with delay-free feedback
@@ -203,11 +172,11 @@ float LadderFilter::processLadderStage(float input, LadderStage& stage, float g,
         processedInput = softClip(input * (1.0f + drive * 0.2f));
     }
     
-    // Component aging/drift simulation
-    stage.componentDrift += (((rand() % 1000) / 1000.0f - 0.5f) * 0.0001f) / m_sampleRate;
-    stage.componentDrift = std::max(-0.01f, std::min(0.01f, stage.componentDrift));
+    // Component aging/drift simulation (simplified - componentDrift not in struct)
+    // Using thermal factor instead for variation
+    float drift = stage.thermal * 0.01f;
     
-    float effectiveG = g * (1.0f + stage.componentDrift);
+    float effectiveG = g * (1.0f + drift);
     effectiveG = std::max(0.0f, std::min(0.99f, effectiveG));
     
     // Enhanced one-pole filter with better numerical properties

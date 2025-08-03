@@ -58,15 +58,15 @@ private:
         
         // Filter coefficients
         float g = 0.0f;    // Frequency coefficient
-        float k = 0.0f;    // Resonance coefficient  
+        float k = 0.0f;    // Resonance coefficient
+        float k2 = 0.0f;   // Double resonance for allpass
         float a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
         
         void setParameters(float frequency, float Q, double sampleRate) {
             float w = juce::MathConstants<float>::twoPi * frequency / static_cast<float>(sampleRate);
             g = std::tan(w * 0.5f);
             k = 1.0f / Q;
-            
-            float k2 = k + k;
+            k2 = k + k;
             float gk = g * k;
             float a0 = 1.0f / (1.0f + gk + g * g);
             
@@ -288,6 +288,13 @@ private:
         TPTFilter peakFilter;
         DynamicProcessor dynamicProcessor;
         Oversampler oversampler;
+        
+        void reset() {
+            // Reset all components
+            peakFilter = TPTFilter();
+            dynamicProcessor = DynamicProcessor();
+            oversampler = Oversampler();
+        }
         
         void prepare(double sampleRate) {
             peakFilter.reset();
