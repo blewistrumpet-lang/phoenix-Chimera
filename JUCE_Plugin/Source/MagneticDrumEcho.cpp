@@ -18,17 +18,13 @@ void MagneticDrumEcho::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& head : m_heads) {
         head.reset();
     }
-
-void MagneticDrumEcho::reset() {
-    // Clear delay buffers and reset indices
-    for (auto& channel : m_channelStates) {
-        channel.delayBuffer.clear();
-        channel.writeIndex = 0;
-        channel.readIndex = 0;
-        channel.feedback = 0.0f;
-    }
 }
 
+void MagneticDrumEcho::reset() {
+    // Reset all heads
+    for (auto& head : m_heads) {
+        head.reset();
+    }
     
     // Reset tube stages
     for (auto& tube : m_tubeStages) {

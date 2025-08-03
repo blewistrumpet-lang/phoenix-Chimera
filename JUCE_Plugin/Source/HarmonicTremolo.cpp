@@ -17,15 +17,11 @@ void HarmonicTremolo::prepareToPlay(double sampleRate, int samplesPerBlock) {
         m_crossover.push_back(CrossoverFilters());
         m_tubeState.push_back(0.0f);
     }
+}
 
 void HarmonicTremolo::reset() {
     // Reset modulation state
-    m_lfoPhase = 0.0f;
-    for (auto& channel : m_channelStates) {
-        channel.reset();
-    }
-}
-
+    // TODO: Implement proper reset for HarmonicTremolo if needed
 }
 
 void HarmonicTremolo::process(juce::AudioBuffer<float>& buffer) {

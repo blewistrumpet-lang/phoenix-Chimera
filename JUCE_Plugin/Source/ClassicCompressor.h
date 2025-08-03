@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <array>
+#include <random>
 
 class ClassicCompressor : public EngineBase {
 public:

@@ -27,12 +27,7 @@ void GranularCloud::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (int i = 0; i < 2; ++i) {
         std::fill(m_circularBuffer[i].begin(), m_circularBuffer[i].end(), 0.0f);
     }
-
-void GranularCloud::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for GranularCloud
-}
-
+    
     m_writePos = 0;
     
     // Reset all grains
@@ -63,6 +58,11 @@ void GranularCloud::reset() {
     
     // Reset thermal model
     m_thermalModel = ThermalModel();
+}
+
+void GranularCloud::reset() {
+    // Reset all internal state
+    // TODO: Implement specific reset logic for GranularCloud
 }
 
 void GranularCloud::process(juce::AudioBuffer<float>& buffer) {

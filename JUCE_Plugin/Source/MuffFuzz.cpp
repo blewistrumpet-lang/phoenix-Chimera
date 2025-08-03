@@ -33,14 +33,6 @@ void MuffFuzz::prepareToPlay(double sampleRate, int samplesPerBlock) {
         state.toneFilter.setHighShelf(2000.0, 0.0, 0.7, sampleRate);  // Tone control
         state.presenceFilter.setHighShelf(5000.0, 0.0, 0.5, sampleRate);  // Presence
     }
-
-void MuffFuzz::reset() {
-    // Reset distortion state
-    for (auto& channel : m_channelStates) {
-        channel.reset();
-    }
-}
-
     
     // Reset DC blockers
     for (auto& blocker : m_inputDCBlockers) {
@@ -58,6 +50,13 @@ void MuffFuzz::reset() {
     m_sampleCount = 0;
 }
 
+void MuffFuzz::reset() {
+    // Reset distortion state
+    for (auto& channel : m_channelStates) {
+        channel.reset();
+    }
+}
+
 void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
@@ -65,12 +64,12 @@ void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
     // Update filter coefficients based on parameters
     for (auto& state : m_channelStates) {
         // Input stage filters (creates the characteristic mid-scoop)
-        state.inputStage1.setLowShelf(200.0f, -6.0f + m_sustain * 12.0f, m_sampleRate);
-        state.inputStage2.setHighShelf(2000.0f, -3.0f + m_sustain * 6.0f, m_sampleRate);
+        state.inputLowShelf.setLowShelf(200.0f, -6.0f + m_sustain.current * 12.0f, 0.7f, m_sampleRate);
+        state.midScoop.setHighShelf(2000.0f, -3.0f + m_sustain.current * 6.0f, 0.7f, m_sampleRate);
         
         // Tone control (variable high-frequency response)
-        float toneFreq = 500.0f + m_tone * 3500.0f;
-        state.toneFilter.setHighShelf(toneFreq, -10.0f + m_tone * 20.0f, m_sampleRate);
+        float toneFreq = 500.0f + m_tone.current * 3500.0f;
+        state.toneFilter.setHighShelf(toneFreq, -10.0f + m_tone.current * 20.0f, 0.7f, m_sampleRate);
     }
     
     for (int channel = 0; channel < numChannels; ++channel) {
@@ -81,14 +80,14 @@ void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
             float input = channelData[sample];
             
             // Gate (noise reduction)
-            float gated = processGate(input, state.envelope, m_gate * 0.1f);
+            float gated = processGate(input, state.envelope, m_gate.current * 0.1f);
             
             // Input filtering stages
-            float filtered = state.inputStage1.process(gated);
-            filtered = state.inputStage2.process(filtered);
+            float filtered = state.inputLowShelf.process(gated);
+            filtered = state.midScoop.process(filtered);
             
             // Sustain (gain) stage
-            float gained = filtered * (1.0f + m_sustain * 100.0f);
+            float gained = filtered * (1.0f + m_sustain.current * 100.0f);
             
             // Diode clipping simulation
             float clipped = processDiodeClipping(gained, 0.7f);
@@ -97,7 +96,7 @@ void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
             float toned = state.toneFilter.process(clipped);
             
             // Output volume
-            channelData[sample] = toned * m_volume * 0.5f;
+            channelData[sample] = toned * m_volume.current * 0.5f;
         }
     }
 }
@@ -129,14 +128,39 @@ juce::String MuffFuzz::getParameterName(int index) const {
     }
 }
 
-float MuffFuzz::BiquadFilter::process(float input) {
-    float output = b0 * input + b1 * z1 + b2 * z2 - a1 * z1 - a2 * z2;
-    z2 = z1;
-    z1 = output;
-    return output;
+// Process function is inline in header, removing duplicate definition
+
+// Implementation of bandpass filter
+void MuffFuzz::ModernBiquadFilter::setBandpass(double freq, double Q, double sampleRate) {
+    double omega = 2.0 * M_PI * freq / sampleRate;
+    double sinOmega = std::sin(omega);
+    double cosOmega = std::cos(omega);
+    double alpha = sinOmega / (2.0 * Q);
+    
+    double a0 = 1.0 + alpha;
+    b0 = alpha / a0;
+    b1 = 0.0;
+    b2 = -alpha / a0;
+    a1 = -2.0 * cosOmega / a0;
+    a2 = (1.0 - alpha) / a0;
 }
 
-void MuffFuzz::BiquadFilter::setLowShelf(float freq, float gain, float sampleRate) {
+// Implementation of notch filter
+void MuffFuzz::ModernBiquadFilter::setNotch(double freq, double Q, double sampleRate) {
+    double omega = 2.0 * M_PI * freq / sampleRate;
+    double sinOmega = std::sin(omega);
+    double cosOmega = std::cos(omega);
+    double alpha = sinOmega / (2.0 * Q);
+    
+    double a0 = 1.0 + alpha;
+    b0 = 1.0 / a0;
+    b1 = -2.0 * cosOmega / a0;
+    b2 = 1.0 / a0;
+    a1 = -2.0 * cosOmega / a0;
+    a2 = (1.0 - alpha) / a0;
+}
+
+void MuffFuzz::ModernBiquadFilter::setLowShelf(double freq, double gain, double Q, double sampleRate) {
     float A = std::pow(10.0f, gain / 40.0f);
     float w = 2.0f * M_PI * freq / sampleRate;
     float cosw = std::cos(w);
@@ -160,7 +184,7 @@ void MuffFuzz::BiquadFilter::setLowShelf(float freq, float gain, float sampleRat
     b2 /= a0;
 }
 
-void MuffFuzz::BiquadFilter::setHighShelf(float freq, float gain, float sampleRate) {
+void MuffFuzz::ModernBiquadFilter::setHighShelf(double freq, double gain, double Q, double sampleRate) {
     float A = std::pow(10.0f, gain / 40.0f);
     float w = 2.0f * M_PI * freq / sampleRate;
     float cosw = std::cos(w);

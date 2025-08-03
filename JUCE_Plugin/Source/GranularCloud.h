@@ -102,7 +102,7 @@ private:
     struct DCBlocker {
         float x1 = 0.0f;
         float y1 = 0.0f;
-        const float R = 0.995f;
+        float R = 0.995f;
         
         float process(float input) {
             float output = input - x1 + R * y1;

@@ -15,14 +15,6 @@ void KStyleOverdrive::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& state : m_filterStates) {
         state.reset();
     }
-
-void KStyleOverdrive::reset() {
-    // Reset distortion state
-    for (auto& channel : m_channelStates) {
-        channel.reset();
-    }
-}
-
     
     // Calculate smoothing coefficient for ~10ms at current sample rate
     float smoothingTime = 0.01f; // 10ms
@@ -32,6 +24,11 @@ void KStyleOverdrive::reset() {
     m_level.smoothing = m_drive.smoothing;
     
     updateFilterCoefficients();
+}
+
+void KStyleOverdrive::reset() {
+    // Reset distortion state
+    // TODO: Implement proper reset for KStyleOverdrive if needed
 }
 
 void KStyleOverdrive::process(juce::AudioBuffer<float>& buffer) {

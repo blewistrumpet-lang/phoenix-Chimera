@@ -40,15 +40,7 @@ void FormantFilter::prepareToPlay(double sampleRate, int samplesPerBlock) {
             if (f == 0) {
                 formant.freq = VOWEL_A.f1;
                 formant.gain = VOWEL_A.a1;
-            }
-
-void FormantFilter::reset() {
-    // Reset filter states
-    for (auto& channel : m_channelStates) {
-        channel.reset();
-    }
-}
- else if (f == 1) {
+            } else if (f == 1) {
                 formant.freq = VOWEL_A.f2;
                 formant.gain = VOWEL_A.a2;
             } else {
@@ -61,6 +53,20 @@ void FormantFilter::reset() {
             formant.reset();
             calculateFilterCoefficients(formant, 1.0f);
         }
+    }
+}
+
+void FormantFilter::reset() {
+    // Reset filter states
+    for (auto& channel : m_formantFilters) {
+        for (auto& filter : channel) {
+            filter.reset();
+        }
+    }
+    
+    // Reset DC blockers
+    for (auto& blocker : m_dcBlockers) {
+        blocker.x1 = blocker.y1 = 0.0f;
     }
 }
 
@@ -189,7 +195,7 @@ FormantFilter::FormantData FormantFilter::interpolateVowels(float vowelPos, floa
     result.a3 = vowel1->a3 + morphedFactor * (vowel2->a3 - vowel1->a3);
     
     // Apply formant shift (frequency scaling)
-    float shiftFactor = 0.5f + m_formantShift * 1.5f; // 0.5x to 2x frequency
+    float shiftFactor = 0.5f + m_formantShift.current * 1.5f; // 0.5x to 2x frequency
     result.f1 *= shiftFactor;
     result.f2 *= shiftFactor;
     result.f3 *= shiftFactor;
@@ -294,7 +300,7 @@ void FormantFilter::calculateFilterCoefficients(FormantBandpass& filter, float t
     float adjustedQ = filter.q * (1.0f + filter.componentDrift * 0.5f);
     
     // Clamp frequency to reasonable bounds
-    adjustedFreq = std::max(20.0f, std::min(adjustedFreq, m_sampleRate * 0.45f));
+    adjustedFreq = std::max(20.0f, std::min(adjustedFreq, static_cast<float>(m_sampleRate * 0.45)));
     adjustedQ = std::max(0.5f, std::min(adjustedQ, 30.0f));
     
     // Calculate enhanced biquad bandpass filter coefficients with pre-warping
