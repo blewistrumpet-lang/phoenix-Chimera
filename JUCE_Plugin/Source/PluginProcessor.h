@@ -5,6 +5,7 @@
 #include "ParameterDefinitions.h"
 #include <array>
 #include <memory>
+#include <atomic>
 
 class ChimeraAudioProcessor : public juce::AudioProcessor,
                               private juce::AudioProcessorValueTreeState::Listener {
@@ -53,6 +54,9 @@ public:
     
     // Validation
     static bool isValidEngineID(int engineID);
+    
+    // Level metering
+    float getCurrentOutputLevel() const { return m_currentOutputLevel.load(); }
 
 private:
     juce::AudioProcessorValueTreeState parameters;
@@ -71,6 +75,9 @@ private:
     std::unique_ptr<juce::ChildProcess> m_aiServerProcess;
     void startAIServer();
     void stopAIServer();
+    
+    // Level metering
+    std::atomic<float> m_currentOutputLevel{0.0f};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChimeraAudioProcessor)
 };

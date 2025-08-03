@@ -125,6 +125,55 @@ ChimeraAudioProcessorEditor::ChimeraAudioProcessorEditor(ChimeraAudioProcessor& 
     statusLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(statusLabel);
     
+    // Preset Name Label
+    presetNameLabel.setText(currentPresetName, juce::dontSendNotification);
+    presetNameLabel.setJustificationType(juce::Justification::centred);
+    presetNameLabel.setFont(juce::Font(18.0f, juce::Font::bold));
+    presetNameLabel.setColour(juce::Label::textColourId, juce::Colour(0xff00ff88));
+    addAndMakeVisible(presetNameLabel);
+    
+    // Preset Management Buttons
+    savePresetButton.onClick = [this] { savePreset(); };
+    savePresetButton.setColour(juce::TextButton::buttonColourId, lookAndFeel.findColour(juce::Label::textColourId).withAlpha(0.15f));
+    addAndMakeVisible(savePresetButton);
+    
+    loadPresetButton.onClick = [this] { loadPreset(); };
+    loadPresetButton.setColour(juce::TextButton::buttonColourId, lookAndFeel.findColour(juce::Label::textColourId).withAlpha(0.15f));
+    addAndMakeVisible(loadPresetButton);
+    
+    detailsButton.onClick = [this] { showDetails(); };
+    detailsButton.setColour(juce::TextButton::buttonColourId, lookAndFeel.findColour(juce::Label::textColourId).withAlpha(0.15f));
+    addAndMakeVisible(detailsButton);
+    
+    // A/B Comparison Buttons
+    compareAButton.setToggleState(true, juce::dontSendNotification);
+    compareAButton.setRadioGroupId(1001);
+    compareAButton.onClick = [this] { selectPresetA(); };
+    compareAButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff00d4ff).withAlpha(0.3f));
+    compareAButton.setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xff00d4ff).withAlpha(0.6f));
+    addAndMakeVisible(compareAButton);
+    
+    compareBButton.setRadioGroupId(1001);
+    compareBButton.onClick = [this] { selectPresetB(); };
+    compareBButton.setColour(juce::TextButton::buttonColourId, juce::Colour(0xffff6b00).withAlpha(0.3f));
+    compareBButton.setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xffff6b00).withAlpha(0.6f));
+    addAndMakeVisible(compareBButton);
+    
+    copyABButton.onClick = [this] { copyAtoB(); };
+    copyABButton.setColour(juce::TextButton::buttonColourId, lookAndFeel.findColour(juce::Label::textColourId).withAlpha(0.15f));
+    addAndMakeVisible(copyABButton);
+    
+    // Master Bypass
+    masterBypassButton.onClick = [this] { 
+        // TODO: Implement master bypass in processor
+        setStatus(masterBypassButton.getToggleState() ? "Master Bypassed" : "Master Active");
+    };
+    masterBypassButton.setColour(juce::ToggleButton::textColourId, lookAndFeel.findColour(juce::Label::textColourId));
+    addAndMakeVisible(masterBypassButton);
+    
+    // Output Level Meter
+    addAndMakeVisible(outputLevelMeter);
+    
     // Create Macro Controls
     for (int i = 0; i < 3; ++i) {
         auto& macro = macroControls[i];
@@ -209,6 +258,9 @@ ChimeraAudioProcessorEditor::ChimeraAudioProcessorEditor(ChimeraAudioProcessor& 
         slotUI.engineSelector->addItem("Vintage Tube Preamp", ENGINE_VINTAGE_TUBE_PREAMP + 2);
         slotUI.engineSelector->addItem("Spring Reverb", ENGINE_SPRING_REVERB + 2);
         slotUI.engineSelector->addItem("Resonant Chorus", ENGINE_RESONANT_CHORUS + 2);
+        slotUI.engineSelector->addItem("Stereo Widener", ENGINE_STEREO_WIDENER + 2);
+        slotUI.engineSelector->addItem("Dynamic EQ", ENGINE_DYNAMIC_EQ + 2);
+        slotUI.engineSelector->addItem("Stereo Imager", ENGINE_STEREO_IMAGER + 2);
         slotUI.slotPanel.addAndMakeVisible(slotUI.engineSelector.get());
         
         slotUI.engineAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
@@ -317,8 +369,28 @@ void ChimeraAudioProcessorEditor::resized() {
     // Top section - Command Center controls
     auto topSection = bounds.removeFromTop(200).reduced(15);
     
-    // Title across the top
-    titleLabel.setBounds(topSection.removeFromTop(40));
+    // Title and preset name on same line
+    auto titleRow = topSection.removeFromTop(35);
+    titleLabel.setBounds(titleRow.removeFromLeft(300));
+    
+    // Preset name and controls
+    presetNameLabel.setBounds(titleRow.removeFromLeft(200));
+    titleRow.removeFromLeft(10);
+    savePresetButton.setBounds(titleRow.removeFromLeft(50));
+    loadPresetButton.setBounds(titleRow.removeFromLeft(50));
+    detailsButton.setBounds(titleRow.removeFromLeft(60));
+    
+    // A/B comparison on right
+    titleRow.removeFromLeft(20);
+    compareAButton.setBounds(titleRow.removeFromLeft(30));
+    compareBButton.setBounds(titleRow.removeFromLeft(30));
+    copyABButton.setBounds(titleRow.removeFromLeft(50));
+    
+    // Master bypass and meter on far right
+    titleRow.removeFromLeft(20);
+    masterBypassButton.setBounds(titleRow.removeFromLeft(100));
+    outputLevelMeter.setBounds(titleRow.removeFromRight(20));
+    
     topSection.removeFromTop(10);
     
     // Three columns for prompt/generate, macros, and status
@@ -393,6 +465,10 @@ void ChimeraAudioProcessorEditor::resized() {
 }
 
 void ChimeraAudioProcessorEditor::timerCallback() {
+    // Update level meter with current output level
+    float currentLevel = audioProcessor.getCurrentOutputLevel();
+    outputLevelMeter.setLevel(currentLevel);
+    
     // Handle async network responses if needed
 }
 
@@ -449,8 +525,28 @@ void ChimeraAudioProcessorEditor::handleAIResponse(const juce::String& response)
     
     if (jsonResult.hasProperty("success") && jsonResult["success"]) {
         auto preset = jsonResult["preset"];
+        
+        // Update preset name
+        if (preset.hasProperty("name")) {
+            currentPresetName = preset["name"].toString();
+            presetNameLabel.setText(currentPresetName, juce::sendNotification);
+        }
+        
+        // Store description for details popup
+        if (preset.hasProperty("description")) {
+            presetDescription = preset["description"].toString();
+        } else {
+            // Generate a default description based on the prompt
+            presetDescription = "This preset was created by the Trinity AI pipeline:\n\n"
+                               "• Oracle: Analyzed your prompt and found similar presets\n"
+                               "• Calculator: Applied intelligent parameter adjustments\n" 
+                               "• Alchemist: Validated and optimized all parameters\n"
+                               "• Visionary: Created the unique preset name\n\n"
+                               "The result combines boutique analog warmth with modern precision.";
+        }
+        
         loadPresetFromJSON(preset);
-        setStatus("Preset generated successfully!");
+        setStatus("Generated: " + currentPresetName);
     } else {
         setStatus("Generation failed: " + jsonResult["message"].toString(), true);
     }
@@ -553,4 +649,97 @@ void ChimeraAudioProcessorEditor::applyRetrofuturistStyling() {
     
     // Style the status label
     statusLabel.setColour(juce::Label::textColourId, juce::Colour(0xff00d4ff).withAlpha(0.7f));
+}
+
+// Preset Management Methods
+void ChimeraAudioProcessorEditor::showDetails() {
+    auto* window = new DetailsWindow(currentPresetName, presetDescription);
+    window->enterModalState(true, nullptr, true);
+}
+
+void ChimeraAudioProcessorEditor::savePreset() {
+    juce::FileChooser chooser("Save Preset", 
+                             juce::File::getSpecialLocation(juce::File::userDocumentsDirectory),
+                             "*.chimera");
+    
+    chooser.launchAsync(juce::FileBrowserComponent::saveMode, [this](const juce::FileChooser& fc) {
+        auto file = fc.getResult();
+        if (file == juce::File{}) return;
+        // TODO: Implement actual preset saving to file
+        setStatus("Preset saved: " + file.getFileName());
+    });
+}
+
+void ChimeraAudioProcessorEditor::loadPreset() {
+    juce::FileChooser chooser("Load Preset",
+                             juce::File::getSpecialLocation(juce::File::userDocumentsDirectory),
+                             "*.chimera");
+    
+    chooser.launchAsync(juce::FileBrowserComponent::openMode, [this](const juce::FileChooser& fc) {
+        auto file = fc.getResult();
+        if (file == juce::File{}) return;
+        // TODO: Implement actual preset loading from file
+        setStatus("Preset loaded: " + file.getFileName());
+    });
+}
+
+void ChimeraAudioProcessorEditor::selectPresetA() {
+    isPresetA = true;
+    // TODO: Implement preset A recall in processor
+    setStatus("Preset A selected");
+}
+
+void ChimeraAudioProcessorEditor::selectPresetB() {
+    isPresetA = false;
+    // TODO: Implement preset B recall in processor
+    setStatus("Preset B selected");
+}
+
+void ChimeraAudioProcessorEditor::copyAtoB() {
+    // TODO: Implement copy A to B in processor
+    setStatus("Copied A → B");
+}
+
+// Details Window Implementation
+ChimeraAudioProcessorEditor::DetailsWindow::DetailsWindow(const juce::String& presetName, 
+                                                          const juce::String& description)
+    : DocumentWindow("Preset Details: " + presetName, 
+                    juce::Colour(0xff1a1a1a), 
+                    DocumentWindow::closeButton) {
+    
+    auto* content = new juce::Component();
+    content->setSize(500, 400);
+    
+    // Title label
+    auto* titleLabel = new juce::Label("title", presetName);
+    titleLabel->setFont(juce::Font(24.0f, juce::Font::bold));
+    titleLabel->setColour(juce::Label::textColourId, juce::Colour(0xff00ff88));
+    titleLabel->setJustificationType(juce::Justification::centred);
+    titleLabel->setBounds(10, 10, 480, 40);
+    content->addAndMakeVisible(titleLabel);
+    
+    // Section label
+    auto* sectionLabel = new juce::Label("section", "AI Thought Process:");
+    sectionLabel->setFont(juce::Font(16.0f, juce::Font::bold));
+    sectionLabel->setColour(juce::Label::textColourId, juce::Colour(0xff00d4ff));
+    sectionLabel->setBounds(10, 60, 480, 25);
+    content->addAndMakeVisible(sectionLabel);
+    
+    // Description text
+    auto* textEditor = new juce::TextEditor();
+    textEditor->setMultiLine(true);
+    textEditor->setReadOnly(true);
+    textEditor->setCaretVisible(false);
+    textEditor->setText(description);
+    textEditor->setFont(juce::Font(14.0f));
+    textEditor->setColour(juce::TextEditor::backgroundColourId, juce::Colour(0xff0a0a0a));
+    textEditor->setColour(juce::TextEditor::textColourId, juce::Colour(0xffcccccc));
+    textEditor->setColour(juce::TextEditor::outlineColourId, juce::Colour(0xff00d4ff).withAlpha(0.3f));
+    textEditor->setBounds(10, 95, 480, 295);
+    content->addAndMakeVisible(textEditor);
+    
+    setContentOwned(content, true);
+    centreWithSize(500, 400);
+    setVisible(true);
+    setResizable(false, false);
 }

@@ -212,13 +212,60 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         updateEngineParameters(slot);
     }
     
-    // Process through each slot in series
+    // Process through each slot in series with gain reduction
     for (int slot = 0; slot < NUM_SLOTS; ++slot) {
         bool isBypassed = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_bypass")->load() > 0.5f;
         
         if (!isBypassed && m_activeEngines[slot]) {
+            // Apply per-slot gain reduction to prevent accumulation
+            float slotGain = 0.7f; // Reduce each slot's contribution
+            
+            // Store original levels
+            std::vector<float> originalLevels;
+            for (int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+                auto* data = buffer.getWritePointer(ch);
+                for (int s = 0; s < buffer.getNumSamples(); ++s) {
+                    data[s] *= slotGain;
+                }
+            }
+            
             m_activeEngines[slot]->process(buffer);
         }
+    }
+    
+    // Apply output limiting to prevent clipping and distortion
+    for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
+        auto* channelData = buffer.getWritePointer(channel);
+        
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
+            float& sampleValue = channelData[sample];
+            
+            // Soft clipping to prevent harsh distortion
+            if (std::abs(sampleValue) > 0.95f) {
+                sampleValue = std::tanh(sampleValue * 0.7f) * 1.3f;
+            }
+            
+            // Hard limit at -0.5dB to prevent digital clipping
+            sampleValue = juce::jlimit(-0.95f, 0.95f, sampleValue);
+        }
+    }
+    
+    // Calculate output level for metering (after limiting)
+    float maxLevel = 0.0f;
+    for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
+        auto* channelData = buffer.getReadPointer(channel);
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
+            float absValue = std::abs(channelData[sample]);
+            if (absValue > maxLevel) {
+                maxLevel = absValue;
+            }
+        }
+    }
+    
+    // Update the atomic level (only if it's higher than current)
+    float currentLevel = m_currentOutputLevel.load();
+    if (maxLevel > currentLevel) {
+        m_currentOutputLevel.store(maxLevel);
     }
 }
 
@@ -276,6 +323,68 @@ void ChimeraAudioProcessor::loadEngine(int slot, int engineID) {
     }
 }
 
+void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
+    // Set safe default parameters for each engine type
+    juce::String slotPrefix = "slot" + juce::String(slot + 1) + "_param";
+    
+    // Initialize all parameters to safe center values
+    for (int i = 1; i <= 10; ++i) {
+        auto paramID = slotPrefix + juce::String(i);
+        if (auto* param = parameters.getParameter(paramID)) {
+            param->setValueNotifyingHost(0.5f); // Center/neutral position
+        }
+    }
+    
+    // Engine-specific safe defaults to prevent static/noise
+    switch (engineID) {
+        case ENGINE_BYPASS:
+            // No parameters needed
+            break;
+            
+        case ENGINE_CLASSIC_COMPRESSOR:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.7f); // Threshold
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.3f); // Ratio
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.2f); // Attack
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.4f); // Release
+            break;
+            
+        case ENGINE_TAPE_ECHO:
+        case ENGINE_BUCKET_BRIGADE_DELAY:
+        case ENGINE_DIGITAL_DELAY:
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.3f); // Feedback - safe
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.3f); // Mix - 30%
+            break;
+            
+        case ENGINE_PLATE_REVERB:
+        case ENGINE_SHIMMER_REVERB:
+        case ENGINE_SPRING_REVERB:
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.3f); // Mix - 30%
+            break;
+            
+        case ENGINE_BIT_CRUSHER:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.9f); // Bit depth - high
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.9f); // Sample rate - high
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.2f); // Mix - subtle
+            break;
+            
+        case ENGINE_CHAOS_GENERATOR:
+        case ENGINE_SPECTRAL_FREEZE:
+        case ENGINE_GRANULAR_CLOUD:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.1f); // Minimal effect
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.2f); // Low mix
+            break;
+            
+        default:
+            // For all other engines, use conservative mix
+            if (auto* mixParam = parameters.getParameter(slotPrefix + "3")) {
+                mixParam->setValueNotifyingHost(0.3f); // 30% mix
+            }
+            break;
+    }
+    
+    DBG("Applied default parameters for engine " + juce::String(engineID) + " in slot " + juce::String(slot));
+}
+
 void ChimeraAudioProcessor::updateEngineParameters(int slot) {
     if (!m_activeEngines[slot]) return;
     
@@ -291,25 +400,6 @@ void ChimeraAudioProcessor::updateEngineParameters(int slot) {
     m_activeEngines[slot]->updateParameters(params);
 }
 
-void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
-    // Get the default parameters for this engine
-    auto defaults = DefaultParameterValues::getDefaultParameters(engineID);
-    
-    // Apply each default parameter to the plugin's parameter state
-    juce::String slotPrefix = "slot" + juce::String(slot + 1) + "_param";
-    
-    for (const auto& [paramIndex, defaultValue] : defaults) {
-        // Only apply to valid parameter indices (0-9)
-        if (paramIndex >= 0 && paramIndex < 10) {
-            auto paramID = slotPrefix + juce::String(paramIndex + 1);
-            auto param = parameters.getParameter(paramID);
-            if (param) {
-                // Set the parameter value directly
-                param->setValueNotifyingHost(defaultValue);
-            }
-        }
-    }
-}
 
 void ChimeraAudioProcessor::startAIServer() {
     // Only start if not already running

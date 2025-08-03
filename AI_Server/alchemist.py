@@ -1,6 +1,7 @@
 import logging
 import random
 from typing import Dict, Any, Tuple, List
+from engine_defaults import ENGINE_DEFAULTS
 
 logger = logging.getLogger(__name__)
 
@@ -98,11 +99,13 @@ class Alchemist:
             }
         }
         
-        # Safety limits
+        # Safety limits - MORE CONSERVATIVE to prevent distortion
         self.safety_limits = {
-            "max_total_gain": 2.0,     # Maximum combined gain across slots
-            "max_feedback": 0.95,      # Maximum feedback to prevent runaway
-            "min_output_level": 0.1    # Minimum output level to prevent silence
+            "max_total_gain": 1.0,      # Maximum combined gain across slots (reduced)
+            "max_feedback": 0.75,       # Maximum feedback to prevent runaway (reduced)
+            "min_output_level": 0.1,    # Minimum output level to prevent silence
+            "max_drive": 0.5,           # Maximum drive/distortion amount
+            "max_mix_per_slot": 0.5     # Maximum mix level per slot
         }
     
     def finalize_preset(self, preset: Dict[str, Any]) -> Dict[str, Any]:
@@ -237,35 +240,77 @@ class Alchemist:
             # Special handling for engine selectors - must be integers
             if "_engine" in param_name:
                 if isinstance(value, (int, float)):
-                    parameters[param_name] = int(value)
+                    engine_id = int(value)
+                    # Ensure engine ID is valid (0-55)
+                    engine_id = self._clamp(engine_id, 0, 55)
+                    parameters[param_name] = engine_id
                 else:
-                    parameters[param_name] = 0
+                    parameters[param_name] = 0  # Default to bypass
                 continue
             
-            # Ensure value is a float for other parameters
+            # Special handling for bypass parameters - boolean-like
+            if "_bypass" in param_name:
+                if isinstance(value, (int, float)):
+                    parameters[param_name] = 1.0 if float(value) > 0.5 else 0.0
+                else:
+                    parameters[param_name] = 0.0
+                continue
+            
+            # Handle slot parameters with engine-specific validation
+            if "param" in param_name and "slot" in param_name:
+                try:
+                    slot_num = int(param_name[4])  # Extract slot number
+                    param_idx = int(param_name.split("param")[1]) - 1  # Convert to 0-based index
+                    
+                    # Get engine ID for this slot
+                    engine_param = f"slot{slot_num}_engine"
+                    engine_id = int(parameters.get(engine_param, 0))
+                    
+                    # Apply engine-specific validation from ENGINE_DEFAULTS
+                    if engine_id in ENGINE_DEFAULTS:
+                        engine_info = ENGINE_DEFAULTS[engine_id]
+                        param_key = f"param{param_idx + 1}"
+                        
+                        if param_key in engine_info.get("params", {}):
+                            param_info = engine_info["params"][param_key]
+                            default_val = param_info.get("default", 0.5)
+                            min_val = param_info.get("min", 0.0)
+                            max_val = param_info.get("max", 1.0)
+                            
+                            # Ensure value is valid
+                            if not isinstance(value, (int, float)):
+                                parameters[param_name] = default_val
+                            else:
+                                # Clamp to engine-specific range with CONSERVATIVE limits
+                                clamped_value = self._clamp(float(value), min_val, max_val)
+                                
+                                # Additional safety for specific parameter types
+                                param_name_lower = param_info.get("name", "").lower()
+                                if "drive" in param_name_lower or "gain" in param_name_lower:
+                                    clamped_value = min(clamped_value, self.safety_limits["max_drive"])
+                                elif "mix" in param_name_lower:
+                                    clamped_value = min(clamped_value, self.safety_limits["max_mix_per_slot"])
+                                elif "feedback" in param_name_lower:
+                                    clamped_value = min(clamped_value, self.safety_limits["max_feedback"])
+                                    
+                                parameters[param_name] = clamped_value
+                        else:
+                            # Parameter not used by this engine - set to safe default
+                            parameters[param_name] = 0.0
+                    else:
+                        # Unknown engine - use safe defaults
+                        parameters[param_name] = 0.3 if isinstance(value, (int, float)) else 0.3
+                        
+                except (ValueError, IndexError) as e:
+                    logger.warning(f"Error parsing parameter {param_name}: {e}")
+                    parameters[param_name] = 0.5
+                continue
+            
+            # Default handling for other parameters
             if not isinstance(value, (int, float)):
                 parameters[param_name] = 0.5
-                continue
-            
-            # Basic clamping to 0-1 range
-            parameters[param_name] = self._clamp(float(value), 0.0, 1.0)
-            
-            # Engine-specific validation
-            if "param" in param_name and "slot" in param_name:
-                slot_num = int(param_name[4])  # Extract slot number
-                param_num = int(param_name.split("param")[1])
-                
-                # Get engine ID for this slot
-                engine_param = f"slot{slot_num}_engine"
-                if engine_param in parameters:
-                    engine_id = int(parameters[engine_param])
-                    
-                    # Apply engine-specific ranges if available
-                    if engine_id in self.parameter_ranges:
-                        param_key = f"param{param_num}"
-                        if param_key in self.parameter_ranges[engine_id]:
-                            min_val, max_val = self.parameter_ranges[engine_id][param_key]
-                            parameters[param_name] = self._clamp(parameters[param_name], min_val, max_val)
+            else:
+                parameters[param_name] = self._clamp(float(value), 0.0, 1.0)
     
     def _apply_safety_checks(self, preset: Dict[str, Any]):
         """Apply safety checks to prevent audio issues"""

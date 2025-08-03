@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include <atomic>
 
 class CommandCenterLookAndFeel : public juce::LookAndFeel_V4 {
 public:
@@ -46,6 +47,76 @@ private:
     juce::TextButton generateButton;
     juce::Label statusLabel;
     
+    // Preset Management
+    juce::Label presetNameLabel;
+    juce::String currentPresetName = "Init";
+    juce::String presetDescription;
+    juce::TextButton savePresetButton{"Save"};
+    juce::TextButton loadPresetButton{"Load"};
+    juce::TextButton detailsButton{"Details"};
+    
+    // A/B Comparison
+    juce::TextButton compareAButton{"A"};
+    juce::TextButton compareBButton{"B"};
+    juce::TextButton copyABButton{"Copy →"};
+    bool isPresetA = true;
+    
+    // Master Controls
+    juce::ToggleButton masterBypassButton{"Master Bypass"};
+    
+    // Level Meter
+    class SimpleLevelMeter : public juce::Component, public juce::Timer {
+    public:
+        SimpleLevelMeter() { startTimerHz(30); }
+        ~SimpleLevelMeter() override { stopTimer(); }
+        
+        void paint(juce::Graphics& g) override {
+            auto bounds = getLocalBounds().toFloat();
+            
+            // Background
+            g.setColour(juce::Colour(0xff1a1a1a));
+            g.fillRoundedRectangle(bounds, 2.0f);
+            
+            // Draw level
+            float dbLevel = juce::Decibels::gainToDecibels(currentLevel.load());
+            float normalizedLevel = juce::jmap(dbLevel, -60.0f, 0.0f, 0.0f, 1.0f);
+            normalizedLevel = juce::jlimit(0.0f, 1.0f, normalizedLevel);
+            
+            if (normalizedLevel > 0.01f) {
+                auto levelBounds = bounds.reduced(2.0f);
+                levelBounds = levelBounds.removeFromBottom(levelBounds.getHeight() * normalizedLevel);
+                
+                // Color based on level
+                if (dbLevel > -3.0f)
+                    g.setColour(juce::Colours::red);
+                else if (dbLevel > -12.0f)
+                    g.setColour(juce::Colours::yellow);
+                else
+                    g.setColour(juce::Colour(0xff00d4ff));
+                    
+                g.fillRoundedRectangle(levelBounds, 1.0f);
+            }
+        }
+        
+        void timerCallback() override {
+            float targetLevel = currentLevel.load() * 0.85f; // Smooth decay
+            currentLevel.store(targetLevel);
+            repaint();
+        }
+        
+        void setLevel(float level) {
+            float current = currentLevel.load();
+            if (level > current) {
+                currentLevel.store(level);
+            }
+        }
+        
+    private:
+        std::atomic<float> currentLevel{0.0f};
+    };
+    
+    SimpleLevelMeter outputLevelMeter;
+    
     // Macro Controls
     struct MacroControl {
         std::unique_ptr<juce::Slider> slider;
@@ -82,8 +153,22 @@ private:
     void updateMacroControls(const juce::var& macroData);
     void setStatus(const juce::String& message, bool isError = false);
     
+    // Preset Management
+    void showDetails();
+    void savePreset();
+    void loadPreset();
+    void selectPresetA();
+    void selectPresetB();
+    void copyAtoB();
+    
     // Styling
     void applyRetrofuturistStyling();
+    
+    // Details Window
+    class DetailsWindow : public juce::DocumentWindow {
+    public:
+        DetailsWindow(const juce::String& presetName, const juce::String& description);
+    };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChimeraAudioProcessorEditor)
 };
