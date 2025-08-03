@@ -11,6 +11,7 @@ LadderFilter::LadderFilter() {
     m_filterType.reset(0.0f);
     m_asymmetry.reset(0.0f);
     m_vintageMode.reset(0.0f);
+    m_mix.reset(1.0f);  // 100% wet by default for filter
     
     // Generate nonlinear lookup tables
     m_coeffs.generateLUTs();
@@ -27,6 +28,7 @@ void LadderFilter::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_filterType.setSmoothingTime(50.0f, sampleRate);
     m_asymmetry.setSmoothingTime(200.0f, sampleRate);
     m_vintageMode.setSmoothingTime(500.0f, sampleRate);
+    m_mix.setSmoothingTime(50.0f, sampleRate);
     
     // Prepare channel states
     for (auto& channel : m_channelStates) {
@@ -73,6 +75,7 @@ void LadderFilter::process(juce::AudioBuffer<float>& buffer) {
             m_filterType.update();
             m_asymmetry.update();
             m_vintageMode.update();
+            m_mix.update();
             
             // Update filter coefficients if needed
             static int updateCounter = 0;
@@ -82,7 +85,9 @@ void LadderFilter::process(juce::AudioBuffer<float>& buffer) {
                                           m_asymmetry.current, m_vintageMode.current > 0.5f, m_sampleRate);
             }
             
-            channelData[sample] = processSample(channelData[sample], channel);
+            float dry = channelData[sample];
+            float wet = processSample(channelData[sample], channel);
+            channelData[sample] = dry * (1.0f - m_mix.current) + wet * m_mix.current;
         }
     }
 }
@@ -332,6 +337,7 @@ void LadderFilter::updateParameters(const std::map<int, float>& params) {
     if (params.find(3) != params.end()) m_filterType.target = params.at(3);
     if (params.find(4) != params.end()) m_asymmetry.target = params.at(4);
     if (params.find(5) != params.end()) m_vintageMode.target = params.at(5);
+    if (params.find(6) != params.end()) m_mix.target = params.at(6);
 }
 
 juce::String LadderFilter::getParameterName(int index) const {
@@ -342,6 +348,7 @@ juce::String LadderFilter::getParameterName(int index) const {
         case 3: return "Filter Type";
         case 4: return "Asymmetry";
         case 5: return "Vintage Mode";
+        case 6: return "Mix";
         default: return "";
     }
 }

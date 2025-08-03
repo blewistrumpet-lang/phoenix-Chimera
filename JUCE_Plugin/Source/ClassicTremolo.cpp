@@ -11,6 +11,7 @@ ClassicTremolo::ClassicTremolo() {
     m_waveform.setImmediate(0.0f);
     m_stereoPhase.setImmediate(0.0f);
     m_volume.setImmediate(1.0f);
+    m_mix.setImmediate(1.0f);          // 100% wet by default
     
     // Set smoothing rates
     m_rate.setSmoothingRate(0.992f);
@@ -18,6 +19,7 @@ ClassicTremolo::ClassicTremolo() {
     m_waveform.setSmoothingRate(0.998f);
     m_stereoPhase.setSmoothingRate(0.999f);
     m_volume.setSmoothingRate(0.995f);
+    m_mix.setSmoothingRate(0.995f);
 }
 
 void ClassicTremolo::prepareToPlay(double sampleRate, int samplesPerBlock) {
@@ -45,6 +47,7 @@ void ClassicTremolo::process(juce::AudioBuffer<float>& buffer) {
     m_waveform.update();
     m_stereoPhase.update();
     m_volume.update();
+    m_mix.update();
     
     // Update thermal model
     m_thermalModel.update(m_sampleRate);
@@ -69,15 +72,19 @@ void ClassicTremolo::process(juce::AudioBuffer<float>& buffer) {
         
         for (int sample = 0; sample < numSamples; ++sample) {
             float input = channelData[sample];
+            float dry = input; // Store dry signal
             
             // DC block input
             input = m_inputDCBlockers[channel].process(input);
             
             // Process with boutique modeling
-            float output = processChannelWithModeling(input, channel, thermalFactor, m_componentAge);
+            float wet = processChannelWithModeling(input, channel, thermalFactor, m_componentAge);
             
             // DC block output
-            output = m_outputDCBlockers[channel].process(output);
+            wet = m_outputDCBlockers[channel].process(wet);
+            
+            // Mix dry and wet signals
+            float output = dry * (1.0f - m_mix.current) + wet * m_mix.current;
             
             channelData[sample] = output;
         }
@@ -96,6 +103,7 @@ void ClassicTremolo::updateParameters(const std::map<int, float>& params) {
     m_waveform.target = getParam(2, 0.0f);                   // 0-1
     m_stereoPhase.target = getParam(3, 0.0f) * 180.0f;      // 0-180 degrees
     m_volume.target = getParam(4, 1.0f);                     // 0-1
+    m_mix.target = getParam(5, 1.0f);                        // 0-1
 }
 
 juce::String ClassicTremolo::getParameterName(int index) const {
@@ -105,6 +113,7 @@ juce::String ClassicTremolo::getParameterName(int index) const {
         case 2: return "Waveform";
         case 3: return "Stereo";
         case 4: return "Volume";
+        case 5: return "Mix";
         default: return "";
     }
 }

@@ -57,8 +57,11 @@
 #include "StereoImager.h"
 
 std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
+    DBG("EngineFactory::createEngine called with engineID: " + juce::String(engineID));
+    
     switch (engineID) {
         case ENGINE_BYPASS:
+            DBG("Creating BypassEngine for ENGINE_BYPASS");
             return std::make_unique<BypassEngine>();
             
         case ENGINE_K_STYLE:

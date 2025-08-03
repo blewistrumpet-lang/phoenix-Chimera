@@ -9,6 +9,7 @@ from visionary_openai_direct import VisionaryOpenAIDirect as VisionaryClient
 from oracle_faiss import OracleFAISS as Oracle
 from calculator import Calculator
 from alchemist import Alchemist
+from engine_mapping import convert_preset_engine_ids
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -58,6 +59,16 @@ async def generate_preset(request: GenerateRequest):
         logger.info("Step 4: Consulting Alchemist...")
         final_preset = alchemist.finalize_preset(nudged_preset)
         logger.info(f"Alchemist final preset: {final_preset}")
+        
+        # NOTE: Engine ID to Choice Index conversion is now handled in Oracle
+        # Oracle converts when loading presets from the corpus
+        # So the preset already has the correct choice indices
+        
+        # Log the final engine choices for debugging
+        for slot in range(1, 7):
+            engine_choice = final_preset['parameters'].get(f'slot{slot}_engine', 0)
+            if engine_choice != 0:  # Not bypass
+                logger.info(f"Slot {slot}: Using choice index {engine_choice}")
         
         return GenerateResponse(
             success=True,

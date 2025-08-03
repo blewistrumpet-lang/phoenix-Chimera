@@ -14,7 +14,7 @@ public:
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     juce::String getName() const override { return "Ladder Filter"; }
-    int getNumParameters() const override { return 6; }
+    int getNumParameters() const override { return 7; }
     juce::String getParameterName(int index) const override;
     
 private:
@@ -44,6 +44,7 @@ private:
     SmoothParam m_filterType;
     SmoothParam m_asymmetry;
     SmoothParam m_vintageMode;
+    SmoothParam m_mix;
     
     // DSP state
     double m_sampleRate = 44100.0;

@@ -63,12 +63,26 @@ private:
         float a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
         
         void setParameters(float frequency, float Q, double sampleRate) {
-            float w = juce::MathConstants<float>::twoPi * frequency / static_cast<float>(sampleRate);
+            // Safety checks to prevent crashes
+            frequency = std::max(1.0f, std::min(frequency, static_cast<float>(sampleRate * 0.49f)));
+            Q = std::max(0.1f, std::min(Q, 100.0f));
+            
+            float w = 6.28318530718f * frequency / static_cast<float>(sampleRate); // 2*pi
+            
+            // Prevent tan() from blowing up near pi/2
+            w = std::min(w, 3.0f);
+            
             g = std::tan(w * 0.5f);
             k = 1.0f / Q;
             k2 = k + k;
             float gk = g * k;
             float a0 = 1.0f / (1.0f + gk + g * g);
+            
+            // Ensure coefficients are finite
+            if (!std::isfinite(a0)) {
+                a0 = 1.0f;
+                g = 0.1f;
+            }
             
             a1 = g * a0;
             a2 = g * a1;

@@ -297,15 +297,19 @@ Be creative but practical. Focus on musicality. Return ONLY valid JSON."""
                 return "balanced tone"
     
     def _get_default_blueprint(self) -> Dict[str, Any]:
-        """Return a safe default blueprint"""
+        """Return a safe default blueprint with correct engine IDs"""
+        # Use actual engine IDs that exist in the plugin:
+        # 47 = Noise Gate, 50 = Mastering Limiter, 54 = Dynamic EQ
+        # But let's use working engines instead:
+        # 2 = Classic Compressor, 19 = Parametric EQ, 21 = Plate Reverb
         return {
             "slots": [
-                {"slot": 1, "engine_id": 0, "character": "warm"},
-                {"slot": 2, "engine_id": 27, "character": "balanced"},
-                {"slot": 3, "engine_id": 3, "character": "spacious"},
-                {"slot": 4, "engine_id": -1, "character": "bypass"},
-                {"slot": 5, "engine_id": -1, "character": "bypass"},
-                {"slot": 6, "engine_id": -1, "character": "bypass"}
+                {"slot": 1, "engine_id": 2, "character": "warm"},  # Classic Compressor
+                {"slot": 2, "engine_id": 19, "character": "balanced"},  # Parametric EQ  
+                {"slot": 3, "engine_id": 21, "character": "spacious"},  # Plate Reverb
+                {"slot": 4, "engine_id": 1, "character": "bypass"},  # Bypass
+                {"slot": 5, "engine_id": 1, "character": "bypass"},  # Bypass
+                {"slot": 6, "engine_id": 1, "character": "bypass"}  # Bypass
             ],
             "overall_vibe": "balanced warmth"
         }

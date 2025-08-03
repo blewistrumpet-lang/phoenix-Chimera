@@ -57,6 +57,9 @@ public:
     
     // Level metering
     float getCurrentOutputLevel() const { return m_currentOutputLevel.load(); }
+    
+    // Testing
+    void runEngineTests();
 
 private:
     juce::AudioProcessorValueTreeState parameters;

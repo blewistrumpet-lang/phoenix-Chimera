@@ -207,6 +207,9 @@ class OracleFAISS:
     
     def _adapt_preset_to_blueprint(self, preset: Dict[str, Any], blueprint: Dict[str, Any]) -> Dict[str, Any]:
         """Adapt a corpus preset to match the blueprint's slot configuration"""
+        # Import the conversion function
+        from engine_mapping import engine_id_to_choice_index
+        
         # Convert from exported format to plugin format
         adapted = {
             "name": preset.get("name", "Oracle Match"),
@@ -239,9 +242,13 @@ class OracleFAISS:
             if 1 <= plugin_slot <= 6:
                 engine_type = engine_config.get("type", -1)
                 if engine_type >= 0:
-                    adapted["parameters"][f"slot{plugin_slot}_engine"] = engine_type
+                    # CRITICAL: Convert engine ID to choice index for the plugin dropdown
+                    choice_index = engine_id_to_choice_index(engine_type)
+                    adapted["parameters"][f"slot{plugin_slot}_engine"] = choice_index
                     adapted["parameters"][f"slot{plugin_slot}_bypass"] = 0.0  # Active
                     adapted["parameters"][f"slot{plugin_slot}_mix"] = engine_config.get("mix", 1.0)
+                    
+                    logger.info(f"Oracle: Slot {plugin_slot} - Engine ID {engine_type} -> Choice Index {choice_index}")
                     
                     # Apply parameters from the params array
                     params_array = engine_config.get("params", [])
@@ -259,6 +266,8 @@ class OracleFAISS:
     
     def _create_default_preset(self, blueprint: Dict[str, Any]) -> Dict[str, Any]:
         """Create a default preset when no matches found"""
+        from engine_mapping import engine_id_to_choice_index
+        
         preset = {
             "name": "Oracle Default",
             "vibe": blueprint.get("overall_vibe", "default"),
@@ -283,7 +292,10 @@ class OracleFAISS:
             engine_id = slot_info.get("engine_id", -1)
             if 1 <= slot_num <= 6:
                 if engine_id >= 0:
-                    preset["parameters"][f"slot{slot_num}_engine"] = engine_id
+                    # CRITICAL: Convert engine ID to choice index
+                    choice_index = engine_id_to_choice_index(engine_id)
+                    preset["parameters"][f"slot{slot_num}_engine"] = choice_index
                     preset["parameters"][f"slot{slot_num}_bypass"] = 0.0
+                    logger.info(f"Oracle Default: Slot {slot_num} - Engine ID {engine_id} -> Choice Index {choice_index}")
         
         return preset

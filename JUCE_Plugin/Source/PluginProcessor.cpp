@@ -3,6 +3,7 @@
 #include "EngineFactory.h"
 #include "DefaultParameterValues.h"
 #include "EngineTypes.h"
+#include "EngineTestRunner.h"
 
 // Engine ID to Choice Index mapping table
 // Maps from raw engine IDs to their position in the dropdown (accounting for "Bypass" at index 0)
@@ -155,8 +156,15 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
     }
     
     // Initialize all slots with bypass engines
+    DBG("Initializing " + juce::String(NUM_SLOTS) + " slots with bypass engines");
     for (int i = 0; i < NUM_SLOTS; ++i) {
+        DBG("Creating engine for slot " + juce::String(i));
         m_activeEngines[i] = EngineFactory::createEngine(ENGINE_BYPASS);
+        if (m_activeEngines[i]) {
+            DBG("  Successfully created engine for slot " + juce::String(i));
+        } else {
+            DBG("  ERROR: Failed to create engine for slot " + juce::String(i));
+        }
     }
     
     // Add parameter change listeners for all slots
@@ -212,24 +220,31 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         updateEngineParameters(slot);
     }
     
-    // Process through each slot in series with gain reduction
+    // Process through each slot in series
     for (int slot = 0; slot < NUM_SLOTS; ++slot) {
         bool isBypassed = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_bypass")->load() > 0.5f;
         
         if (!isBypassed && m_activeEngines[slot]) {
-            // Apply per-slot gain reduction to prevent accumulation
-            float slotGain = 0.7f; // Reduce each slot's contribution
+            // Check if this is actually a bypass engine (ID == -1)
+            auto* engineParam = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_engine");
+            int engineChoice = static_cast<int>(engineParam->load());
             
-            // Store original levels
-            std::vector<float> originalLevels;
+            // Skip bypass engines (choice index 0)
+            if (engineChoice == 0) {
+                continue;
+            }
+            
+            // Process through the engine
+            m_activeEngines[slot]->process(buffer);
+            
+            // Apply gain compensation only after processing to prevent buildup
+            // but only if we actually processed something
             for (int ch = 0; ch < buffer.getNumChannels(); ++ch) {
                 auto* data = buffer.getWritePointer(ch);
                 for (int s = 0; s < buffer.getNumSamples(); ++s) {
-                    data[s] *= slotGain;
+                    data[s] *= 0.9f; // Gentle gain reduction to prevent clipping
                 }
             }
-            
-            m_activeEngines[slot]->process(buffer);
         }
     }
     
@@ -336,48 +351,73 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
     }
     
     // Engine-specific safe defaults to prevent static/noise
+    // NOTE: Parameters are 1-based in UI but 0-based in engine (param1 -> index 0)
     switch (engineID) {
         case ENGINE_BYPASS:
             // No parameters needed
             break;
             
         case ENGINE_CLASSIC_COMPRESSOR:
-            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.7f); // Threshold
-            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.3f); // Ratio
-            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.2f); // Attack
-            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.4f); // Release
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.7f); // Threshold (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.3f); // Ratio (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.2f); // Attack (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.4f); // Release (index 3)
             break;
             
         case ENGINE_TAPE_ECHO:
         case ENGINE_BUCKET_BRIGADE_DELAY:
         case ENGINE_DIGITAL_DELAY:
-            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.3f); // Feedback - safe
-            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.3f); // Mix - 30%
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.3f); // Feedback (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.5f); // Mix (index 3)
             break;
             
         case ENGINE_PLATE_REVERB:
         case ENGINE_SHIMMER_REVERB:
         case ENGINE_SPRING_REVERB:
-            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.3f); // Mix - 30%
+            // PlateReverb parameters: 0=Size, 1=Damping, 2=Predelay, 3=Mix
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.5f); // Size (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.5f); // Damping (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.1f); // Predelay (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.5f); // Mix (index 3) - 50% for testing
             break;
             
         case ENGINE_BIT_CRUSHER:
-            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.9f); // Bit depth - high
-            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.9f); // Sample rate - high
-            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.2f); // Mix - subtle
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.9f); // Bit depth (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.9f); // Sample rate (index 1)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.3f); // Mix (index 3)
             break;
             
         case ENGINE_CHAOS_GENERATOR:
         case ENGINE_SPECTRAL_FREEZE:
         case ENGINE_GRANULAR_CLOUD:
             parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.1f); // Minimal effect
-            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.2f); // Low mix
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.3f); // Mix (index 3)
+            break;
+            
+        case ENGINE_K_STYLE:
+        case ENGINE_RODENT_DISTORTION:
+        case ENGINE_MUFF_FUZZ:
+            // Distortion engines typically have Drive, Tone, Level, Mix
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.5f); // Drive (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.5f); // Tone (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Level (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.5f); // Mix (index 3)
+            break;
+            
+        case ENGINE_LADDER_FILTER:
+        case ENGINE_STATE_VARIABLE_FILTER:
+        case ENGINE_FORMANT_FILTER:
+            // Filter engines: Cutoff, Resonance, Type/Mode, Mix
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.5f); // Cutoff (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.3f); // Resonance (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Type (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.7f); // Mix (index 3)
             break;
             
         default:
-            // For all other engines, use conservative mix
-            if (auto* mixParam = parameters.getParameter(slotPrefix + "3")) {
-                mixParam->setValueNotifyingHost(0.3f); // 30% mix
+            // For all other engines, set reasonable defaults
+            if (auto* mixParam = parameters.getParameter(slotPrefix + "4")) {
+                mixParam->setValueNotifyingHost(0.5f); // 50% mix at param4 (index 3)
             }
             break;
     }
@@ -412,7 +452,7 @@ void ChimeraAudioProcessor::startAIServer() {
     // Try multiple paths to find the AI server
     juce::File aiServerDir;
     
-    // Path 1: Development path - relative to current plugin location
+    // Path 1: Development path - absolute path to AI server
     aiServerDir = juce::File("/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/AI_Server");
     
     if (!aiServerDir.exists()) {
@@ -430,14 +470,14 @@ void ChimeraAudioProcessor::startAIServer() {
     
     if (aiServerDir.exists()) {
         // Build the command to start the server
-        // Try to find Python 3
+        // Try to find Python 3 - prioritize the one with packages installed
         juce::String pythonPath;
-        if (juce::File("/usr/bin/python3").existsAsFile()) {
-            pythonPath = "/usr/bin/python3";
+        if (juce::File("/Library/Frameworks/Python.framework/Versions/3.10/bin/python3").existsAsFile()) {
+            pythonPath = "/Library/Frameworks/Python.framework/Versions/3.10/bin/python3";
         } else if (juce::File("/usr/local/bin/python3").existsAsFile()) {
             pythonPath = "/usr/local/bin/python3";
-        } else if (juce::File("/Library/Frameworks/Python.framework/Versions/3.10/bin/python3").existsAsFile()) {
-            pythonPath = "/Library/Frameworks/Python.framework/Versions/3.10/bin/python3";
+        } else if (juce::File("/usr/bin/python3").existsAsFile()) {
+            pythonPath = "/usr/bin/python3";
         } else {
             // Try to find Python via which command
             juce::ChildProcess whichPython;
@@ -461,16 +501,37 @@ void ChimeraAudioProcessor::startAIServer() {
         // Pass through OpenAI API key if available
         if (auto* apiKey = std::getenv("OPENAI_API_KEY")) {
             environment.set("OPENAI_API_KEY", apiKey);
+            juce::Logger::writeToLog("Found OPENAI_API_KEY in environment");
+        } else {
+            // Try to load from .env file
+            juce::File envFile = aiServerDir.getChildFile(".env");
+            if (envFile.existsAsFile()) {
+                juce::String envContent = envFile.loadFileAsString();
+                if (envContent.contains("OPENAI_API_KEY=")) {
+                    juce::Logger::writeToLog("Found .env file with API key");
+                }
+            }
         }
         
         // Start the server with proper working directory
         juce::Logger::writeToLog("Starting AI Server with Python at: " + pythonPath);
         juce::Logger::writeToLog("AI Server script: " + mainScript);
         
-        if (m_aiServerProcess->start(pythonPath + " " + mainScript.quoted(), 
+        // Start the server - uvicorn will be started by main.py
+        // Check if server is already running
+        juce::URL healthCheck("http://localhost:8000/health");
+        if (auto healthStream = healthCheck.createInputStream(juce::URL::InputStreamOptions(juce::URL::ParameterHandling::inAddress)
+                                                             .withConnectionTimeoutMs(500))) {
+            juce::Logger::writeToLog("AI Server already running");
+            return;
+        }
+        
+        juce::Logger::writeToLog("Starting AI Server command: " + pythonPath + " " + mainScript);
+        
+        if (m_aiServerProcess->start(pythonPath + " " + mainScript, 
                                     juce::ChildProcess::wantStdOut | juce::ChildProcess::wantStdErr)) {
-            // Give the server a moment to start
-            juce::Thread::sleep(1000);
+            // Give the server time to start
+            juce::Thread::sleep(3000);
             
             // Check if it's still running
             if (m_aiServerProcess->isRunning()) {
@@ -497,6 +558,26 @@ void ChimeraAudioProcessor::stopAIServer() {
         m_aiServerProcess.reset();
         // AI Server stopped
     }
+}
+
+void ChimeraAudioProcessor::runEngineTests() {
+    DBG("Starting engine tests...");
+    
+    // Run the tests
+    auto summary = EngineTestRunner::runAllTests();
+    
+    // Print to console
+    EngineTestRunner::printConsoleReport(summary);
+    
+    // Generate HTML report
+    juce::File desktop = juce::File::getSpecialLocation(juce::File::userDesktopDirectory);
+    juce::File reportFile = desktop.getChildFile("chimera_engine_test_report.html");
+    EngineTestRunner::generateHTMLReport(summary, reportFile);
+    
+    DBG("Test report saved to: " + reportFile.getFullPathName());
+    
+    // Open the report in browser
+    reportFile.startAsProcess();
 }
 
 int ChimeraAudioProcessor::engineIDToChoiceIndex(int engineID) {

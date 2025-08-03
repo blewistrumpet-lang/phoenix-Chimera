@@ -9,6 +9,7 @@ MuffFuzz::MuffFuzz() : m_rng(std::random_device{}()) {
     m_gate.setImmediate(0.1f);
     m_mids.setImmediate(0.3f);      // Default mid scoop
     m_fuzzType.setImmediate(0.0f);  // Silicon transistor default
+    m_mix.setImmediate(1.0f);       // 100% wet by default
     
     // Set smoothing rates for different characteristics
     m_sustain.setSmoothingRate(0.99f);   // Fast for sustain changes
@@ -17,6 +18,7 @@ MuffFuzz::MuffFuzz() : m_rng(std::random_device{}()) {
     m_gate.setSmoothingRate(0.98f);      // Slower for gate to avoid clicks
     m_mids.setSmoothingRate(0.995f);
     m_fuzzType.setSmoothingRate(0.97f);  // Slowest for mode changes
+    m_mix.setSmoothingRate(0.995f);
 }
 
 void MuffFuzz::prepareToPlay(double sampleRate, int samplesPerBlock) {
@@ -78,6 +80,7 @@ void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
         
         for (int sample = 0; sample < numSamples; ++sample) {
             float input = channelData[sample];
+            float dry = input; // Store dry signal
             
             // Gate (noise reduction)
             float gated = processGate(input, state.envelope, m_gate.current * 0.1f);
@@ -93,10 +96,10 @@ void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
             float clipped = processDiodeClipping(gained, 0.7f);
             
             // Tone control
-            float toned = state.toneFilter.process(clipped);
+            float wet = state.toneFilter.process(clipped) * m_volume.current * 0.5f;
             
-            // Output volume
-            channelData[sample] = toned * m_volume.current * 0.5f;
+            // Mix dry and wet signals
+            channelData[sample] = dry * (1.0f - m_mix.current) + wet * m_mix.current;
         }
     }
 }
@@ -114,6 +117,7 @@ void MuffFuzz::updateParameters(const std::map<int, float>& params) {
     m_gate.target = getParam(3, 0.1f);
     m_mids.target = getParam(4, 0.3f);     // Mid scoop control
     m_fuzzType.target = getParam(5, 0.0f); // Modern fuzz variations
+    m_mix.target = getParam(6, 1.0f);      // Dry/wet mix
 }
 
 juce::String MuffFuzz::getParameterName(int index) const {
@@ -124,6 +128,7 @@ juce::String MuffFuzz::getParameterName(int index) const {
         case 3: return "Gate";
         case 4: return "Mids";
         case 5: return "Type";
+        case 6: return "Mix";
         default: return "";
     }
 }

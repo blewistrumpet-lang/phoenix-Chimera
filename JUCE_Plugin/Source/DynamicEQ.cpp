@@ -78,16 +78,29 @@ void DynamicEQ::process(juce::AudioBuffer<float>& buffer) {
             input = m_dcBlockers[channel].process(input);
             
             // Calculate frequency from parameter (20Hz to 20kHz)
-            float freq = 20.0f * std::pow(1000.0f, m_frequency.current);
-            freq = std::min(freq, static_cast<float>(m_sampleRate * 0.45f));
+            // Use exponential scaling but limit the range
+            float freqParam = std::min(0.95f, m_frequency.current); // Cap at 0.95 to prevent extreme values
+            float freq = 20.0f * std::pow(500.0f, freqParam); // Reduced from 1000.0f to 500.0f for safety
+            
+            // Clamp frequency to safe range (avoid Nyquist issues)
+            freq = std::max(20.0f, std::min(freq, static_cast<float>(m_sampleRate * 0.45f)));
             
             // Apply thermal compensation to frequency
             float thermalFactor = m_thermalModel.getThermalFactor();
             freq *= thermalFactor;
             
-            // Set up filter parameters
-            float Q = 2.0f; // Fixed Q for now, could be a parameter
-            state.peakFilter.setParameters(freq, Q, m_sampleRate);
+            // Ensure frequency stays in safe range after thermal compensation
+            freq = std::max(20.0f, std::min(freq, static_cast<float>(m_sampleRate * 0.48f)));
+            
+            // Set up filter parameters with safe Q value
+            float Q = std::max(0.5f, std::min(10.0f, 2.0f)); // Bounded Q
+            
+            // Only update filter if frequency changed significantly to avoid clicks
+            static float lastFreq = 0.0f;
+            if (std::abs(freq - lastFreq) > 0.1f) {
+                state.peakFilter.setParameters(freq, Q, m_sampleRate);
+                lastFreq = freq;
+            }
             
             // Process through oversampling for higher quality
             float oversampledInput[2];

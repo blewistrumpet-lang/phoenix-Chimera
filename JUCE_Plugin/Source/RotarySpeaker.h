@@ -12,7 +12,7 @@ public:
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     juce::String getName() const override { return "Rotary Speaker"; }
-    int getNumParameters() const override { return 4; }
+    int getNumParameters() const override { return 5; }
     juce::String getParameterName(int index) const override;
     
 private:
@@ -21,6 +21,7 @@ private:
     float m_acceleration = 0.3f;      // Speed change acceleration
     float m_micDistance = 0.6f;       // Microphone distance (affects Doppler intensity)
     float m_stereoWidth = 0.8f;       // Stereo spread
+    float m_mix = 1.0f;               // Dry/wet mix (0.0 = dry, 1.0 = wet)
     
     // DSP state
     double m_sampleRate = 44100.0;

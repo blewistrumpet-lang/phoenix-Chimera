@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Chimera Engine Comprehensive Test Report</title>
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<style>
+body { font-family: 'Segoe UI', Arial; margin: 0; background: linear-gradient(135deg, #667eea, #764ba2); }
+.container { max-width: 1400px; margin: 20px auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+h1 { color: #333; text-align: center; padding: 20px; border-bottom: 3px solid #667eea; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0; }
+.stat { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 10px; text-align: center; }
+.stat-value { font-size: 3em; font-weight: bold; }
+.stat-label { font-size: 0.9em; opacity: 0.9; text-transform: uppercase; }
+table { width: 100%; border-collapse: collapse; margin: 30px 0; }
+th { background: #667eea; color: white; padding: 12px; text-align: left; position: sticky; top: 0; }
+td { padding: 10px; border-bottom: 1px solid #e0e0e0; }
+tr:hover { background: #f8f9fa; }
+.pass { color: #10b981; font-weight: bold; }
+.fail { color: #ef4444; font-weight: bold; }
+.param-bar { display: inline-block; height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
+.param-fill { height: 100%; background: linear-gradient(90deg, #10b981, #059669); }
+.category-header { background: #f8f9fa; padding: 15px; border-left: 4px solid #667eea; margin: 20px 0; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class='container'>
+<h1>🔬 Chimera Engine Comprehensive Test Report</h1>
+<p style='text-align: center; color: #666;'>Complete validation with parameter testing and audio analysis</p>
+<div class='summary'>
+<div class='stat'><div class='stat-value'>53</div><div class='stat-label'>Total Engines</div></div>
+<div class='stat'><div class='stat-value'>1</div><div class='stat-label'>Passed</div></div>
+<div class='stat'><div class='stat-value'>1</div><div class='stat-label'>Output Audio</div></div>
+<div class='stat'><div class='stat-value'>0</div><div class='stat-label'>Params Work</div></div>
+<div class='stat'><div class='stat-value'>1.9%</div><div class='stat-label'>Pass Rate</div></div>
+<div class='stat'><div class='stat-value'>0.0%</div><div class='stat-label'>Max THD</div></div>
+</div>
+<h2>Detailed Test Results</h2>
+<table>
+<tr><th>Engine</th><th>Status</th><th>Audio I/O</th><th>Parameter Response</th><th>THD</th><th>Notes</th></tr>
+<tr>
+<td><strong>K-Style Overdrive</strong></td>
+<td class='pass'>✓ PASS</td>
+<td>In: 0.500 → Out: 0.139</td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>Parameters not affecting audio</td>
+</tr>
+<tr>
+<td><strong>Tape Echo</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Plate Reverb</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Rodent Distortion</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Muff Fuzz</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Classic Tremolo</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Magnetic Drum Echo</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Bucket Brigade Delay</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Digital Delay</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Harmonic Tremolo</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Rotary Speaker</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Detune Doubler</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Ladder Filter</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Formant Filter</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Classic Compressor</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>State Variable Filter</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Stereo Chorus</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Spectral Freeze</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Granular Cloud</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Analog Ring Modulator</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Multiband Saturator</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Comb Resonator</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Pitch Shifter</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Phased Vocoder</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Convolution Reverb</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Bit Crusher</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Frequency Shifter</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Wave Folder</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Shimmer Reverb</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Vocal Formant Filter</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Transient Shaper</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Dimension Expander</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Analog Phaser</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Envelope Filter</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Gated Reverb</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Harmonic Exciter</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Feedback Network</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Intelligent Harmonizer</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Parametric EQ</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Mastering Limiter</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Noise Gate</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Vintage Opto</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Spectral Gate</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Chaos Generator</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Buffer Repeat</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Vintage Console EQ</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Mid/Side Processor</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Vintage Tube Preamp</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Spring Reverb</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.800 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Resonant Chorus</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Stereo Widener</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Dynamic EQ</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+<tr>
+<td><strong>Stereo Imager</strong></td>
+<td class='fail'>✗ FAIL</td>
+<td>In: 0.500 → Out: 0.000 <span class='fail'>(SILENT)</span></td>
+<td><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span><span style='color: #e0e0e0;'>○</span> (0/10 active)</td>
+<td>-</td>
+<td style='color: #666; font-size: 0.9em;'>No audio output</td>
+</tr>
+</table>
+<h2>Parameter Effectiveness Analysis</h2>
+<div id='paramChart' style='width: 100%; height: 400px;'></div>
+<script>
+var trace = {
+  x: ['K-Style Overdrive', 'Tape Echo', 'Plate Reverb', 'Rodent Distortion', 'Muff Fuzz', 'Classic Tremolo', 'Magnetic Drum Echo', 'Bucket Brigade Delay', 'Digital Delay', 'Harmonic Tremolo', 'Rotary Speaker', 'Detune Doubler', 'Ladder Filter', 'Formant Filter', 'Classic Compressor', 'State Variable Filter', 'Stereo Chorus', 'Spectral Freeze', 'Granular Cloud', 'Analog Ring Modulator', 'Multiband Saturator', 'Comb Resonator', 'Pitch Shifter', 'Phased Vocoder', 'Convolution Reverb', 'Bit Crusher', 'Frequency Shifter', 'Wave Folder', 'Shimmer Reverb', 'Vocal Formant Filter', 'Transient Shaper', 'Dimension Expander', 'Analog Phaser', 'Envelope Filter', 'Gated Reverb', 'Harmonic Exciter', 'Feedback Network', 'Intelligent Harmonizer', 'Parametric EQ', 'Mastering Limiter', 'Noise Gate', 'Vintage Opto', 'Spectral Gate', 'Chaos Generator', 'Buffer Repeat', 'Vintage Console EQ', 'Mid/Side Processor', 'Vintage Tube Preamp', 'Spring Reverb', 'Resonant Chorus', 'Stereo Widener', 'Dynamic EQ', 'Stereo Imager'],
+  y: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  type: 'bar',
+  marker: { color: 'rgb(102, 126, 234)' }
+};
+var layout = { title: 'Active Parameters per Engine', xaxis: { tickangle: -45 }, yaxis: { title: 'Active Parameters' } };
+Plotly.newPlot('paramChart', [trace], layout);
+</script>
+<div style='margin-top: 50px; padding: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666;'>
+<p>Test Methodology: Each engine tested with appropriate signals, parameter sweeps, and spectral analysis</p>
+<p>Chimera Audio Engine Test Suite v3.0 Phoenix - Aug  2 2025</p>
+</div>
+</div>
+</body>
+</html>

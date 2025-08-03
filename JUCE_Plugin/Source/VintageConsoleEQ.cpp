@@ -13,6 +13,7 @@ VintageConsoleEQ::VintageConsoleEQ() {
     m_drive.setImmediate(0.3f);
     m_consoleType.setImmediate(0.0f);  // Neve default
     m_vintage.setImmediate(0.5f);      // Moderate vintage character
+    m_mix.setImmediate(1.0f);          // 100% wet by default
     
     // Set smoothing rates
     m_lowGain.setSmoothingRate(0.995f);
@@ -25,6 +26,7 @@ VintageConsoleEQ::VintageConsoleEQ() {
     m_drive.setSmoothingRate(0.99f);
     m_consoleType.setSmoothingRate(0.95f);  // Slower for type changes
     m_vintage.setSmoothingRate(0.995f);
+    m_mix.setSmoothingRate(0.995f);
 }
 
 void VintageConsoleEQ::prepareToPlay(double sampleRate, int samplesPerBlock) {
@@ -67,6 +69,19 @@ void VintageConsoleEQ::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
+    // Update smooth parameters
+    m_lowGain.update();
+    m_lowFreq.update();
+    m_midGain.update();
+    m_midFreq.update();
+    m_midQ.update();
+    m_highGain.update();
+    m_highFreq.update();
+    m_drive.update();
+    m_consoleType.update();
+    m_vintage.update();
+    m_mix.update();
+    
     // Convert parameters to actual values
     double lowFreq = 30.0 + m_lowFreq.current * 270.0;    // 30-300Hz
     double lowGain = (m_lowGain.current - 0.5) * 30.0;    // +/- 15dB
@@ -95,6 +110,7 @@ void VintageConsoleEQ::process(juce::AudioBuffer<float>& buffer) {
         
         for (int sample = 0; sample < numSamples; ++sample) {
             double input = static_cast<double>(channelData[sample]);
+            double dry = input; // Store dry signal
             
             // Pre-saturation (input stage coloration)
             if (m_drive.current > 0.1f && consoleType == NEVE_1073) {
@@ -143,6 +159,11 @@ void VintageConsoleEQ::process(juce::AudioBuffer<float>& buffer) {
                 output = std::tanh(output * 0.9) * 1.055;
             }
             
+            double wet = output;
+            
+            // Mix dry and wet signals
+            output = dry * (1.0 - m_mix.current) + wet * m_mix.current;
+            
             channelData[sample] = static_cast<float>(output);
         }
     }
@@ -173,6 +194,7 @@ void VintageConsoleEQ::updateParameters(const std::map<int, float>& params) {
     if (params.count(7)) m_drive.target = params.at(7);
     if (params.count(8)) m_consoleType.target = params.at(8);
     if (params.count(9)) m_vintage.target = params.at(9);
+    if (params.count(10)) m_mix.target = params.at(10);
 }
 
 juce::String VintageConsoleEQ::getParameterName(int index) const {
@@ -187,6 +209,7 @@ juce::String VintageConsoleEQ::getParameterName(int index) const {
         case 7: return "Drive";
         case 8: return "Console Type";
         case 9: return "Vintage";
+        case 10: return "Mix";
         default: return "";
     }
 }

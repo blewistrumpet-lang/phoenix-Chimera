@@ -15,7 +15,7 @@ public:
     void updateParameters(const std::map<int, float>& params) override;
     
     juce::String getName() const override { return "Classic Tremolo"; }
-    int getNumParameters() const override { return 5; }
+    int getNumParameters() const override { return 6; }
     juce::String getParameterName(int index) const override;
     
 private:
@@ -44,6 +44,7 @@ private:
     SmoothParam m_waveform;     // 0-1 (sine to square)
     SmoothParam m_stereoPhase;  // 0-180 degrees
     SmoothParam m_volume;       // 0-1
+    SmoothParam m_mix;          // 0-1 (dry/wet mix)
     
     // DSP State
     double m_sampleRate = 44100.0;

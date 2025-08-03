@@ -12,7 +12,7 @@ public:
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     juce::String getName() const override { return "K-Style Overdrive"; }
-    int getNumParameters() const override { return 3; }
+    int getNumParameters() const override { return 4; }
     juce::String getParameterName(int index) const override;
     
 private:
@@ -34,6 +34,7 @@ private:
     SmoothParam m_drive;
     SmoothParam m_tone;
     SmoothParam m_level;
+    SmoothParam m_mix;
     
     double m_sampleRate = 44100.0;
     

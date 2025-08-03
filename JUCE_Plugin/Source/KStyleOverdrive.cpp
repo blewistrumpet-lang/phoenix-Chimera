@@ -6,6 +6,7 @@ KStyleOverdrive::KStyleOverdrive() {
     m_drive.reset(0.3f);  // 30% - warm but not distorted
     m_tone.reset(0.5f);   // 50% - balanced tone
     m_level.reset(0.5f);  // Unity gain
+    m_mix.reset(1.0f);    // 100% wet by default for overdrive
 }
 
 void KStyleOverdrive::prepareToPlay(double sampleRate, int samplesPerBlock) {
@@ -22,6 +23,7 @@ void KStyleOverdrive::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_drive.smoothing = std::exp(-1.0f / samples);
     m_tone.smoothing = m_drive.smoothing;
     m_level.smoothing = m_drive.smoothing;
+    m_mix.smoothing = m_drive.smoothing;
     
     updateFilterCoefficients();
 }
@@ -43,8 +45,16 @@ void KStyleOverdrive::process(juce::AudioBuffer<float>& buffer) {
             m_drive.update();
             m_tone.update();
             m_level.update();
+            m_mix.update();
             
-            channelData[sample] = processSample(channelData[sample], channel);
+            // Store dry signal
+            float dry = channelData[sample];
+            
+            // Process wet signal
+            float wet = processSample(channelData[sample], channel);
+            
+            // Mix dry and wet
+            channelData[sample] = dry * (1.0f - m_mix.current) + wet * m_mix.current;
         }
     }
 }
@@ -220,6 +230,9 @@ void KStyleOverdrive::updateParameters(const std::map<int, float>& params) {
     if (params.find(2) != params.end()) {
         m_level.target = params.at(2);
     }
+    if (params.find(3) != params.end()) {
+        m_mix.target = params.at(3);
+    }
 }
 
 juce::String KStyleOverdrive::getParameterName(int index) const {
@@ -227,6 +240,7 @@ juce::String KStyleOverdrive::getParameterName(int index) const {
         case 0: return "Drive";
         case 1: return "Tone";
         case 2: return "Output";
+        case 3: return "Mix";
         default: return "";
     }
 }

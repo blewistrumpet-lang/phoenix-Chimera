@@ -15,7 +15,7 @@ public:
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     
-    int getNumParameters() const override { return 10; }
+    int getNumParameters() const override { return 11; }
     juce::String getParameterName(int index) const override;
     juce::String getName() const override { return "Vintage Console EQ"; }
     
@@ -50,6 +50,7 @@ private:
     SmoothParam m_drive;         // Console saturation amount
     SmoothParam m_consoleType;   // Console type selector
     SmoothParam m_vintage;       // Vintage character amount
+    SmoothParam m_mix;           // Dry/wet mix
     
     // Vintage EQ characteristics
     enum ConsoleType {

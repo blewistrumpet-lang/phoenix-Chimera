@@ -15,7 +15,7 @@ public:
     void updateParameters(const std::map<int, float>& params) override;
     
     juce::String getName() const override { return "Muff Fuzz"; }
-    int getNumParameters() const override { return 6; }
+    int getNumParameters() const override { return 7; }
     juce::String getParameterName(int index) const override;
     
 private:
@@ -45,6 +45,7 @@ private:
     SmoothParam m_gate;          // 0-1 (noise gate)
     SmoothParam m_mids;          // 0-1 (midrange scoop)
     SmoothParam m_fuzzType;      // 0-1 (modern fuzz variations)
+    SmoothParam m_mix;           // 0-1 (dry/wet mix)
     
     // DSP State
     double m_sampleRate = 44100.0;

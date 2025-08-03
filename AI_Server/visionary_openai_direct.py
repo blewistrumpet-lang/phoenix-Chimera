@@ -2,9 +2,21 @@ import asyncio
 import json
 import logging
 import os
+from pathlib import Path
 from openai import OpenAI
 from typing import Dict, Any, List
 from visionary_enhanced import VisionaryEnhanced
+
+# Try to load .env file if it exists
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"Loaded .env file from {env_path}")
+except ImportError:
+    # dotenv not installed, will use system environment variables
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -15,10 +27,16 @@ class VisionaryOpenAIDirect(VisionaryEnhanced):
     
     def __init__(self):
         super().__init__()
-        # Get API key from environment or use provided key
-        api_key = os.getenv("OPENAI_API_KEY", "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")
-        self.openai_client = OpenAI(api_key=api_key)
-        self.use_openai = True  # Flag to enable/disable OpenAI
+        # Get API key from environment only - NEVER hardcode API keys
+        api_key = os.getenv("OPENAI_API_KEY")
+        if api_key:
+            self.openai_client = OpenAI(api_key=api_key)
+            self.use_openai = True  # Flag to enable/disable OpenAI
+            logger.info("OpenAI API key found, will use GPT-3.5 for generation")
+        else:
+            self.openai_client = None
+            self.use_openai = False
+            logger.warning("No OpenAI API key found, will use fallback generation")
         
     async def get_blueprint(self, prompt: str) -> Dict[str, Any]:
         """
@@ -37,7 +55,10 @@ class VisionaryOpenAIDirect(VisionaryEnhanced):
         
         # Fall back to enhanced simulation
         logger.info("Using enhanced simulation")
-        return await self._simulate_enhanced_response(prompt)
+        # Use VisionaryEnhanced for simulation
+        from visionary_enhanced import VisionaryEnhanced
+        enhanced = VisionaryEnhanced()
+        return await enhanced._simulate_enhanced_response(prompt)
     
     async def _get_openai_blueprint(self, prompt: str) -> Dict[str, Any]:
         """Get blueprint from OpenAI API"""

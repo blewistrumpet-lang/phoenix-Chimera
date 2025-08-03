@@ -521,7 +521,19 @@ void ChimeraAudioProcessorEditor::generateButtonClicked() {
 }
 
 void ChimeraAudioProcessorEditor::handleAIResponse(const juce::String& response) {
+    // Log the response for debugging
+    juce::Logger::writeToLog("AI Response: " + response.substring(0, 200));
+    
     auto jsonResult = juce::JSON::parse(response);
+    
+    if (response.isEmpty()) {
+        // No response - use fallback
+        setStatus("No response from AI server - using fallback", true);
+        currentPresetName = "Fallback Preset";
+        presetNameLabel.setText(currentPresetName, juce::sendNotification);
+        generateButton.setEnabled(true);
+        return;
+    }
     
     if (jsonResult.hasProperty("success") && jsonResult["success"]) {
         auto preset = jsonResult["preset"];
@@ -548,7 +560,15 @@ void ChimeraAudioProcessorEditor::handleAIResponse(const juce::String& response)
         loadPresetFromJSON(preset);
         setStatus("Generated: " + currentPresetName);
     } else {
-        setStatus("Generation failed: " + jsonResult["message"].toString(), true);
+        // Log error
+        juce::String errorMsg = jsonResult.hasProperty("message") ? 
+                                jsonResult["message"].toString() : "Unknown error";
+        juce::Logger::writeToLog("Generation failed: " + errorMsg);
+        setStatus("Generation failed: " + errorMsg, true);
+        
+        // Use fallback preset
+        currentPresetName = "Fallback Preset " + juce::String(juce::Random::getSystemRandom().nextInt(1000));
+        presetNameLabel.setText(currentPresetName, juce::sendNotification);
     }
     
     generateButton.setEnabled(true);

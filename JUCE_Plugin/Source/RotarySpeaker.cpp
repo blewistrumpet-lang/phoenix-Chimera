@@ -91,6 +91,8 @@ void RotarySpeaker::process(juce::AudioBuffer<float>& buffer) {
 }
 
 float RotarySpeaker::processSample(float input, int channel) {
+    float dry = input; // Store dry signal
+    
     // Apply tube preamp coloration
     float preamp = tubePreamp(input, channel);
     
@@ -106,7 +108,7 @@ float RotarySpeaker::processSample(float input, int channel) {
     float combined = hornOutput + drumOutput;
     
     // Apply cabinet resonance
-    combined = cabinetResonance(combined, channel);
+    float wet = cabinetResonance(combined, channel) * 0.7f; // Scale to prevent clipping
     
     // Update rotation angles and velocities
     updateRotationSpeed();
@@ -119,7 +121,8 @@ float RotarySpeaker::processSample(float input, int channel) {
     if (m_hornRotation > 2.0f * M_PI) m_hornRotation -= 2.0f * M_PI;
     if (m_drumRotation > 2.0f * M_PI) m_drumRotation -= 2.0f * M_PI;
     
-    return combined * 0.7f; // Scale to prevent clipping
+    // Mix dry and wet signals
+    return dry * (1.0f - m_mix) + wet * m_mix;
 }
 
 void RotarySpeaker::processCrossover(float input, int channel, float& hornBand, float& drumBand) {
@@ -311,6 +314,7 @@ void RotarySpeaker::updateParameters(const std::map<int, float>& params) {
     if (params.find(1) != params.end()) m_acceleration = params.at(1);
     if (params.find(2) != params.end()) m_micDistance = params.at(2);
     if (params.find(3) != params.end()) m_stereoWidth = params.at(3);
+    if (params.find(4) != params.end()) m_mix = params.at(4);
 }
 
 juce::String RotarySpeaker::getParameterName(int index) const {
@@ -319,6 +323,7 @@ juce::String RotarySpeaker::getParameterName(int index) const {
         case 1: return "Acceleration";
         case 2: return "Mic Distance";
         case 3: return "Stereo Width";
+        case 4: return "Mix";
         default: return "";
     }
 }
