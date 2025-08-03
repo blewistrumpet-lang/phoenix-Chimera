@@ -20,12 +20,11 @@ void CombResonator::prepareToPlay(double sampleRate, int samplesPerBlock) {
         // Slight stereo detuning
         m_channels[ch].detuneAmount = (ch == 0) ? -0.01f : 0.01f;
     }
+}
 
 void CombResonator::reset() {
     // Reset all internal state
     // TODO: Implement specific reset logic for CombResonator
-}
-
 }
 
 void CombResonator::process(juce::AudioBuffer<float>& buffer) {

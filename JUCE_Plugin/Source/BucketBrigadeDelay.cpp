@@ -27,20 +27,13 @@ void BucketBrigadeDelay::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& channel : m_channelStates) {
         channel.prepare(sampleRate);
     }
+}
 
 void BucketBrigadeDelay::reset() {
     // Clear delay buffers and reset indices
     for (auto& channel : m_channelStates) {
-        channel.delayBuffer.clear();
-        channel.writeIndex = 0;
-        channel.readIndex = 0;
-        channel.feedback = 0.0f;
+        channel.reset();
     }
-}
-
-    
-    // Reset analog modeling
-    m_analogModeling = AnalogModeling{};
 }
 
 void BucketBrigadeDelay::process(juce::AudioBuffer<float>& buffer) {

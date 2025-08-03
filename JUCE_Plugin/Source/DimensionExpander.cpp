@@ -36,13 +36,7 @@ void DimensionExpander::prepareToPlay(double sampleRate, int samplesPerBlock) {
         state.delayIndex = 0;
         
         // Setup all-pass filters with different sizes for rich ambience
-        const int baseSizes[4] = { 347, 419, 487, 557 }
-
-void DimensionExpander::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for DimensionExpander
-}
-; // Prime numbers
+        const int baseSizes[4] = { 347, 419, 487, 557 }; // Prime numbers
         for (int i = 0; i < 4; ++i) {
             int size = static_cast<int>(baseSizes[i] * sampleRate / 44100.0);
             state.allpassFilters[i].setSize(size);
@@ -75,6 +69,11 @@ void DimensionExpander::reset() {
     
     // Reset thermal model
     m_thermalModel = ThermalModel();
+}
+
+void DimensionExpander::reset() {
+    // Reset all internal state
+    // TODO: Implement specific reset logic for DimensionExpander
 }
 
 void DimensionExpander::process(juce::AudioBuffer<float>& buffer) {

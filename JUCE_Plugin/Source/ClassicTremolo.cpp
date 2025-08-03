@@ -28,37 +28,11 @@ void ClassicTremolo::prepareToPlay(double sampleRate, int samplesPerBlock) {
         m_oscillators[i].phase = 0.0f;
         m_oscillators[i].phaseIncrement = m_rate.current / sampleRate;
     }
+}
 
 void ClassicTremolo::reset() {
     // Reset modulation state
-    m_lfoPhase = 0.0f;
-    for (auto& channel : m_channelStates) {
-        channel.reset();
-    }
-}
-
-    
-    // Initialize DC blockers
-    m_inputDCBlockers.fill({});
-    m_outputDCBlockers.fill({});
-    
-    // Prepare oversampler
-    if (m_useOversampling) {
-        m_oversampler.prepare(samplesPerBlock);
-    }
-    
-    // Reset component aging
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
-    
-    // Reset thermal model
-    m_thermalModel = ThermalModel();
-    
-    // Initialize tube models
-    for (auto& tube : m_tubeModels) {
-        tube.tubeState = 0.0f;
-        tube.bias = 0.5f;
-    }
+    // TODO: Implement proper reset for ClassicTremolo if needed
 }
 
 void ClassicTremolo::process(juce::AudioBuffer<float>& buffer) {

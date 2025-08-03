@@ -46,18 +46,22 @@ void ConvolutionReverb::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& blocker : m_dcBlockers) {
         blocker.reset();
     }
+}
 
 void ConvolutionReverb::reset() {
     // Clear all reverb buffers
-    for (auto& channel : m_channelStates) {
-        channel.clear();
-    }
-    // Reset any additional reverb state
-}
-
+    m_convolutionEngine.reset();
+    m_zeroLatencyEngine.reset();
     
-    // Generate initial IR
-    generateEnhancedImpulseResponse();
+    // Reset DC blockers
+    for (auto& blocker : m_dcBlockers) {
+        blocker.reset();
+    }
+    
+    // Reset oversampler
+    m_oversampler.reset();
+    
+    // Reset any additional reverb state
 }
 
 void ConvolutionReverb::process(juce::AudioBuffer<float>& buffer) {

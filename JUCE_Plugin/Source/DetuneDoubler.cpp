@@ -67,14 +67,11 @@ void DetuneDoubler::prepareToPlay(double sampleRate, int samplesPerBlock) {
         m_allPassChains.push_back(chainL);
         m_allPassChains.push_back(chainR);
     }
+}
 
 void DetuneDoubler::reset() {
     // Reset all internal state
     // TODO: Implement specific reset logic for DetuneDoubler
-}
-
-    
-    updateDelayTimes();
 }
 
 void DetuneDoubler::process(juce::AudioBuffer<float>& buffer) {

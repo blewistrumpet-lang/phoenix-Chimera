@@ -40,14 +40,13 @@ void EnvelopeFilter::prepareToPlay(double sampleRate, int samplesPerBlock) {
         channel.currentCutoff = 0.1f;
         channel.targetCutoff = 0.1f;
     }
+}
 
 void EnvelopeFilter::reset() {
     // Reset filter states
     for (auto& channel : m_channelStates) {
         channel.reset();
     }
-}
-
 }
 
 void EnvelopeFilter::process(juce::AudioBuffer<float>& buffer) {

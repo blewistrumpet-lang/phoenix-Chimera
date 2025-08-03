@@ -31,30 +31,11 @@ void AnalogRingModulator::prepareToPlay(double sampleRate, int samplesPerBlock) 
         channel.componentDrift = 0.0f;
         channel.thermalFactor = 1.0f;
     }
+}
 
 void AnalogRingModulator::reset() {
     // Reset all internal state
     // TODO: Implement specific reset logic for AnalogRingModulator
-}
-
-    
-    // Initialize DC blockers
-    for (auto& blocker : m_inputDCBlockers) {
-        blocker.x1 = 0.0f;
-        blocker.y1 = 0.0f;
-    }
-    
-    for (auto& blocker : m_outputDCBlockers) {
-        blocker.x1 = 0.0f;
-        blocker.y1 = 0.0f;
-    }
-    
-    // Prepare oversampler
-    m_oversampler.prepare(samplesPerBlock);
-    
-    // Reset component aging
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
 }
 
 void AnalogRingModulator::process(juce::AudioBuffer<float>& buffer) {
