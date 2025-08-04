@@ -1,186 +1,446 @@
 #include "RodentDistortion.h"
 #include <cmath>
+#include <algorithm>
+
+// ==================== CONSTRUCTOR ====================
 
 RodentDistortion::RodentDistortion() {
-    // Initialize smoothed parameters with boutique defaults
-    m_gain.setImmediate(10.0f);
-    m_filter.setImmediate(2000.0f);
-    m_clipping.setImmediate(0.5f);
-    m_tone.setImmediate(5000.0f);
-    m_output.setImmediate(0.5f);
-    m_mix.setImmediate(1.0f);
-    m_distortionType.setImmediate(0.0f);  // RAT style default
-    m_presence.setImmediate(0.3f);
+    // Initialize parameter smoothers
+    m_gain = std::make_unique<ParameterSmoother>();
+    m_filter = std::make_unique<ParameterSmoother>();
+    m_clipping = std::make_unique<ParameterSmoother>();
+    m_tone = std::make_unique<ParameterSmoother>();
+    m_output = std::make_unique<ParameterSmoother>();
+    m_mix = std::make_unique<ParameterSmoother>();
+    m_distortionType = std::make_unique<ParameterSmoother>();
+    m_presence = std::make_unique<ParameterSmoother>();
     
-    // Set different smoothing rates for different parameters
-    m_gain.setSmoothingRate(0.99f);       // Faster for gain changes
-    m_filter.setSmoothingRate(0.995f);
-    m_clipping.setSmoothingRate(0.99f);
-    m_tone.setSmoothingRate(0.995f);
-    m_output.setSmoothingRate(0.99f);
-    m_mix.setSmoothingRate(0.995f);
-    m_distortionType.setSmoothingRate(0.98f);  // Slower for mode changes
-    m_presence.setSmoothingRate(0.995f);
+    // Set default values
+    m_gain->reset(0.5);           // Mid gain
+    m_filter->reset(0.4);         // 2kHz-ish
+    m_clipping->reset(0.5);       // Moderate clipping
+    m_tone->reset(0.5);           // Neutral tone
+    m_output->reset(0.5);         // Unity gain
+    m_mix->reset(1.0);            // 100% wet
+    m_distortionType->reset(0.0); // RAT mode
+    m_presence->reset(0.3);       // Subtle presence
+    
+    // Initialize oversamplers
+    for (int i = 0; i < 2; ++i) {
+        m_oversamplers[i] = std::make_unique<Oversampler>();
+    }
 }
+
+// ==================== ELLIPTIC FILTER DESIGN ====================
+
+void RodentDistortion::EllipticFilter::design(double normalizedFreq, double passbandRipple, double stopbandAtten) {
+    // 8th-order elliptic filter design
+    // This is a simplified version - in production, use a proper filter design library
+    
+    // Pre-warped frequency
+    double wp = 2.0 * std::tan(M_PI * normalizedFreq);
+    
+    // For an 8th order elliptic with 0.1dB ripple and 80dB stopband
+    // These are pre-calculated coefficients for common case
+    if (std::abs(normalizedFreq - 0.1125) < 0.001) { // 0.45/4 for 4x oversampling
+        // Stage 1
+        coeffs[0] = {
+            0.0009441, 0.0018881, 0.0009441,
+            -1.911198, 0.914974
+        };
+        
+        // Stage 2
+        coeffs[1] = {
+            0.003789, 0.007578, 0.003789,
+            -1.815893, 0.831049
+        };
+        
+        // Stage 3
+        coeffs[2] = {
+            0.013657, 0.027314, 0.013657,
+            -1.632993, 0.687621
+        };
+        
+        // Stage 4
+        coeffs[3] = {
+            0.042659, 0.085318, 0.042659,
+            -1.378091, 0.548728
+        };
+    } else {
+        // Generic butterworth as fallback
+        double Q[4] = {0.5412, 1.3065, 0.5412, 1.3065};
+        
+        for (int i = 0; i < 4; ++i) {
+            double w0 = wp;
+            double cosw0 = std::cos(w0);
+            double sinw0 = std::sin(w0);
+            double alpha = sinw0 / (2.0 * Q[i]);
+            
+            double b0 = (1.0 - cosw0) / 2.0;
+            double b1 = 1.0 - cosw0;
+            double b2 = (1.0 - cosw0) / 2.0;
+            double a0 = 1.0 + alpha;
+            double a1 = -2.0 * cosw0;
+            double a2 = 1.0 - alpha;
+            
+            // Normalize
+            coeffs[i] = {
+                b0/a0, b1/a0, b2/a0,
+                a1/a0, a2/a0
+            };
+        }
+    }
+}
+
+// ==================== OVERSAMPLER ====================
+
+void RodentDistortion::Oversampler::upsample(const double* input, double* output, int numSamples) {
+    // Zero-stuff and filter
+    int outputIdx = 0;
+    
+    for (int i = 0; i < numSamples; ++i) {
+        // Insert input sample
+        output[outputIdx] = upsampleFilter.process(input[i] * FACTOR);
+        outputIdx++;
+        
+        // Insert zeros
+        for (int j = 1; j < FACTOR; ++j) {
+            output[outputIdx] = upsampleFilter.process(0.0);
+            outputIdx++;
+        }
+    }
+}
+
+void RodentDistortion::Oversampler::downsample(const double* input, double* output, int numSamples) {
+    // Filter and decimate
+    int inputIdx = 0;
+    
+    for (int i = 0; i < numSamples; ++i) {
+        // Apply anti-aliasing filter to all samples
+        double filtered = 0.0;
+        for (int j = 0; j < FACTOR; ++j) {
+            filtered = downsampleFilter.process(input[inputIdx++]);
+        }
+        
+        // Take only the last filtered sample (after the zeros have been processed)
+        output[i] = filtered;
+    }
+}
+
+// ==================== MAIN PROCESSING ====================
 
 void RodentDistortion::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
     
-    // Reset enhanced filter states
-    for (auto& filter : m_inputFilters) {
-        filter.reset();
-        filter.updateCoefficients(2000.0f, 0.5f, sampleRate);
+    // Initialize parameter smoothers
+    m_gain->setSampleRate(sampleRate);
+    m_filter->setSampleRate(sampleRate);
+    m_clipping->setSampleRate(sampleRate);
+    m_tone->setSampleRate(sampleRate);
+    m_output->setSampleRate(sampleRate);
+    m_mix->setSampleRate(sampleRate);
+    m_distortionType->setSampleRate(sampleRate);
+    m_presence->setSampleRate(sampleRate);
+    
+    // Set smoothing times
+    m_gain->setSmoothingTime(0.01);          // 10ms - fast for responsiveness
+    m_filter->setSmoothingTime(0.02);        // 20ms
+    m_clipping->setSmoothingTime(0.01);      // 10ms
+    m_tone->setSmoothingTime(0.02);          // 20ms
+    m_output->setSmoothingTime(0.01);        // 10ms
+    m_mix->setSmoothingTime(0.02);           // 20ms
+    m_distortionType->setSmoothingTime(0.05); // 50ms - slower for mode switching
+    m_presence->setSmoothingTime(0.02);       // 20ms
+    
+    // Initialize filters
+    for (int ch = 0; ch < 2; ++ch) {
+        m_inputFilters[ch].updateCoefficients(2000.0, 0.7, sampleRate);
+        m_toneFilters[ch].updateCoefficients(5000.0, 0.5, sampleRate);
+        
+        // Prepare oversampling
+        m_oversamplers[ch]->prepare(samplesPerBlock, sampleRate);
+        
+        // DC blockers - 20Hz highpass
+        m_inputDCBlockers[ch].setCutoff(20.0, sampleRate);
+        m_outputDCBlockers[ch].setCutoff(20.0, sampleRate);
     }
 }
 
 void RodentDistortion::reset() {
-    // Reset smooth parameters to their current targets
-    m_gain.current = m_gain.target;
-    m_filter.current = m_filter.target;
-    m_clipping.current = m_clipping.target;
-    m_tone.current = m_tone.target;
-    m_output.current = m_output.target;
-    m_mix.current = m_mix.target;
-    m_distortionType.current = m_distortionType.target;
-    m_presence.current = m_presence.target;
-    
-    // Reset filters
-    for (auto& filter : m_inputFilters) {
-        filter.reset();
+    // Reset all filters and states
+    for (int ch = 0; ch < 2; ++ch) {
+        m_inputFilters[ch].reset();
+        m_toneFilters[ch].reset();
+        m_oversamplers[ch]->reset();
+        m_inputDCBlockers[ch].reset();
+        m_outputDCBlockers[ch].reset();
+        m_opAmps[ch].reset();
     }
-    
-    for (auto& filter : m_toneFilters) {
-        filter.reset();
-    }
-    
-    // Reset DC blockers
-    for (auto& blocker : m_inputDCBlockers) {
-        blocker.reset();
-    }
-    for (auto& blocker : m_outputDCBlockers) {
-        blocker.reset();
-    }
-    
-    // Reset presence state
-    m_presenceState.fill(0.0f);
-    
-    // Reset thermal model
-    m_thermalModel.temperature = 25.0f;
-    m_thermalModel.thermalNoise = 0.0f;
-    
-    // Reset aging and sample count
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
-    
-    // Reset oversampler filter states
-    m_oversampler.upsampleFilter.x.fill(0.0f);
-    m_oversampler.upsampleFilter.y.fill(0.0f);
-    m_oversampler.downsampleFilter.x.fill(0.0f);
-    m_oversampler.downsampleFilter.y.fill(0.0f);
 }
 
 void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
-    // Update all smoothed parameters
-    m_gain.update();
-    m_filter.update(); 
-    m_clipping.update();
-    m_tone.update();
-    m_output.update();
-    m_mix.update();
-    m_distortionType.update();
-    m_presence.update();
+    if (numChannels == 0 || numSamples == 0) return;
     
-    // Update thermal model
-    m_thermalModel.update(m_sampleRate);
-    float thermalFactor = m_thermalModel.getThermalFactor();
+    // Prepare oversampled buffers
+    const int oversampledSize = numSamples * DistortionConstants::OVERSAMPLE_FACTOR;
+    std::vector<double> inputDouble(numSamples);
+    std::vector<double> oversampledInput(oversampledSize);
+    std::vector<double> oversampledOutput(oversampledSize);
+    std::vector<double> outputDouble(numSamples);
     
-    // Component aging (very slow)
-    m_sampleCount++;
-    if (m_sampleCount > m_sampleRate * 60) {  // Update every minute
-        m_componentAge += 0.000001f;  // Very slow aging
-        m_sampleCount = 0;
-    }
-    
-    // Update filter coefficients with component tolerances and aging
-    float adjustedFilterFreq = m_componentTolerances.adjustFrequency(m_filter.current) * (1.0f + m_componentAge);
-    float adjustedToneFreq = m_componentTolerances.adjustFrequency(m_tone.current) * (1.0f + m_componentAge);
-    
-    for (int channel = 0; channel < std::min(numChannels, 2); ++channel) {
-        auto& inputFilter = m_inputFilters[channel];
-        auto& toneFilter = m_toneFilters[channel];
-        auto& inputDCBlocker = m_inputDCBlockers[channel];
-        auto& outputDCBlocker = m_outputDCBlockers[channel];
+    // Process each channel
+    for (int ch = 0; ch < std::min(numChannels, 2); ++ch) {
+        float* channelData = buffer.getWritePointer(ch);
         
-        inputFilter.updateCoefficients(adjustedFilterFreq, 0.5f, m_sampleRate);
-        toneFilter.updateCoefficients(adjustedToneFreq, 0.3f, m_sampleRate);
+        // Convert to double precision
+        for (int i = 0; i < numSamples; ++i) {
+            inputDouble[i] = static_cast<double>(channelData[i]);
+        }
         
-        auto* channelData = buffer.getWritePointer(channel);
+        // DC blocking on input
+        for (int i = 0; i < numSamples; ++i) {
+            inputDouble[i] = m_inputDCBlockers[ch].process(inputDouble[i]);
+        }
         
-        for (int sample = 0; sample < numSamples; ++sample) {
-            float input = channelData[sample];
-            float dry = input;
+        // Upsample
+        m_oversamplers[ch]->upsample(inputDouble.data(), oversampledInput.data(), numSamples);
+        
+        // Process at oversampled rate
+        for (int i = 0; i < oversampledSize; ++i) {
+            // Update parameters (at oversampled rate for smooth operation)
+            double gain = m_gain->process();
+            double filterFreq = DistortionConstants::MIN_FILTER_HZ + 
+                               m_filter->process() * (DistortionConstants::MAX_FILTER_HZ - 
+                                                     DistortionConstants::MIN_FILTER_HZ);
+            double clipping = m_clipping->process();
+            double toneFreq = DistortionConstants::MIN_TONE_HZ + 
+                             m_tone->process() * (DistortionConstants::MAX_TONE_HZ - 
+                                                 DistortionConstants::MIN_TONE_HZ);
+            double outputGain = m_output->process();
+            double presence = m_presence->process();
+            double distMode = m_distortionType->process();
             
-            // Input DC blocking
-            input = inputDCBlocker.process(input);
-            
-            // Input high-pass filter (removes low-end mud)
-            float filtered = inputFilter.processHighpass(input);
-            
-            // Apply thermal-modulated gain
-            float thermalGain = m_componentTolerances.adjustGain(m_gain.current) * thermalFactor;
-            float gained = filtered * thermalGain;
-            
-            // Enhanced clipping with vintage modes
-            int distortionMode = static_cast<int>(m_distortionType.current * 3.99f);  // 0-3
-            float clipped = processVintageMode(gained, distortionMode, m_clipping.current);
-            
-            // Presence boost (high-frequency emphasis)
-            if (m_presence.current > 0.01f) {
-                float presenceGain = 1.0f + m_presence.current * 2.0f;
-                // Simple high-shelf approximation
-                float highFreq = clipped - m_presenceState[channel];
-                m_presenceState[channel] += highFreq * 0.1f;
-                clipped += highFreq * presenceGain * 0.3f;
+            // Update filter frequencies (only when changed significantly)
+            if (i % 16 == 0) { // Update every 16 samples to save CPU
+                m_inputFilters[ch].updateCoefficients(filterFreq, 0.7, m_sampleRate * DistortionConstants::OVERSAMPLE_FACTOR);
+                m_toneFilters[ch].updateCoefficients(toneFreq, 0.5, m_sampleRate * DistortionConstants::OVERSAMPLE_FACTOR);
             }
             
-            // Tone filter (low-pass)
-            float toned = toneFilter.processLowpass(clipped);
+            // Get sample
+            double sample = oversampledInput[i];
             
-            // Output gain with component aging
-            float output = toned * m_componentTolerances.adjustGain(m_output.current) * thermalFactor;
+            // Input filter (highpass to remove mud)
+            auto filterOut = m_inputFilters[ch].process(sample);
+            sample = filterOut.highpass;
             
-            // Output DC blocking
-            output = outputDCBlocker.process(output);
+            // Apply gain
+            double gainLinear = std::pow(10.0, (DistortionConstants::MIN_GAIN_DB + 
+                                                gain * (DistortionConstants::MAX_GAIN_DB - 
+                                                       DistortionConstants::MIN_GAIN_DB)) / 20.0);
+            sample *= gainLinear;
             
-            // Final soft limiting to prevent harsh clipping
-            if (std::abs(output) > 0.95f) {
-                output = std::tanh(output * 0.8f) * 1.1875f;
+            // Distortion based on mode
+            int mode = static_cast<int>(distMode * 3.99);
+            switch (static_cast<VintageMode>(mode)) {
+                case VintageMode::RAT:
+                    sample = processRATCircuit(sample, ch);
+                    break;
+                case VintageMode::TUBE_SCREAMER:
+                    sample = processTubeScreamerCircuit(sample, ch);
+                    break;
+                case VintageMode::BIG_MUFF:
+                    sample = processBigMuffCircuit(sample, ch);
+                    break;
+                case VintageMode::FUZZ_FACE:
+                    sample = processFuzzFaceCircuit(sample, ch);
+                    break;
             }
             
-            // Mix control
-            channelData[sample] = output * m_mix.current + dry * (1.0f - m_mix.current);
+            // Presence control (high frequency emphasis)
+            if (presence > 0.01) {
+                auto toneOut = m_toneFilters[ch].process(sample);
+                double highFreq = toneOut.highpass;
+                sample += highFreq * presence * 2.0;
+            }
+            
+            // Tone control (lowpass)
+            auto toneOut = m_toneFilters[ch].process(sample);
+            sample = toneOut.lowpass;
+            
+            // Output gain
+            sample *= outputGain * 2.0; // 0-2 range
+            
+            // Soft limiting for safety
+            sample = tanhApproximation(sample * 0.5) * 2.0;
+            
+            oversampledOutput[i] = sample;
+        }
+        
+        // Downsample
+        m_oversamplers[ch]->downsample(oversampledOutput.data(), outputDouble.data(), numSamples);
+        
+        // DC blocking on output
+        for (int i = 0; i < numSamples; ++i) {
+            outputDouble[i] = m_outputDCBlockers[ch].process(outputDouble[i]);
+        }
+        
+        // Mix dry/wet and convert back to float
+        double mix = m_mix->getCurrent();
+        for (int i = 0; i < numSamples; ++i) {
+            double dry = inputDouble[i];
+            double wet = outputDouble[i];
+            channelData[i] = static_cast<float>(wet * mix + dry * (1.0 - mix));
         }
     }
+    
+    // Update thermal model
+    double avgPower = 0.1; // Simplified - in reality, calculate from circuit current/voltage
+    m_thermalModel.update(avgPower, numSamples / m_sampleRate);
 }
+
+// ==================== CIRCUIT MODELS ====================
+
+double RodentDistortion::processRATCircuit(double input, int channel) {
+    // ProCo RAT circuit emulation
+    // Input stage - op-amp with gain
+    double opAmpGain = 1.0 + m_clipping->getCurrent() * 1000.0; // Up to 1000x gain
+    double output = m_opAmps[channel].process(input, opAmpGain, 
+                                              m_sampleRate * DistortionConstants::OVERSAMPLE_FACTOR);
+    
+    // Hard clipping diodes (back-to-back silicon)
+    const double diodeThreshold = 0.7;
+    if (output > diodeThreshold) {
+        output = diodeThreshold + (output - diodeThreshold) * 0.05;
+    } else if (output < -diodeThreshold) {
+        output = -diodeThreshold + (output + diodeThreshold) * 0.05;
+    }
+    
+    // Output filter (compensate for harsh harmonics)
+    return output * 0.5;
+}
+
+double RodentDistortion::processTubeScreamerCircuit(double input, int channel) {
+    // Ibanez Tube Screamer circuit emulation
+    // Characteristic mid-hump EQ (before clipping)
+    auto filtered = m_inputFilters[channel].process(input);
+    double midBoosted = filtered.bandpass * 2.0 + input * 0.5;
+    
+    // Op-amp gain stage (lower gain than RAT)
+    double opAmpGain = 1.0 + m_clipping->getCurrent() * 100.0; // Up to 100x
+    double amplified = midBoosted * opAmpGain;
+    
+    // Soft clipping with diodes in feedback loop
+    double clipped = m_diodeClippers[channel].process(amplified, false);
+    
+    // Asymmetric clipping characteristic
+    if (clipped > 0) {
+        clipped = m_diodeClippers[channel].process(clipped * 0.9, false);
+    }
+    
+    return clipped * 0.3;
+}
+
+double RodentDistortion::processBigMuffCircuit(double input, int channel) {
+    // Electro-Harmonix Big Muff circuit emulation
+    // Multiple gain stages with clipping
+    double signal = input;
+    
+    // First gain stage
+    signal *= 50.0 * (0.5 + m_clipping->getCurrent());
+    signal = softClipAsymmetric(signal, 0.3);
+    
+    // Second gain stage
+    signal *= 20.0;
+    signal = softClipAsymmetric(signal, 0.5);
+    
+    // Tone control (special Big Muff style)
+    // This is a simplified version of the actual tone stack
+    auto toneOut = m_toneFilters[channel].process(signal);
+    double tonePosition = m_tone->getCurrent();
+    signal = toneOut.lowpass * (1.0 - tonePosition) + toneOut.highpass * tonePosition;
+    
+    // Final gain stage
+    signal *= 10.0;
+    signal = softClipAsymmetric(signal, 0.2);
+    
+    return signal * 0.1;
+}
+
+double RodentDistortion::processFuzzFaceCircuit(double input, int channel) {
+    // Dallas Arbiter Fuzz Face circuit emulation
+    // Germanium transistor characteristics
+    double temperature = m_thermalModel.getTemperature();
+    
+    // Temperature-dependent biasing
+    double bias = -0.2 + (temperature - 298.15) * 0.001;
+    
+    // First transistor stage (Q1)
+    double q1Out = m_transistors[channel].process(input * 10.0, bias);
+    
+    // Second transistor stage (Q2) with feedback
+    static double feedback[2] = {0.0, 0.0};
+    double q2Input = q1Out - feedback[channel] * 0.5;
+    double q2Out = m_transistors[channel].process(q2Input * 50.0, bias * 1.2);
+    
+    feedback[channel] = q2Out * 0.1;
+    
+    // Fuzz control affects the input impedance and gain
+    double fuzzAmount = m_clipping->getCurrent();
+    q2Out *= (0.1 + fuzzAmount * 0.9);
+    
+    // Gate effect at low input levels
+    if (std::abs(input) < 0.05) {
+        q2Out *= std::abs(input) * 20.0;
+    }
+    
+    return q2Out * 0.5;
+}
+
+// ==================== HELPER FUNCTIONS ====================
+
+double RodentDistortion::tanhApproximation(double x) {
+    // Fast tanh approximation for soft clipping
+    // More accurate than x/(1+|x|) but faster than std::tanh
+    if (x < -3.0) return -1.0;
+    if (x > 3.0) return 1.0;
+    
+    double x2 = x * x;
+    return x * (27.0 + x2) / (27.0 + 9.0 * x2);
+}
+
+double RodentDistortion::softClipAsymmetric(double x, double amount) {
+    // Asymmetric soft clipping
+    double positive = x > 0 ? x : 0;
+    double negative = x < 0 ? -x : 0;
+    
+    // Different curves for positive and negative
+    positive = tanhApproximation(positive * (1.0 + amount));
+    negative = tanhApproximation(negative * (1.0 - amount * 0.3));
+    
+    return positive - negative;
+}
+
+// ==================== PARAMETER HANDLING ====================
 
 void RodentDistortion::updateParameters(const std::map<int, float>& params) {
     auto getParam = [&params](int index, float defaultValue) {
         auto it = params.find(index);
-        return it != params.end() ? it->second : defaultValue;
+        return it != params.end() ? 
+               std::clamp(it->second, 0.0f, 1.0f) : defaultValue;
     };
     
-    // Map normalized 0-1 values to actual parameter ranges with smoothing
-    m_gain.target = 1.0f + getParam(0, 0.2f) * 49.0f;        // 1-50
-    m_filter.target = 100.0f + getParam(1, 0.4f) * 4900.0f;  // 100-5000 Hz
-    m_clipping.target = getParam(2, 0.5f);                    // 0-1
-    m_tone.target = 1000.0f + getParam(3, 0.4f) * 9000.0f;   // 1000-10000 Hz
-    m_output.target = getParam(4, 0.5f);                      // 0-1
-    m_mix.target = getParam(5, 1.0f);                         // 0-1
-    m_distortionType.target = getParam(6, 0.0f);              // 0-1 (vintage modes)
-    m_presence.target = getParam(7, 0.3f);                    // 0-1 (high-freq emphasis)
+    // Update all parameters with clamping
+    m_gain->setTarget(static_cast<double>(getParam(0, 0.5f)));
+    m_filter->setTarget(static_cast<double>(getParam(1, 0.4f)));
+    m_clipping->setTarget(static_cast<double>(getParam(2, 0.5f)));
+    m_tone->setTarget(static_cast<double>(getParam(3, 0.5f)));
+    m_output->setTarget(static_cast<double>(getParam(4, 0.5f)));
+    m_mix->setTarget(static_cast<double>(getParam(5, 1.0f)));
+    m_distortionType->setTarget(static_cast<double>(getParam(6, 0.0f)));
+    m_presence->setTarget(static_cast<double>(getParam(7, 0.3f)));
 }
 
 juce::String RodentDistortion::getParameterName(int index) const {
@@ -194,86 +454,5 @@ juce::String RodentDistortion::getParameterName(int index) const {
         case 6: return "Mode";
         case 7: return "Presence";
         default: return "";
-    }
-}
-
-// Oversampler implementation
-void RodentDistortion::Oversampler::upsample(const float* input, float* output, int numSamples) {
-    for (int i = 0; i < numSamples; ++i) {
-        // Insert zeros between samples
-        for (int j = 0; j < OVERSAMPLE_FACTOR; ++j) {
-            output[i * OVERSAMPLE_FACTOR + j] = (j == 0) ? input[i] * OVERSAMPLE_FACTOR : 0.0f;
-        }
-    }
-    
-    // Apply anti-aliasing filter
-    for (int i = 0; i < numSamples * OVERSAMPLE_FACTOR; ++i) {
-        output[i] = upsampleFilter.process(output[i]);
-    }
-}
-
-void RodentDistortion::Oversampler::downsample(const float* input, float* output, int numSamples) {
-    // Apply anti-aliasing filter first
-    for (int i = 0; i < numSamples * OVERSAMPLE_FACTOR; ++i) {
-        downsampleBuffer[i] = downsampleFilter.process(input[i]);
-    }
-    
-    // Decimate by taking every Nth sample
-    for (int i = 0; i < numSamples; ++i) {
-        output[i] = downsampleBuffer[i * OVERSAMPLE_FACTOR];
-    }
-}
-
-float RodentDistortion::softClip(float x) {
-    // Enhanced soft clipping with multiple stages
-    // Stage 1: Gentle compression
-    float stage1 = x / (1.0f + std::abs(x) * 0.3f);
-    
-    // Stage 2: Smooth saturation
-    float stage2 = std::tanh(stage1 * 1.2f);
-    
-    // Blend based on input level
-    float blend = std::min(1.0f, std::abs(x));
-    return stage1 * (1.0f - blend) + stage2 * blend;
-}
-
-float RodentDistortion::hardClip(float x) {
-    // Enhanced hard clipping with slight rounding
-    const float threshold = 0.95f;
-    if (x > threshold) {
-        float excess = x - threshold;
-        return threshold + excess * 0.1f;
-    }
-    if (x < -threshold) {
-        float excess = -x - threshold;
-        return -(threshold + excess * 0.1f);
-    }
-    return x;
-}
-
-float RodentDistortion::processVintageMode(float input, int mode, float drive) {
-    switch (mode) {
-        case VintageDistortion::RAT_STYLE:
-            return m_distortion.processOpAmp(input, 1.0f + drive * 10.0f, 0.7f);
-            
-        case VintageDistortion::TUBE_SCREAMER:
-            return m_distortion.processDiodeClipping(input * (1.0f + drive * 5.0f), 2.0f + drive * 3.0f);
-            
-        case VintageDistortion::BIG_MUFF:
-            return m_distortion.processAsymmetric(input, 1.0f + drive * 8.0f, 0.3f);
-            
-        case VintageDistortion::FUZZ_FACE:
-            {
-                // Transistor-style fuzz
-                float fuzzed = std::tanh(input * (1.0f + drive * 15.0f));
-                // Add some gating effect
-                if (std::abs(input) < 0.05f) {
-                    fuzzed *= std::abs(input) * 20.0f;
-                }
-                return fuzzed;
-            }
-            
-        default:
-            return softClip(input);
     }
 }

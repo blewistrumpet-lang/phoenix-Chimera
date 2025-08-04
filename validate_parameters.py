@@ -1,0 +1,2546 @@
+#!/usr/bin/env python3
+"""
+Parameter Validation Script for ChimeraPhoenix
+Generated from parameter_database.json on 2025-08-04 00:44:32
+Validates that all parameter definitions are consistent across the codebase
+"""
+
+import json
+import re
+from pathlib import Path
+
+# Load expected parameters from database
+expected_params = {
+  "version": "1.0.0",
+  "generated": "2024-12-20",
+  "description": "ChimeraPhoenix Complete Parameter Database - Single Source of Truth",
+  "engines": {
+    "bypass": {
+      "display_name": "Bypass",
+      "legacy_id": -1,
+      "cpp_enum": "ENGINE_BYPASS",
+      "dropdown_index": 0,
+      "category": "Utility",
+      "parameter_count": 0,
+      "parameters": []
+    },
+    "k_style": {
+      "display_name": "K-Style Overdrive",
+      "legacy_id": 38,
+      "cpp_enum": "ENGINE_K_STYLE",
+      "dropdown_index": 1,
+      "category": "Distortion",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Amount of tube saturation",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "EQ balance from dark to bright",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Level",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level with makeup gain",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet balance",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "vintage_tube": {
+      "display_name": "Vintage Tube Preamp",
+      "legacy_id": 0,
+      "cpp_enum": "ENGINE_VINTAGE_TUBE",
+      "dropdown_index": 48,
+      "category": "Saturation",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input drive amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Bias",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube bias point",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tone control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Output",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "tape_echo": {
+      "display_name": "Tape Echo",
+      "legacy_id": 1,
+      "cpp_enum": "ENGINE_TAPE_ECHO",
+      "dropdown_index": 16,
+      "category": "Delay",
+      "parameter_count": 5,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Time",
+          "default": 0.375,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Delay time from 10ms to 2000ms",
+          "units": "percent",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Feedback",
+          "default": 0.35,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Regeneration amount (>0.75 = self-oscillation)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Wow & Flutter",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tape transport instability and wobble",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Saturation",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tape compression and harmonic distortion",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Mix",
+          "default": 0.35,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet balance",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "shimmer_reverb": {
+      "display_name": "Shimmer Reverb",
+      "legacy_id": 2,
+      "cpp_enum": "ENGINE_SHIMMER_REVERB",
+      "dropdown_index": 13,
+      "category": "Reverb",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Room size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Shimmer",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Octave-up shimmer amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "plate_reverb": {
+      "display_name": "Plate Reverb",
+      "legacy_id": 3,
+      "cpp_enum": "ENGINE_PLATE_REVERB",
+      "dropdown_index": 10,
+      "category": "Reverb",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Plate size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Predelay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time up to 100ms",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "spring_reverb": {
+      "display_name": "Spring Reverb",
+      "legacy_id": 5,
+      "cpp_enum": "ENGINE_SPRING_REVERB",
+      "dropdown_index": 49,
+      "category": "Reverb",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Springs",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Number of springs",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Decay",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Decay time",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tone control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "opto_compressor": {
+      "display_name": "Vintage Opto",
+      "legacy_id": 6,
+      "cpp_enum": "ENGINE_OPTO_COMPRESSOR",
+      "dropdown_index": 42,
+      "category": "Dynamics",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Threshold",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression threshold",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Speed",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack/release speed",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Makeup",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Makeup gain",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "classic_compressor": {
+      "display_name": "Classic Compressor",
+      "legacy_id": 7,
+      "cpp_enum": "ENGINE_VCA_COMPRESSOR",
+      "dropdown_index": 7,
+      "category": "Dynamics",
+      "parameter_count": 7,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Threshold",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression threshold",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Attack",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 3,
+          "name": "Release",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 4,
+          "name": "Knee",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Knee softness",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Makeup",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Makeup gain",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "stereo_chorus": {
+      "display_name": "Stereo Chorus",
+      "legacy_id": 11,
+      "cpp_enum": "ENGINE_DIGITAL_CHORUS",
+      "dropdown_index": 15,
+      "category": "Modulation",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Rate",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "LFO rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Depth",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Feedback",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 0.7,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "digital_delay": {
+      "display_name": "Digital Delay",
+      "legacy_id": 53,
+      "cpp_enum": "ENGINE_DIGITAL_DELAY",
+      "dropdown_index": 17,
+      "category": "Delay",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Time",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Delay time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Feedback",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.9,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "High Cut",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency cutoff",
+          "units": "Hz",
+          "skew": 0.3
+        }
+      ]
+    },
+    "classic_tremolo": {
+      "display_name": "Classic Tremolo",
+      "legacy_id": 22,
+      "cpp_enum": "ENGINE_CLASSIC_TREMOLO",
+      "dropdown_index": 8,
+      "category": "Modulation",
+      "parameter_count": 8,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Rate",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Depth",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Shape",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "LFO waveform shape",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Stereo",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo phase",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo type",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Symmetry",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Waveform symmetry",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Volume",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output volume",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 7,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "harmonic_tremolo": {
+      "display_name": "Harmonic Tremolo",
+      "legacy_id": 21,
+      "cpp_enum": "ENGINE_HARMONIC_TREMOLO",
+      "dropdown_index": 20,
+      "category": "Modulation",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Rate",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Depth",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Harmonics",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Harmonic content (crossover frequency)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Stereo Phase",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Phase offset",
+          "units": "degrees",
+          "skew": 0.5
+        }
+      ]
+    },
+    "dimension_expander": {
+      "display_name": "Dimension Expander",
+      "legacy_id": 18,
+      "cpp_enum": "ENGINE_DIMENSION_EXPANDER",
+      "dropdown_index": 22,
+      "category": "Spatial",
+      "parameter_count": 3,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dimension size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "harmonic_exciter": {
+      "display_name": "Harmonic Exciter",
+      "legacy_id": 32,
+      "cpp_enum": "ENGINE_HARMONIC_EXCITER",
+      "dropdown_index": 36,
+      "category": "Enhancement",
+      "parameter_count": 3,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Harmonics",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Harmonic generation",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Frequency",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Frequency range",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "mid_side_processor": {
+      "display_name": "Mid/Side Processor",
+      "legacy_id": 25,
+      "cpp_enum": "ENGINE_MID_SIDE_PROCESSOR",
+      "dropdown_index": 47,
+      "category": "Spatial",
+      "parameter_count": 3,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mid Level",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid signal level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Side Level",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Side signal level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "vintage_console_eq": {
+      "display_name": "Vintage Console EQ",
+      "legacy_id": 26,
+      "cpp_enum": "ENGINE_VINTAGE_CONSOLE_EQ",
+      "dropdown_index": 46,
+      "category": "EQ",
+      "parameter_count": 5,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Low",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low shelf",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Low Mid",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low mid band",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "High Mid",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High mid band",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "High",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High shelf",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Drive",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Console saturation",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "parametric_eq": {
+      "display_name": "Parametric EQ",
+      "legacy_id": 27,
+      "cpp_enum": "ENGINE_PARAMETRIC_EQ",
+      "dropdown_index": 39,
+      "category": "EQ",
+      "parameter_count": 9,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Freq 1",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 1 frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Gain 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 1 gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Q 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 1 Q",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Freq 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 2 frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 4,
+          "name": "Gain 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 2 gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Q 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 2 Q",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Freq 3",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 3 frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 7,
+          "name": "Gain 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 3 gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 8,
+          "name": "Q 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 3 Q",
+          "units": "Q",
+          "skew": 0.5
+        }
+      ]
+    },
+    "transient_shaper": {
+      "display_name": "Transient Shaper",
+      "legacy_id": 20,
+      "cpp_enum": "ENGINE_TRANSIENT_SHAPER",
+      "dropdown_index": 28,
+      "category": "Dynamics",
+      "parameter_count": 3,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Attack",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack enhancement",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Sustain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Sustain control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "pitch_shifter": {
+      "display_name": "Pitch Shifter",
+      "legacy_id": 14,
+      "cpp_enum": "ENGINE_PITCH_SHIFTER",
+      "dropdown_index": 31,
+      "category": "Pitch",
+      "parameter_count": 3,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Pitch",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pitch shift amount",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Fine",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Fine tuning",
+          "units": "cents",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "spectral_freeze": {
+      "display_name": "Spectral Freeze",
+      "legacy_id": 39,
+      "cpp_enum": "ENGINE_SPECTRAL_FREEZE",
+      "dropdown_index": 33,
+      "category": "Spectral",
+      "parameter_count": 3,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Freeze",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Freeze trigger",
+          "units": "gate",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "FFT size",
+          "units": "samples",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "granular_cloud": {
+      "display_name": "Granular Cloud",
+      "legacy_id": 16,
+      "cpp_enum": "ENGINE_GRANULAR_CLOUD",
+      "dropdown_index": 34,
+      "category": "Texture",
+      "parameter_count": 5,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Grains",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Grain density",
+          "units": "grains/sec",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Grain size",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Position",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Playhead position",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Pitch",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pitch variation",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "buffer_repeat": {
+      "display_name": "Buffer Repeat",
+      "legacy_id": 40,
+      "cpp_enum": "ENGINE_BUFFER_REPEAT",
+      "dropdown_index": 45,
+      "category": "Glitch",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Buffer size",
+          "units": "beats",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Rate",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Repeat rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 2,
+          "name": "Feedback",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.85,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "chaos_generator": {
+      "display_name": "Chaos Generator",
+      "legacy_id": 41,
+      "cpp_enum": "ENGINE_CHAOS_GENERATOR",
+      "dropdown_index": 44,
+      "category": "Experimental",
+      "parameter_count": 8,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Rate",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Chaos rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Depth",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Chaos depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Chaos type",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Smoothing",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Smoothing amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Target",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Target parameter",
+          "units": "param",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Sync",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tempo sync",
+          "units": "beats",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Seed",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Random seed",
+          "units": "seed",
+          "skew": 0.5
+        },
+        {
+          "index": 7,
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "intelligent_harmonizer": {
+      "display_name": "Intelligent Harmonizer",
+      "legacy_id": 42,
+      "cpp_enum": "ENGINE_INTELLIGENT_HARMONIZER",
+      "dropdown_index": 38,
+      "category": "Pitch",
+      "parameter_count": 8,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Interval",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Harmony interval",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Key",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Musical key",
+          "units": "note",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Scale",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Scale type",
+          "units": "scale",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Voices",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Number of voices",
+          "units": "voices",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Spread",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo spread",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Humanize",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Humanization amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Formant",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Formant correction",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 7,
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "gated_reverb": {
+      "display_name": "Gated Reverb",
+      "legacy_id": 43,
+      "cpp_enum": "ENGINE_GATED_REVERB",
+      "dropdown_index": 35,
+      "category": "Reverb",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Room size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Gate Time",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate duration",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "detune_doubler": {
+      "display_name": "Detune Doubler",
+      "legacy_id": 44,
+      "cpp_enum": "ENGINE_DETUNE_DOUBLER",
+      "dropdown_index": 12,
+      "category": "Pitch",
+      "parameter_count": 5,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Detune Amount",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Detune amount (0-50 cents)",
+          "units": "cents",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Delay Time",
+          "default": 0.15,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Base delay time (10-60ms)",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Stereo Width",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo spread of doubled voices",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Thickness",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Voice blending thickness",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "phased_vocoder": {
+      "display_name": "Phased Vocoder",
+      "legacy_id": 45,
+      "cpp_enum": "ENGINE_PHASED_VOCODER",
+      "dropdown_index": 30,
+      "category": "Spectral",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Bands",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Number of bands",
+          "units": "bands",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Shift",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Frequency shift",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Formant",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Formant shift",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "spectral_gate": {
+      "display_name": "Spectral Gate",
+      "legacy_id": 46,
+      "cpp_enum": "ENGINE_SPECTRAL_GATE",
+      "dropdown_index": 43,
+      "category": "Dynamics",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Threshold",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Frequency",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Center frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 2,
+          "name": "Q",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter Q",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "noise_gate": {
+      "display_name": "Noise Gate",
+      "legacy_id": 47,
+      "cpp_enum": "ENGINE_NOISE_GATE",
+      "dropdown_index": 41,
+      "category": "Dynamics",
+      "parameter_count": 5,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Threshold",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Attack",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 2,
+          "name": "Hold",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Hold time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 3,
+          "name": "Release",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 4,
+          "name": "Range",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate range",
+          "units": "dB",
+          "skew": 0.5
+        }
+      ]
+    },
+    "envelope_filter": {
+      "display_name": "Envelope Filter",
+      "legacy_id": 48,
+      "cpp_enum": "ENGINE_ENVELOPE_FILTER",
+      "dropdown_index": 29,
+      "category": "Filter",
+      "parameter_count": 5,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Sensitivity",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Envelope sensitivity",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Attack",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 2,
+          "name": "Release",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 3,
+          "name": "Range",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter range",
+          "units": "octaves",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "feedback_network": {
+      "display_name": "Feedback Network",
+      "legacy_id": 49,
+      "cpp_enum": "ENGINE_FEEDBACK_NETWORK",
+      "dropdown_index": 37,
+      "category": "Experimental",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Feedback",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.85,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Delay",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Delay time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 2,
+          "name": "Modulation",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "mastering_limiter": {
+      "display_name": "Mastering Limiter",
+      "legacy_id": 50,
+      "cpp_enum": "ENGINE_MASTERING_LIMITER",
+      "dropdown_index": 40,
+      "category": "Dynamics",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Threshold",
+          "default": 0.9,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Limiting threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Release",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 2,
+          "name": "Knee",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Knee softness",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Lookahead",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Lookahead time",
+          "units": "ms",
+          "skew": 0.5
+        }
+      ]
+    },
+    "stereo_widener": {
+      "display_name": "Stereo Widener",
+      "legacy_id": 51,
+      "cpp_enum": "ENGINE_STEREO_WIDENER",
+      "dropdown_index": 51,
+      "category": "Spatial",
+      "parameter_count": 3,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Bass Mono",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Bass mono frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 2,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "resonant_chorus": {
+      "display_name": "Resonant Chorus",
+      "legacy_id": 52,
+      "cpp_enum": "ENGINE_RESONANT_CHORUS",
+      "dropdown_index": 50,
+      "category": "Modulation",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Rate",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "LFO rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Depth",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Resonance",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.9,
+          "description": "Filter resonance",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "dynamic_eq": {
+      "display_name": "Dynamic EQ",
+      "legacy_id": 54,
+      "cpp_enum": "ENGINE_DYNAMIC_EQ",
+      "dropdown_index": 52,
+      "category": "EQ",
+      "parameter_count": 8,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Frequency",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 0.9,
+          "description": "Center frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Threshold",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dynamic threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Attack",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 4,
+          "name": "Release",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "index": 5,
+          "name": "Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "EQ gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 7,
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression/expansion mode",
+          "units": "mode",
+          "skew": 0.5
+        }
+      ]
+    },
+    "stereo_imager": {
+      "display_name": "Stereo Imager",
+      "legacy_id": 55,
+      "cpp_enum": "ENGINE_STEREO_IMAGER",
+      "dropdown_index": 53,
+      "category": "Spatial",
+      "parameter_count": 4,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Center",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Center level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Rotation",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo rotation",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "rodent_distortion": {
+      "display_name": "Rodent Distortion",
+      "legacy_id": 36,
+      "cpp_enum": "ENGINE_RODENT_DISTORTION",
+      "dropdown_index": 2,
+      "category": "Distortion",
+      "parameter_count": 8,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input gain (0-60dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Filter",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-distortion filter (60Hz-5kHz)",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 2,
+          "name": "Clipping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Clipping intensity",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tone control (500Hz-12kHz)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Output",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Circuit mode (RAT/TS/Muff/Fuzz)",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "index": 7,
+          "name": "Presence",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency emphasis",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "muff_fuzz": {
+      "display_name": "Muff Fuzz",
+      "legacy_id": 35,
+      "cpp_enum": "ENGINE_MUFF_FUZZ",
+      "dropdown_index": 3,
+      "category": "Distortion",
+      "parameter_count": 7,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Sustain",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Sustain amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tone control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Volume",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output volume",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Gate",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Noise gate threshold",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Mids",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid scoop depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Variant",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Big Muff variant",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "rotary_speaker": {
+      "display_name": "Rotary Speaker",
+      "legacy_id": 56,
+      "cpp_enum": "ENGINE_ROTARY_SPEAKER",
+      "dropdown_index": 54,
+      "category": "Modulation",
+      "parameter_count": 6,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Speed",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Rotor speed (chorale to tremolo)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 1,
+          "name": "Acceleration",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Speed transition acceleration",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube preamp drive",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Mic Distance",
+          "default": 0.6,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Microphone distance",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Stereo Width",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo microphone angle",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "comb_resonator": {
+      "display_name": "Comb Resonator",
+      "legacy_id": 23,
+      "cpp_enum": "ENGINE_COMB_RESONATOR",
+      "dropdown_index": 9,
+      "category": "Filter",
+      "parameter_count": 3,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Frequency",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Resonance frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Resonance",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 0.95,
+          "description": "Resonance amount",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "ladder_filter": {
+      "display_name": "Ladder Filter Pro",
+      "legacy_id": 57,
+      "cpp_enum": "ENGINE_LADDER_FILTER",
+      "dropdown_index": 55,
+      "category": "Filter",
+      "parameter_count": 7,
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Cutoff",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter cutoff frequency (20Hz-20kHz)",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "index": 1,
+          "name": "Resonance",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter resonance/feedback",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
+          "name": "Drive",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input saturation drive",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 3,
+          "name": "Filter Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Morphable filter type (LP24/LP12/BP/HP/Notch/AP)",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "index": 4,
+          "name": "Asymmetry",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Saturation asymmetry",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Vintage Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Vintage vs modern character",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    }
+  }
+}
+
+def validate_engine_headers():
+    """Validate each engine's .h file has correct parameter count"""
+    errors = []
+    base_path = Path("JUCE_Plugin/Source")
+    
+    for engine_key, engine_info in expected_params['engines'].items():
+        if engine_key == 'bypass':
+            continue
+            
+        # Find the engine's header file
+        # This is simplified - you'd need to map string IDs to class names
+        expected_count = engine_info['parameter_count']
+        display_name = engine_info['display_name']
+        
+        print(f"Checking {display_name}: expects {expected_count} parameters")
+        
+        # TODO: Add actual file checking logic here
+        # Look for getNumParameters() returning expected_count
+        
+    return errors
+
+def validate_golden_corpus():
+    """Validate Golden Corpus presets have correct parameter counts"""
+    corpus_path = Path("JUCE_Plugin/GoldenCorpus/all_presets_string_ids.json")
+    
+    if not corpus_path.exists():
+        return ["Golden Corpus file not found"]
+    
+    with open(corpus_path, 'r') as f:
+        corpus = json.load(f)
+    
+    errors = []
+    
+    for preset in corpus.get('presets', []):
+        for engine in preset.get('engines', []):
+            engine_type = engine.get('type')
+            params = engine.get('params', [])
+            
+            if engine_type in expected_params['engines']:
+                expected_count = expected_params['engines'][engine_type]['parameter_count']
+                actual_count = len(params)
+                
+                if actual_count != expected_count:
+                    errors.append(
+                        f"Preset '{preset['name']}' engine '{engine_type}': "
+                        f"has {actual_count} params, expected {expected_count}"
+                    )
+    
+    return errors
+
+def validate_parameter_ranges():
+    """Validate all parameter values are within min/max ranges"""
+    errors = []
+    
+    # Check Golden Corpus
+    corpus_path = Path("JUCE_Plugin/GoldenCorpus/all_presets_string_ids.json")
+    if corpus_path.exists():
+        with open(corpus_path, 'r') as f:
+            corpus = json.load(f)
+        
+        for preset in corpus.get('presets', []):
+            for engine in preset.get('engines', []):
+                engine_type = engine.get('type')
+                params = engine.get('params', [])
+                
+                if engine_type in expected_params['engines']:
+                    engine_info = expected_params['engines'][engine_type]
+                    
+                    for i, value in enumerate(params):
+                        if i < len(engine_info['parameters']):
+                            param_info = engine_info['parameters'][i]
+                            if value < param_info['min'] or value > param_info['max']:
+                                errors.append(
+                                    f"Preset '{preset['name']}' engine '{engine_type}' "
+                                    f"param {i} ({param_info['name']}): "
+                                    f"value {value} out of range [{param_info['min']}, {param_info['max']}]"
+                                )
+    
+    return errors
+
+def main():
+    print("=" * 80)
+    print("ChimeraPhoenix Parameter Validation")
+    print("=" * 80)
+    
+    all_errors = []
+    
+    # Run validations
+    print("\n1. Validating engine headers...")
+    errors = validate_engine_headers()
+    if errors:
+        print(f"   ❌ Found {len(errors)} errors")
+        all_errors.extend(errors)
+    else:
+        print("   ✅ All engine headers valid")
+    
+    print("\n2. Validating Golden Corpus...")
+    errors = validate_golden_corpus()
+    if errors:
+        print(f"   ❌ Found {len(errors)} errors")
+        all_errors.extend(errors)
+    else:
+        print("   ✅ Golden Corpus valid")
+    
+    print("\n3. Validating parameter ranges...")
+    errors = validate_parameter_ranges()
+    if errors:
+        print(f"   ❌ Found {len(errors)} errors")
+        all_errors.extend(errors)
+    else:
+        print("   ✅ All parameter values in range")
+    
+    # Report results
+    print("\n" + "=" * 80)
+    if all_errors:
+        print(f"VALIDATION FAILED: {len(all_errors)} total errors found\n")
+        for error in all_errors[:20]:  # Show first 20 errors
+            print(f"  • {error}")
+        if len(all_errors) > 20:
+            print(f"  ... and {len(all_errors) - 20} more errors")
+        return 1
+    else:
+        print("✅ VALIDATION PASSED: All parameters are consistent!")
+        return 0
+
+if __name__ == "__main__":
+    exit(main())

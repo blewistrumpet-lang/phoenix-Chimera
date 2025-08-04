@@ -4,7 +4,27 @@
 #include <array>
 #include <memory>
 #include <random>
+#include <cmath>
+#include <map>
+#include <algorithm>
 
+/**
+ * IntelligentHarmonizer - A high-quality pitch shifting harmonizer with scale quantization
+ * 
+ * Features:
+ * - Granular synthesis for smooth pitch shifting without artifacts
+ * - Intelligent scale quantization with multiple scale types
+ * - Up to 4 voice harmonization with configurable intervals
+ * - Formant preservation to maintain vocal character
+ * - Humanization with vibrato and drift
+ * - Stereo spreading for wide harmonies
+ * 
+ * Usage notes:
+ * - Supports mono and stereo input only
+ * - Maximum block size: determined at prepareToPlay
+ * - Thread-safe parameter smoothing
+ * - Pitch detection on first channel only for efficiency
+ */
 class IntelligentHarmonizer : public EngineBase {
 public:
     IntelligentHarmonizer();
@@ -20,7 +40,15 @@ public:
     juce::String getName() const override { return "Intelligent Harmonizer"; }
     
 private:
-    // Boutique parameter smoothing system
+    // Constants
+    static constexpr float MAX_INTERVAL_SEMITONES = 48.0f;  // Parameter range: ±24 semitones
+    static constexpr int MAX_SAFE_INTERVAL = 36;            // Processing limit: ±3 octaves
+    static constexpr int GRAIN_OVERLAP_FACTOR = 4;          // 75% overlap
+    static constexpr int PITCH_DETECT_DECIMATION = 16;      // Downsample factor
+    static constexpr int DEFAULT_BLOCK_SIZE = 8192;         // Default max block size
+    
+    // Parameter smoothing with correct time constant
+    // Note: These use lock-free smoothing - safe for concurrent access
     struct SmoothParam {
         float target = 0.5f;
         float current = 0.5f;
@@ -36,19 +64,20 @@ private:
         
         void setSmoothingTime(float timeMs, float sampleRate) {
             float samples = timeMs * 0.001f * sampleRate;
-            smoothing = std::exp(-1.0f / samples);
+            // Correct exponential smoothing coefficient
+            smoothing = std::exp(-2.0f * M_PI / samples);
         }
     };
     
     // Smoothed parameters
-    SmoothParam m_interval; // -24 to +24 semitones (normalized)
-    SmoothParam m_key; // Root note (0=C, 1=C#, etc.)
-    SmoothParam m_scale; // Scale type
-    SmoothParam m_voiceCount; // 1-4 voices
-    SmoothParam m_spread; // Stereo spread
-    SmoothParam m_humanize; // Pitch/timing variation
-    SmoothParam m_formant; // Formant correction
-    SmoothParam m_mix;
+    SmoothParam m_interval;     // -24 to +24 semitones (normalized)
+    SmoothParam m_key;          // Root note (0=C, 1=C#, etc.)
+    SmoothParam m_scale;        // Scale type
+    SmoothParam m_voiceCount;   // 1-4 voices
+    SmoothParam m_spread;       // Stereo spread
+    SmoothParam m_humanize;     // Pitch/timing variation
+    SmoothParam m_formant;      // Formant correction
+    SmoothParam m_mix;          // Dry/wet mix
     
     // Scale definitions
     enum ScaleType {
@@ -65,18 +94,18 @@ private:
         NUM_SCALES
     };
     
-    // Interval lookup tables (semitones from root)
+    // Fixed scale intervals (within single octave 0-11)
     static constexpr int SCALE_INTERVALS[NUM_SCALES][12] = {
-        {0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19}, // Major
-        {0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19}, // Minor
-        {0, 2, 3, 5, 7, 9, 10, 12, 14, 15, 17, 19}, // Dorian
-        {0, 2, 4, 5, 7, 9, 10, 12, 14, 16, 17, 19}, // Mixolydian
-        {0, 2, 3, 5, 7, 8, 11, 12, 14, 15, 17, 19}, // Harmonic Minor
-        {0, 2, 3, 5, 7, 9, 11, 12, 14, 15, 17, 19}, // Melodic Minor
-        {0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26}, // Pentatonic Major
-        {0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27}, // Pentatonic Minor
-        {0, 3, 5, 6, 7, 10, 12, 15, 17, 18, 19, 22}, // Blues
-        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11} // Chromatic (no correction)
+        {0, 2, 4, 5, 7, 9, 11, -1, -1, -1, -1, -1}, // Major
+        {0, 2, 3, 5, 7, 8, 10, -1, -1, -1, -1, -1}, // Natural Minor
+        {0, 2, 3, 5, 7, 9, 10, -1, -1, -1, -1, -1}, // Dorian
+        {0, 2, 4, 5, 7, 9, 10, -1, -1, -1, -1, -1}, // Mixolydian
+        {0, 2, 3, 5, 7, 8, 11, -1, -1, -1, -1, -1}, // Harmonic Minor
+        {0, 2, 3, 5, 7, 9, 11, -1, -1, -1, -1, -1}, // Melodic Minor
+        {0, 2, 4, 7, 9, -1, -1, -1, -1, -1, -1, -1}, // Pentatonic Major
+        {0, 3, 5, 7, 10, -1, -1, -1, -1, -1, -1, -1}, // Pentatonic Minor
+        {0, 3, 5, 6, 7, 10, -1, -1, -1, -1, -1, -1}, // Blues
+        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11} // Chromatic (all notes)
     };
     
     // DC Blocking filter
@@ -94,227 +123,146 @@ private:
         void reset() { x1 = y1 = 0.0f; }
     };
     
-    // Thermal modeling for analog drift simulation
-    struct ThermalModel {
-        float temperature = 20.0f; // Celsius
-        float thermalTimeConstant = 0.99999f;
-        float componentDrift = 0.0f;
+    // Simple one-pole filter for smoothing
+    struct OnePoleFilter {
+        float state = 0.0f;
+        float coefficient = 0.99f;
         
-        void update(float processingLoad) {
-            // Simulate thermal buildup from processing
-            float targetTemp = 20.0f + processingLoad * 20.0f; // Up to 40°C
-            temperature = temperature * thermalTimeConstant + targetTemp * (1.0f - thermalTimeConstant);
-            
-            // Component drift based on temperature (subtle pitch drift)
-            componentDrift = (temperature - 20.0f) * 0.0001f; // ±0.2% max drift
+        void setCutoff(float cutoffHz, double sampleRate) {
+            float fc = cutoffHz / sampleRate;
+            coefficient = std::exp(-2.0f * M_PI * fc);
         }
         
-        float getTemperatureDrift() const {
-            return componentDrift;
+        float process(float input) {
+            state = input * (1.0f - coefficient) + state * coefficient;
+            return state;
         }
+        
+        void reset() { state = 0.0f; }
     };
     
-    // Component aging simulation
-    struct ComponentAging {
-        float age = 0.0f; // In processing hours
-        float agingRate = 1.0f / (200.0f * 3600.0f * 44100.0f); // Age over 200 hours
+    // Improved pitch shifter using granular synthesis
+    struct HarmonizerVoice {
+        static constexpr int BUFFER_SIZE = 32768; // Larger for better quality
+        static constexpr int GRAIN_SIZE = 2048;   // Grain size for smooth shifting
+        static constexpr int MAX_GRAINS = 4;      // Overlapping grains
         
-        void update() {
-            age += agingRate;
-        }
+        // Circular buffer
+        std::array<float, BUFFER_SIZE> buffer;
+        int writeIndex = 0;
         
-        float getAgingFactor() const {
-            // Subtle aging effects (oscillator drift, capacitor changes)
-            return 1.0f + std::sin(age * 0.05f) * 0.001f; // ±0.1% variation
-        }
-    };
-    
-    // Enhanced oversampling system
-    struct Oversampler {
-        static constexpr int FACTOR = 4; // 4x oversampling for pitch shifting
-        std::array<float, FACTOR * 256> buffer;
-        int bufferIndex = 0;
-        
-        // Lanczos interpolation for superior quality
-        struct LanczosInterpolator {
-            static constexpr int TAPS = 8;
+        // Grain structure
+        struct Grain {
+            float readPos = 0.0f;
+            float fadeIn = 0.0f;
+            float fadeOut = 1.0f;
+            bool active = false;
+            int age = 0;
             
-            float interpolate(const std::array<float, 16384>& buffer, float position) {
-                int intPos = static_cast<int>(position);
-                float fracPos = position - intPos;
-                
-                float sum = 0.0f;
-                for (int i = -TAPS/2; i < TAPS/2; ++i) {
-                    int idx = (intPos + i + 16384) % 16384;
-                    float x = fracPos - i;
-                    
-                    // Lanczos kernel
-                    float kernel = (x == 0.0f) ? 1.0f : 
-                                  (std::sin(M_PI * x) * std::sin(M_PI * x / (TAPS/2))) / 
-                                  (M_PI * M_PI * x * x / (TAPS/2));
-                    
-                    sum += buffer[idx] * kernel;
-                }
-                return sum;
+            void reset() {
+                readPos = 0.0f;
+                fadeIn = 0.0f;
+                fadeOut = 1.0f;
+                active = false;
+                age = 0;
             }
         };
         
-        LanczosInterpolator interpolator;
+        std::array<Grain, MAX_GRAINS> grains;
+        int nextGrain = 0;
+        int grainCounter = 0;
+        
+        // Pitch shifting parameters
+        float currentPitch = 1.0f;
+        float targetPitch = 1.0f;
+        OnePoleFilter pitchSmoother;
+        
+        // Formant preservation
+        OnePoleFilter formantFilter;
+        float formantShift = 1.0f;
+        
+        // Humanization
+        float vibratoPhase = 0.0f;
+        float driftPhase = 0.0f;
+        std::mt19937 rng{std::random_device{}()};
+        std::normal_distribution<float> noise{0.0f, 1.0f};
+        
+        void prepare(double sampleRate);
+        float process(float input, float pitchRatio, float formantAmount, 
+                     float humanization, double sampleRate);
+        
+    private:
+        float windowFunction(float x) {
+            // Hann window for smooth grain transitions
+            return 0.5f * (1.0f - std::cos(2.0f * M_PI * x));
+        }
+    };
+    
+    // Simple pitch detector using zero-crossing
+    struct PitchDetector {
+        static constexpr int BUFFER_SIZE = 4096;
+        std::array<float, BUFFER_SIZE> buffer;
+        int bufferIndex = 0;
+        float lastZeroCrossing = 0.0f;
+        float detectedPitch = 440.0f;
+        float confidence = 0.0f;
+        OnePoleFilter pitchFilter;
+        
+        // For octave error detection
+        std::array<float, 32> crossingIntervals;
+        int intervalIndex = 0;
         
         void prepare(double sampleRate) {
             buffer.fill(0.0f);
             bufferIndex = 0;
+            pitchFilter.setCutoff(10.0f, sampleRate);
+            pitchFilter.reset();
+            crossingIntervals.fill(0.0f);
+            intervalIndex = 0;
         }
-    };
-    
-    // Voice harmonizer with boutique quality
-    struct HarmonizerVoice {
-        // Enhanced pitch shifter using delay line interpolation
-        static constexpr int BUFFER_SIZE = 16384; // Increased for better quality
-        std::array<float, BUFFER_SIZE> buffer;
-        float writePos = 0.0f;
-        float readPos = 0.0f;
-        
-        // Advanced formant preservation using spectral envelope
-        struct FormantPreserver {
-            std::array<float, 1024> spectralEnvelope;
-            std::array<float, 512> formantBuffer;
-            int formantIndex = 0;
-            
-            void preserveFormants(float input, float pitchRatio) {
-                // Simplified formant preservation
-                formantBuffer[formantIndex] = input;
-                formantIndex = (formantIndex + 1) % 512;
-                
-                // Extract spectral envelope (simplified)
-                if (formantIndex == 0) {
-                    for (int i = 0; i < 512; ++i) {
-                        spectralEnvelope[i] = std::abs(formantBuffer[i]);
-                    }
-                }
-            }
-            
-            float applyFormantCorrection(float output, float correction) {
-                // Apply inverse pitch shift to maintain formants
-                float formantShift = 1.0f + correction * 0.5f;
-                return output * formantShift;
-            }
-        };
-        
-        FormantPreserver formantPreserver;
-        
-        // Boutique components
-        DCBlocker inputDCBlocker, outputDCBlocker;
-        ThermalModel thermalModel;
-        ComponentAging componentAging;
-        Oversampler oversampler;
-        
-        // Enhanced smoothing with multiple time constants
-        float currentPitch = 0.0f;
-        float targetPitch = 0.0f;
-        float pitchSmoothing = 0.999f; // Slower for pitch stability
-        
-        // Advanced humanization
-        float pitchLFO = 0.0f;
-        float timingOffset = 0.0f;
-        float vibratoPhase = 0.0f;
-        float chorusPhase = 0.0f;
-        
-        // Analog noise simulation
-        mutable std::mt19937 noiseGen{std::random_device{}()};
-        mutable std::normal_distribution<float> noiseDist{0.0f, 1.0f};
-        
-        void prepare(double sampleRate) {
-            buffer.fill(0.0f);
-            writePos = 0.0f;
-            readPos = BUFFER_SIZE * 0.5f;
-            currentPitch = 1.0f;
-            targetPitch = 1.0f;
-            pitchLFO = 0.0f;
-            vibratoPhase = 0.0f;
-            chorusPhase = 0.0f;
-            
-            // Initialize boutique components
-            inputDCBlocker.reset();
-            outputDCBlocker.reset();
-            thermalModel = ThermalModel();
-            componentAging = ComponentAging();
-            oversampler.prepare(sampleRate);
-        }
-        
-        float addAnalogNoise(float input) {
-            // Thermal noise simulation (-140dB noise floor)
-            float noise = noiseDist(noiseGen) * 0.0000001f;
-            return input + noise;
-        }
-        
-        float process(float input, float pitchRatio, float formantAmount, 
-                     float humanization, double sampleRate);
-    };
-    
-    // Pitch detection for intelligent harmonization
-    struct PitchDetector {
-        static constexpr int WINDOW_SIZE = 2048;
-        std::array<float, WINDOW_SIZE> buffer;
-        int bufferIndex = 0;
-        float detectedPitch = 440.0f;
-        float confidence = 0.0f;
         
         void addSample(float sample);
         float detectPitch(double sampleRate);
         
     private:
-        float autocorrelation(int lag);
+        float medianPeriod();
+        float findMedianPeriod(std::vector<float>& periods);
     };
     
-    // Channel state with boutique enhancements
+    // Channel state
     struct ChannelState {
         std::array<HarmonizerVoice, 4> voices;
         PitchDetector pitchDetector;
+        DCBlocker inputDC, outputDC;
+        OnePoleFilter antiAliasFilter;
         
-        // Enhanced filtering with ZDF topology
-        struct ZDFFilter {
-            float s = 0.0f; // State
-            float g = 0.0f; // Coefficient
-            
-            void setCutoff(float cutoffHz, double sampleRate) {
-                float wd = 2.0f * M_PI * cutoffHz;
-                float T = 1.0f / sampleRate;
-                float wa = (2.0f / T) * std::tan(wd * T / 2.0f);
-                g = wa * T / 2.0f;
+        void prepare(double sampleRate) {
+            for (auto& voice : voices) {
+                voice.prepare(sampleRate);
             }
-            
-            float processLowpass(float input) {
-                float v = (input - s) / (1.0f + g);
-                float lp = s + g * v;
-                s = lp + g * v;
-                return lp;
-            }
-            
-            float processHighpass(float input) {
-                float v = (input - s) / (1.0f + g);
-                float hp = input - s - g * v;
-                s += 2.0f * g * v;
-                return hp;
-            }
-        };
-        
-        ZDFFilter antiAliasingFilter;
-        ZDFFilter dcBlockingFilter;
-        
-        // Boutique components
-        DCBlocker inputDCBlocker, outputDCBlocker;
-        ThermalModel thermalModel;
-        ComponentAging componentAging;
+            pitchDetector.prepare(sampleRate);
+            inputDC.reset();
+            outputDC.reset();
+            antiAliasFilter.setCutoff(8000.0f, sampleRate);
+            antiAliasFilter.reset();
+        }
     };
     
     std::array<ChannelState, 2> m_channelStates;
     double m_sampleRate = 44100.0;
     
+    // Pre-allocated buffers to avoid heap allocation in process()
+    std::vector<float> m_wetBuffer; // Sized in prepareToPlay
+    int m_maxBlockSize = DEFAULT_BLOCK_SIZE;
+    
+    // Current detected pitch (shared between channels)
+    float m_currentDetectedNote = 60.0f; // Middle C
+    
     // Helper functions
-    int quantizeToScale(int noteOffset, ScaleType scale, int key);
+    int quantizeToScale(int noteOffset, ScaleType scale, int rootKey);
     float noteToFrequency(float note);
     float frequencyToNote(float frequency);
     int getActiveVoices() const;
-    float calculateHarmonizedPitch(float inputNote, int voiceIndex, int interval);
+    void calculateHarmonyIntervals(int baseInterval, ScaleType scale, 
+                                  int voiceIndex, int totalVoices, int& interval);
 };

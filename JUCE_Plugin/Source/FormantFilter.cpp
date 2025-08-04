@@ -1,373 +1,313 @@
+// FormantFilter.cpp
 #include "FormantFilter.h"
-#include <cmath>
 #include <algorithm>
-#include <random>
 
-// Enhanced vowel formant data with more accurate frequencies
-const FormantFilter::FormantData FormantFilter::VOWEL_A = {730.0f, 1090.0f, 2440.0f, 1.0f, 0.5f, 0.25f};
-const FormantFilter::FormantData FormantFilter::VOWEL_E = {270.0f, 2290.0f, 3010.0f, 1.0f, 0.4f, 0.2f};
-const FormantFilter::FormantData FormantFilter::VOWEL_I = {390.0f, 1990.0f, 2550.0f, 1.0f, 0.35f, 0.15f};
-const FormantFilter::FormantData FormantFilter::VOWEL_O = {570.0f, 840.0f, 2410.0f, 1.0f, 0.45f, 0.2f};
-const FormantFilter::FormantData FormantFilter::VOWEL_U = {440.0f, 1020.0f, 2240.0f, 1.0f, 0.3f, 0.15f};
+// Professional vowel formant data with realistic Q ranges (2-20)
+const FormantFilter::FormantData FormantFilter::VOWEL_A = {
+    700, 1220, 2600,   // F1, F2, F3
+    5.0, 7.0, 10.0,    // Q1, Q2, Q3
+    1.0, 0.5, 0.25     // A1, A2, A3
+};
+
+const FormantFilter::FormantData FormantFilter::VOWEL_E = {
+    530, 1840, 2480,
+    5.0, 8.0, 10.0,
+    1.0, 0.4, 0.2
+};
+
+const FormantFilter::FormantData FormantFilter::VOWEL_I = {
+    400, 1920, 2650,
+    5.0, 9.0, 10.0,
+    1.0, 0.35, 0.15
+};
+
+const FormantFilter::FormantData FormantFilter::VOWEL_O = {
+    570, 840, 2410,
+    5.0, 6.0, 10.0,
+    1.0, 0.45, 0.2
+};
+
+const FormantFilter::FormantData FormantFilter::VOWEL_U = {
+    440, 1020, 2240,
+    5.0, 6.0, 10.0,
+    1.0, 0.3, 0.15
+};
 
 FormantFilter::FormantFilter() {
-    // Initialize smoothed parameters
-    m_vowelPosition.reset(0.0f);
-    m_formantShift.reset(0.5f);
-    m_resonance.reset(0.4f);
-    m_morph.reset(0.0f);
-    m_drive.reset(0.1f);
-    m_vintageMode.reset(0.0f);
+    m_vowelPosition.target = 0.0f;  m_vowelPosition.current = 0.0;
+    m_formantShift.target = 0.5f;   m_formantShift.current = 0.5;
+    m_resonance.target = 0.4f;      m_resonance.current = 0.4;
+    m_morph.target = 0.0f;          m_morph.current = 0.0;
+    m_drive.target = 0.0f;          m_drive.current = 0.0;
+    m_mix.target = 0.8f;            m_mix.current = 0.8;
 }
 
 void FormantFilter::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
+    m_blockSize = samplesPerBlock;
     
-    // Set parameter smoothing times
-    m_vowelPosition.setSmoothingTime(50.0f, sampleRate);     // Smooth vowel transitions
-    m_formantShift.setSmoothingTime(30.0f, sampleRate);
-    m_resonance.setSmoothingTime(20.0f, sampleRate);
-    m_morph.setSmoothingTime(100.0f, sampleRate);            // Slower for morph
-    m_drive.setSmoothingTime(100.0f, sampleRate);
-    m_vintageMode.setSmoothingTime(500.0f, sampleRate);
+    // Parameter smoothing times
+    m_vowelPosition.setSmoothingTime(50, sampleRate);
+    m_formantShift.setSmoothingTime(30, sampleRate);
+    m_resonance.setSmoothingTime(20, sampleRate);
+    m_morph.setSmoothingTime(100, sampleRate);
+    m_drive.setSmoothingTime(10, sampleRate);
+    m_mix.setSmoothingTime(10, sampleRate);
     
-    // Initialize 3 formant filters per channel
-    for (int ch = 0; ch < 2; ++ch) {
-        for (int f = 0; f < 3; ++f) {
-            auto& formant = m_formantFilters[ch][f];
-            
-            // Initialize with default vowel (A) frequencies
-            if (f == 0) {
-                formant.freq = VOWEL_A.f1;
-                formant.gain = VOWEL_A.a1;
-            } else if (f == 1) {
-                formant.freq = VOWEL_A.f2;
-                formant.gain = VOWEL_A.a2;
-            } else {
-                formant.freq = VOWEL_A.f3;
-                formant.gain = VOWEL_A.a3;
-            }
-            
-            // Set Q values based on resonance
-            formant.q = 2.0f + m_resonance.current * 6.0f; // Q from 2 to 8
-            formant.reset();
-            calculateFilterCoefficients(formant, 1.0f);
+    // This will be called from the message thread, so we can query channel count
+    // For now, allocate for stereo
+    m_formantFilters.resize(2);
+    m_dcBlockers.resize(2);
+    
+    // Initialize filters
+    for (auto& channel : m_formantFilters) {
+        for (auto& formant : channel) {
+            formant.reset(sampleRate);
         }
     }
+    
+    reset();
 }
 
 void FormantFilter::reset() {
-    // Reset filter states
     for (auto& channel : m_formantFilters) {
-        for (auto& filter : channel) {
-            filter.reset();
+        for (auto& formant : channel) {
+            formant.reset(m_sampleRate);
         }
     }
     
-    // Reset DC blockers
-    for (auto& blocker : m_dcBlockers) {
-        blocker.x1 = blocker.y1 = 0.0f;
+    for (auto& dc : m_dcBlockers) {
+        dc.reset();
     }
+    
+    m_thermalModel.thermalNoise = 0.0;
+    m_thermalModel.noiseFilter = 0.0;
 }
 
 void FormantFilter::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
-    // Update thermal modeling
-    m_thermalModel.update(m_sampleRate);
+    // Dynamically resize if needed (rare case)
+    if (numChannels > m_formantFilters.size()) {
+        m_formantFilters.resize(numChannels);
+        m_dcBlockers.resize(numChannels);
+        for (int ch = 2; ch < numChannels; ++ch) {
+            for (auto& formant : m_formantFilters[ch]) {
+                formant.reset(m_sampleRate);
+            }
+        }
+    }
     
-    for (int channel = 0; channel < numChannels && channel < 2; ++channel) {
-        float* channelData = buffer.getWritePointer(channel);
+    // Process using actual block size
+    const int blockSize = std::min(m_blockSize, 64); // Cap at 64 for cache efficiency
+    
+    for (int offset = 0; offset < numSamples; offset += blockSize) {
+        int samplesToProcess = std::min(blockSize, numSamples - offset);
         
-        for (int sample = 0; sample < numSamples; ++sample) {
-            // Update smoothed parameters
-            m_vowelPosition.update();
-            m_formantShift.update();
-            m_resonance.update();
-            m_morph.update();
-            m_drive.update();
-            m_vintageMode.update();
+        // Update parameters once per block
+        m_vowelPosition.updateBlock();
+        m_formantShift.updateBlock();
+        m_resonance.updateBlock();
+        m_morph.updateBlock();
+        m_drive.updateBlock();
+        m_mix.updateBlock();
+        m_thermalModel.update(m_sampleRate);
+        
+        // Determine if we need oversampling for this block
+        m_useOversampling = m_drive.current > 0.3;
+        
+        // Process each channel
+        for (int ch = 0; ch < numChannels; ++ch) {
+            float* data = buffer.getWritePointer(ch);
             
-            channelData[sample] = processSample(channelData[sample], channel);
+            for (int i = 0; i < samplesToProcess; ++i) {
+                // All processing in double precision
+                double input = static_cast<double>(data[offset + i]);
+                double output = processSample(input, ch);
+                data[offset + i] = static_cast<float>(output);
+            }
         }
     }
 }
 
-float FormantFilter::processSample(float input, int channel) {
-    // Apply DC blocking
-    float cleanInput = m_dcBlockers[channel].process(input);
+double FormantFilter::processSample(double input, int channel) {
+    // DC blocking
+    double x = m_dcBlockers[channel].process(input);
     
-    // Get current vowel formant data
-    FormantData currentFormant = interpolateVowels(m_vowelPosition.current, m_morph.current);
+    // Get interpolated formant data
+    FormantData D = interpolateVowels(m_vowelPosition.current, m_morph.current);
     
-    // Update formant filters with thermal compensation
-    float thermalFactor = m_thermalModel.getThermalFactor();
-    updateFormantFilters(channel, currentFormant);
+    // Update filter parameters
+    updateFormantFilters(channel, D);
     
-    // Apply input drive for analog character
-    float driveAmount = 1.0f + m_drive.current * 3.0f;
-    float drivenInput = cleanInput;
-    
-    if (m_drive.current > 0.01f) {
-        if (m_vintageMode.current > 0.5f) {
-            drivenInput = vintageDistortion(cleanInput, m_drive.current);
-        } else {
-            drivenInput = analogSaturation(cleanInput, m_drive.current);
-        }
+    // Apply drive if needed
+    double driven = x;
+    if (m_drive.current > 0.01) {
+        driven = analogSaturation(x * (1.0 + m_drive.current * 2.0), m_drive.current);
     }
     
-    // Process through each formant filter and sum with proper weighting
-    float formantSum = 0.0f;
-    bool isVintage = m_vintageMode.current > 0.5f;
+    // Process through formant bank
+    double output = processFormantBank(driven, channel, m_drive.current);
     
-    for (int i = 0; i < 3; ++i) {
-        float formantOutput = processFormantFilter(drivenInput, m_formantFilters[channel][i], 
-                                                 m_drive.current, isVintage);
-        
-        // Apply formant gain with slight interaction between formants
-        float gain = m_formantFilters[channel][i].gain;
-        if (i > 0 && formantSum != 0.0f) {
-            // Subtle interaction between formants (analog characteristic)
-            gain *= (1.0f - std::abs(formantSum) * 0.1f);
-        }
-        
-        formantSum += formantOutput * gain;
+    // Makeup gain based on resonance
+    output *= (1.0 + m_resonance.current * 0.3);
+    
+    // Soft limiting
+    if (std::abs(output) > 0.8) {
+        output = std::tanh(output * 0.9) / 0.9;
     }
     
-    // Apply resonance-dependent makeup gain
-    float makeupGain = 1.0f + m_resonance.current * 0.3f;
-    formantSum *= makeupGain;
-    
-    // Soft clipping to prevent harsh peaks
-    if (std::abs(formantSum) > 0.8f) {
-        formantSum = softClip(formantSum);
-    }
-    
-    // Mix with dry signal for natural sound
-    float dryLevel = 0.2f + m_vintageMode.current * 0.2f;  // More dry in vintage mode
-    float wetLevel = 0.8f - m_vintageMode.current * 0.1f;
-    
-    return input * dryLevel + formantSum * wetLevel;
+    // Mix dry/wet
+    return input * (1.0 - m_mix.current) + output * m_mix.current;
 }
 
-FormantFilter::FormantData FormantFilter::interpolateVowels(float vowelPos, float morph) {
-    FormantData result;
+FormantFilter::FormantData FormantFilter::interpolateVowels(double pos, double morph) const {
+    const FormantData *v1, *v2;
+    double f;
     
-    // Determine which vowels to interpolate between
-    const FormantData* vowel1;
-    const FormantData* vowel2;
-    float interpFactor;
-    
-    if (vowelPos < 0.25f) {
-        // Between A and E
-        vowel1 = &VOWEL_A;
-        vowel2 = &VOWEL_E;
-        interpFactor = vowelPos * 4.0f;
-    } else if (vowelPos < 0.5f) {
-        // Between E and I
-        vowel1 = &VOWEL_E;
-        vowel2 = &VOWEL_I;
-        interpFactor = (vowelPos - 0.25f) * 4.0f;
-    } else if (vowelPos < 0.75f) {
-        // Between I and O
-        vowel1 = &VOWEL_I;
-        vowel2 = &VOWEL_O;
-        interpFactor = (vowelPos - 0.5f) * 4.0f;
-    } else {
-        // Between O and U
-        vowel1 = &VOWEL_O;
-        vowel2 = &VOWEL_U;
-        interpFactor = (vowelPos - 0.75f) * 4.0f;
+    // Determine vowel pair
+    if (pos < 0.25) { 
+        v1 = &VOWEL_A; v2 = &VOWEL_E; f = pos * 4.0; 
+    } else if (pos < 0.5) { 
+        v1 = &VOWEL_E; v2 = &VOWEL_I; f = (pos - 0.25) * 4.0; 
+    } else if (pos < 0.75) { 
+        v1 = &VOWEL_I; v2 = &VOWEL_O; f = (pos - 0.5) * 4.0; 
+    } else { 
+        v1 = &VOWEL_O; v2 = &VOWEL_U; f = (pos - 0.75) * 4.0; 
     }
     
-    // Apply morph parameter to interpolation
-    float morphedFactor = interpFactor * (1.0f + morph);
-    morphedFactor = std::max(0.0f, std::min(1.0f, morphedFactor));
+    // Apply morph
+    double mf = std::clamp(f + morph * 0.5, 0.0, 1.0);
     
-    // Interpolate formant frequencies and amplitudes
-    result.f1 = vowel1->f1 + morphedFactor * (vowel2->f1 - vowel1->f1);
-    result.f2 = vowel1->f2 + morphedFactor * (vowel2->f2 - vowel1->f2);
-    result.f3 = vowel1->f3 + morphedFactor * (vowel2->f3 - vowel1->f3);
+    FormantData R;
+    // Interpolate all parameters
+    R.f1 = v1->f1 + mf * (v2->f1 - v1->f1);
+    R.f2 = v1->f2 + mf * (v2->f2 - v1->f2);
+    R.f3 = v1->f3 + mf * (v2->f3 - v1->f3);
     
-    result.a1 = vowel1->a1 + morphedFactor * (vowel2->a1 - vowel1->a1);
-    result.a2 = vowel1->a2 + morphedFactor * (vowel2->a2 - vowel1->a2);
-    result.a3 = vowel1->a3 + morphedFactor * (vowel2->a3 - vowel1->a3);
+    R.q1 = v1->q1 + mf * (v2->q1 - v1->q1);
+    R.q2 = v1->q2 + mf * (v2->q2 - v1->q2);
+    R.q3 = v1->q3 + mf * (v2->q3 - v1->q3);
     
-    // Apply formant shift (frequency scaling)
-    float shiftFactor = 0.5f + m_formantShift.current * 1.5f; // 0.5x to 2x frequency
-    result.f1 *= shiftFactor;
-    result.f2 *= shiftFactor;
-    result.f3 *= shiftFactor;
+    R.a1 = v1->a1 + mf * (v2->a1 - v1->a1);
+    R.a2 = v1->a2 + mf * (v2->a2 - v1->a2);
+    R.a3 = v1->a3 + mf * (v2->a3 - v1->a3);
     
-    // Clamp frequencies to reasonable ranges
-    result.f1 = std::max(80.0f, std::min(result.f1, 1000.0f));
-    result.f2 = std::max(200.0f, std::min(result.f2, 4000.0f));
-    result.f3 = std::max(1000.0f, std::min(result.f3, 8000.0f));
+    // Apply formant shift
+    double shift = 0.5 + m_formantShift.current; // 0.5x to 1.5x
+    R.f1 = std::clamp(R.f1 * shift, 80.0, 1000.0);
+    R.f2 = std::clamp(R.f2 * shift, 200.0, 4000.0);
+    R.f3 = std::clamp(R.f3 * shift, 1000.0, 8000.0);
     
-    return result;
+    return R;
 }
 
-void FormantFilter::updateFormantFilters(int channel, const FormantData& formant) {
-    // Apply formant shift with thermal compensation
-    float thermalFactor = m_thermalModel.getThermalFactor();
-    float shiftFactor = (0.5f + m_formantShift.current * 1.5f) * thermalFactor; // 0.5x to 2x frequency
+void FormantFilter::updateFormantFilters(int channel, const FormantData& D) {
+    double thermal = m_thermalModel.getFactor();
+    double resFactor = 1.0 + m_resonance.current * 3.0; // Scale Q by 1x to 4x
     
-    // Update formant frequencies with drift
-    m_formantFilters[channel][0].freq = formant.f1 * shiftFactor;
-    m_formantFilters[channel][0].gain = formant.a1;
-    m_formantFilters[channel][1].freq = formant.f2 * shiftFactor;
-    m_formantFilters[channel][1].gain = formant.a2;
-    m_formantFilters[channel][2].freq = formant.f3 * shiftFactor;
-    m_formantFilters[channel][2].gain = formant.a3;
+    // Ensure channel exists
+    if (channel >= m_formantFilters.size()) return;
     
-    // Update Q based on resonance parameter with vintage characteristics
-    float baseQ = 2.0f + m_resonance.current * 6.0f; // Q from 2 to 8
+    // Update each formant with proper Q range (2-20)
+    auto& f1 = m_formantFilters[channel][0];
+    f1.freq = D.f1 * thermal;
+    f1.q = std::clamp(D.q1 * resFactor, 2.0, 20.0);
+    f1.gain = D.a1;
+    f1.filter.setParameters(f1.freq, f1.q, m_sampleRate);
     
-    // Recalculate filter coefficients with thermal modeling
-    for (int i = 0; i < 3; ++i) {
-        auto& filter = m_formantFilters[channel][i];
-        
-        // Vintage mode affects Q differently for each formant
-        if (m_vintageMode.current > 0.5f) {
-            filter.q = baseQ * (0.8f + i * 0.1f); // F1 has lower Q, F3 has higher Q
-        } else {
-            filter.q = baseQ;
-        }
-        
-        // Update component drift slowly
-        filter.componentDrift += (((rand() % 1000) / 1000.0f - 0.5f) * 0.0001f) / m_sampleRate;
-        filter.componentDrift = std::max(-0.01f, std::min(0.01f, filter.componentDrift));
-        
-        calculateFilterCoefficients(filter, thermalFactor);
-    }
+    auto& f2 = m_formantFilters[channel][1];
+    f2.freq = D.f2 * thermal;
+    f2.q = std::clamp(D.q2 * resFactor, 2.0, 20.0);
+    f2.gain = D.a2;
+    f2.filter.setParameters(f2.freq, f2.q, m_sampleRate);
+    
+    auto& f3 = m_formantFilters[channel][2];
+    f3.freq = D.f3 * thermal;
+    f3.q = std::clamp(D.q3 * resFactor, 2.0, 20.0);
+    f3.gain = D.a3;
+    f3.filter.setParameters(f3.freq, f3.q, m_sampleRate);
 }
 
-float FormantFilter::processFormantFilter(float input, FormantBandpass& filter, float drive, bool vintageMode) {
-    // Apply nonlinear processing if drive is active
-    float processedInput = input;
-    if (drive > 0.01f) {
-        if (vintageMode) {
-            // Vintage tube-like saturation in the filter
-            processedInput = std::tanh(input * (1.0f + drive * 2.0f)) / (1.0f + drive * 0.5f);
-        } else {
-            // Modern analog saturation
-            processedInput = analogSaturation(input, drive * 0.5f);
-        }
-    }
+double FormantFilter::processFormantBank(double in, int channel, double drive) {
+    double output = 0.0;
     
-    // Enhanced biquad bandpass filter implementation with oversampling for nonlinear parts
-    if (drive > 0.3f && !vintageMode) {
-        // Use 2x oversampling for high drive settings
-        float up1 = processedInput * 2.0f;
-        float up2 = 0.0f; // Zero-stuff
-        
-        // Process both samples
-        float out1 = filter.b0 * up1 + filter.b1 * filter.oversampleState1 + filter.b2 * filter.oversampleState2;
-        filter.oversampleState2 = filter.oversampleState1 - filter.a2 * out1;
-        filter.oversampleState1 = up1 - filter.a1 * out1;
-        
-        float out2 = filter.b0 * up2 + filter.b1 * filter.oversampleState1 + filter.b2 * filter.oversampleState2;
-        filter.oversampleState2 = filter.oversampleState1 - filter.a2 * out2;
-        filter.oversampleState1 = up2 - filter.a1 * out2;
-        
-        return (out1 + out2) * 0.25f; // Downsample
-    } else {
-        // Standard processing
-        float output = filter.b0 * processedInput + filter.b1 * filter.state1 + filter.b2 * filter.state2;
-        
-        // Update states with potential saturation in vintage mode
-        if (vintageMode && drive > 0.1f) {
-            // Add subtle saturation in the state variables
-            float sat1 = filter.state1 - filter.a1 * output;
-            float sat2 = filter.state2 - filter.a2 * output;
+    // Hoist oversampling decision
+    if (m_useOversampling) {
+        // Process all formants with oversampling
+        for (int i = 0; i < 3; ++i) {
+            auto& f = m_formantFilters[channel][i];
             
-            filter.state1 = processedInput - std::tanh(sat1 * (1.0f + drive)) / (1.0f + drive * 0.3f);
-            filter.state2 = sat2;
-        } else {
-            // Clean update
-            filter.state2 = filter.state1 - filter.a2 * output;
-            filter.state1 = processedInput - filter.a1 * output;
+            double up1, up2;
+            f.oversampler.process(in, up1, up2);
+            
+            double out1 = f.filter.processBandpass(up1);
+            double out2 = f.filter.processBandpass(up2);
+            
+            // Apply saturation at 2x rate if high drive
+            if (drive > 0.5) {
+                out1 = asymmetricSaturation(out1, drive * 0.3);
+                out2 = asymmetricSaturation(out2, drive * 0.3);
+            }
+            
+            double downsampled = f.oversampler.downsample(out1, out2);
+            output += downsampled * f.gain;
         }
-        
-        return output;
-    }
-}
-
-void FormantFilter::calculateFilterCoefficients(FormantBandpass& filter, float thermalFactor) {
-    // Apply component drift and thermal effects
-    float adjustedFreq = filter.freq * (1.0f + filter.componentDrift) * thermalFactor;
-    float adjustedQ = filter.q * (1.0f + filter.componentDrift * 0.5f);
-    
-    // Clamp frequency to reasonable bounds
-    adjustedFreq = std::max(20.0f, std::min(adjustedFreq, static_cast<float>(m_sampleRate * 0.45)));
-    adjustedQ = std::max(0.5f, std::min(adjustedQ, 30.0f));
-    
-    // Calculate enhanced biquad bandpass filter coefficients with pre-warping
-    float omega = 2.0f * M_PI * adjustedFreq / m_sampleRate;
-    
-    // Pre-warp for better frequency response at high frequencies
-    float prewarpedOmega = 2.0f * std::tan(omega * 0.5f);
-    float sinOmega = std::sin(prewarpedOmega * 0.5f);
-    float cosOmega = std::cos(prewarpedOmega * 0.5f);
-    float alpha = sinOmega / adjustedQ;
-    
-    // Bandpass coefficients with improved numerical stability
-    float a0 = 1.0f + alpha;
-    filter.a1 = -2.0f * cosOmega / a0;
-    filter.a2 = (1.0f - alpha) / a0;
-    
-    filter.b0 = alpha / a0;
-    filter.b1 = 0.0f;
-    filter.b2 = -alpha / a0;
-    
-    // Enhanced stability checks
-    if (std::abs(filter.a1) >= 1.99f) filter.a1 = (filter.a1 > 0) ? 1.98f : -1.98f;
-    if (std::abs(filter.a2) >= 0.99f) filter.a2 = (filter.a2 > 0) ? 0.98f : -0.98f;
-    
-    // Ensure the pole radius is less than 1 for stability
-    float poleRadius = std::sqrt(filter.a2);
-    if (poleRadius >= 0.99f) {
-        float scale = 0.98f / poleRadius;
-        filter.a2 *= scale;
-    }
-}
-
-float FormantFilter::analogSaturation(float input, float amount) {
-    // Analog-style saturation with even harmonics
-    float driven = input * (1.0f + amount * 2.0f);
-    return std::tanh(driven * 0.8f) / (0.8f * (1.0f + amount * 0.3f));
-}
-
-float FormantFilter::vintageDistortion(float input, float amount) {
-    // Vintage tube-like distortion with asymmetry
-    float driven = input * (1.0f + amount * 3.0f);
-    
-    // Asymmetric clipping for vintage character
-    if (driven > 0.0f) {
-        return std::tanh(driven * 0.7f) / (0.7f * (1.0f + amount * 0.2f));
     } else {
-        return std::tanh(driven * 0.9f) / (0.9f * (1.0f + amount * 0.1f));
+        // Direct processing without oversampling
+        for (int i = 0; i < 3; ++i) {
+            auto& f = m_formantFilters[channel][i];
+            double filtered = f.filter.processBandpass(in);
+            output += filtered * f.gain;
+        }
+    }
+    
+    return output;
+}
+
+double FormantFilter::analogSaturation(double in, double amt) const {
+    // Warm analog-style saturation
+    return std::tanh(in * 0.8) / (0.8 * (1.0 + amt * 0.3));
+}
+
+double FormantFilter::asymmetricSaturation(double in, double amt) const {
+    // Tube-like asymmetric saturation
+    if (in > 0) {
+        return std::tanh(in * 0.7) / (0.7 * (1.0 + amt * 0.2));
+    } else {
+        return std::tanh(in * 0.9) / (0.9 * (1.0 + amt * 0.1));
     }
 }
 
 void FormantFilter::updateParameters(const std::map<int, float>& params) {
-    if (params.find(0) != params.end()) m_vowelPosition.target = params.at(0);
-    if (params.find(1) != params.end()) m_formantShift.target = params.at(1);
-    if (params.find(2) != params.end()) m_resonance.target = params.at(2);
-    if (params.find(3) != params.end()) m_morph.target = params.at(3);
-    if (params.find(4) != params.end()) m_drive.target = params.at(4);
-    if (params.find(5) != params.end()) m_vintageMode.target = params.at(5);
+    auto it = params.find(kVowelPosition);
+    if (it != params.end()) m_vowelPosition.target = std::clamp(it->second, 0.0f, 1.0f);
+    
+    it = params.find(kFormantShift);
+    if (it != params.end()) m_formantShift.target = std::clamp(it->second, 0.0f, 1.0f);
+    
+    it = params.find(kResonance);
+    if (it != params.end()) m_resonance.target = std::clamp(it->second, 0.0f, 1.0f);
+    
+    it = params.find(kMorph);
+    if (it != params.end()) m_morph.target = std::clamp(it->second, 0.0f, 1.0f);
+    
+    it = params.find(kDrive);
+    if (it != params.end()) m_drive.target = std::clamp(it->second, 0.0f, 1.0f);
+    
+    it = params.find(kMix);
+    if (it != params.end()) m_mix.target = std::clamp(it->second, 0.0f, 1.0f);
 }
 
 juce::String FormantFilter::getParameterName(int index) const {
     switch (index) {
-        case 0: return "Vowel Position";
-        case 1: return "Formant Shift";
-        case 2: return "Resonance";
-        case 3: return "Morph";
-        case 4: return "Drive";
-        case 5: return "Vintage Mode";
+        case kVowelPosition: return "Vowel";
+        case kFormantShift: return "Shift";
+        case kResonance: return "Resonance";
+        case kMorph: return "Morph";
+        case kDrive: return "Drive";
+        case kMix: return "Mix";
         default: return "";
     }
 }

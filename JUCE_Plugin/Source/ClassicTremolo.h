@@ -1,8 +1,12 @@
 #pragma once
 #include "EngineBase.h"
-#include <vector>
 #include <array>
-#include <random>
+#include <memory>
+#include <atomic>
+#include <cmath>
+#ifdef __SSE2__
+#include <immintrin.h>  // For SIMD
+#endif
 
 class ClassicTremolo : public EngineBase {
 public:
@@ -15,195 +19,285 @@ public:
     void updateParameters(const std::map<int, float>& params) override;
     
     juce::String getName() const override { return "Classic Tremolo"; }
-    int getNumParameters() const override { return 6; }
+    int getNumParameters() const override { return 8; }
     juce::String getParameterName(int index) const override;
     
 private:
-    // Parameters with smoothing
-    struct SmoothParam {
-        float target = 0.0f;
-        float current = 0.0f;
-        float smoothing = 0.995f;
-        
-        void update() {
-            current = target + (current - target) * smoothing;
-        }
-        
-        void setImmediate(float value) {
-            target = value;
-            current = value;
-        }
-        
-        void setSmoothingRate(float rate) {
-            smoothing = rate;
-        }
+    // Professional constants
+    static constexpr double DENORMAL_PREVENTION = 1e-30;
+    static constexpr int OVERSAMPLE_FACTOR = 4;
+    static constexpr int MAX_BLOCK_SIZE = 2048;
+    static constexpr int NUM_CHANNELS = 2;
+    
+    // Tremolo types
+    enum class TremoloType {
+        SINE_AMPLITUDE,      // Classic sine wave amplitude modulation
+        TRIANGLE_AMPLITUDE,  // Triangle wave amplitude modulation
+        SQUARE_AMPLITUDE,    // Square wave (choppy) tremolo
+        HARMONIC_TREMOLO,    // Pitch vibrato + amplitude (Fender style)
+        BIAS_TREMOLO,        // Tube bias modulation (Vox/Marshall style)
+        OPTICAL_TREMOLO,     // Photocell/LED simulation
+        ROTARY_SPEAKER       // Leslie-style with doppler
     };
     
-    SmoothParam m_rate;         // 0.1-20 Hz
-    SmoothParam m_depth;        // 0-1
-    SmoothParam m_waveform;     // 0-1 (sine to square)
-    SmoothParam m_stereoPhase;  // 0-180 degrees
-    SmoothParam m_volume;       // 0-1
-    SmoothParam m_mix;          // 0-1 (dry/wet mix)
+    // Cached parameters for block processing
+    struct CachedParams {
+        double rate;
+        double depth;
+        double shape;
+        double stereoPhase;
+        TremoloType type;
+        double symmetry;
+        double volume;
+        double mix;
+    };
     
-    // DSP State
-    double m_sampleRate = 44100.0;
-    
-    // Advanced LFO with multiple waveforms
-    struct AdvancedLFO {
-        float phase = 0.0f;
-        float phaseIncrement = 0.0f;
-        float thermalDrift = 0.0f;
-        float agingOffset = 0.0f;
+    // Professional parameter smoothing
+    class ParameterSmoother {
+        std::atomic<double> targetValue{0.0};
+        double currentValue = 0.0;
+        double smoothingCoeff = 0.0;
         
-        float tick(float rate, double sampleRate, float thermalFactor, float aging) {
-            // Update phase with thermal and aging effects
-            float adjustedRate = rate * thermalFactor * (1.0f - aging * 0.02f);
-            phaseIncrement = adjustedRate / sampleRate;
+    public:
+        void setSampleRate(double sr, double smoothingTimeMs = 20.0) {
+            double fc = 1000.0 / (2.0 * M_PI * smoothingTimeMs);
+            smoothingCoeff = std::exp(-2.0 * M_PI * fc / sr);
+        }
+        
+        void setTarget(double value) {
+            targetValue.store(value, std::memory_order_relaxed);
+        }
+        
+        double process() {
+            double target = targetValue.load(std::memory_order_relaxed);
+            currentValue = target + (currentValue - target) * smoothingCoeff;
+            currentValue += DENORMAL_PREVENTION;
+            currentValue -= DENORMAL_PREVENTION;
+            return currentValue;
+        }
+        
+        void reset(double value) {
+            targetValue.store(value, std::memory_order_relaxed);
+            currentValue = value;
+        }
+        
+        double getCurrent() const { return currentValue; }
+    };
+    
+    // Professional LFO with phase accumulator
+    class ProfessionalLFO {
+        double phase = 0.0;
+        double phaseIncrement = 0.0;
+        double sampleRate = 48000.0;
+        double pulseWidth = 0.5;
+        double skew = 0.0;
+        
+    public:
+        void setSampleRate(double sr) { sampleRate = sr; }
+        void setFrequency(double freq) { phaseIncrement = freq / sampleRate; }
+        void setPulseWidth(double pw) { pulseWidth = std::clamp(pw, 0.01, 0.99); }
+        void setSkew(double s) { skew = std::clamp(s, -0.99, 0.99); }
+        void reset(double startPhase = 0.0) { phase = std::fmod(startPhase, 1.0); }
+        double getPhase() const { return phase; }
+        
+        void tick() {
             phase += phaseIncrement;
-            
-            if (phase >= 1.0f) {
-                phase -= 1.0f;
-            }
-            
-            return phase;
-        }
-    };
-    
-    std::vector<AdvancedLFO> m_oscillators;
-    
-    // Helper functions
-    float generateWaveform(float phase, float waveformMix);
-    float smoothstep(float edge0, float edge1, float x);
-    
-    // DC blocking
-    struct DCBlocker {
-        float x1 = 0.0f;
-        float y1 = 0.0f;
-        const float R = 0.995f;
-        
-        float process(float input) {
-            float output = input - x1 + R * y1;
-            x1 = input;
-            y1 = output;
-            return output;
-        }
-    };
-    
-    std::array<DCBlocker, 2> m_inputDCBlockers;
-    std::array<DCBlocker, 2> m_outputDCBlockers;
-    
-    // Thermal modeling
-    struct ThermalModel {
-        float temperature = 25.0f;  // Celsius
-        float thermalNoise = 0.0f;
-        std::mt19937 rng;
-        std::uniform_real_distribution<float> dist{-0.5f, 0.5f};
-        
-        ThermalModel() : rng(std::random_device{}()) {}
-        
-        void update(double sampleRate) {
-            // Slow thermal drift
-            thermalNoise += (dist(rng) * 0.001f) / sampleRate;
-            thermalNoise = std::max(-0.02f, std::min(0.02f, thermalNoise));
+            if (phase >= 1.0) phase -= 1.0;
         }
         
-        float getThermalFactor() const {
-            return 1.0f + thermalNoise;
-        }
-    };
-    
-    ThermalModel m_thermalModel;
-    
-    // Component aging simulation
-    float m_componentAge = 0.0f;
-    int m_sampleCount = 0;
-    
-    // Multiple tremolo modes
-    enum class TremoloMode {
-        Classic,
-        Vintage,
-        Modern,
-        Tube
-    };
-    
-    TremoloMode m_currentMode = TremoloMode::Classic;
-    
-    // Vintage-style tube tremolo modeling
-    struct TubeModel {
-        float tubeState = 0.0f;
-        float bias = 0.5f;
+        // Generate LFO values for entire block
+        void generateBlock(double* output, int numSamples, double shape);
         
-        float process(float input, float modulation, float aging) {
-            // Simulate tube bias modulation
-            float biasModulation = bias + modulation * 0.3f;
-            
-            // Tube saturation with aging
-            float saturation = 1.0f + aging * 0.2f;
-            float saturated = std::tanh(input * saturation * biasModulation) / saturation;
-            
-            // Tube state tracking for bias drift
-            tubeState = tubeState * 0.9999f + saturated * 0.0001f;
-            
-            return saturated;
-        }
+        double sine() const { return std::sin(2.0 * M_PI * phase); }
+        double triangle() const;
+        double square() const { return phase < pulseWidth ? 1.0 : -1.0; }
+        double sawUp() const { return 2.0 * phase - 1.0; }
     };
     
-    std::vector<TubeModel> m_tubeModels;
-    
-    // Enhanced tremolo processing with analog modeling
-    float processChannelWithModeling(float input, int channel, float thermalFactor, float aging);
-    
-    // Oversampling for high-quality tremolo
-    struct Oversampler {
-        static constexpr int OVERSAMPLE_FACTOR = 2;
-        std::vector<float> upsampleBuffer;
-        std::vector<float> downsampleBuffer;
+    // Optical tremolo model
+    class OpticalTremoloModel {
+        double ledBrightness = 0.0;
+        double cellResistance = 1.0;
+        double attackCoeff = 0.0;
+        double decayCoeff = 0.0;
         
-        // Anti-aliasing filters
-        struct AAFilter {
-            std::array<float, 4> x = {0.0f};
-            std::array<float, 4> y = {0.0f};
+    public:
+        void setSampleRate(double sr);
+        double process(double lfoValue);
+        void processBlock(const double* lfoValues, double* output, int numSamples);
+        void reset() { ledBrightness = 0.0; cellResistance = 1.0; }
+    };
+    
+    // Harmonic tremolo (pitch shifting + amplitude)
+    class HarmonicTremolo {
+        static constexpr int DELAY_SIZE = 4096;
+        alignas(16) std::array<double, DELAY_SIZE> delayLine{};
+        int writePos = 0;
+        double sampleRate = 48000.0;
+        
+        struct AllPassFilter {
+            double x1 = 0, y1 = 0;
+            double coefficient = 0;
             
-            float process(float input) {
-                // 4th order Butterworth lowpass at Nyquist/2
-                const float a0 = 0.0947f, a1 = 0.3789f, a2 = 0.5684f, a3 = 0.3789f, a4 = 0.0947f;
-                const float b1 = -0.0000f, b2 = 0.4860f, b3 = -0.0000f, b4 = -0.0177f;
-                
-                float output = a0 * input + a1 * x[0] + a2 * x[1] + a3 * x[2] + a4 * x[3]
-                             - b1 * y[0] - b2 * y[1] - b3 * y[2] - b4 * y[3];
-                
-                // Shift delay line
-                x[3] = x[2]; x[2] = x[1]; x[1] = x[0]; x[0] = input;
-                y[3] = y[2]; y[2] = y[1]; y[1] = y[0]; y[0] = output;
-                
-                return output;
-            }
+            void setFrequency(double freq, double sr);
+            double process(double input);
+            void reset() { x1 = y1 = 0; }
         };
         
-        AAFilter upsampleFilter;
-        AAFilter downsampleFilter;
+        std::array<AllPassFilter, 4> phaseNetwork;
         
-        void prepare(int blockSize) {
-            upsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
-            downsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
-        }
-        
-        void upsample(const float* input, float* output, int numSamples) {
-            for (int i = 0; i < numSamples; ++i) {
-                output[i * 2] = upsampleFilter.process(input[i] * 2.0f);
-                output[i * 2 + 1] = upsampleFilter.process(0.0f);
-            }
-        }
-        
-        void downsample(const float* input, float* output, int numSamples) {
-            for (int i = 0; i < numSamples; ++i) {
-                downsampleFilter.process(input[i * 2]);
-                output[i] = downsampleFilter.process(input[i * 2 + 1]) * 0.5f;
-            }
-        }
+    public:
+        void setSampleRate(double sr);
+        double process(double input, double lfoValue, double depth);
+        void processBlock(const double* input, double* output, const double* lfoValues, 
+                         int numSamples, double depth);
+        void reset();
     };
     
-    Oversampler m_oversampler;
-    bool m_useOversampling = true;
+    // Tube bias tremolo model V2
+    class TubeBiasTremoloV2 {
+        double sampleRate = 48000.0;
+        double rcTimeConstant = 0.0;
+        double couplingState = 0.0;
+        
+    public:
+        void setSampleRate(double sr);
+        double process(double input, double lfoValue, double depth);
+        void processBlock(const double* input, double* output, const double* lfoValues,
+                         int numSamples, double depth);
+        void reset() { couplingState = 0.0; }
+    };
+    
+    // Professional Rotary Speaker
+    class ProfessionalRotarySpkr {
+        struct Rotor {
+            double angle = 0.0;
+            double speed = 0.0;
+            double targetSpeed = 0.0;
+            double inertia = 0.95;
+            
+            void update(double speedHz, double sampleRate);
+            double getSine() const { return std::sin(2.0 * M_PI * angle); }
+            double getCosine() const { return std::cos(2.0 * M_PI * angle); }
+        };
+        
+        struct LinkwitzRiley {
+            double b0, b1, b2, a1, a2;
+            double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+            
+            void setFrequency(double freq, double sr, bool highpass);
+            double process(double input);
+            void reset() { x1 = x2 = y1 = y2 = 0; }
+        };
+        
+        struct DopplerDelay {
+            static constexpr int DELAY_SIZE = 2048;
+            alignas(16) std::array<double, DELAY_SIZE> buffer{};
+            int writePos = 0;
+            
+            double process(double input, double delaySamples);
+            void reset() { buffer.fill(0); writePos = 0; }
+        };
+        
+        Rotor hornRotor, drumRotor;
+        LinkwitzRiley lowpass, highpass;
+        DopplerDelay hornDelay, drumDelay;
+        double sampleRate = 48000.0;
+        bool fastSpeed = false;
+        
+    public:
+        void setSampleRate(double sr);
+        void setSpeed(bool fast);
+        double process(double input, double depth);
+        void processBlock(const double* input, double* output, int numSamples, double depth);
+        void reset();
+    };
+    
+    // Optimized oversampler
+    class OptimizedOversampler {
+        struct Biquad {
+            double b0, b1, b2, a1, a2;
+            double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+            
+            inline double process(double in) {
+                double out = b0 * in + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+                x2 = x1; x1 = in;
+                y2 = y1; y1 = out;
+                return out;
+            }
+            
+            void reset() { x1 = x2 = y1 = y2 = 0; }
+        };
+        
+        std::array<Biquad, 4> upsampleStages;
+        std::array<Biquad, 4> downsampleStages;
+        
+    public:
+        void prepare(double sampleRate);
+        void processUpsample(const double* input, double* output, int numSamples, int factor);
+        void processDownsample(double* data, int numSamples, int factor);
+        void reset();
+    };
+    
+    // DC blocking filter
+    class DCBlocker {
+        double x1 = 0, y1 = 0;
+        double cutoff = 0.995;
+        
+    public:
+        void setCutoff(double freqHz, double sampleRate) {
+            cutoff = 1.0 - std::exp(-2.0 * M_PI * freqHz / sampleRate);
+        }
+        
+        double process(double input) {
+            y1 = input - x1 + y1 * (1.0 - cutoff);
+            x1 = input;
+            y1 += DENORMAL_PREVENTION;
+            y1 -= DENORMAL_PREVENTION;
+            return y1;
+        }
+        
+        void processBlock(double* data, int numSamples) {
+            for (int i = 0; i < numSamples; ++i) {
+                data[i] = process(data[i]);
+            }
+        }
+        
+        void reset() { x1 = y1 = 0; }
+    };
+    
+    // Core DSP members
+    double m_sampleRate = 48000.0;
+    
+    // Parameters
+    std::unique_ptr<ParameterSmoother> m_rate;
+    std::unique_ptr<ParameterSmoother> m_depth;
+    std::unique_ptr<ParameterSmoother> m_shape;
+    std::unique_ptr<ParameterSmoother> m_stereoPhase;
+    std::unique_ptr<ParameterSmoother> m_type;
+    std::unique_ptr<ParameterSmoother> m_symmetry;
+    std::unique_ptr<ParameterSmoother> m_volume;
+    std::unique_ptr<ParameterSmoother> m_mix;
+    
+    // Processing components
+    std::array<ProfessionalLFO, NUM_CHANNELS> m_lfos;
+    std::array<OpticalTremoloModel, NUM_CHANNELS> m_opticalModels;
+    std::array<std::unique_ptr<HarmonicTremolo>, NUM_CHANNELS> m_harmonicTremolos;
+    std::array<std::unique_ptr<TubeBiasTremoloV2>, NUM_CHANNELS> m_tubeTremolos;
+    std::array<std::unique_ptr<ProfessionalRotarySpkr>, NUM_CHANNELS> m_rotarySpeakers;
+    std::array<std::unique_ptr<OptimizedOversampler>, NUM_CHANNELS> m_oversamplers;
+    std::array<DCBlocker, NUM_CHANNELS> m_inputDCBlockers;
+    std::array<DCBlocker, NUM_CHANNELS> m_outputDCBlockers;
+    
+    // Work buffers (aligned for SIMD)
+    alignas(16) std::array<double, MAX_BLOCK_SIZE> m_workBuffers[NUM_CHANNELS];
+    alignas(16) std::array<double, MAX_BLOCK_SIZE> m_lfoBuffers[NUM_CHANNELS];
+    alignas(16) std::array<double, MAX_BLOCK_SIZE * OVERSAMPLE_FACTOR> m_oversampledBuffers[NUM_CHANNELS];
+    
+    // Processing methods
+    void processChannelOptimized(float* data, int numSamples, int channel,
+                                const CachedParams& params, bool needsOversampling);
+    void processSimpleTremoloSIMD(float* data, int numSamples, 
+                                  const double* lfoValues, double depth);
+    double generateLFOValue(int channel, double shape, double symmetry);
 };

@@ -1,6 +1,6 @@
 """
 Generated Engine Parameter Defaults for ChimeraPhoenix
-Generated from parameter_database.json on 2025-08-03 13:39:35
+Generated from parameter_database.json on 2025-08-04 00:44:32
 DO NOT EDIT MANUALLY - Edit parameter_database.json and regenerate
 """
 
@@ -48,7 +48,7 @@ ENGINE_DEFAULTS = {
         "params": {
             "param1": {"name": "Size", "default": 0.5, "min": 0.0, "max": 1.0},
             "param2": {"name": "Damping", "default": 0.5, "min": 0.0, "max": 1.0},
-            "param3": {"name": "Width", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param3": {"name": "Predelay", "default": 0.0, "min": 0.0, "max": 1.0},
             "param4": {"name": "Mix", "default": 0.3, "min": 0.0, "max": 1.0},
         }
     },
@@ -148,8 +148,8 @@ ENGINE_DEFAULTS = {
         "params": {
             "param1": {"name": "Rate", "default": 0.25, "min": 0.0, "max": 1.0},
             "param2": {"name": "Depth", "default": 0.5, "min": 0.0, "max": 1.0},
-            "param3": {"name": "Crossover", "default": 0.5, "min": 0.0, "max": 1.0},
-            "param4": {"name": "Phase", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param3": {"name": "Harmonics", "default": 0.4, "min": 0.0, "max": 1.0},
+            "param4": {"name": "Stereo Phase", "default": 0.25, "min": 0.0, "max": 1.0},
         }
     },
     
@@ -159,9 +159,12 @@ ENGINE_DEFAULTS = {
         "params": {
             "param1": {"name": "Rate", "default": 0.25, "min": 0.0, "max": 1.0},
             "param2": {"name": "Depth", "default": 0.5, "min": 0.0, "max": 1.0},
-            "param3": {"name": "Waveform", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param3": {"name": "Shape", "default": 0.0, "min": 0.0, "max": 1.0},
             "param4": {"name": "Stereo", "default": 0.0, "min": 0.0, "max": 1.0},
-            "param5": {"name": "Volume", "default": 1.0, "min": 0.0, "max": 1.0},
+            "param5": {"name": "Type", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param6": {"name": "Symmetry", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param7": {"name": "Volume", "default": 1.0, "min": 0.0, "max": 1.0},
+            "param8": {"name": "Mix", "default": 1.0, "min": 0.0, "max": 1.0},
         }
     },
     
@@ -230,6 +233,10 @@ ENGINE_DEFAULTS = {
             "param1": {"name": "Sustain", "default": 0.3, "min": 0.0, "max": 1.0},
             "param2": {"name": "Tone", "default": 0.5, "min": 0.0, "max": 1.0},
             "param3": {"name": "Volume", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param4": {"name": "Gate", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param5": {"name": "Mids", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param6": {"name": "Variant", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param7": {"name": "Mix", "default": 1.0, "min": 0.0, "max": 1.0},
         }
     },
     
@@ -237,10 +244,14 @@ ENGINE_DEFAULTS = {
     36: {
         "name": "Rodent Distortion",
         "params": {
-            "param1": {"name": "Gain", "default": 0.3, "min": 0.0, "max": 1.0},
-            "param2": {"name": "Filter", "default": 0.5, "min": 0.0, "max": 1.0},
-            "param3": {"name": "Volume", "default": 0.5, "min": 0.0, "max": 1.0},
-            "param4": {"name": "Mode", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param1": {"name": "Gain", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param2": {"name": "Filter", "default": 0.4, "min": 0.0, "max": 1.0},
+            "param3": {"name": "Clipping", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param4": {"name": "Tone", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param5": {"name": "Output", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param6": {"name": "Mix", "default": 1.0, "min": 0.0, "max": 1.0},
+            "param7": {"name": "Mode", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param8": {"name": "Presence", "default": 0.3, "min": 0.0, "max": 1.0},
         }
     },
     
@@ -321,10 +332,11 @@ ENGINE_DEFAULTS = {
     44: {
         "name": "Detune Doubler",
         "params": {
-            "param1": {"name": "Detune", "default": 0.2, "min": 0.0, "max": 1.0},
-            "param2": {"name": "Delay", "default": 0.1, "min": 0.0, "max": 1.0},
-            "param3": {"name": "Mix", "default": 0.5, "min": 0.0, "max": 1.0},
-            "param4": {"name": "Width", "default": 0.7, "min": 0.0, "max": 1.0},
+            "param1": {"name": "Detune Amount", "default": 0.3, "min": 0.0, "max": 1.0},
+            "param2": {"name": "Delay Time", "default": 0.15, "min": 0.0, "max": 1.0},
+            "param3": {"name": "Stereo Width", "default": 0.7, "min": 0.0, "max": 1.0},
+            "param4": {"name": "Thickness", "default": 0.3, "min": 0.0, "max": 1.0},
+            "param5": {"name": "Mix", "default": 0.5, "min": 0.0, "max": 1.0},
         }
     },
     
@@ -424,8 +436,7 @@ ENGINE_DEFAULTS = {
             "param1": {"name": "Time", "default": 0.4, "min": 0.0, "max": 1.0},
             "param2": {"name": "Feedback", "default": 0.3, "min": 0.0, "max": 0.9},
             "param3": {"name": "Mix", "default": 0.3, "min": 0.0, "max": 1.0},
-            "param4": {"name": "HP Filter", "default": 0.0, "min": 0.0, "max": 1.0},
-            "param5": {"name": "LP Filter", "default": 1.0, "min": 0.0, "max": 1.0},
+            "param4": {"name": "High Cut", "default": 0.8, "min": 0.0, "max": 1.0},
         }
     },
     
@@ -452,6 +463,33 @@ ENGINE_DEFAULTS = {
             "param2": {"name": "Center", "default": 0.5, "min": 0.0, "max": 1.0},
             "param3": {"name": "Rotation", "default": 0.5, "min": 0.0, "max": 1.0},
             "param4": {"name": "Mix", "default": 1.0, "min": 0.0, "max": 1.0},
+        }
+    },
+    
+    # 56: ENGINE_ROTARY_SPEAKER
+    56: {
+        "name": "Rotary Speaker",
+        "params": {
+            "param1": {"name": "Speed", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param2": {"name": "Acceleration", "default": 0.3, "min": 0.0, "max": 1.0},
+            "param3": {"name": "Drive", "default": 0.3, "min": 0.0, "max": 1.0},
+            "param4": {"name": "Mic Distance", "default": 0.6, "min": 0.0, "max": 1.0},
+            "param5": {"name": "Stereo Width", "default": 0.8, "min": 0.0, "max": 1.0},
+            "param6": {"name": "Mix", "default": 1.0, "min": 0.0, "max": 1.0},
+        }
+    },
+    
+    # 57: ENGINE_LADDER_FILTER
+    57: {
+        "name": "Ladder Filter Pro",
+        "params": {
+            "param1": {"name": "Cutoff", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param2": {"name": "Resonance", "default": 0.3, "min": 0.0, "max": 1.0},
+            "param3": {"name": "Drive", "default": 0.2, "min": 0.0, "max": 1.0},
+            "param4": {"name": "Filter Type", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param5": {"name": "Asymmetry", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param6": {"name": "Vintage Mode", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param7": {"name": "Mix", "default": 1.0, "min": 0.0, "max": 1.0},
         }
     },
     

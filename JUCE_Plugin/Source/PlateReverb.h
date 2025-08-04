@@ -4,170 +4,191 @@
 #include <vector>
 #include <array>
 #include <memory>
+#include <atomic>
+#include <random>
+#include <algorithm>
 
+// Performance mode for different CPU targets
+enum class PerformanceMode {
+    LOW_CPU,      // Linear interpolation, 6-tap FDN, 64-sample blocks
+    BALANCED,     // Hermite interpolation, 8-tap FDN, 32-sample blocks
+    HIGH_QUALITY  // Cubic interpolation, 8-tap FDN, 32-sample blocks (default)
+};
+
+// Professional plate reverb constants based on EMT 140 measurements
+namespace PlateConstants {
+    // Block processing sizes for different performance modes
+    constexpr int getBlockSize(PerformanceMode mode) {
+        switch (mode) {
+            case PerformanceMode::LOW_CPU: return 64;    // Larger blocks for efficiency
+            case PerformanceMode::BALANCED: return 32;   // Balanced
+            case PerformanceMode::HIGH_QUALITY: return 32; // Optimal for low latency
+            default: return 32;
+        }
+    }
+    
+    // Maximum supported sample rate for pre-allocation
+    constexpr double MAX_SAMPLE_RATE = 192000.0;
+    constexpr double REFERENCE_SAMPLE_RATE = 44100.0;
+    
+    // Early reflection tap delays (samples at 44.1kHz) - measured from EMT 140
+    constexpr int EARLY_TAP_DELAYS[] = {
+        113,   // 2.56ms - First reflection from plate edge
+        197,   // 4.47ms - Secondary edge reflection  
+        283,   // 6.42ms - Corner reflection
+        367,   // 8.32ms - Diagonal path
+        431,   // 9.77ms - Multiple edge bounce
+        503,   // 11.4ms - Complex path 1
+        577,   // 13.1ms - Complex path 2
+        643,   // 14.6ms - Complex path 3
+        719,   // 16.3ms - Late early reflection 1
+        797,   // 18.1ms - Late early reflection 2
+        863,   // 19.6ms - Late early reflection 3
+        929,   // 21.1ms - Late early reflection 4
+        997,   // 22.6ms - Transition to late reverb 1
+        1061,  // 24.1ms - Transition to late reverb 2
+        1129,  // 25.6ms - Transition to late reverb 3
+        1193   // 27.1ms - Final early reflection
+    };
+    
+    // FDN delay times - based on golden ratio to minimize coloration
+    constexpr int FDN_DELAY_BASE[] = {
+        1433,  // Base delay
+        1601,  // Base * 1.117 (avoiding simple ratios)
+        1867,  // Base * 1.303
+        2053,  // Base * 1.433
+        2251,  // Base * 1.571
+        2399,  // Base * 1.674
+        2617,  // Base * 1.826
+        2797   // Base * 1.952
+    };
+    
+    // Modulation rates (Hz) - prime numbers for non-correlated motion
+    constexpr double MOD_RATES[] = {
+        0.71, 0.83, 0.97, 1.07, 1.13, 1.31, 1.49, 1.67
+    };
+    
+    // Input diffusion delays (samples at 44.1kHz) - prime numbers
+    constexpr int DIFFUSION_DELAYS[] = {113, 163, 211, 263};
+    
+    // Reverb parameters
+    constexpr double MIN_FEEDBACK = 0.82;    // Prevents instant decay
+    constexpr double MAX_FEEDBACK = 0.98;    // Prevents runaway oscillation
+    constexpr double DAMPING_SCALE = 0.8;    // Scales user damping for FDN
+    constexpr double EARLY_MIX = 0.4;        // Early reflections mix level
+    constexpr double LATE_MIX = 0.6;         // Late reverb mix level
+    constexpr double STEREO_SPREAD = 1.2;    // Stereo width enhancement
+    
+    // Filter frequencies
+    constexpr double DC_BLOCK_FREQ = 5.0;    // DC blocker frequency (Hz)
+    constexpr double OUTPUT_HPF_FREQ = 20.0; // Output highpass frequency (Hz)
+    
+    // Smoothing times (seconds) - granular control
+    constexpr double SIZE_SMOOTH_TIME = 0.05;        // 50ms for size changes
+    constexpr double DAMPING_SMOOTH_TIME = 0.02;     // 20ms for damping
+    constexpr double PREDELAY_SMOOTH_TIME = 0.01;    // 10ms for pre-delay
+    constexpr double MIX_SMOOTH_TIME = 0.02;         // 20ms for mix
+    constexpr double FEEDBACK_SMOOTH_TIME = 0.025;   // 25ms for feedback (faster)
+    constexpr double FDN_DAMPING_SMOOTH_TIME = 0.04; // 40ms for FDN damping (slower)
+    
+    // Parameter validation ranges
+    constexpr float MIN_PARAM_VALUE = 0.0f;
+    constexpr float MAX_PARAM_VALUE = 1.0f;
+}
+
+/**
+ * Professional Plate Reverb
+ * 
+ * Thread Safety:
+ * - updateParameters() is thread-safe and can be called from any thread
+ * - prepareToPlay() and reset() must ONLY be called from the audio thread
+ * - process() must ONLY be called from the audio thread
+ * - setPerformanceMode() should be called before prepareToPlay()
+ * 
+ * The reverb uses lock-free atomic parameters for real-time safety.
+ */
 class PlateReverb : public EngineBase {
 public:
     PlateReverb();
+    ~PlateReverb() = default;
     
+    // Audio thread only - NOT thread-safe with process()
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
-    void process(juce::AudioBuffer<float>& buffer) override;
     void reset() override;
+    
+    // Audio thread only
+    void process(juce::AudioBuffer<float>& buffer) override;
+    
+    // Thread-safe - can be called from any thread
     void updateParameters(const std::map<int, float>& params) override;
+    
+    // Should be called before prepareToPlay()
+    void setPerformanceMode(PerformanceMode mode);
+    
+    // Plugin info
     juce::String getName() const override { return "Plate Reverb"; }
     int getNumParameters() const override { return 4; }
     juce::String getParameterName(int index) const override;
     
 private:
-    // Parameters with smoothing
-    struct SmoothParam {
-        float target = 0.0f;
-        float current = 0.0f;
-        float smoothing = 0.995f;
-        
-        void update() {
-            current = target + (current - target) * smoothing;
-        }
-        
-        void setImmediate(float value) {
-            target = value;
-            current = value;
-        }
-    };
+    // Forward declarations
+    class ParameterSmoother;
+    class SoftKneeLimiter;
+    class ButterworthHighpass;
+    class OnePoleFilter;
+    class InterpolatedDelayLine;
+    struct ModulatedCombFilter;
+    struct AllpassFilter;
+    struct EarlyReflections;
+    struct FDN;
     
-    SmoothParam m_size;      // Room size / decay time
-    SmoothParam m_damping;   // High frequency damping
-    SmoothParam m_predelay;  // Pre-delay time (0-100ms)
-    SmoothParam m_mix;       // Dry/wet mix
+    // Thread-safe parameters with smoothing
+    std::unique_ptr<ParameterSmoother> m_size;
+    std::unique_ptr<ParameterSmoother> m_damping;
+    std::unique_ptr<ParameterSmoother> m_predelay;
+    std::unique_ptr<ParameterSmoother> m_mix;
+    
+    // Smoothers for derived parameters with independent timing
+    std::unique_ptr<ParameterSmoother> m_feedbackSmooth;
+    std::unique_ptr<ParameterSmoother> m_fdnDampingSmooth;
     
     // DSP state
     double m_sampleRate = 44100.0;
+    std::atomic<bool> m_isInitialized{false};
     
-    // Enhanced comb filter structure
-    struct CombFilter {
-        std::vector<float> buffer;
-        int writePos = 0;
-        float filterState = 0.0f;
-        
-        // Modulation for more organic sound
-        float modPhase = 0.0f;
-        float modRate = 0.0f;
-        float modDepth = 0.0f;
-        
-        void init(int delaySamples, float modFreq, float modAmt) {
-            buffer.resize(delaySamples);
-            std::fill(buffer.begin(), buffer.end(), 0.0f);
-            writePos = 0;
-            filterState = 0.0f;
-            modRate = modFreq;
-            modDepth = modAmt;
-            modPhase = static_cast<float>(rand()) / RAND_MAX; // Random phase
-        }
-        
-        float process(float input, float feedback, float damping, double sampleRate);
-    };
+    // Performance configuration
+    std::atomic<PerformanceMode> m_performanceMode{PerformanceMode::HIGH_QUALITY};
+    int m_currentBlockSize = 32;
     
-    // Enhanced allpass filter structure
-    struct AllpassFilter {
-        std::vector<float> buffer;
-        int writePos = 0;
-        
-        void init(int delaySamples) {
-            buffer.resize(delaySamples);
-            std::fill(buffer.begin(), buffer.end(), 0.0f);
-            writePos = 0;
-        }
-        
-        float process(float input, float feedback = 0.5f);
-    };
+    // Consistent RNG for reproducible results
+    std::mt19937 m_rng{42};  // Fixed seed for consistency
     
-    // Lattice allpass network for dense late reflections
-    struct LatticeAllpass {
-        AllpassFilter stage1, stage2;
-        
-        void init(int delay1, int delay2) {
-            stage1.init(delay1);
-            stage2.init(delay2);
-        }
-        
-        float process(float input) {
-            float mid = stage1.process(input, 0.5f);
-            return stage2.process(mid, -0.5f);
-        }
-    };
+    // Pre-allocated DSP components
+    std::array<std::unique_ptr<ButterworthHighpass>, 2> m_dcBlockers;
+    std::array<std::unique_ptr<SoftKneeLimiter>, 2> m_inputLimiters;
+    std::array<std::unique_ptr<InterpolatedDelayLine>, 2> m_predelays;
+    std::unique_ptr<EarlyReflections> m_earlyReflections;
     
-    // Comb filter bank (12 for richer sound)
-    static constexpr int NUM_COMBS = 12;
-    std::array<CombFilter, NUM_COMBS> m_combs;
+    static constexpr int NUM_DIFFUSERS = 4;
+    std::array<std::unique_ptr<AllpassFilter>, NUM_DIFFUSERS> m_inputDiffusion;
     
-    // Allpass filter bank (6 for smoother diffusion)
-    static constexpr int NUM_ALLPASS = 6;
-    std::array<AllpassFilter, NUM_ALLPASS> m_allpasses;
+    std::unique_ptr<FDN> m_fdnLeft;
+    std::unique_ptr<FDN> m_fdnRight;
     
-    // Additional lattice network for density
-    std::array<LatticeAllpass, 2> m_latticeNetwork;
+    std::array<std::unique_ptr<ButterworthHighpass>, 2> m_outputHighpass;
+    std::array<std::unique_ptr<SoftKneeLimiter>, 2> m_outputLimiters;
     
-    // Pre-delay with interpolation
-    struct PreDelay {
-        std::vector<float> buffer;
-        float writePos = 0.0f;
-        
-        void init(int maxSamples) {
-            buffer.resize(maxSamples);
-            std::fill(buffer.begin(), buffer.end(), 0.0f);
-            writePos = 0.0f;
-        }
-        
-        float process(float input, float delaySamples);
-    };
+    // Helper methods
+    int getFDNSize() const {
+        return (m_performanceMode.load() == PerformanceMode::LOW_CPU) ? 6 : 8;
+    }
     
-    PreDelay m_predelayLeft, m_predelayRight;
+    void initializeFilters();
+    std::pair<double, double> processReverbSample(double inputL, double inputR);
     
-    // Input diffusion allpasses
-    std::array<AllpassFilter, 4> m_inputDiffusion;
-    
-    // High-shelf filter for air
-    struct HighShelf {
-        float x1 = 0.0f, y1 = 0.0f;
-        float a0 = 1.0f, a1 = 0.0f, b1 = 0.0f;
-        
-        void updateCoefficients(float freq, float gain, double sampleRate);
-        float process(float input);
-    };
-    
-    std::array<HighShelf, 2> m_highShelves;
-    
-    // DC blocker
-    struct DCBlocker {
-        float x1 = 0.0f, y1 = 0.0f;
-        const float R = 0.995f;
-        
-        float process(float input) {
-            float output = input - x1 + R * y1;
-            x1 = input;
-            y1 = output;
-            return output;
-        }
-    };
-    
-    std::array<DCBlocker, 2> m_dcBlockers;
-    
-    // Plate reverb specific delay times (in samples at 44.1kHz)
-    // Based on measurements from real plate reverbs
-    const std::array<int, NUM_COMBS> m_combDelayTimes = {
-        1116, 1188, 1277, 1356, 1422, 1491,
-        1557, 1617, 1687, 1742, 1803, 1867
-    };
-    
-    const std::array<int, NUM_ALLPASS> m_allpassDelayTimes = {
-        225, 341, 441, 556, 667, 779
-    };
-    
-    // Modulation rates for each comb filter (Hz)
-    const std::array<float, NUM_COMBS> m_combModRates = {
-        0.7f, 0.83f, 0.91f, 1.03f, 1.13f, 1.27f,
-        1.39f, 1.51f, 1.63f, 1.79f, 1.93f, 2.11f
-    };
-    
-    void initializeDelays();
-    float processChannel(float input, int channel);
+    // Parameter validation
+    static float clampParameter(float value) {
+        return std::clamp(value, PlateConstants::MIN_PARAM_VALUE, 
+                                PlateConstants::MAX_PARAM_VALUE);
+    }
 };

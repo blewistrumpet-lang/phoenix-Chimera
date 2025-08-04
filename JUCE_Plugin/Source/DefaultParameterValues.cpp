@@ -25,7 +25,8 @@ std::map<int, float> getDefaultParameters(int engineType) {
         case ENGINE_K_STYLE: // K-Style Overdrive
             defaults[0] = 0.3f;  // Drive - Low drive for smooth warmth
             defaults[1] = 0.5f;  // Tone - Balanced, neither dark nor bright
-            defaults[2] = 0.5f;  // Output - Unity gain
+            defaults[2] = 0.5f;  // Level - Unity gain
+            defaults[3] = 1.0f;  // Mix - 100% wet for overdrive
             break;
             
         case ENGINE_RODENT_DISTORTION: // Rodent Distortion
@@ -409,12 +410,14 @@ std::map<int, float> getDefaultParameters(int engineType) {
             break;
             
         case ENGINE_INTELLIGENT_HARMONIZER: // Intelligent Harmonizer
-            defaults[0] = 0.583f; // Interval - Perfect fifth (7 semitones)
-            defaults[1] = 0.0f;   // Scale - Major scale
-            defaults[2] = 0.0f;   // Key - C major
-            defaults[3] = 0.4f;   // Mix - Subtle harmonization
-            defaults[4] = 0.5f;   // Voice 1 Level - Balanced
-            defaults[5] = 0.4f;   // Voice 2 Level - Slightly quieter
+            defaults[0] = 0.5f;   // Interval - Center (no transposition)
+            defaults[1] = 0.0f;   // Key - C major
+            defaults[2] = 0.0f;   // Scale - Major scale
+            defaults[3] = 0.0f;   // Voices - 1 voice
+            defaults[4] = 0.3f;   // Spread - Moderate stereo spread
+            defaults[5] = 0.0f;   // Humanize - No pitch/timing variation
+            defaults[6] = 0.0f;   // Formant - No formant correction
+            defaults[7] = 0.5f;   // Mix - 50% wet
             break;
             
         // ==================== RESONATOR/COMB ENGINES ====================

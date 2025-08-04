@@ -2,8 +2,12 @@
 #include "EngineBase.h"
 #include <vector>
 #include <array>
+#include <memory>
+#include <atomic>
 #include <random>
+#include <cmath>
 
+// Professional Big Muff Pi emulation with modern enhancements
 class MuffFuzz : public EngineBase {
 public:
     MuffFuzz();
@@ -19,239 +23,273 @@ public:
     juce::String getParameterName(int index) const override;
     
 private:
-    // Parameters with smoothing
-    struct SmoothParam {
-        float target = 0.0f;
-        float current = 0.0f;
-        float smoothing = 0.995f;
+    // Professional constants
+    static constexpr double DENORMAL_PREVENTION = 1e-30;
+    static constexpr int OVERSAMPLE_FACTOR = 4;
+    static constexpr double DIODE_THRESHOLD = 0.7;
+    static constexpr double TRANSISTOR_VBE = 0.65;
+    
+    // Thread-safe parameter smoothing
+    class ParameterSmoother {
+        std::atomic<double> targetValue{0.0};
+        double currentValue = 0.0;
+        double smoothingCoeff = 0.0;
+        double sampleRate = 44100.0;
         
-        void update() {
-            current = target + (current - target) * smoothing;
+    public:
+        void setSampleRate(double sr) {
+            sampleRate = sr;
+            setSmoothingTime(0.01);
         }
         
-        void setImmediate(float value) {
-            target = value;
-            current = value;
+        void setSmoothingTime(double timeSeconds) {
+            double fc = 1.0 / (2.0 * M_PI * timeSeconds);
+            smoothingCoeff = std::exp(-2.0 * M_PI * fc / sampleRate);
         }
         
-        void setSmoothingRate(float rate) {
-            smoothing = rate;
+        void setTarget(double value) {
+            targetValue.store(value, std::memory_order_relaxed);
         }
+        
+        double process() {
+            double target = targetValue.load(std::memory_order_relaxed);
+            currentValue = target + (currentValue - target) * smoothingCoeff;
+            currentValue += DENORMAL_PREVENTION;
+            currentValue -= DENORMAL_PREVENTION;
+            return currentValue;
+        }
+        
+        void reset(double value) {
+            targetValue.store(value, std::memory_order_relaxed);
+            currentValue = value;
+        }
+        
+        double getCurrent() const { return currentValue; }
     };
     
-    SmoothParam m_sustain;       // 0-1 (fuzz intensity)
-    SmoothParam m_tone;          // 0-1 (tone control)
-    SmoothParam m_volume;        // 0-1 (output level)
-    SmoothParam m_gate;          // 0-1 (noise gate)
-    SmoothParam m_mids;          // 0-1 (midrange scoop)
-    SmoothParam m_fuzzType;      // 0-1 (modern fuzz variations)
-    SmoothParam m_mix;           // 0-1 (dry/wet mix)
+    // Accurate Big Muff tone stack
+    class BigMuffToneStack {
+        // Component values from original circuit
+        static constexpr double R1 = 39000.0;  // 39k
+        static constexpr double R2 = 22000.0;  // 22k  
+        static constexpr double R3 = 22000.0;  // 22k
+        static constexpr double R4 = 100000.0; // 100k (tone pot)
+        static constexpr double C1 = 10e-9;    // 10nF
+        static constexpr double C2 = 4e-9;     // 4nF (some versions use 3.9nF)
+        
+        // Digital filter coefficients
+        double b0, b1, b2, a0, a1, a2;
+        double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+        
+    public:
+        void updateCoefficients(double tonePosition, double sampleRate);
+        double process(double input);
+        void reset() { x1 = x2 = y1 = y2 = 0; }
+    };
     
-    // DSP State
+    // Transistor clipping stage (BC239C or 2N5088)
+    class TransistorClippingStage {
+        double c1 = 0, c2 = 0;  // Coupling capacitors state
+        double vbe = TRANSISTOR_VBE;
+        double beta = 400.0;    // High gain transistor
+        double collectorCurrent = 0;
+        double temperature = 298.15; // Kelvin
+        
+    public:
+        void setSampleRate(double sr) {
+            // Set RC time constants for coupling caps
+            double rc = 0.1;  // 100ms
+            c1 = c2 = 1.0 - std::exp(-1.0 / (rc * sr));
+        }
+        
+        double process(double input, double gain, double bias);
+        void setTemperature(double tempK) { temperature = tempK; }
+        void reset() { collectorCurrent = 0; }
+    };
+    
+    // Back-to-back diode clipping
+    class DiodeClipper {
+        // Silicon diode parameters
+        static constexpr double IS = 1e-14;   // Saturation current
+        static constexpr double N = 1.5;      // Ideality factor
+        static constexpr double VT = 0.026;   // Thermal voltage at room temp
+        
+        double temperature = 298.15;
+        
+    public:
+        double process(double voltage);
+        void setTemperature(double tempK) { temperature = tempK; }
+    };
+    
+    // Professional oversampling
+    class Oversampler {
+        struct ButterworthStage {
+            double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+            double b0, b1, b2, a1, a2;
+            
+            void design(double cutoff) {
+                double c = 1.0 / std::tan(M_PI * cutoff);
+                double c2 = c * c;
+                double sqrt2c = std::sqrt(2.0) * c;
+                double a0 = c2 + sqrt2c + 1.0;
+                
+                b0 = 1.0 / a0;
+                b1 = 2.0 / a0;
+                b2 = 1.0 / a0;
+                a1 = (2.0 - 2.0 * c2) / a0;
+                a2 = (c2 - sqrt2c + 1.0) / a0;
+            }
+            
+            double process(double input) {
+                double output = b0 * input + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+                x2 = x1; x1 = input;
+                y2 = y1; y1 = output;
+                return output;
+            }
+            
+            void reset() { x1 = x2 = y1 = y2 = 0; }
+        };
+        
+        std::array<ButterworthStage, 4> upsampleFilters;
+        std::array<ButterworthStage, 4> downsampleFilters;
+        std::vector<double> oversampledBuffer;
+        
+    public:
+        void prepare(int blockSize, double sampleRate);
+        void upsample(const double* input, double* output, int numSamples);
+        void downsample(const double* input, double* output, int numSamples);
+        void reset();
+    };
+    
+    // Complete Big Muff circuit model
+    class BigMuffCircuit {
+        // Four gain stages as in original
+        TransistorClippingStage inputBuffer;
+        TransistorClippingStage clippingStage1;
+        TransistorClippingStage clippingStage2;
+        TransistorClippingStage outputBuffer;
+        
+        // Diode clippers after each clipping stage
+        DiodeClipper diodeClipper1;
+        DiodeClipper diodeClipper2;
+        
+        // Tone stack between stages
+        BigMuffToneStack toneStack;
+        
+        // Component variations
+        double transistorMatching = 1.0;
+        double diodeMatching = 1.0;
+        
+    public:
+        void prepare(double sampleRate);
+        double process(double input, double sustain, double tone, double volume);
+        void setTemperature(double tempK);
+        void setComponentVariation(double matching);
+        void reset();
+    };
+    
+    // Modern fuzz variations
+    enum class FuzzVariant {
+        TRIANGLE_1971,      // Original "Triangle" Big Muff
+        RAMS_HEAD_1973,     // "Ram's Head" version
+        NYC_REISSUE,        // Modern NYC reissue
+        RUSSIAN_SOVTEK,     // Russian "Civil War" Sovtek
+        OP_AMP_VERSION,     // Op-amp based variant
+        MODERN_DELUXE       // Modern enhanced version
+    };
+    
+    // Gate with hysteresis
+    class NoiseGate {
+        double envelope = 0;
+        double gateState = 1.0;
+        double attackTime = 0.001;
+        double releaseTime = 0.01;
+        double hysteresis = 0.9;
+        
+    public:
+        void setSampleRate(double sr) {
+            attackTime = 1.0 - std::exp(-1.0 / (0.001 * sr));
+            releaseTime = 1.0 - std::exp(-1.0 / (0.01 * sr));
+        }
+        
+        double process(double input, double threshold);
+        void reset() { envelope = 0; gateState = 1.0; }
+    };
+    
+    // Mid scoop control (not in original but useful)
+    class MidScoopFilter {
+        double b0, b1, b2, a1, a2;
+        double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+        
+    public:
+        void updateCoefficients(double frequency, double depth, double sampleRate);
+        double process(double input);
+        void reset() { x1 = x2 = y1 = y2 = 0; }
+    };
+    
+    // DSP members
     double m_sampleRate = 44100.0;
     
-    // Enhanced multi-stage filter architecture
-    struct ModernBiquadFilter {
-        double b0 = 1.0, b1 = 0.0, b2 = 0.0;
-        double a1 = 0.0, a2 = 0.0;
-        double z1 = 0.0, z2 = 0.0;
+    // Parameters
+    std::unique_ptr<ParameterSmoother> m_sustain;
+    std::unique_ptr<ParameterSmoother> m_tone;
+    std::unique_ptr<ParameterSmoother> m_volume;
+    std::unique_ptr<ParameterSmoother> m_gate;
+    std::unique_ptr<ParameterSmoother> m_mids;
+    std::unique_ptr<ParameterSmoother> m_variant;
+    std::unique_ptr<ParameterSmoother> m_mix;
+    
+    // Processing components (stereo)
+    std::array<BigMuffCircuit, 2> m_circuits;
+    std::array<Oversampler, 2> m_oversamplers;
+    std::array<NoiseGate, 2> m_gates;
+    std::array<MidScoopFilter, 2> m_midScoops;
+    
+    // DC blocking
+    class DCBlocker {
+        double x1 = 0, y1 = 0;
+        double cutoff = 0;
         
-        float process(float input) {
-            double output = b0 * input + b1 * z1 + b2 * z2 - a1 * z1 - a2 * z2;
-            z2 = z1;
-            z1 = output;
-            return static_cast<float>(output);
+    public:
+        void setCutoff(double freqHz, double sampleRate) {
+            cutoff = 1.0 - std::exp(-2.0 * M_PI * freqHz / sampleRate);
         }
         
-        void setLowShelf(double freq, double gain, double Q, double sampleRate);
-        void setHighShelf(double freq, double gain, double Q, double sampleRate);
-        void setBandpass(double freq, double Q, double sampleRate);
-        void setNotch(double freq, double Q, double sampleRate);
-        
-        void reset() { z1 = z2 = 0.0; }
-    };
-    
-    struct ChannelState {
-        ModernBiquadFilter inputHighpass;    // Remove DC and low mud
-        ModernBiquadFilter inputLowShelf;    // Shape low-end character
-        ModernBiquadFilter midScoop;         // Characteristic mid scoop
-        ModernBiquadFilter toneFilter;       // Final tone shaping
-        ModernBiquadFilter presenceFilter;   // High-frequency presence
-        
-        // Enhanced envelope follower
-        float envelope = 0.0f;
-        float peakEnvelope = 0.0f;
-        float rmsEnvelope = 0.0f;
-        
-        // Component aging effects
-        float componentDrift = 0.0f;
-        float thermalFactor = 1.0f;
-        
-        void reset() {
-            inputHighpass.reset();
-            inputLowShelf.reset();
-            midScoop.reset();
-            toneFilter.reset();
-            presenceFilter.reset();
-            envelope = peakEnvelope = rmsEnvelope = 0.0f;
-            componentDrift = thermalFactor = 0.0f;
-        }
-    };
-    
-    std::array<ChannelState, 2> m_channelStates;
-    
-    // DC Blocking
-    struct DCBlocker {
-        float x1 = 0.0f, y1 = 0.0f;
-        const float R = 0.995f;
-        
-        float process(float input) {
-            float output = input - x1 + R * y1;
+        double process(double input) {
+            y1 = input - x1 + y1 * (1.0 - cutoff);
             x1 = input;
-            y1 = output;
-            return output;
+            y1 += DENORMAL_PREVENTION;
+            y1 -= DENORMAL_PREVENTION;
+            return y1;
         }
         
-        void reset() { x1 = y1 = 0.0f; }
+        void reset() { x1 = y1 = 0; }
     };
     
     std::array<DCBlocker, 2> m_inputDCBlockers;
     std::array<DCBlocker, 2> m_outputDCBlockers;
     
     // Thermal modeling
-    struct ThermalModel {
-        float temperature = 25.0f;
-        float thermalNoise = 0.0f;
-        std::mt19937 rng;
-        std::uniform_real_distribution<float> dist{-0.5f, 0.5f};
+    class ThermalModel {
+        double junctionTemp = 298.15;
+        double ambientTemp = 298.15;
+        double thermalResistance = 200.0;  // K/W
+        double dissipatedPower = 0;
         
-        ThermalModel() : rng(std::random_device{}()) {}
-        
-        void update(double sampleRate) {
-            thermalNoise += (dist(rng) * 0.0008f) / sampleRate;
-            thermalNoise = std::max(-0.025f, std::min(0.025f, thermalNoise));
+    public:
+        void update(double power, double deltaTime) {
+            dissipatedPower = power;
+            double tempRise = power * thermalResistance;
+            double tau = 10.0; // seconds
+            double alpha = 1.0 - std::exp(-deltaTime / tau);
+            junctionTemp += ((ambientTemp + tempRise) - junctionTemp) * alpha;
         }
         
-        float getThermalFactor() const {
-            return 1.0f + thermalNoise;
-        }
+        double getTemperature() const { return junctionTemp; }
     };
     
     ThermalModel m_thermalModel;
     
-    // Component aging
-    float m_componentAge = 0.0f;
-    int m_sampleCount = 0;
-    
-    // Random generator for component variations
-    std::mt19937 m_rng;
-    std::uniform_real_distribution<float> m_distribution{-1.0f, 1.0f};
-    
-    // Oversampling for pristine distortion
-    struct Oversampler {
-        static constexpr int OVERSAMPLE_FACTOR = 4;
-        std::vector<float> upsampleBuffer;
-        std::vector<float> downsampleBuffer;
-        
-        struct AAFilter {
-            std::array<float, 6> x = {0.0f};
-            std::array<float, 6> y = {0.0f};
-            
-            float process(float input) {
-                // 6th order Butterworth for better anti-aliasing
-                float output = input * 0.0156f;
-                for (int i = 0; i < 6; ++i) {
-                    output += x[i] * (0.09375f - i * 0.01562f);
-                }
-                
-                // Shift buffers
-                for (int i = 5; i > 0; --i) {
-                    x[i] = x[i-1];
-                }
-                x[0] = input;
-                return output;
-            }
-        };
-        
-        AAFilter upsampleFilter, downsampleFilter;
-        
-        void prepare(int blockSize) {
-            upsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
-            downsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
-        }
-        
-        void upsample(const float* input, float* output, int numSamples);
-        void downsample(const float* input, float* output, int numSamples);
-    };
-    
-    Oversampler m_oversampler;
-    bool m_useOversampling = true;
-    
-    // Modern fuzz variations
-    struct ModernFuzzEngine {
-        enum FuzzType {
-            SILICON_TRANSISTOR,  // Clean, compressed fuzz
-            GERMANIUM_VINTAGE,   // Warm, musical fuzz
-            DIGITAL_MODERN,      // Precise, controlled
-            HYBRID_TUBE         // Tube-like warmth
-        };
-        
-        // Advanced diode modeling
-        float processModernDiodeClipping(float x, float threshold, FuzzType type) {
-            switch (type) {
-                case SILICON_TRANSISTOR:
-                    return processSiliconFuzz(x, threshold);
-                case GERMANIUM_VINTAGE:
-                    return processGermaniumFuzz(x, threshold);
-                case DIGITAL_MODERN:
-                    return processDigitalFuzz(x, threshold);
-                case HYBRID_TUBE:
-                    return processHybridFuzz(x, threshold);
-                default:
-                    return x;
-            }
-        }
-        
-        private:
-            float processSiliconFuzz(float x, float threshold);
-            float processGermaniumFuzz(float x, float threshold);
-            float processDigitalFuzz(float x, float threshold);
-            float processHybridFuzz(float x, float threshold);
-    };
-    
-    ModernFuzzEngine m_fuzzEngine;
-    
-    // Component tolerances for vintage behavior
-    struct ComponentTolerances {
-        float capacitorDrift = 0.0f;
-        float resistorDrift = 0.0f;
-        float transistorBeta = 1.0f;
-        
-        ComponentTolerances() {
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            std::uniform_real_distribution<float> capDist(-0.15f, 0.15f);
-            std::uniform_real_distribution<float> resDist(-0.03f, 0.03f);
-            std::uniform_real_distribution<float> betaDist(0.8f, 1.2f);
-            
-            capacitorDrift = capDist(gen);
-            resistorDrift = resDist(gen);
-            transistorBeta = betaDist(gen);
-        }
-        
-        float adjustFrequency(float freq) const {
-            return freq * (1.0f + capacitorDrift + resistorDrift);
-        }
-        
-        float adjustGain(float gain) const {
-            return gain * transistorBeta * (1.0f + resistorDrift);
-        }
-    };
-    
-    ComponentTolerances m_componentTolerances;
-    
-    // Helper functions
-    float processDiodeClipping(float x, float threshold);
-    float processGate(float input, float& envelope, float threshold);
-    float processModernFuzz(float input, int fuzzType, float intensity);
+    // Apply variant-specific modifications
+    void applyVariantSettings(FuzzVariant variant);
 };

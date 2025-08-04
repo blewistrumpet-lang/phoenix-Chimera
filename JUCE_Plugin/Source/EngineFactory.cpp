@@ -89,16 +89,16 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
             return std::make_unique<BucketBrigadeDelay>();
             
         case ENGINE_DIGITAL_DELAY:
-            return std::make_unique<DigitalDelay>();
+            return std::make_unique<AudioDSP::DigitalDelay>();
             
         case ENGINE_HARMONIC_TREMOLO:
             return std::make_unique<HarmonicTremolo>();
             
         case ENGINE_ROTARY_SPEAKER:
-            return std::make_unique<RotarySpeaker>();
+            return std::make_unique<AudioDSP::RotarySpeaker>();
             
         case ENGINE_DETUNE_DOUBLER:
-            return std::make_unique<DetuneDoubler>();
+            return std::make_unique<AudioDSP::DetuneDoubler>();
             
         case ENGINE_LADDER_FILTER:
             return std::make_unique<LadderFilter>();
