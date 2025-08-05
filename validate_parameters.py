@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Parameter Validation Script for ChimeraPhoenix
-Generated from parameter_database.json on 2025-08-04 00:44:32
+Generated from parameter_database.json on 2025-08-04 02:06:38
 Validates that all parameter definitions are consistent across the codebase
 """
 
@@ -80,20 +80,30 @@ expected_params = {
       "cpp_enum": "ENGINE_VINTAGE_TUBE",
       "dropdown_index": 48,
       "category": "Saturation",
-      "parameter_count": 4,
+      "parameter_count": 10,
       "parameters": [
         {
           "index": 0,
-          "name": "Drive",
-          "default": 0.3,
+          "name": "Input Gain",
+          "default": 0.5,
           "min": 0.0,
           "max": 1.0,
-          "description": "Input drive amount",
-          "units": "percent",
+          "description": "Input amplification \u00b120dB",
+          "units": "dB",
           "skew": 0.5
         },
         {
           "index": 1,
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube saturation amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 2,
           "name": "Bias",
           "default": 0.5,
           "min": 0.0,
@@ -103,22 +113,72 @@ expected_params = {
           "skew": 0.5
         },
         {
-          "index": 2,
-          "name": "Tone",
+          "index": 3,
+          "name": "Bass",
           "default": 0.5,
           "min": 0.0,
           "max": 1.0,
-          "description": "Tone control",
+          "description": "Low frequency control",
           "units": "percent",
           "skew": 0.5
         },
         {
-          "index": 3,
-          "name": "Output",
+          "index": 4,
+          "name": "Mid",
           "default": 0.5,
           "min": 0.0,
           "max": 1.0,
-          "description": "Output level",
+          "description": "Mid frequency control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 5,
+          "name": "Treble",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 6,
+          "name": "Presence",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency clarity",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "index": 7,
+          "name": "Output Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level \u00b120dB",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "index": 8,
+          "name": "Tube Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube characteristic (12AX7/12AU7/12AT7/6SN7/ECC88/6V6/EL34/EL84)",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "index": 9,
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet balance",
           "units": "percent",
           "skew": 0.5
         }

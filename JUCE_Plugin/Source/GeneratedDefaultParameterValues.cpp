@@ -1,5 +1,5 @@
 // Generated Default Parameter Values for ChimeraPhoenix
-// Generated from parameter_database.json on 2025-08-04 00:44:32
+// Generated from parameter_database.json on 2025-08-04 02:06:38
 // DO NOT EDIT MANUALLY - Edit parameter_database.json and regenerate
 
 #include "DefaultParameterValues.h"
@@ -11,10 +11,16 @@ void DefaultParameterValues::getDefaultParameters(int engineType, std::vector<fl
     
     switch (engineType) {
         case ENGINE_VINTAGE_TUBE: // Vintage Tube Preamp
+            defaults.push_back(0.5f); // Input Gain
             defaults.push_back(0.3f); // Drive
             defaults.push_back(0.5f); // Bias
-            defaults.push_back(0.5f); // Tone
-            defaults.push_back(0.5f); // Output
+            defaults.push_back(0.5f); // Bass
+            defaults.push_back(0.5f); // Mid
+            defaults.push_back(0.5f); // Treble
+            defaults.push_back(0.5f); // Presence
+            defaults.push_back(0.5f); // Output Gain
+            defaults.push_back(0.0f); // Tube Type
+            defaults.push_back(1.0f); // Mix
             break;
 
         case ENGINE_TAPE_ECHO: // Tape Echo
@@ -342,7 +348,7 @@ void DefaultParameterValues::getDefaultParameters(int engineType, std::vector<fl
 
 int DefaultParameterValues::getParameterCount(int engineType) {
     switch (engineType) {
-        case ENGINE_VINTAGE_TUBE: return 4;
+        case ENGINE_VINTAGE_TUBE: return 10;
         case ENGINE_TAPE_ECHO: return 5;
         case ENGINE_SHIMMER_REVERB: return 4;
         case ENGINE_PLATE_REVERB: return 4;
@@ -391,10 +397,16 @@ const char* DefaultParameterValues::getParameterName(int engineType, int paramIn
     switch (engineType) {
         case ENGINE_VINTAGE_TUBE:
             switch (paramIndex) {
-                case 0: return "Drive";
-                case 1: return "Bias";
-                case 2: return "Tone";
-                case 3: return "Output";
+                case 0: return "Input Gain";
+                case 1: return "Drive";
+                case 2: return "Bias";
+                case 3: return "Bass";
+                case 4: return "Mid";
+                case 5: return "Treble";
+                case 6: return "Presence";
+                case 7: return "Output Gain";
+                case 8: return "Tube Type";
+                case 9: return "Mix";
                 default: return "";
             }
             break;

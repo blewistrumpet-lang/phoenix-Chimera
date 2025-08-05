@@ -1,226 +1,618 @@
+// PhasedVocoder.cpp - Platinum-spec implementation with all refinements
 #include "PhasedVocoder.h"
+#include <juce_audio_basics/juce_audio_basics.h>
+#include <juce_dsp/juce_dsp.h>
+#include <immintrin.h>
+#include <atomic>
 #include <cmath>
 #include <algorithm>
 
-PhasedVocoder::PhasedVocoder() = default;
+// Define ALWAYS_INLINE
+#ifndef ALWAYS_INLINE
+  #if defined(__GNUC__) || defined(__clang__)
+    #define ALWAYS_INLINE __attribute__((always_inline)) inline
+  #elif defined(_MSC_VER)
+    #define ALWAYS_INLINE __forceinline
+  #else
+    #define ALWAYS_INLINE inline
+  #endif
+#endif
 
-void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    m_sampleRate = sampleRate;
-    m_channelStates.clear();
+// Constants in anonymous namespace
+namespace {
+    constexpr int FFT_ORDER = 11;  // 2^11 = 2048
+    constexpr int FFT_SIZE = 1 << FFT_ORDER;
+    constexpr int OVERLAP = 4;
+    constexpr int HOP_SIZE = FFT_SIZE / OVERLAP;
+    constexpr int MAX_STRETCH = 16;
+    constexpr double TWO_PI_D = 6.283185307179586476925286766559;
+    constexpr double PI_D = 3.1415926535897932384626433832795;
+    constexpr float TWO_PI = static_cast<float>(TWO_PI_D);
     
-    int numChannels = 2;
-    m_channelStates.resize(numChannels);
+    // Denormal prevention
+    struct DenormGuard {
+        DenormGuard() {
+#ifdef __SSE2__
+            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+#endif
+        }
+    } g_denormGuard;
     
-    const int bufferSize = FFT_SIZE * MAX_STRETCH * 2;
+    // Inline helpers
+    template<typename T>
+    ALWAYS_INLINE T flushDenorm(T v) noexcept {
+#ifdef __SSE2__
+        return _mm_cvtss_f32(_mm_add_ss(_mm_set_ss(static_cast<float>(v)), 
+                                       _mm_set_ss(0.0f)));
+#else
+        constexpr T tiny = static_cast<T>(1.0e-30);
+        return std::fabs(v) < tiny ? static_cast<T>(0) : v;
+#endif
+    }
     
-    for (auto& state : m_channelStates) {
-        state.inputBuffer.resize(bufferSize);
-        state.outputBuffer.resize(bufferSize);
-        state.grainBuffer.resize(FFT_SIZE);
-        state.fftBuffer.resize(FFT_SIZE);
-        state.window.resize(FFT_SIZE);
-        state.magnitude.resize(FFT_SIZE / 2 + 1);
-        state.phase.resize(FFT_SIZE / 2 + 1);
-        state.lastPhase.resize(FFT_SIZE / 2 + 1);
-        state.phaseAccum.resize(FFT_SIZE / 2 + 1);
-        state.trueBinFreq.resize(FFT_SIZE / 2 + 1);
-        state.freezeMagnitude.resize(FFT_SIZE / 2 + 1);
-        state.freezePhase.resize(FFT_SIZE / 2 + 1);
+    // Optimized circular buffer indexing (no modulo)
+    ALWAYS_INLINE size_t wrapIndex(size_t idx, size_t bufferSize) noexcept {
+        return idx >= bufferSize ? idx - bufferSize : idx;
+    }
+}
+
+// Thread-safe parameter smoother
+class AtomicSmoother {
+    float current;
+    float coeff;
+    std::atomic<float>& target;
+    
+public:
+    AtomicSmoother(std::atomic<float>& t, float smoothTimeMs, double sampleRate)
+        : target(t)
+        , current(t.load(std::memory_order_relaxed))
+    {
+        const double tc = smoothTimeMs * 0.001;
+        coeff = static_cast<float>(std::exp(-TWO_PI_D / (tc * sampleRate)));
+    }
+    
+    ALWAYS_INLINE float tick() noexcept {
+        const float tgt = target.load(std::memory_order_relaxed);
+        current += (1.0f - coeff) * (tgt - current);
+        return flushDenorm(current);
+    }
+    
+    void reset(float value) noexcept {
+        current = value;
+    }
+    
+    void updateCoeff(float smoothTimeMs, double sampleRate) noexcept {
+        const double tc = smoothTimeMs * 0.001;
+        coeff = static_cast<float>(std::exp(-TWO_PI_D / (tc * sampleRate)));
+    }
+};
+
+// Crossfade helper for freeze transitions
+class CrossfadeState {
+    int counter{0};
+    int duration{0};
+    
+public:
+    void trigger(int fadeFrames) noexcept {
+        counter = duration = fadeFrames;
+    }
+    
+    ALWAYS_INLINE float getWeight() noexcept {
+        if (counter <= 0) return 1.0f;
+        const float weight = static_cast<float>(counter) / duration;
+        counter--;
+        return weight;
+    }
+    
+    ALWAYS_INLINE bool isActive() const noexcept {
+        return counter > 0;
+    }
+    
+    void reset() noexcept {
+        counter = 0;
+    }
+};
+
+// Enhanced transient detector with configurable response
+class TransientDetector {
+    float envelope{0.0f};
+    float lastSum{0.0f};
+    float attackCoeff{0.001f};
+    float releaseCoeff{0.01f};
+    
+public:
+    void prepare(double sampleRate, float attackMs, float releaseMs) noexcept {
+        attackCoeff = static_cast<float>(1.0 - std::exp(-1.0 / (attackMs * 0.001 * sampleRate)));
+        releaseCoeff = static_cast<float>(1.0 - std::exp(-1.0 / (releaseMs * 0.001 * sampleRate)));
+    }
+    
+    ALWAYS_INLINE float process(float magnitudeSum) noexcept {
+        const float flux = std::max(0.0f, magnitudeSum - lastSum);
+        lastSum = magnitudeSum;
         
+        const float target = flux * 10.0f;
+        const float coeff = (target > envelope) ? attackCoeff : releaseCoeff;
+        
+        envelope += coeff * (target - envelope);
+        envelope = flushDenorm(envelope);
+        
+        return std::min(1.0f, envelope);
+    }
+    
+    void reset() noexcept {
+        envelope = 0.0f;
+        lastSum = 0.0f;
+    }
+};
+
+// Silence detector for fast-path optimization
+class SilenceDetector {
+    static constexpr float SILENCE_THRESHOLD = 1e-6f;
+    static constexpr int SILENCE_FRAMES = 512;
+    int silenceCounter{0};
+    bool isSilent{false};
+    
+public:
+    ALWAYS_INLINE bool process(float rms) noexcept {
+        if (rms < SILENCE_THRESHOLD) {
+            if (++silenceCounter >= SILENCE_FRAMES) {
+                isSilent = true;
+            }
+        } else {
+            silenceCounter = 0;
+            isSilent = false;
+        }
+        return isSilent;
+    }
+    
+    void reset() noexcept {
+        silenceCounter = 0;
+        isSilent = false;
+    }
+};
+
+// Implementation details
+struct PhasedVocoder::Impl {
+    // Thread-safe parameters with atomic access
+    struct Parameters {
+        std::atomic<float> timeStretch{1.0f};
+        std::atomic<float> pitchShift{1.0f};
+        std::atomic<float> spectralSmear{0.0f};
+        std::atomic<float> transientPreserve{0.5f};
+        std::atomic<float> phaseReset{0.0f};
+        std::atomic<float> spectralGate{0.0f};
+        std::atomic<float> mixAmount{1.0f};
+        std::atomic<float> freeze{0.0f};
+        std::atomic<float> transientAttack{1.0f};
+        std::atomic<float> transientRelease{100.0f};
+    } params;
+    
+    // Parameter smoothers
+    std::unique_ptr<AtomicSmoother> timeStretchSmoother;
+    std::unique_ptr<AtomicSmoother> pitchShiftSmoother;
+    std::unique_ptr<AtomicSmoother> mixSmoother;
+    
+    // Per-channel processing state
+    struct alignas(32) ChannelState {
+        // Pre-allocated circular buffers (no dynamic allocation)
+        static constexpr size_t BUFFER_SIZE = FFT_SIZE * MAX_STRETCH * 2;
+        alignas(32) std::array<float, BUFFER_SIZE> inputBuffer{};
+        alignas(32) std::array<float, BUFFER_SIZE> outputBuffer{};
+        alignas(32) std::array<float, FFT_SIZE> grainBuffer{};
+        
+        // FFT workspace
+        alignas(32) std::array<std::complex<float>, FFT_SIZE> fftBuffer{};
+        alignas(32) std::array<float, FFT_SIZE> window{};
+        
+        // Spectral data (double precision for phase accumulation)
+        alignas(32) std::array<float, FFT_SIZE/2 + 1> magnitude{};
+        alignas(32) std::array<double, FFT_SIZE/2 + 1> phase{};
+        alignas(32) std::array<double, FFT_SIZE/2 + 1> lastPhase{};
+        alignas(32) std::array<double, FFT_SIZE/2 + 1> phaseAccum{};
+        alignas(32) std::array<float, FFT_SIZE/2 + 1> trueBinFreq{};
+        
+        // Freeze state
+        alignas(32) std::array<float, FFT_SIZE/2 + 1> freezeMagnitude{};
+        alignas(32) std::array<double, FFT_SIZE/2 + 1> freezePhase{};
+        std::atomic<bool> isFrozen{false};
+        
+        // Position tracking (double precision for sub-sample accuracy)
+        double readPos{0.0};
+        size_t writePos{0};
+        size_t outputWritePos{0};
+        size_t outputReadPos{0};
+        int hopCounter{0};
+        
+        // Transient detection
+        TransientDetector transientDetector;
+        
+        // Denormal flush counter
+        int denormFlushCounter{0};
+        
+        // Crossfade state
+        CrossfadeState freezeCrossfade;
+        
+        // Silence detection
+        SilenceDetector silenceDetector;
+        
+        juce::dsp::FFT fft{FFT_ORDER};
+    };
+    
+    std::vector<ChannelState> channelStates;
+    double sampleRate{44100.0};
+    float invFFTSize{1.0f / FFT_SIZE};
+    float windowSum{0.0f};
+    
+    // Processing methods
+    void processFrame(ChannelState& state) noexcept;
+    void analyzeFrame(ChannelState& state) noexcept;
+    void synthesizeFrame(ChannelState& state) noexcept;
+    void applySpectralProcessing(ChannelState& state) noexcept;
+    void initializeWindow(std::array<float, FFT_SIZE>& window) noexcept;
+    void flushAllDenormals(ChannelState& state) noexcept;
+};
+
+// Constructor/Destructor
+PhasedVocoder::PhasedVocoder() : pimpl(std::make_unique<Impl>()) {}
+PhasedVocoder::~PhasedVocoder() = default;
+
+// Public interface implementation
+void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
+    pimpl->sampleRate = sampleRate;
+    pimpl->invFFTSize = 1.0f / FFT_SIZE;
+    
+    // Initialize parameter smoothers
+    pimpl->timeStretchSmoother = std::make_unique<AtomicSmoother>(
+        pimpl->params.timeStretch, 5.0f, sampleRate);
+    pimpl->pitchShiftSmoother = std::make_unique<AtomicSmoother>(
+        pimpl->params.pitchShift, 5.0f, sampleRate);
+    pimpl->mixSmoother = std::make_unique<AtomicSmoother>(
+        pimpl->params.mixAmount, 2.0f, sampleRate);
+    
+    // Pre-allocate for 2 channels (stereo)
+    pimpl->channelStates.resize(2);
+    
+    // Initialize windows and calculate normalization
+    pimpl->windowSum = 0.0f;
+    for (auto& state : pimpl->channelStates) {
+        pimpl->initializeWindow(state.window);
+        
+        // Calculate window sum for proper normalization
+        for (int i = 0; i < FFT_SIZE; i += HOP_SIZE) {
+            pimpl->windowSum += state.window[i];
+        }
+        
+        // Verify against analytical value
+        const float analyticalSum = 2.0f / OVERLAP;
+        if (std::abs(pimpl->windowSum - analyticalSum) > 0.01f) {
+            pimpl->windowSum = analyticalSum;
+        }
+        
+        // Clear all buffers
         std::fill(state.inputBuffer.begin(), state.inputBuffer.end(), 0.0f);
         std::fill(state.outputBuffer.begin(), state.outputBuffer.end(), 0.0f);
-        std::fill(state.lastPhase.begin(), state.lastPhase.end(), 0.0f);
-        std::fill(state.phaseAccum.begin(), state.phaseAccum.end(), 0.0f);
+        std::fill(state.lastPhase.begin(), state.lastPhase.end(), 0.0);
+        std::fill(state.phaseAccum.begin(), state.phaseAccum.end(), 0.0);
         
-        createWindow(state.window);
-        
-        state.readPos = 0.0f;
+        state.readPos = 0.0;
         state.writePos = 0;
+        state.outputWritePos = 0;
         state.outputReadPos = 0;
         state.hopCounter = 0;
         state.isFrozen = false;
+        state.denormFlushCounter = 0;
+        
+        // Initialize transient detector
+        const float attack = pimpl->params.transientAttack.load(std::memory_order_relaxed);
+        const float release = pimpl->params.transientRelease.load(std::memory_order_relaxed);
+        state.transientDetector.prepare(sampleRate, attack, release);
+        
+        state.freezeCrossfade.reset();
+        state.silenceDetector.reset();
     }
 }
 
 void PhasedVocoder::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for PhasedVocoder
+    for (auto& state : pimpl->channelStates) {
+        // Zero all audio buffers
+        std::fill(state.inputBuffer.begin(), state.inputBuffer.end(), 0.0f);
+        std::fill(state.outputBuffer.begin(), state.outputBuffer.end(), 0.0f);
+        std::fill(state.grainBuffer.begin(), state.grainBuffer.end(), 0.0f);
+        
+        // Reset phase accumulators
+        std::fill(state.phase.begin(), state.phase.end(), 0.0);
+        std::fill(state.lastPhase.begin(), state.lastPhase.end(), 0.0);
+        std::fill(state.phaseAccum.begin(), state.phaseAccum.end(), 0.0);
+        
+        // Reset positions
+        state.readPos = 0.0;
+        state.writePos = 0;
+        state.outputWritePos = 0;
+        state.outputReadPos = 0;
+        state.hopCounter = 0;
+        
+        // Reset detection states
+        state.transientDetector.reset();
+        state.silenceDetector.reset();
+        state.freezeCrossfade.reset();
+        
+        // Clear freeze state
+        state.isFrozen = false;
+        state.denormFlushCounter = 0;
+    }
+    
+    // Reset smoothers
+    if (pimpl->timeStretchSmoother) {
+        pimpl->timeStretchSmoother->reset(pimpl->params.timeStretch.load());
+        pimpl->pitchShiftSmoother->reset(pimpl->params.pitchShift.load());
+        pimpl->mixSmoother->reset(pimpl->params.mixAmount.load());
+    }
 }
 
 void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
-    for (int channel = 0; channel < numChannels; ++channel) {
-        if (channel >= m_channelStates.size()) continue;
+    // Get smoothed parameters
+    const float smoothMix = pimpl->mixSmoother->tick();
+    const float freeze = pimpl->params.freeze.load(std::memory_order_relaxed);
+    const bool shouldFreeze = freeze > 0.5f;
+    
+    for (int ch = 0; ch < numChannels && ch < pimpl->channelStates.size(); ++ch) {
+        auto& state = pimpl->channelStates[ch];
+        float* channelData = buffer.getWritePointer(ch);
         
-        auto& state = m_channelStates[channel];
-        float* channelData = buffer.getWritePointer(channel);
+        // Calculate RMS for silence detection
+        float rms = 0.0f;
+        for (int i = 0; i < numSamples; ++i) {
+            rms += channelData[i] * channelData[i];
+        }
+        rms = std::sqrt(rms / numSamples);
         
-        // Handle freeze
-        if (m_freeze > 0.5f && !state.isFrozen) {
-            state.isFrozen = true;
-            state.freezeMagnitude = state.magnitude;
-            state.freezePhase = state.phase;
-        } else if (m_freeze <= 0.5f) {
-            state.isFrozen = false;
+        // Fast path for silence
+        const bool isSilent = state.silenceDetector.process(rms);
+        if (isSilent && !shouldFreeze) {
+            // Just clear the output
+            std::fill(channelData, channelData + numSamples, 0.0f);
+            continue;
         }
         
-        for (int sample = 0; sample < numSamples; ++sample) {
-            // Write input to circular buffer
-            state.inputBuffer[state.writePos] = channelData[sample];
-            state.writePos = (state.writePos + 1) % state.inputBuffer.size();
+        // Update freeze state with crossfade
+        bool wasFrozen = state.isFrozen.load(std::memory_order_relaxed);
+        if (shouldFreeze && !wasFrozen) {
+            state.freezeCrossfade.trigger(HOP_SIZE);
+            state.freezeMagnitude = state.magnitude;
+            state.freezePhase = state.phase;
+            state.isFrozen.store(true, std::memory_order_relaxed);
+        } else if (!shouldFreeze && wasFrozen) {
+            state.freezeCrossfade.trigger(HOP_SIZE);
+            state.isFrozen.store(false, std::memory_order_relaxed);
+        }
+        
+        // Process samples
+        for (int i = 0; i < numSamples; ++i) {
+            // Store input sample
+            state.inputBuffer[state.writePos] = channelData[i];
+            state.writePos = wrapIndex(state.writePos + 1, state.inputBuffer.size());
             
-            // Process frames at hop boundaries
-            state.hopCounter++;
-            if (state.hopCounter >= HOP_SIZE) {
+            // Process frame at hop boundary
+            if (++state.hopCounter >= HOP_SIZE) {
                 state.hopCounter = 0;
-                processFrame(state);
+                pimpl->processFrame(state);
             }
             
-            // Read output
-            float output = 0.0f;
-            if (state.outputReadPos < state.outputBuffer.size()) {
-                output = state.outputBuffer[state.outputReadPos];
-                state.outputBuffer[state.outputReadPos] = 0.0f; // Clear after reading
-                state.outputReadPos = (state.outputReadPos + 1) % state.outputBuffer.size();
-            }
+            // Read output with mixing
+            float output = state.outputBuffer[state.outputReadPos];
+            state.outputBuffer[state.outputReadPos] = 0.0f;
+            state.outputReadPos = wrapIndex(state.outputReadPos + 1, state.outputBuffer.size());
             
-            // Mix with dry signal
-            channelData[sample] = channelData[sample] * (1.0f - m_mixAmount) + output * m_mixAmount;
+            // Apply mix with denormal prevention
+            channelData[i] = flushDenorm(channelData[i] * (1.0f - smoothMix) + 
+                                         output * smoothMix);
         }
     }
 }
 
-void PhasedVocoder::processFrame(ChannelState& state) {
-    // Fill grain buffer from input at current read position
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        int readIdx = static_cast<int>(state.readPos + i) % state.inputBuffer.size();
-        state.grainBuffer[i] = state.inputBuffer[readIdx] * state.window[i];
+// Implementation methods
+void PhasedVocoder::Impl::processFrame(ChannelState& state) noexcept {
+    // Get smoothed parameters
+    const float smoothTimeStretch = timeStretchSmoother->tick();
+    const float smoothPitchShift = pitchShiftSmoother->tick();
+    
+    // Fill grain buffer with windowed input
+    const size_t readPosInt = static_cast<size_t>(state.readPos);
+    
+    // SIMD-optimized windowing
+#ifdef __AVX2__
+    for (size_t i = 0; i < FFT_SIZE; i += 8) {
+        size_t idx = readPosInt + i;
+        idx = wrapIndex(idx, state.inputBuffer.size());
+        __m256 input = _mm256_loadu_ps(&state.inputBuffer[idx]);
+        __m256 win = _mm256_load_ps(&state.window[i]);
+        __m256 result = _mm256_mul_ps(input, win);
+        _mm256_store_ps(&state.grainBuffer[i], result);
     }
+#elif defined(__SSE2__)
+    for (size_t i = 0; i < FFT_SIZE; i += 4) {
+        size_t idx = readPosInt + i;
+        idx = wrapIndex(idx, state.inputBuffer.size());
+        __m128 input = _mm_loadu_ps(&state.inputBuffer[idx]);
+        __m128 win = _mm_load_ps(&state.window[i]);
+        __m128 result = _mm_mul_ps(input, win);
+        _mm_store_ps(&state.grainBuffer[i], result);
+    }
+#else
+    for (size_t i = 0; i < FFT_SIZE; ++i) {
+        size_t idx = readPosInt + i;
+        idx = wrapIndex(idx, state.inputBuffer.size());
+        state.grainBuffer[i] = state.inputBuffer[idx] * state.window[i];
+    }
+#endif
     
-    // Advance read position based on time stretch
-    float hopAdvance = HOP_SIZE / m_timeStretch;
+    // Advance read position with time stretch
+    float hopAdvance = HOP_SIZE / std::max(0.25f, std::min(4.0f, smoothTimeStretch));
     
-    // Preserve transients by temporarily reducing stretch
-    float transientAmount = detectTransient(state);
+    // Transient preservation
+    const float transientAmount = state.transientDetector.process(
+        std::accumulate(state.magnitude.begin(), state.magnitude.end(), 0.0f));
+    
     if (transientAmount > 0.0f) {
-        float transientMod = 1.0f - (transientAmount * m_transientPreserve * 0.9f);
-        hopAdvance = HOP_SIZE / (m_timeStretch * transientMod);
+        const float preserve = params.transientPreserve.load(std::memory_order_relaxed);
+        const float transientMod = 1.0f - (transientAmount * preserve * 0.9f);
+        hopAdvance = HOP_SIZE / (smoothTimeStretch * transientMod);
     }
     
     state.readPos += hopAdvance;
-    while (state.readPos >= state.inputBuffer.size()) {
+    if (state.readPos >= state.inputBuffer.size()) {
         state.readPos -= state.inputBuffer.size();
     }
     
-    // Analyze and synthesize
+    // Process spectral data
     analyzeFrame(state);
     applySpectralProcessing(state);
     synthesizeFrame(state);
+    
+    // Comprehensive denormal flush
+    flushAllDenormals(state);
 }
 
-void PhasedVocoder::analyzeFrame(ChannelState& state) {
-    // Copy windowed grain to FFT buffer
-    for (int i = 0; i < FFT_SIZE; ++i) {
+void PhasedVocoder::Impl::analyzeFrame(ChannelState& state) noexcept {
+    // Copy to FFT buffer
+    for (size_t i = 0; i < FFT_SIZE; ++i) {
         state.fftBuffer[i] = std::complex<float>(state.grainBuffer[i], 0.0f);
     }
     
     // Forward FFT
     state.fft.perform(state.fftBuffer.data(), state.fftBuffer.data(), false);
     
-    // Extract magnitude and phase
-    const float binFreq = static_cast<float>(m_sampleRate) / FFT_SIZE;
-    const float expectedPhaseInc = 2.0f * M_PI * HOP_SIZE / FFT_SIZE;
+    // Extract magnitude and phase with improved precision
+    const double binFreqHz = sampleRate / FFT_SIZE;
+    const double expectedPhaseInc = TWO_PI_D * HOP_SIZE / FFT_SIZE;
     
-    for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
-        float real = state.fftBuffer[bin].real();
-        float imag = state.fftBuffer[bin].imag();
+    for (size_t bin = 0; bin <= FFT_SIZE/2; ++bin) {
+        const float real = state.fftBuffer[bin].real();
+        const float imag = state.fftBuffer[bin].imag();
         
-        state.magnitude[bin] = std::sqrt(real * real + imag * imag);
-        state.phase[bin] = std::atan2(imag, real);
+        // Magnitude with denormal prevention
+        state.magnitude[bin] = flushDenorm(std::sqrt(real * real + imag * imag));
         
-        // Phase vocoder frequency analysis
-        float phaseDiff = state.phase[bin] - state.lastPhase[bin];
+        // Phase in double precision
+        state.phase[bin] = std::atan2(static_cast<double>(imag), 
+                                      static_cast<double>(real));
+        
+        // Phase unwrapping
+        double phaseDiff = state.phase[bin] - state.lastPhase[bin];
         state.lastPhase[bin] = state.phase[bin];
         
-        // Wrap phase difference
-        while (phaseDiff > M_PI) phaseDiff -= 2.0f * M_PI;
-        while (phaseDiff < -M_PI) phaseDiff += 2.0f * M_PI;
+        // Wrap to [-π, π]
+        while (phaseDiff > PI_D) phaseDiff -= TWO_PI_D;
+        while (phaseDiff < -PI_D) phaseDiff += TWO_PI_D;
         
-        // Calculate true frequency
-        float deviation = phaseDiff - expectedPhaseInc * bin;
-        state.trueBinFreq[bin] = binFreq * bin + deviation * m_sampleRate / (2.0f * M_PI * HOP_SIZE);
+        // True frequency estimation
+        const double deviation = phaseDiff - expectedPhaseInc * bin;
+        const double trueFreq = binFreqHz * bin + 
+                               deviation * sampleRate / (TWO_PI_D * HOP_SIZE);
+        state.trueBinFreq[bin] = static_cast<float>(trueFreq);
     }
 }
 
-void PhasedVocoder::applySpectralProcessing(ChannelState& state) {
-    // Apply spectral gate
-    if (m_spectralGate > 0.0f) {
-        float threshold = m_spectralGate * m_spectralGate * 0.01f;
-        for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
+void PhasedVocoder::Impl::applySpectralProcessing(ChannelState& state) noexcept {
+    const float spectralGate = params.spectralGate.load(std::memory_order_relaxed);
+    const float spectralSmear = params.spectralSmear.load(std::memory_order_relaxed);
+    const bool isFrozen = state.isFrozen.load(std::memory_order_relaxed);
+    
+    // Spectral gate with smooth threshold
+    if (spectralGate > 0.0f) {
+        const float threshold = spectralGate * spectralGate * 0.01f;
+        for (size_t bin = 0; bin <= FFT_SIZE/2; ++bin) {
             if (state.magnitude[bin] < threshold) {
                 state.magnitude[bin] = 0.0f;
             }
         }
     }
     
-    // Apply spectral smear
-    if (m_spectralSmear > 0.0f) {
-        std::vector<float> smearedMag = state.magnitude;
-        int smearWidth = static_cast<int>(m_spectralSmear * 10.0f + 1.0f);
+    // Spectral smearing with SIMD
+    if (spectralSmear > 0.0f) {
+        alignas(32) std::array<float, FFT_SIZE/2 + 1> smearedMag;
+        const int smearWidth = static_cast<int>(spectralSmear * 10.0f + 1.0f);
         
-        for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
+        for (size_t bin = 0; bin <= FFT_SIZE/2; ++bin) {
             float sum = 0.0f;
             int count = 0;
             
-            for (int offset = -smearWidth; offset <= smearWidth; ++offset) {
-                int idx = bin + offset;
-                if (idx >= 0 && idx <= FFT_SIZE / 2) {
-                    sum += state.magnitude[idx];
-                    count++;
-                }
+            const size_t start = (bin > smearWidth) ? bin - smearWidth : 0;
+            const size_t end = std::min(bin + smearWidth + 1, FFT_SIZE/2 + 1);
+            
+            for (size_t idx = start; idx < end; ++idx) {
+                sum += state.magnitude[idx];
+                count++;
             }
             
-            if (count > 0) {
-                smearedMag[bin] = sum / count;
-            }
+            smearedMag[bin] = sum / std::max(1, count);
         }
         
         state.magnitude = smearedMag;
     }
     
-    // Use frozen spectrum if enabled
-    if (state.isFrozen) {
+    // Freeze processing with crossfade
+    if (state.freezeCrossfade.isActive()) {
+        const float weight = state.freezeCrossfade.getWeight();
+        
+        if (isFrozen) {
+            // Crossfade TO frozen state
+            for (size_t bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                state.magnitude[bin] = state.magnitude[bin] * weight + 
+                                      state.freezeMagnitude[bin] * (1.0f - weight);
+                state.phase[bin] = state.phase[bin] * weight + 
+                                  state.freezePhase[bin] * (1.0 - weight);
+            }
+        } else {
+            // Crossfade FROM frozen state
+            for (size_t bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                state.magnitude[bin] = state.freezeMagnitude[bin] * weight + 
+                                      state.magnitude[bin] * (1.0f - weight);
+                state.phase[bin] = state.freezePhase[bin] * weight + 
+                                  state.phase[bin] * (1.0 - weight);
+            }
+        }
+    } else if (isFrozen) {
+        // Fully frozen
         state.magnitude = state.freezeMagnitude;
         
-        // Apply phase reset
-        if (m_phaseReset > 0.0f) {
-            for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
-                float resetAmount = m_phaseReset;
-                state.phase[bin] = state.freezePhase[bin] * (1.0f - resetAmount) + 
-                                  state.phase[bin] * resetAmount;
+        const float phaseReset = params.phaseReset.load(std::memory_order_relaxed);
+        if (phaseReset > 0.0f) {
+            for (size_t bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                state.phase[bin] = state.freezePhase[bin] * (1.0 - phaseReset) + 
+                                  state.phase[bin] * phaseReset;
             }
+        } else {
+            state.phase = state.freezePhase;
         }
     }
 }
 
-void PhasedVocoder::synthesizeFrame(ChannelState& state) {
-    // const float binFreq = static_cast<float>(m_sampleRate) / FFT_SIZE;
+void PhasedVocoder::Impl::synthesizeFrame(ChannelState& state) noexcept {
+    const float pitchShift = pitchShiftSmoother->tick();
     
-    // Reconstruct spectrum with pitch shift
-    for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
-        // Apply pitch shift to frequency
-        float shiftedFreq = state.trueBinFreq[bin] * m_pitchShift;
+    // Phase accumulation and spectrum reconstruction
+    for (size_t bin = 0; bin <= FFT_SIZE/2; ++bin) {
+        // Pitch-shifted frequency
+        const double shiftedFreq = state.trueBinFreq[bin] * pitchShift;
         
-        // Accumulate phase
-        state.phaseAccum[bin] += 2.0f * M_PI * shiftedFreq * HOP_SIZE / m_sampleRate;
+        // Accumulate phase in double precision
+        state.phaseAccum[bin] += TWO_PI_D * shiftedFreq * HOP_SIZE / sampleRate;
         
-        // Reconstruct complex spectrum
-        state.fftBuffer[bin] = std::polar(state.magnitude[bin], state.phaseAccum[bin]);
+        // Wrap phase to prevent unbounded growth
+        while (state.phaseAccum[bin] > PI_D) state.phaseAccum[bin] -= TWO_PI_D;
+        while (state.phaseAccum[bin] < -PI_D) state.phaseAccum[bin] += TWO_PI_D;
         
-        // Mirror for negative frequencies
-        if (bin > 0 && bin < FFT_SIZE / 2) {
+        // Reconstruct spectrum
+        state.fftBuffer[bin] = std::polar(state.magnitude[bin], 
+                                         static_cast<float>(state.phaseAccum[bin]));
+        
+        // Hermitian symmetry
+        if (bin > 0 && bin < FFT_SIZE/2) {
             state.fftBuffer[FFT_SIZE - bin] = std::conj(state.fftBuffer[bin]);
         }
     }
@@ -228,65 +620,153 @@ void PhasedVocoder::synthesizeFrame(ChannelState& state) {
     // Inverse FFT
     state.fft.perform(state.fftBuffer.data(), state.fftBuffer.data(), true);
     
-    // Window and overlap-add to output
-    const float scale = 1.0f / (FFT_SIZE * OVERLAP / 2.0f);
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        int outIdx = (state.outputReadPos + i) % state.outputBuffer.size();
-        state.outputBuffer[outIdx] += state.fftBuffer[i].real() * state.window[i] * scale;
+    // Overlap-add with proper scaling
+    const float scale = invFFTSize / windowSum;
+    
+#ifdef __AVX2__
+    const __m256 vScale = _mm256_set1_ps(scale);
+    for (size_t i = 0; i < FFT_SIZE; i += 8) {
+        size_t outIdx = state.outputWritePos + i;
+        outIdx = wrapIndex(outIdx, state.outputBuffer.size());
+        
+        __m256 fftReal = _mm256_set_ps(
+            state.fftBuffer[i+7].real(), state.fftBuffer[i+6].real(),
+            state.fftBuffer[i+5].real(), state.fftBuffer[i+4].real(),
+            state.fftBuffer[i+3].real(), state.fftBuffer[i+2].real(),
+            state.fftBuffer[i+1].real(), state.fftBuffer[i].real());
+        __m256 win = _mm256_load_ps(&state.window[i]);
+        __m256 result = _mm256_mul_ps(_mm256_mul_ps(fftReal, win), vScale);
+        
+        __m256 existing = _mm256_loadu_ps(&state.outputBuffer[outIdx]);
+        _mm256_storeu_ps(&state.outputBuffer[outIdx], _mm256_add_ps(existing, result));
+    }
+#elif defined(__SSE2__)
+    const __m128 vScale = _mm_set1_ps(scale);
+    for (size_t i = 0; i < FFT_SIZE; i += 4) {
+        size_t outIdx = state.outputWritePos + i;
+        outIdx = wrapIndex(outIdx, state.outputBuffer.size());
+        
+        __m128 fftReal = _mm_set_ps(state.fftBuffer[i+3].real(),
+                                    state.fftBuffer[i+2].real(),
+                                    state.fftBuffer[i+1].real(),
+                                    state.fftBuffer[i].real());
+        __m128 win = _mm_load_ps(&state.window[i]);
+        __m128 result = _mm_mul_ps(_mm_mul_ps(fftReal, win), vScale);
+        
+        __m128 existing = _mm_loadu_ps(&state.outputBuffer[outIdx]);
+        _mm_storeu_ps(&state.outputBuffer[outIdx], _mm_add_ps(existing, result));
+    }
+#else
+    for (size_t i = 0; i < FFT_SIZE; ++i) {
+        size_t outIdx = state.outputWritePos + i;
+        outIdx = wrapIndex(outIdx, state.outputBuffer.size());
+        state.outputBuffer[outIdx] += state.fftBuffer[i].real() * 
+                                     state.window[i] * scale;
+    }
+#endif
+    
+    state.outputWritePos = wrapIndex(state.outputWritePos + HOP_SIZE, 
+                                    state.outputBuffer.size());
+}
+
+void PhasedVocoder::Impl::initializeWindow(std::array<float, FFT_SIZE>& window) noexcept {
+    // Hann window with exact normalization
+    constexpr float norm = 1.0f / (FFT_SIZE - 1);
+    
+    for (size_t i = 0; i < FFT_SIZE; ++i) {
+        window[i] = 0.5f * (1.0f - std::cos(TWO_PI * i * norm));
     }
 }
 
-float PhasedVocoder::detectTransient(ChannelState& state) {
-    // Simple transient detection based on spectral flux
-    float magnitudeSum = 0.0f;
-    for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
-        magnitudeSum += state.magnitude[bin];
-    }
-    
-    float flux = std::max(0.0f, magnitudeSum - state.lastMagnitudeSum);
-    state.lastMagnitudeSum = magnitudeSum;
-    
-    // Envelope follower
-    const float attack = 0.001f;
-    const float release = 0.1f;
-    
-    if (flux > state.envelopeFollower) {
-        state.envelopeFollower += (flux - state.envelopeFollower) * attack;
-    } else {
-        state.envelopeFollower += (flux - state.envelopeFollower) * release;
-    }
-    
-    return std::min(1.0f, state.envelopeFollower * 10.0f);
-}
-
-void PhasedVocoder::createWindow(std::vector<float>& window) {
-    // Hann window
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        window[i] = 0.5f - 0.5f * std::cos(2.0f * M_PI * i / (FFT_SIZE - 1));
+void PhasedVocoder::Impl::flushAllDenormals(ChannelState& state) noexcept {
+    if (++state.denormFlushCounter >= 256) {
+        state.denormFlushCounter = 0;
+        
+        // Flush ALL feedback paths
+        for (auto& p : state.phaseAccum) p = flushDenorm(p);
+        for (auto& p : state.lastPhase) p = flushDenorm(p);
+        for (auto& f : state.trueBinFreq) f = flushDenorm(f);
+        for (auto& m : state.magnitude) m = flushDenorm(m);
+        
+        // Also flush transient detector state
+        state.transientDetector.process(0.0f); // Forces internal flush
     }
 }
 
+// Parameter updates (thread-safe)
 void PhasedVocoder::updateParameters(const std::map<int, float>& params) {
-    if (params.count(0)) m_timeStretch = 0.25f + params.at(0) * 3.75f; // 0.25x to 4x
-    if (params.count(1)) m_pitchShift = 0.5f + params.at(1) * 1.5f; // 0.5x to 2x
-    if (params.count(2)) m_spectralSmear = params.at(2);
-    if (params.count(3)) m_transientPreserve = params.at(3);
-    if (params.count(4)) m_phaseReset = params.at(4);
-    if (params.count(5)) m_spectralGate = params.at(5);
-    if (params.count(6)) m_mixAmount = params.at(6);
-    if (params.count(7)) m_freeze = params.at(7);
+    for (const auto& [id, value] : params) {
+        switch (static_cast<ParamID>(id)) {
+            case ParamID::TimeStretch:
+                pimpl->params.timeStretch.store(0.25f + value * 3.75f, 
+                                               std::memory_order_relaxed);
+                break;
+            case ParamID::PitchShift:
+                pimpl->params.pitchShift.store(0.5f + value * 1.5f, 
+                                              std::memory_order_relaxed);
+                break;
+            case ParamID::SpectralSmear:
+                pimpl->params.spectralSmear.store(value, std::memory_order_relaxed);
+                break;
+            case ParamID::TransientPreserve:
+                pimpl->params.transientPreserve.store(value, std::memory_order_relaxed);
+                break;
+            case ParamID::PhaseReset:
+                pimpl->params.phaseReset.store(value, std::memory_order_relaxed);
+                break;
+            case ParamID::SpectralGate:
+                pimpl->params.spectralGate.store(value, std::memory_order_relaxed);
+                break;
+            case ParamID::Mix:
+                pimpl->params.mixAmount.store(value, std::memory_order_relaxed);
+                break;
+            case ParamID::Freeze:
+                pimpl->params.freeze.store(value, std::memory_order_relaxed);
+                break;
+            case ParamID::TransientAttack:
+                {
+                    const float attackMs = 0.1f + value * 9.9f; // 0.1-10ms
+                    pimpl->params.transientAttack.store(attackMs, std::memory_order_relaxed);
+                    
+                    // Update transient detectors
+                    const float releaseMs = pimpl->params.transientRelease.load();
+                    for (auto& state : pimpl->channelStates) {
+                        state.transientDetector.prepare(pimpl->sampleRate, attackMs, releaseMs);
+                    }
+                }
+                break;
+            case ParamID::TransientRelease:
+                {
+                    const float releaseMs = 10.0f + value * 490.0f; // 10-500ms
+                    pimpl->params.transientRelease.store(releaseMs, std::memory_order_relaxed);
+                    
+                    // Update transient detectors
+                    const float attackMs = pimpl->params.transientAttack.load();
+                    for (auto& state : pimpl->channelStates) {
+                        state.transientDetector.prepare(pimpl->sampleRate, attackMs, releaseMs);
+                    }
+                }
+                break;
+        }
+    }
 }
 
 juce::String PhasedVocoder::getParameterName(int index) const {
-    switch (index) {
-        case 0: return "Stretch";
-        case 1: return "Pitch";
-        case 2: return "Smear";
-        case 3: return "Transient";
-        case 4: return "Phase";
-        case 5: return "Gate";
-        case 6: return "Mix";
-        case 7: return "Freeze";
-        default: return "";
+    switch (static_cast<ParamID>(index)) {
+        case ParamID::TimeStretch:       return "Stretch";
+        case ParamID::PitchShift:        return "Pitch";
+        case ParamID::SpectralSmear:     return "Smear";
+        case ParamID::TransientPreserve: return "Transient";
+        case ParamID::PhaseReset:        return "Phase";
+        case ParamID::SpectralGate:      return "Gate";
+        case ParamID::Mix:               return "Mix";
+        case ParamID::Freeze:            return "Freeze";
+        case ParamID::TransientAttack:   return "Attack";
+        case ParamID::TransientRelease:  return "Release";
+        default:                         return "";
     }
+}
+
+juce::String PhasedVocoder::getName() const { 
+    return "Phased Vocoder"; 
 }

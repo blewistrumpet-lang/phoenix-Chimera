@@ -1,0 +1,444 @@
+{
+  "summary": {
+    "total_engines": 63,
+    "total_implementations": 53,
+    "total_string_mappings": 53,
+    "errors": 1,
+    "warnings": 1
+  },
+  "engines": {
+    "ENGINE_TAPE_ECHO": {
+      "id": 1,
+      "implementation": "TapeEcho",
+      "string_id": "tape_echo",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_SHIMMER_REVERB": {
+      "id": 2,
+      "implementation": "ShimmerReverb",
+      "string_id": "shimmer_reverb",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_PLATE_REVERB": {
+      "id": 3,
+      "implementation": "PlateReverb",
+      "string_id": "plate_reverb",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_CONVOLUTION_REVERB": {
+      "id": 4,
+      "implementation": "ConvolutionReverb",
+      "string_id": "convolution_reverb",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_SPRING_REVERB": {
+      "id": 5,
+      "implementation": "SpringReverb",
+      "string_id": "spring_reverb",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_OPTO_COMPRESSOR": {
+      "id": 6,
+      "implementation": "VintageOptoCompressor",
+      "string_id": "vintage_opto",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_VCA_COMPRESSOR": {
+      "id": 7,
+      "implementation": "ClassicCompressor",
+      "string_id": "classic_compressor",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_MAGNETIC_DRUM_ECHO": {
+      "id": 8,
+      "implementation": "MagneticDrumEcho",
+      "string_id": "magnetic_drum_echo",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_BUCKET_BRIGADE_DELAY": {
+      "id": 9,
+      "implementation": "BucketBrigadeDelay",
+      "string_id": "bucket_brigade",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_ANALOG_CHORUS": {
+      "id": 10,
+      "implementation": null,
+      "string_id": null,
+      "has_header": false,
+      "has_cpp": false
+    },
+    "ENGINE_DIGITAL_CHORUS": {
+      "id": 11,
+      "implementation": "StereoChorus",
+      "string_id": "digital_chorus",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_ANALOG_PHASER": {
+      "id": 12,
+      "implementation": "AnalogPhaser",
+      "string_id": "analog_phaser",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_DIGITAL_PHASER": {
+      "id": 13,
+      "implementation": null,
+      "string_id": null,
+      "has_header": false,
+      "has_cpp": false
+    },
+    "ENGINE_PITCH_SHIFTER": {
+      "id": 14,
+      "implementation": "PitchShifter",
+      "string_id": "pitch_shifter",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_RING_MODULATOR": {
+      "id": 15,
+      "implementation": "AnalogRingModulator",
+      "string_id": "ring_modulator",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_GRANULAR_CLOUD": {
+      "id": 16,
+      "implementation": "GranularCloud",
+      "string_id": "granular_cloud",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_VOCAL_FORMANT": {
+      "id": 17,
+      "implementation": "VocalFormantFilter",
+      "string_id": "vocal_formant",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_DIMENSION_EXPANDER": {
+      "id": 18,
+      "implementation": "DimensionExpander",
+      "string_id": "dimension_expander",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_FREQUENCY_SHIFTER": {
+      "id": 19,
+      "implementation": "FrequencyShifter",
+      "string_id": "frequency_shifter",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_TRANSIENT_SHAPER": {
+      "id": 20,
+      "implementation": "TransientShaper",
+      "string_id": "transient_shaper",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_HARMONIC_TREMOLO": {
+      "id": 21,
+      "implementation": "HarmonicTremolo",
+      "string_id": "harmonic_tremolo",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_CLASSIC_TREMOLO": {
+      "id": 22,
+      "implementation": "ClassicTremolo",
+      "string_id": "classic_tremolo",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_COMB_RESONATOR": {
+      "id": 23,
+      "implementation": "CombResonator",
+      "string_id": "comb_resonator",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_ROTARY_SPEAKER": {
+      "id": 24,
+      "implementation": "RotarySpeaker",
+      "string_id": "rotary_speaker",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_MID_SIDE_PROCESSOR": {
+      "id": 25,
+      "implementation": "MidSideProcessor",
+      "string_id": "mid_side_processor",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_VINTAGE_CONSOLE_EQ": {
+      "id": 26,
+      "implementation": "VintageConsoleEQ",
+      "string_id": "vintage_console_eq",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_PARAMETRIC_EQ": {
+      "id": 27,
+      "implementation": "ParametricEQ",
+      "string_id": "parametric_eq",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_LADDER_FILTER": {
+      "id": 28,
+      "implementation": "LadderFilter",
+      "string_id": "ladder_filter",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_STATE_VARIABLE_FILTER": {
+      "id": 29,
+      "implementation": "StateVariableFilter",
+      "string_id": "state_variable_filter",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_FORMANT_FILTER": {
+      "id": 30,
+      "implementation": "FormantFilter",
+      "string_id": "formant_filter",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_WAVE_FOLDER": {
+      "id": 31,
+      "implementation": "WaveFolder",
+      "string_id": "wave_folder",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_HARMONIC_EXCITER": {
+      "id": 32,
+      "implementation": "HarmonicExciter",
+      "string_id": "harmonic_exciter",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_BIT_CRUSHER": {
+      "id": 33,
+      "implementation": "BitCrusher",
+      "string_id": "bit_crusher",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_MULTIBAND_SATURATOR": {
+      "id": 34,
+      "implementation": "MultibandSaturator",
+      "string_id": "multiband_saturator",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_MUFF_FUZZ": {
+      "id": 35,
+      "implementation": "MuffFuzz",
+      "string_id": "muff_fuzz",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_RODENT_DISTORTION": {
+      "id": 36,
+      "implementation": "RodentDistortion",
+      "string_id": "rodent_distortion",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_TUBE_SCREAMER": {
+      "id": 37,
+      "implementation": null,
+      "string_id": null,
+      "has_header": false,
+      "has_cpp": false
+    },
+    "ENGINE_K_STYLE": {
+      "id": 38,
+      "implementation": "KStyleOverdrive",
+      "string_id": "k_style_overdrive",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_SPECTRAL_FREEZE": {
+      "id": 39,
+      "implementation": "SpectralFreeze",
+      "string_id": "spectral_freeze",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_BUFFER_REPEAT": {
+      "id": 40,
+      "implementation": "BufferRepeat",
+      "string_id": "buffer_repeat",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_CHAOS_GENERATOR": {
+      "id": 41,
+      "implementation": "ChaosGenerator",
+      "string_id": "chaos_generator",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_INTELLIGENT_HARMONIZER": {
+      "id": 42,
+      "implementation": "IntelligentHarmonizer",
+      "string_id": "intelligent_harmonizer",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_GATED_REVERB": {
+      "id": 43,
+      "implementation": "GatedReverb",
+      "string_id": "gated_reverb",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_DETUNE_DOUBLER": {
+      "id": 44,
+      "implementation": "DetuneDoubler",
+      "string_id": "detune_doubler",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_PHASED_VOCODER": {
+      "id": 45,
+      "implementation": "PhasedVocoder",
+      "string_id": "phased_vocoder",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_SPECTRAL_GATE": {
+      "id": 46,
+      "implementation": "SpectralGate",
+      "string_id": "spectral_gate",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_NOISE_GATE": {
+      "id": 47,
+      "implementation": "NoiseGate",
+      "string_id": "noise_gate",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_ENVELOPE_FILTER": {
+      "id": 48,
+      "implementation": "EnvelopeFilter",
+      "string_id": "envelope_filter",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_FEEDBACK_NETWORK": {
+      "id": 49,
+      "implementation": "FeedbackNetwork",
+      "string_id": "feedback_network",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_MASTERING_LIMITER": {
+      "id": 50,
+      "implementation": "MasteringLimiter",
+      "string_id": "mastering_limiter",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_STEREO_WIDENER": {
+      "id": 51,
+      "implementation": "StereoWidener",
+      "string_id": "stereo_widener",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_RESONANT_CHORUS": {
+      "id": 52,
+      "implementation": "ResonantChorus",
+      "string_id": "resonant_chorus",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_DIGITAL_DELAY": {
+      "id": 53,
+      "implementation": "DigitalDelay",
+      "string_id": "digital_delay",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_DYNAMIC_EQ": {
+      "id": 54,
+      "implementation": "DynamicEQ",
+      "string_id": "dynamic_eq",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_STEREO_IMAGER": {
+      "id": 55,
+      "implementation": "StereoImager",
+      "string_id": "stereo_imager",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_COUNT": {
+      "id": 56,
+      "implementation": null,
+      "string_id": null,
+      "has_header": false,
+      "has_cpp": false
+    },
+    "ENGINE_CLASSIC_COMPRESSOR": {
+      "id": 7,
+      "implementation": "ClassicCompressor",
+      "string_id": "classic_compressor",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_STEREO_CHORUS": {
+      "id": 11,
+      "implementation": "StereoChorus",
+      "string_id": "digital_chorus",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_ANALOG_RING_MODULATOR": {
+      "id": 15,
+      "implementation": "AnalogRingModulator",
+      "string_id": "ring_modulator",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_VOCAL_FORMANT_FILTER": {
+      "id": 17,
+      "implementation": "VocalFormantFilter",
+      "string_id": "vocal_formant",
+      "has_header": true,
+      "has_cpp": true
+    },
+    "ENGINE_VINTAGE_OPTO_COMPRESSOR": {
+      "id": 6,
+      "implementation": "VintageOptoCompressor",
+      "string_id": "vintage_opto",
+      "has_header": true,
+      "has_cpp": true
+    }
+  },
+  "errors": [
+    "No implementation for ENGINE_COUNT (ID: 56)"
+  ],
+  "warnings": [
+    "No string mapping for ENGINE_COUNT (ID: 56)"
+  ]
+}

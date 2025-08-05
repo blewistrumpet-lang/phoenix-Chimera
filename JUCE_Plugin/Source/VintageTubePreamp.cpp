@@ -1,170 +1,92 @@
+// VintageTubePreamp.cpp - Professional Studio-Quality Implementation
 #include "VintageTubePreamp.h"
+#include <algorithm>
 #include <cmath>
 
-// Implementation of tube saturation function
-float VintageTubePreamp::AdvancedTubeStage::processTubeSaturation(float input, TubeType type, float bias) {
-    // Simple tube saturation model
-    float biased = input + bias * 0.1f;
-    float output;
-    
-    switch (type) {
-        case TUBE_12AX7:
-            output = std::tanh(biased * 3.0f) / 3.0f;
-            break;
-        case TUBE_12AU7:
-            output = std::tanh(biased * 2.0f) / 2.0f;
-            break;
-        case TUBE_6V6:
-            output = std::tanh(biased * 1.5f) / 1.5f;
-            break;
-        case TUBE_EL34:
-        default:
-            output = std::tanh(biased * 1.8f) / 1.8f;
-            break;
-    }
-    
-    return output - bias * 0.1f;
-}
-
-// Implementation of tube transconductance function
-float VintageTubePreamp::AdvancedTubeStage::getTubeGm(TubeType type) {
-    switch (type) {
-        case TUBE_12AX7:
-            return 1.6f;  // mA/V typical
-        case TUBE_12AU7:
-            return 2.2f;
-        case TUBE_6V6:
-            return 4.1f;
-        case TUBE_EL34:
-        default:
-            return 11.0f;
-    }
-}
-
-// Implementation of tube amplification factor
-float VintageTubePreamp::AdvancedTubeStage::getTubeMu(TubeType type) {
-    switch (type) {
-        case TUBE_12AX7:
-            return 100.0f;  // Typical amplification factor
-        case TUBE_12AU7:
-            return 20.0f;
-        case TUBE_6V6:
-            return 12.6f;
-        case TUBE_EL34:
-        default:
-            return 10.5f;
-    }
-}
-
-// Implementation of tube plate resistance
-float VintageTubePreamp::AdvancedTubeStage::getTubeRp(TubeType type) {
-    switch (type) {
-        case TUBE_12AX7:
-            return 62500.0f;  // Ohms typical
-        case TUBE_12AU7:
-            return 7700.0f;
-        case TUBE_6V6:
-            return 50000.0f;
-        case TUBE_EL34:
-        default:
-            return 15000.0f;
-    }
-}
-
-// Implementation of tube harmonics function
-float VintageTubePreamp::AdvancedTubeStage::addTubeHarmonics(float input, float drive, TubeType type, float aging) {
-    // Simple harmonic generation based on tube type
-    float output = input;
-    float harmonic2, harmonic3;
-    
-    switch (type) {
-        case TUBE_12AX7:
-            harmonic2 = input * input * 0.1f * drive;
-            harmonic3 = input * input * input * 0.03f * drive;
-            break;
-        case TUBE_12AU7:
-            harmonic2 = input * input * 0.08f * drive;
-            harmonic3 = input * input * input * 0.04f * drive;
-            break;
-        case TUBE_6V6:
-            harmonic2 = input * input * 0.05f * drive;
-            harmonic3 = input * input * input * 0.08f * drive;
-            break;
-        case TUBE_EL34:
-        default:
-            harmonic2 = input * input * 0.06f * drive;
-            harmonic3 = input * input * input * 0.07f * drive;
-            break;
-    }
-    
-    // Aging affects harmonic content
-    harmonic2 *= (1.0f + aging * 0.2f);
-    harmonic3 *= (1.0f + aging * 0.15f);
-    
-    output += harmonic2 - harmonic3;
-    return output;
-}
-
 VintageTubePreamp::VintageTubePreamp() {
-    // Initialize smoothed parameters with boutique defaults
-    m_inputGain.setImmediate(0.5f);
-    m_warmth.setImmediate(0.5f);
-    m_presence.setImmediate(0.5f);
-    m_tubeDrive.setImmediate(0.5f);
-    m_bias.setImmediate(0.5f);
-    m_tone.setImmediate(0.5f);
-    m_outputGain.setImmediate(0.5f);
-    m_mix.setImmediate(1.0f);
-    m_tubeType.setImmediate(0.0f);     // 12AX7 default
-    m_saturation.setImmediate(0.3f);   // Moderate saturation
+    // Initialize all parameter smoothers
+    m_inputGain = std::make_unique<ParameterSmoother>();
+    m_drive = std::make_unique<ParameterSmoother>();
+    m_bias = std::make_unique<ParameterSmoother>();
+    m_bass = std::make_unique<ParameterSmoother>();
+    m_mid = std::make_unique<ParameterSmoother>();
+    m_treble = std::make_unique<ParameterSmoother>();
+    m_presence = std::make_unique<ParameterSmoother>();
+    m_outputGain = std::make_unique<ParameterSmoother>();
+    m_tubeType = std::make_unique<ParameterSmoother>();
+    m_mix = std::make_unique<ParameterSmoother>();
     
-    // Set different smoothing rates
-    m_inputGain.setSmoothingRate(0.99f);
-    m_warmth.setSmoothingRate(0.995f);
-    m_presence.setSmoothingRate(0.995f);
-    m_tubeDrive.setSmoothingRate(0.99f);
-    m_bias.setSmoothingRate(0.98f);        // Slower for bias changes
-    m_tone.setSmoothingRate(0.995f);
-    m_outputGain.setSmoothingRate(0.99f);
-    m_mix.setSmoothingRate(0.995f);
-    m_tubeType.setSmoothingRate(0.95f);    // Slowest for tube type changes
-    m_saturation.setSmoothingRate(0.99f);
+    // Set default values (professional preamp defaults)
+    m_inputGain->reset(0.5f);   // Unity gain
+    m_drive->reset(0.3f);        // Moderate drive
+    m_bias->reset(0.5f);         // Centered bias
+    m_bass->reset(0.5f);         // Flat EQ
+    m_mid->reset(0.5f);          // Flat EQ
+    m_treble->reset(0.5f);       // Flat EQ
+    m_presence->reset(0.5f);     // Moderate presence
+    m_outputGain->reset(0.5f);   // Unity output
+    m_tubeType->reset(0.0f);     // 12AX7 default
+    m_mix->reset(1.0f);          // 100% wet
 }
 
 void VintageTubePreamp::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
     
-    // Reset tone stacks
-    for (auto& toneStack : m_toneStacks) {
-        toneStack.reset();
+    // Configure parameter smoothers with appropriate rates
+    m_inputGain->setSampleRate(sampleRate, 10.0f);    // Fast for input
+    m_drive->setSampleRate(sampleRate, 20.0f);        // Moderate
+    m_bias->setSampleRate(sampleRate, 50.0f);         // Slow for bias
+    m_bass->setSampleRate(sampleRate, 30.0f);         // Tone controls
+    m_mid->setSampleRate(sampleRate, 30.0f);
+    m_treble->setSampleRate(sampleRate, 30.0f);
+    m_presence->setSampleRate(sampleRate, 30.0f);
+    m_outputGain->setSampleRate(sampleRate, 10.0f);   // Fast for output
+    m_tubeType->setSampleRate(sampleRate, 100.0f);    // Very slow for tube switching
+    m_mix->setSampleRate(sampleRate, 20.0f);
+    
+    // Initialize all DSP components
+    for (int ch = 0; ch < 2; ++ch) {
+        // Transformers
+        m_inputTransformers[ch].setSampleRate(sampleRate);
+        m_outputTransformers[ch].setSampleRate(sampleRate);
+        
+        // Tube stages
+        m_tubeStages1[ch].setSampleRate(sampleRate);
+        m_tubeStages1[ch].setTubeType(TubeType::TUBE_12AX7);
+        
+        m_tubeStages2[ch].setSampleRate(sampleRate);
+        m_tubeStages2[ch].setTubeType(TubeType::TUBE_12AX7);
+        
+        // Tone stack
+        m_toneStacks[ch].setSampleRate(sampleRate);
+        
+        // DC blockers
+        m_inputDCBlockers[ch].setCutoff(10.0, sampleRate);   // 10Hz high-pass
+        m_outputDCBlockers[ch].setCutoff(5.0, sampleRate);    // 5Hz high-pass
+        
+        // Oversampling
+        m_oversamplers[ch].prepare(samplesPerBlock, sampleRate);
     }
     
-    // Reset DC blockers
-    for (auto& blocker : m_inputDCBlockers) {
-        blocker.reset();
-    }
-    for (auto& blocker : m_outputDCBlockers) {
-        blocker.reset();
-    }
-    
-    // Prepare oversampler
-    m_oversampler.prepare(samplesPerBlock);
-    
-    // Reset aging and thermal
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
+    reset();
 }
 
 void VintageTubePreamp::reset() {
-    // Reset all internal state
-    for (auto& toneStack : m_toneStacks) {
-        toneStack.reset();
+    // Reset all DSP components
+    for (int ch = 0; ch < 2; ++ch) {
+        m_inputTransformers[ch].reset();
+        m_outputTransformers[ch].reset();
+        m_tubeStages1[ch].reset();
+        m_tubeStages2[ch].reset();
+        m_toneStacks[ch].reset();
+        m_inputDCBlockers[ch].reset();
+        m_outputDCBlockers[ch].reset();
+        m_oversamplers[ch].reset();
     }
-    for (auto& blocker : m_inputDCBlockers) {
-        blocker.reset();
-    }
-    for (auto& blocker : m_outputDCBlockers) {
-        blocker.reset();
+    
+    // Clear work buffers
+    for (auto& buffer : m_oversampledBuffers) {
+        buffer.fill(0.0f);
     }
 }
 
@@ -172,73 +94,228 @@ void VintageTubePreamp::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
-    float inputLevel = std::pow(10.0f, (m_inputGain.current - 0.5f) * 2.0f);
-    float outputLevel = std::pow(10.0f, (m_outputGain.current - 0.5f) * 2.0f);
+    if (numChannels == 0 || numSamples == 0) return;
     
-    for (int channel = 0; channel < numChannels; ++channel) {
-        if (channel >= 2) break;
+    // Process stereo or mono
+    if (numChannels == 1) {
+        // Mono processing
+        float* data = buffer.getWritePointer(0);
+        processStereo(data, data, numSamples);
+    } else {
+        // Stereo processing
+        float* left = buffer.getWritePointer(0);
+        float* right = buffer.getWritePointer(1);
+        processStereo(left, right, numSamples);
+    }
+}
+
+void VintageTubePreamp::processStereo(float* left, float* right, int numSamples) {
+    // Update all parameters once per block
+    float inputGain = m_inputGain->process();
+    float drive = m_drive->process();
+    float bias = m_bias->process();
+    float bass = m_bass->process();
+    float mid = m_mid->process();
+    float treble = m_treble->process();
+    float presence = m_presence->process();
+    float outputGain = m_outputGain->process();
+    float tubeTypeParam = m_tubeType->process();
+    float mix = m_mix->process();
+    
+    // Convert parameters to usable ranges
+    float inputLevel = std::pow(10.0f, (inputGain - 0.5f) * 40.0f / 20.0f);  // ±20dB
+    float outputLevel = std::pow(10.0f, (outputGain - 0.5f) * 40.0f / 20.0f); // ±20dB
+    
+    // Determine tube type
+    TubeType currentTubeType = getTubeTypeFromParam(tubeTypeParam);
+    
+    // Update tube types if changed
+    static TubeType lastTubeType = TubeType::TUBE_12AX7;
+    if (currentTubeType != lastTubeType) {
+        for (int ch = 0; ch < 2; ++ch) {
+            m_tubeStages1[ch].setTubeType(currentTubeType);
+            m_tubeStages2[ch].setTubeType(currentTubeType);
+        }
+        lastTubeType = currentTubeType;
+    }
+    
+    // Process each channel
+    float* channelData[2] = {left, right};
+    
+    for (int ch = 0; ch < 2; ++ch) {
+        float* data = channelData[ch];
         
-        auto& tubeStage = m_tubeStages[channel];
-        auto& toneStack = m_toneStacks[channel];
-        float* channelData = buffer.getWritePointer(channel);
-        
-        for (int sample = 0; sample < numSamples; ++sample) {
-            float input = channelData[sample];
-            float dry = input;
+        if (m_useOversampling) {
+            // Upsample to 4x
+            float* oversampledData = m_oversampledBuffers[ch].data();
+            m_oversamplers[ch].processUpsample(data, oversampledData, numSamples);
             
-            input *= inputLevel;
+            // Process at 4x sample rate
+            int oversampledSamples = numSamples * OVERSAMPLE_FACTOR;
             
-            // Warmth (low frequency emphasis)
-            if (m_warmth.current > 0.5f) {
-                float warmthAmount = (m_warmth.current - 0.5f) * 2.0f;
-                input *= (1.0f + warmthAmount * 0.3f);
+            for (int i = 0; i < oversampledSamples; ++i) {
+                float input = oversampledData[i];
+                float dry = input;
+                
+                // Input gain
+                input *= inputLevel;
+                
+                // DC blocking
+                input = m_inputDCBlockers[ch].process(input);
+                
+                // Input transformer
+                input = m_inputTransformers[ch].processInput(input, drive * 0.5f);
+                
+                // First tube stage
+                input = m_tubeStages1[ch].process(input, drive, bias, m_sampleRate * OVERSAMPLE_FACTOR);
+                
+                // Interstage coupling (AC coupled)
+                input = m_inputDCBlockers[ch].process(input);
+                
+                // Second tube stage (with less drive)
+                input = m_tubeStages2[ch].process(input, drive * 0.7f, bias, m_sampleRate * OVERSAMPLE_FACTOR);
+                
+                // Tone stack (at oversampled rate)
+                input = m_toneStacks[ch].process(input, bass, mid, treble + presence * 0.3f);
+                
+                // Output transformer
+                input = m_outputTransformers[ch].processOutput(input);
+                
+                // Thermal noise (subtle)
+                float noise = m_noiseModels[ch].process(300.0f + drive * 50.0f);
+                input += noise * 0.0001f;
+                
+                // Output DC blocking
+                input = m_outputDCBlockers[ch].process(input);
+                
+                // Output gain
+                input *= outputLevel;
+                
+                // Soft limiting
+                if (std::abs(input) > 0.95f) {
+                    input = std::tanh(input * 0.8f) / 0.8f;
+                }
+                
+                // Mix dry/wet
+                oversampledData[i] = input * mix + dry * (1.0f - mix);
             }
             
-            // Tube processing
-            float processed = tubeStage.process(input, m_tubeDrive.current, m_bias.current, 
-                                                VintageTubePreamp::AdvancedTubeStage::TUBE_12AX7, 1.0f);
+            // Downsample back to original rate
+            m_oversamplers[ch].processDownsample(oversampledData, numSamples);
             
-            // Tone stack - using m_tone for all three bands
-            processed = toneStack.process(processed, m_tone.current, 0.5f, m_presence.current, m_sampleRate);
+            // Copy back to output
+            std::copy(oversampledData, oversampledData + numSamples, data);
             
-            // Output stage
-            processed *= outputLevel;
-            
-            // Soft clipping
-            if (std::abs(processed) > 0.9f) {
-                processed = std::tanh(processed * 0.8f) * 1.125f;
+        } else {
+            // Non-oversampled processing (lower quality but lower CPU)
+            for (int i = 0; i < numSamples; ++i) {
+                float input = data[i];
+                float dry = input;
+                
+                // Input gain
+                input *= inputLevel;
+                
+                // DC blocking
+                input = m_inputDCBlockers[ch].process(input);
+                
+                // Input transformer
+                input = m_inputTransformers[ch].processInput(input, drive * 0.5f);
+                
+                // First tube stage
+                input = m_tubeStages1[ch].process(input, drive, bias, m_sampleRate);
+                
+                // Interstage coupling
+                input = m_inputDCBlockers[ch].process(input);
+                
+                // Second tube stage
+                input = m_tubeStages2[ch].process(input, drive * 0.7f, bias, m_sampleRate);
+                
+                // Tone stack
+                input = m_toneStacks[ch].process(input, bass, mid, treble + presence * 0.3f);
+                
+                // Output transformer
+                input = m_outputTransformers[ch].processOutput(input);
+                
+                // Output DC blocking
+                input = m_outputDCBlockers[ch].process(input);
+                
+                // Output gain
+                input *= outputLevel;
+                
+                // Soft limiting
+                if (std::abs(input) > 0.95f) {
+                    input = std::tanh(input * 0.8f) / 0.8f;
+                }
+                
+                // Mix dry/wet
+                data[i] = input * mix + dry * (1.0f - mix);
             }
-            
-            channelData[sample] = processed * m_mix.current + dry * (1.0f - m_mix.current);
         }
     }
 }
 
+VintageTubePreamp::TubeType VintageTubePreamp::getTubeTypeFromParam(float param) const {
+    // Map 0-1 parameter to tube types
+    int typeIndex = static_cast<int>(param * 7.99f); // 8 tube types
+    
+    switch (typeIndex) {
+        case 0: return TubeType::TUBE_12AX7;
+        case 1: return TubeType::TUBE_12AU7;
+        case 2: return TubeType::TUBE_12AT7;
+        case 3: return TubeType::TUBE_6SN7;
+        case 4: return TubeType::TUBE_ECC88;
+        case 5: return TubeType::TUBE_6V6;
+        case 6: return TubeType::TUBE_EL34;
+        case 7: return TubeType::TUBE_EL84;
+        default: return TubeType::TUBE_12AX7;
+    }
+}
+
 void VintageTubePreamp::updateParameters(const std::map<int, float>& params) {
-    if (params.count(0)) m_inputGain.target = params.at(0);
-    if (params.count(1)) m_warmth.target = params.at(1);
-    if (params.count(2)) m_presence.target = params.at(2);
-    if (params.count(3)) m_tubeDrive.target = params.at(3);
-    if (params.count(4)) m_bias.target = params.at(4);
-    if (params.count(5)) m_tone.target = params.at(5);
-    if (params.count(6)) m_outputGain.target = params.at(6);
-    if (params.count(7)) m_mix.target = params.at(7);
-    if (params.count(8)) m_tubeType.target = params.at(8);
-    if (params.count(9)) m_saturation.target = params.at(9);
+    // Update parameter targets
+    auto it = params.find(0);
+    if (it != params.end()) m_inputGain->setTarget(std::clamp(it->second, 0.0f, 1.0f));
+    
+    it = params.find(1);
+    if (it != params.end()) m_drive->setTarget(std::clamp(it->second, 0.0f, 1.0f));
+    
+    it = params.find(2);
+    if (it != params.end()) m_bias->setTarget(std::clamp(it->second, 0.0f, 1.0f));
+    
+    it = params.find(3);
+    if (it != params.end()) m_bass->setTarget(std::clamp(it->second, 0.0f, 1.0f));
+    
+    it = params.find(4);
+    if (it != params.end()) m_mid->setTarget(std::clamp(it->second, 0.0f, 1.0f));
+    
+    it = params.find(5);
+    if (it != params.end()) m_treble->setTarget(std::clamp(it->second, 0.0f, 1.0f));
+    
+    it = params.find(6);
+    if (it != params.end()) m_presence->setTarget(std::clamp(it->second, 0.0f, 1.0f));
+    
+    it = params.find(7);
+    if (it != params.end()) m_outputGain->setTarget(std::clamp(it->second, 0.0f, 1.0f));
+    
+    it = params.find(8);
+    if (it != params.end()) m_tubeType->setTarget(std::clamp(it->second, 0.0f, 1.0f));
+    
+    it = params.find(9);
+    if (it != params.end()) m_mix->setTarget(std::clamp(it->second, 0.0f, 1.0f));
 }
 
 juce::String VintageTubePreamp::getParameterName(int index) const {
     switch (index) {
         case 0: return "Input Gain";
-        case 1: return "Warmth";
-        case 2: return "Presence";
-        case 3: return "Tube Drive";
-        case 4: return "Bias";
-        case 5: return "Tone";
-        case 6: return "Output Gain";
-        case 7: return "Mix";
+        case 1: return "Drive";
+        case 2: return "Bias";
+        case 3: return "Bass";
+        case 4: return "Mid";
+        case 5: return "Treble";
+        case 6: return "Presence";
+        case 7: return "Output Gain";
         case 8: return "Tube Type";
-        case 9: return "Saturation";
+        case 9: return "Mix";
         default: return "";
     }
 }

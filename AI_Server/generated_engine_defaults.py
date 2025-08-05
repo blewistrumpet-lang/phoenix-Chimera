@@ -1,6 +1,6 @@
 """
 Generated Engine Parameter Defaults for ChimeraPhoenix
-Generated from parameter_database.json on 2025-08-04 00:44:32
+Generated from parameter_database.json on 2025-08-04 02:06:38
 DO NOT EDIT MANUALLY - Edit parameter_database.json and regenerate
 """
 
@@ -12,10 +12,16 @@ ENGINE_DEFAULTS = {
     0: {
         "name": "Vintage Tube Preamp",
         "params": {
-            "param1": {"name": "Drive", "default": 0.3, "min": 0.0, "max": 1.0},
-            "param2": {"name": "Bias", "default": 0.5, "min": 0.0, "max": 1.0},
-            "param3": {"name": "Tone", "default": 0.5, "min": 0.0, "max": 1.0},
-            "param4": {"name": "Output", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param1": {"name": "Input Gain", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param2": {"name": "Drive", "default": 0.3, "min": 0.0, "max": 1.0},
+            "param3": {"name": "Bias", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param4": {"name": "Bass", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param5": {"name": "Mid", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param6": {"name": "Treble", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param7": {"name": "Presence", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param8": {"name": "Output Gain", "default": 0.5, "min": 0.0, "max": 1.0},
+            "param9": {"name": "Tube Type", "default": 0.0, "min": 0.0, "max": 1.0},
+            "param10": {"name": "Mix", "default": 1.0, "min": 0.0, "max": 1.0},
         }
     },
     

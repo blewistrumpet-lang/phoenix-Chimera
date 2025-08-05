@@ -13,9 +13,12 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// Professional denormal prevention
+// Professional denormal prevention using bit manipulation
 inline double preventDenormal(double x) {
-    return x + 1e-18;
+    union { double d; uint64_t i; } u;
+    u.d = x;
+    if ((u.i & 0x7FF0000000000000ULL) == 0) return 0.0;
+    return x;
 }
 
 // Fast xorshift PRNG for thermal noise

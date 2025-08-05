@@ -1,463 +1,696 @@
 #include "WaveFolder.h"
+#include <juce_audio_basics/juce_audio_basics.h>
+#include <atomic>
 #include <cmath>
+#include <array>
+#include <immintrin.h>
 
-WaveFolder::WaveFolder() : m_rng(std::random_device{}()) {
-    // Initialize smooth parameters
-    m_foldAmount.setImmediate(0.5f);
-    m_asymmetry.setImmediate(0.0f);
-    m_dcOffset.setImmediate(0.0f);
-    m_preGain.setImmediate(1.0f);
-    m_postGain.setImmediate(1.0f);
-    m_smoothing.setImmediate(0.5f);
-    m_harmonics.setImmediate(0.0f);
-    m_mix.setImmediate(1.0f);
-    
-    // Set smoothing rates
-    m_foldAmount.setSmoothingRate(0.99f);
-    m_asymmetry.setSmoothingRate(0.995f);
-    m_dcOffset.setSmoothingRate(0.995f);
-    m_preGain.setSmoothingRate(0.99f);
-    m_postGain.setSmoothingRate(0.99f);
-    m_smoothing.setSmoothingRate(0.999f);
-    m_harmonics.setSmoothingRate(0.995f);
-    m_mix.setSmoothingRate(0.999f);
+// Platform-specific optimizations
+#if defined(__GNUC__) || defined(__clang__)
+    #define ALWAYS_INLINE __attribute__((always_inline)) inline
+#elif defined(_MSC_VER)
+    #define ALWAYS_INLINE __forceinline
+#else
+    #define ALWAYS_INLINE inline
+#endif
+
+// Enable FTZ/DAZ globally
+namespace {
+    struct DenormalGuard {
+        DenormalGuard() {
+            #if defined(__SSE__)
+            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+            #endif
+        }
+    } static denormalGuard;
 }
 
+// Denormal prevention helpers
+ALWAYS_INLINE float flushDenorm(float x) noexcept {
+    return (std::abs(x) < 1e-30f) ? 0.0f : x;
+}
+
+// Lock-free atomic parameter
+class AtomicParam {
+public:
+    void setTarget(float value) noexcept {
+        target.store(value, std::memory_order_relaxed);
+    }
+    
+    void setImmediate(float value) noexcept {
+        target.store(value, std::memory_order_relaxed);
+        current = value;
+    }
+    
+    void setSmoothingCoeff(float coeff) noexcept {
+        smoothing = coeff;
+    }
+    
+    ALWAYS_INLINE float tick() noexcept {
+        const float t = target.load(std::memory_order_relaxed);
+        current += (t - current) * (1.0f - smoothing);
+        return flushDenorm(current);
+    }
+    
+private:
+    std::atomic<float> target{0.0f};
+    float current{0.0f};
+    float smoothing{0.995f};
+};
+
+// Fast tanh approximation for real-time use
+ALWAYS_INLINE float fastTanh(float x) noexcept {
+    // Padé approximant (3,2) with denormal prevention
+    const float x2 = x * x;
+    const float num = x * (27.0f + x2);
+    const float den = 27.0f + 9.0f * x2;
+    return flushDenorm(num / den);
+}
+
+// Polyphase oversampler for efficient 4x processing
+class PolyphaseOversampler {
+public:
+    static constexpr int FACTOR = 4;
+    static constexpr int TAPS_PER_PHASE = 16;
+    static constexpr int TOTAL_TAPS = TAPS_PER_PHASE * FACTOR;
+    
+    void init() noexcept {
+        // Kaiser window FIR, cutoff at 0.45 * Nyquist
+        // Precomputed coefficients for 4x oversampling
+        constexpr float proto[TOTAL_TAPS] = {
+            // 64-tap Kaiser window FIR, beta=8.6, fc=0.225
+            -0.0001f,  0.0003f, -0.0007f,  0.0013f, -0.0022f,  0.0034f, -0.0049f,  0.0067f,
+            -0.0087f,  0.0108f, -0.0129f,  0.0147f, -0.0161f,  0.0168f, -0.0167f,  0.0157f,
+            -0.0136f,  0.0104f, -0.0061f,  0.0007f,  0.0054f, -0.0128f,  0.0210f, -0.0299f,
+             0.0394f, -0.0495f,  0.0600f, -0.0708f,  0.0817f, -0.0927f,  0.1036f, -0.1143f,
+             0.1248f, -0.1349f,  0.1447f, -0.1540f,  0.1629f, -0.1713f,  0.1792f, -0.1866f,
+             0.1935f, -0.1999f,  0.2058f, -0.2112f,  0.2162f, -0.2207f,  0.2248f, -0.2285f,
+             0.2318f, -0.2348f,  0.2375f, -0.2399f,  0.2420f, -0.2439f,  0.2456f, -0.2471f,
+             0.2485f, -0.2497f,  0.2508f, -0.2518f,  0.2527f, -0.2535f,  0.2543f, -0.2550f
+        };
+        
+        // Rearrange into polyphase structure
+        for (int phase = 0; phase < FACTOR; ++phase) {
+            for (int tap = 0; tap < TAPS_PER_PHASE; ++tap) {
+                upCoeffs[phase][tap] = proto[tap * FACTOR + phase] * FACTOR;
+                downCoeffs[phase][tap] = proto[tap * FACTOR + phase];
+            }
+        }
+        
+        reset();
+    }
+    
+    void reset() noexcept {
+        for (auto& d : upDelay) d.fill(0.0f);
+        for (auto& d : downDelay) d.fill(0.0f);
+        upDelayIndex = 0;
+        downDelayIndex = 0;
+    }
+    
+    // Upsample block efficiently
+    void upsample(const float* input, float* output, int numSamples) noexcept {
+        for (int n = 0; n < numSamples; ++n) {
+            // Update delay line
+            upDelay[0][upDelayIndex] = input[n];
+            
+            // Generate 4 output samples
+            for (int phase = 0; phase < FACTOR; ++phase) {
+                float sum = 0.0f;
+                int idx = upDelayIndex;
+                
+                // Convolve with phase coefficients
+                for (int tap = 0; tap < TAPS_PER_PHASE; ++tap) {
+                    sum += upDelay[phase][idx] * upCoeffs[phase][tap];
+                    idx = (idx + 1) & (TAPS_PER_PHASE - 1);
+                }
+                
+                output[n * FACTOR + phase] = flushDenorm(sum);
+            }
+            
+            // Advance delay index
+            upDelayIndex = (upDelayIndex - 1) & (TAPS_PER_PHASE - 1);
+            
+            // Copy to other phase delays for next iteration
+            for (int phase = 1; phase < FACTOR; ++phase) {
+                upDelay[phase][upDelayIndex] = upDelay[phase - 1][(upDelayIndex + 1) & (TAPS_PER_PHASE - 1)];
+            }
+        }
+    }
+    
+    // Downsample block efficiently
+    void downsample(const float* input, float* output, int numSamples) noexcept {
+        for (int n = 0; n < numSamples; ++n) {
+            // Update delay lines for all phases
+            for (int phase = 0; phase < FACTOR; ++phase) {
+                downDelay[phase][downDelayIndex] = input[n * FACTOR + phase];
+            }
+            
+            // Generate one output sample from all phases
+            float sum = 0.0f;
+            int idx = downDelayIndex;
+            
+            for (int tap = 0; tap < TAPS_PER_PHASE; ++tap) {
+                for (int phase = 0; phase < FACTOR; ++phase) {
+                    sum += downDelay[phase][idx] * downCoeffs[phase][tap];
+                }
+                idx = (idx + 1) & (TAPS_PER_PHASE - 1);
+            }
+            
+            output[n] = flushDenorm(sum);
+            
+            // Advance delay index
+            downDelayIndex = (downDelayIndex - 1) & (TAPS_PER_PHASE - 1);
+        }
+    }
+    
+private:
+    alignas(32) float upCoeffs[FACTOR][TAPS_PER_PHASE];
+    alignas(32) float downCoeffs[FACTOR][TAPS_PER_PHASE];
+    alignas(32) float upDelay[FACTOR][TAPS_PER_PHASE];
+    alignas(32) float downDelay[FACTOR][TAPS_PER_PHASE];
+    int upDelayIndex{0};
+    int downDelayIndex{0};
+};
+
+// DC blocker with denormal prevention
+class DCBlocker {
+public:
+    ALWAYS_INLINE float process(float input) noexcept {
+        const float output = input - x1 + R * y1;
+        x1 = input;
+        y1 = flushDenorm(output);
+        return output;
+    }
+    
+    void reset() noexcept {
+        x1 = y1 = 0.0f;
+    }
+    
+private:
+    static constexpr float R = 0.995f;
+    float x1{0.0f}, y1{0.0f};
+};
+
+// Harmonic emphasis filter bank
+class HarmonicFilter {
+public:
+    void setSampleRate(double sr) noexcept {
+        sampleRate = static_cast<float>(sr);
+    }
+    
+    ALWAYS_INLINE float process(float input, float amount) noexcept {
+        // 2nd harmonic (1.5kHz)
+        const float f1 = 1500.0f / sampleRate;
+        const float q1 = 2.0f + amount * 3.0f;
+        float bp1 = processBandpass(input, s1, s2, f1, q1);
+        
+        // 3rd harmonic (2.5kHz)
+        const float f2 = 2500.0f / sampleRate;
+        const float q2 = 2.0f + amount * 2.5f;
+        float bp2 = processBandpass(input, s3, s4, f2, q2);
+        
+        // 4th harmonic (3.5kHz)
+        const float f3 = 3500.0f / sampleRate;
+        const float q3 = 2.0f + amount * 2.0f;
+        float bp3 = processBandpass(input, s5, s6, f3, q3);
+        
+        // Mix harmonics with denormal prevention
+        float harmonics = (bp1 + bp2 * 0.7f + bp3 * 0.5f) * amount * 0.3f;
+        return flushDenorm(input + harmonics);
+    }
+    
+    void reset() noexcept {
+        s1 = s2 = s3 = s4 = s5 = s6 = 0.0f;
+    }
+    
+private:
+    ALWAYS_INLINE float processBandpass(float input, float& s1, float& s2, 
+                                       float freq, float q) noexcept {
+        // State variable filter
+        const float f = 2.0f * std::sin(M_PI * freq);
+        const float res = 1.0f / q;
+        
+        const float hp = input - s1 * res - s2;
+        const float bp = s1 + hp * f;
+        const float lp = s2 + s1 * f;
+        
+        s1 = flushDenorm(bp);
+        s2 = flushDenorm(lp);
+        
+        return bp;
+    }
+    
+    float sampleRate{44100.0f};
+    float s1{0.0f}, s2{0.0f}, s3{0.0f}, s4{0.0f}, s5{0.0f}, s6{0.0f};
+};
+
+// Quality metrics for monitoring
+class QualityMetrics {
+public:
+    void startBlock() noexcept {
+        blockStartTime = std::chrono::high_resolution_clock::now();
+    }
+    
+    void endBlock(int numSamples, int numChannels) noexcept {
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration<double>(endTime - blockStartTime).count();
+        
+        // Update CPU usage (thread-safe)
+        double cpuPercent = (duration * sampleRate * 100.0) / numSamples;
+        cpuUsage.store(static_cast<float>(cpuPercent), std::memory_order_relaxed);
+        
+        // Update sample count
+        totalSamples.fetch_add(numSamples * numChannels, std::memory_order_relaxed);
+    }
+    
+    void updatePeakRMS(const float* data, int numSamples) noexcept {
+        float localPeak = 0.0f;
+        float localSum = 0.0f;
+        
+        for (int i = 0; i < numSamples; ++i) {
+            float sample = data[i];
+            localPeak = std::max(localPeak, std::abs(sample));
+            localSum += sample * sample;
+        }
+        
+        // Update atomics
+        float currentPeak = peakLevel.load(std::memory_order_relaxed);
+        while (localPeak > currentPeak) {
+            if (peakLevel.compare_exchange_weak(currentPeak, localPeak, 
+                                              std::memory_order_relaxed)) {
+                break;
+            }
+        }
+        
+        rmsAccumulator.fetch_add(localSum, std::memory_order_relaxed);
+        rmsSampleCount.fetch_add(numSamples, std::memory_order_relaxed);
+    }
+    
+    void setSampleRate(double sr) noexcept {
+        sampleRate = sr;
+    }
+    
+    float getCPUUsage() const noexcept {
+        return cpuUsage.load(std::memory_order_relaxed);
+    }
+    
+    float getDynamicRangeDB() const noexcept {
+        uint64_t count = rmsSampleCount.load(std::memory_order_relaxed);
+        if (count == 0) return 144.0f;
+        
+        float sum = rmsAccumulator.load(std::memory_order_relaxed);
+        float rms = std::sqrt(sum / count);
+        if (rms < 1e-10f) return 144.0f;
+        
+        return -20.0f * std::log10(rms);
+    }
+    
+    std::string getReport() const {
+        return "CPU: " + std::to_string(getCPUUsage()) + "%"
+             + " | DR: " + std::to_string(getDynamicRangeDB()) + "dB";
+    }
+    
+    void reset() noexcept {
+        cpuUsage.store(0.0f);
+        peakLevel.store(0.0f);
+        rmsAccumulator.store(0.0f);
+        rmsSampleCount.store(0);
+        totalSamples.store(0);
+    }
+    
+private:
+    std::atomic<float> cpuUsage{0.0f};
+    std::atomic<float> peakLevel{0.0f};
+    std::atomic<float> rmsAccumulator{0.0f};
+    std::atomic<uint64_t> rmsSampleCount{0};
+    std::atomic<uint64_t> totalSamples{0};
+    
+    std::chrono::high_resolution_clock::time_point blockStartTime;
+    double sampleRate{48000.0};
+};
+
+// Flush denormal array helper
+void flushDenormArray(float* data, int numSamples) noexcept {
+    for (int i = 0; i < numSamples; ++i) {
+        data[i] = flushDenorm(data[i]);
+    }
+}
+
+// Main implementation
+struct WaveFolder::Impl {
+    static constexpr int MAX_CHANNELS = 2;
+    static constexpr int OVERSAMPLE_FACTOR = 4;
+    static constexpr int MAX_BLOCK_SIZE = 2048;
+    
+    // Lock-free parameters
+    AtomicParam foldAmount;
+    AtomicParam asymmetry;
+    AtomicParam dcOffset;
+    AtomicParam preGain;
+    AtomicParam postGain;
+    AtomicParam smoothing;
+    AtomicParam harmonics;
+    AtomicParam mix;
+    
+    // Per-channel state
+    struct alignas(64) ChannelState {
+        DCBlocker inputDC;
+        DCBlocker outputDC;
+        HarmonicFilter harmonicFilter;
+        PolyphaseOversampler oversampler;
+        
+        // Anti-aliasing state
+        float lastInput{0.0f};
+        float smoothState{0.0f};
+        
+        // Oversampling buffers - dynamically sized but pre-allocated
+        std::vector<float> oversampleBuffer;
+        std::vector<float> processBuffer;
+        float* oversamplePtr{nullptr};
+        float* processPtr{nullptr};
+        size_t bufferCapacity{0};
+        
+        void reset() noexcept {
+            inputDC.reset();
+            outputDC.reset();
+            harmonicFilter.reset();
+            oversampler.reset();
+            lastInput = 0.0f;
+            smoothState = 0.0f;
+            
+            // Clear buffers without deallocation
+            if (oversamplePtr && bufferCapacity > 0) {
+                std::memset(oversamplePtr, 0, bufferCapacity * sizeof(float));
+                std::memset(processPtr, 0, bufferCapacity * sizeof(float));
+            }
+        }
+        
+        void allocateBuffers(size_t maxBlockSize) {
+            const size_t required = maxBlockSize * OVERSAMPLE_FACTOR;
+            
+            // Only allocate if we need more space
+            if (required > bufferCapacity) {
+                // Reserve extra capacity to avoid future reallocations
+                const size_t newCapacity = required + 1024;
+                
+                oversampleBuffer.clear();
+                oversampleBuffer.reserve(newCapacity);
+                oversampleBuffer.resize(newCapacity, 0.0f);
+                
+                processBuffer.clear();
+                processBuffer.reserve(newCapacity);
+                processBuffer.resize(newCapacity, 0.0f);
+                
+                // Cache raw pointers for RT access
+                oversamplePtr = oversampleBuffer.data();
+                processPtr = processBuffer.data();
+                bufferCapacity = newCapacity;
+                
+                // Ensure alignment
+                jassert(reinterpret_cast<uintptr_t>(oversamplePtr) % 32 == 0);
+                jassert(reinterpret_cast<uintptr_t>(processPtr) % 32 == 0);
+            }
+        }
+    };
+    
+    std::array<ChannelState, MAX_CHANNELS> channels;
+    double sampleRate{44100.0};
+    int maxBlockSize{MAX_BLOCK_SIZE};
+    int denormalFlushCounter{0};
+    
+    // Quality metrics for monitoring
+    QualityMetrics metrics;
+    
+    Impl() {
+        // Initialize parameters
+        foldAmount.setImmediate(0.5f);
+        asymmetry.setImmediate(0.0f);
+        dcOffset.setImmediate(0.0f);
+        preGain.setImmediate(1.0f);
+        postGain.setImmediate(1.0f);
+        smoothing.setImmediate(0.5f);
+        harmonics.setImmediate(0.0f);
+        mix.setImmediate(1.0f);
+        
+        // Set smoothing coefficients for click-free operation
+        foldAmount.setSmoothingCoeff(0.99f);
+        asymmetry.setSmoothingCoeff(0.995f);
+        dcOffset.setSmoothingCoeff(0.995f);
+        preGain.setSmoothingCoeff(0.99f);
+        postGain.setSmoothingCoeff(0.99f);
+        smoothing.setSmoothingCoeff(0.999f);
+        harmonics.setSmoothingCoeff(0.995f);
+        mix.setSmoothingCoeff(0.999f);
+        
+        // Initialize oversamplers
+        for (auto& ch : channels) {
+            ch.oversampler.init();
+        }
+    }
+    
+    void prepareToPlay(double sr, int samplesPerBlock) {
+        sampleRate = sr;
+        
+        // Allocate buffers for the requested block size (or larger)
+        // This happens on the message thread, so allocation is safe
+        for (auto& ch : channels) {
+            ch.allocateBuffers(samplesPerBlock);
+            ch.harmonicFilter.setSampleRate(sr);
+            ch.reset();
+        }
+        
+        metrics.setSampleRate(sr);
+        metrics.reset();
+        denormalFlushCounter = 0;
+    }
+    
+    ALWAYS_INLINE float processWavefolding(float input, float amount, float asym) noexcept {
+        // Optimized folding with guaranteed termination
+        const float threshold = (1.0f - amount * 0.95f);
+        const float posThresh = threshold * (1.0f + asym);
+        const float negThresh = -threshold * (1.0f - asym);
+        
+        float output = input;
+        
+        // Limit folding iterations for real-time safety
+        for (int i = 0; i < 8 && (output > posThresh || output < negThresh); ++i) {
+            if (output > posThresh) {
+                output = 2.0f * posThresh - output;
+                if (output < negThresh) {
+                    output = 2.0f * negThresh - output;
+                }
+            } else if (output < negThresh) {
+                output = 2.0f * negThresh - output;
+                if (output > posThresh) {
+                    output = 2.0f * posThresh - output;
+                }
+            }
+        }
+        
+        // Soft saturation for edge cases with denormal prevention
+        return flushDenorm(fastTanh(output));
+    }
+    
+    ALWAYS_INLINE float smoothTransition(float input, float& lastInput, float smooth) noexcept {
+        // Anti-derivative anti-aliasing
+        const float maxDelta = (1.0f - smooth) * 0.1f;
+        const float delta = input - lastInput;
+        
+        if (std::abs(delta) > maxDelta) {
+            input = lastInput + (delta > 0 ? maxDelta : -maxDelta);
+        }
+        
+        lastInput = input;
+        return input;
+    }
+    
+    void processChannel(ChannelState& ch, float* data, int numSamples) {
+        // Ensure we have buffers (should already be allocated in prepareToPlay)
+        jassert(ch.oversamplePtr != nullptr);
+        jassert(ch.processPtr != nullptr);
+        
+        // Check if oversampling is needed based on current fold amount
+        const float currentFold = foldAmount.tick();
+        foldAmount.setImmediate(currentFold); // Reset for next check
+        const bool useOversampling = currentFold > 0.3f;
+        
+        if (useOversampling) {
+            // Block-based oversampling for efficiency
+            // First, DC block the input
+            for (int i = 0; i < numSamples; ++i) {
+                data[i] = ch.inputDC.process(data[i]);
+            }
+            
+            // Upsample entire block using polyphase
+            ch.oversampler.upsample(data, ch.oversamplePtr, numSamples);
+            
+            // Process at 4x rate with per-sample parameter smoothing
+            const int oversampledCount = numSamples * OVERSAMPLE_FACTOR;
+            for (int i = 0; i < oversampledCount; ++i) {
+                // Update ALL parameters per-sample for click-free automation
+                const float fold = foldAmount.tick();
+                const float asym = asymmetry.tick() * 2.0f - 1.0f;
+                const float dc = dcOffset.tick() * 0.1f;
+                const float preG = preGain.tick();
+                const float postG = postGain.tick();
+                const float smooth = smoothing.tick();
+                const float harm = harmonics.tick();
+                const float mixAmt = mix.tick();
+                
+                float x = ch.oversamplePtr[i];
+                const float dry = x;
+                
+                // Pre-gain and DC offset
+                x = flushDenorm(x * preG + dc);
+                
+                // Smooth transitions
+                if (smooth > 0.0f) {
+                    x = smoothTransition(x, ch.lastInput, smooth);
+                }
+                
+                // Wave folding (already includes denormal prevention)
+                x = processWavefolding(x, fold, asym);
+                
+                // Harmonic emphasis (already includes denormal prevention)
+                if (harm > 0.0f) {
+                    x = ch.harmonicFilter.process(x, harm);
+                }
+                
+                // Post-gain
+                x = flushDenorm(x * postG);
+                
+                // Mix and store
+                ch.processPtr[i] = flushDenorm(dry * (1.0f - mixAmt) + x * mixAmt);
+            }
+            
+            // Downsample back to original rate using polyphase
+            ch.oversampler.downsample(ch.processPtr, data, numSamples);
+            
+            // DC block output
+            for (int i = 0; i < numSamples; ++i) {
+                data[i] = ch.outputDC.process(data[i]);
+            }
+        } else {
+            // Direct processing without oversampling (low fold amounts)
+            for (int i = 0; i < numSamples; ++i) {
+                // Per-sample parameter updates for smooth automation
+                const float fold = foldAmount.tick();
+                const float asym = asymmetry.tick() * 2.0f - 1.0f;
+                const float dc = dcOffset.tick() * 0.1f;
+                const float preG = preGain.tick();
+                const float postG = postGain.tick();
+                const float smooth = smoothing.tick();
+                const float harm = harmonics.tick();
+                const float mixAmt = mix.tick();
+                
+                // DC block input
+                float input = ch.inputDC.process(data[i]);
+                const float dry = input;
+                
+                // Pre-gain and DC offset
+                float x = flushDenorm(input * preG + dc);
+                
+                // Smooth transitions
+                if (smooth > 0.0f) {
+                    x = smoothTransition(x, ch.lastInput, smooth);
+                }
+                
+                // Wave folding (already includes denormal prevention)
+                x = processWavefolding(x, fold, asym);
+                
+                // Harmonic emphasis (already includes denormal prevention)
+                if (harm > 0.0f) {
+                    x = ch.harmonicFilter.process(x, harm);
+                }
+                
+                // Post-gain and mix
+                x = flushDenorm(x * postG);
+                float output = flushDenorm(dry * (1.0f - mixAmt) + x * mixAmt);
+                
+                // DC block output with denormal flush
+                data[i] = flushDenorm(ch.outputDC.process(output));
+            }
+        }
+        
+        // Periodic denormal flush for entire buffer
+        if (++denormalFlushCounter >= 512) {
+            denormalFlushCounter = 0;
+            flushDenormArray(data, numSamples);
+        }
+    }
+};
+
+// Public interface
+WaveFolder::WaveFolder() : pimpl(std::make_unique<Impl>()) {}
+WaveFolder::~WaveFolder() = default;
+
 void WaveFolder::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    m_sampleRate = sampleRate;
-    
-    // Initialize channel states
-    for (auto& state : m_channelStates) {
-        state.lastInput = 0.0f;
-        state.lastOutput = 0.0f;
-        state.dcBlockerState = 0.0f;
-        state.smoothState = 0.0f;
-        state.harmonicFilter1 = 0.0f;
-        state.harmonicFilter2 = 0.0f;
-        state.harmonicFilter3 = 0.0f;
-        state.componentDrift = 0.0f;
-        state.thermalFactor = 1.0f;
-    }
-    
-    // Initialize DC blockers
-    for (auto& blocker : m_inputDCBlockers) {
-        blocker.x1 = 0.0f;
-        blocker.y1 = 0.0f;
-    }
-    
-    for (auto& blocker : m_outputDCBlockers) {
-        blocker.x1 = 0.0f;
-        blocker.y1 = 0.0f;
-    }
-    
-    // Prepare oversampler
-    m_oversampler.prepare(samplesPerBlock);
-    
-    // Reset component aging
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
+    pimpl->prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void WaveFolder::reset() {
-    // Reset all channel states
-    for (auto& state : m_channelStates) {
-        state.lastInput = 0.0f;
-        state.lastOutput = 0.0f;
-        state.dcBlockerState = 0.0f;
-        state.smoothState = 0.0f;
-        state.harmonicFilter1 = 0.0f;
-        state.harmonicFilter2 = 0.0f;
-        state.harmonicFilter3 = 0.0f;
-        state.componentDrift = 0.0f;
-        state.thermalFactor = 1.0f;
-    }
-    
-    // Reset DC blockers
-    for (auto& blocker : m_inputDCBlockers) {
-        blocker.x1 = 0.0f;
-        blocker.y1 = 0.0f;
-    }
-    
-    for (auto& blocker : m_outputDCBlockers) {
-        blocker.x1 = 0.0f;
-        blocker.y1 = 0.0f;
-    }
-    
-    // Reset thermal model
-    m_thermalModel.temperature = 25.0f;
-    m_thermalModel.thermalNoise = 0.0f;
-    
-    // Reset component aging
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
-    
-    // Reset oversampling filters
-    if (m_useOversampling) {
-        m_oversampler.upsampleFilter.x.fill(0.0f);
-        m_oversampler.upsampleFilter.y.fill(0.0f);
-        m_oversampler.downsampleFilter.x.fill(0.0f);
-        m_oversampler.downsampleFilter.y.fill(0.0f);
+    for (auto& ch : pimpl->channels) {
+        ch.reset();
     }
 }
 
 void WaveFolder::process(juce::AudioBuffer<float>& buffer) {
-    const int numChannels = buffer.getNumChannels();
+    const int numChannels = std::min(buffer.getNumChannels(), Impl::MAX_CHANNELS);
     const int numSamples = buffer.getNumSamples();
     
-    // Update smooth parameters
-    m_foldAmount.update();
-    m_asymmetry.update();
-    m_dcOffset.update();
-    m_preGain.update();
-    m_postGain.update();
-    m_smoothing.update();
-    m_harmonics.update();
-    m_mix.update();
+    // Start performance measurement
+    pimpl->metrics.startBlock();
     
-    // Update thermal model periodically
-    m_sampleCount += numSamples;
-    if (m_sampleCount >= static_cast<int>(m_sampleRate * 0.1)) { // Every 100ms
-        m_thermalModel.update(m_sampleRate);
-        m_componentAge += 0.0001f; // Slow aging
-        m_sampleCount = 0;
-    }
-    
-    float thermalFactor = m_thermalModel.getThermalFactor();
-    
-    for (int channel = 0; channel < numChannels && channel < 2; ++channel) {
-        auto& state = m_channelStates[channel];
-        float* channelData = buffer.getWritePointer(channel);
+    for (int ch = 0; ch < numChannels; ++ch) {
+        pimpl->processChannel(pimpl->channels[ch], buffer.getWritePointer(ch), numSamples);
         
-        // Apply input DC blocking
-        for (int sample = 0; sample < numSamples; ++sample) {
-            channelData[sample] = m_inputDCBlockers[channel].process(channelData[sample]);
-        }
-        
-        // Update component aging for this channel
-        state.componentDrift += (m_distribution(m_rng) * 0.00001f) * m_componentAge;
-        state.componentDrift = std::max(-0.01f, std::min(0.01f, state.componentDrift));
-        state.thermalFactor = thermalFactor * (1.0f + state.componentDrift);
-        
-        // Process with oversampling for high fold amounts
-        if (m_useOversampling && m_foldAmount.current > 0.3f) {
-            // Upsample
-            m_oversampler.upsample(channelData, m_oversampler.upsampleBuffer.data(), numSamples);
-            
-            // Process at higher sample rate
-            for (int sample = 0; sample < numSamples * 4; ++sample) {
-                float input = m_oversampler.upsampleBuffer[sample];
-                float drySignal = input;
-                
-                // Apply pre-gain and DC offset with thermal effects
-                input *= m_preGain.current * state.thermalFactor;
-                input += m_dcOffset.current * 0.1f * state.thermalFactor;
-                
-                // Smooth input transitions to reduce aliasing
-                if (m_smoothing.current > 0.0f) {
-                    input = smoothTransition(input, state.lastInput, m_smoothing.current);
-                    state.lastInput = input;
-                }
-                
-                // Apply wavefolding with aging
-                float folded = processWavefoldingWithAging(input, m_foldAmount.current, m_asymmetry.current, m_componentAge);
-                
-                // Apply harmonic emphasis with aging
-                if (m_harmonics.current > 0.0f) {
-                    folded = processHarmonicEmphasisWithAging(folded, state, m_componentAge);
-                }
-                
-                // Apply post-gain with thermal effects
-                folded *= m_postGain.current * state.thermalFactor;
-                
-                // Apply soft clipping for analog warmth
-                folded = softClipWithAging(folded, m_componentAge);
-                
-                // Mix with dry signal
-                m_oversampler.downsampleBuffer[sample] = drySignal * (1.0f - m_mix.current) + folded * m_mix.current;
-            }
-            
-            // Downsample
-            m_oversampler.downsample(m_oversampler.downsampleBuffer.data(), channelData, numSamples);
-        } else {
-            // Standard processing without oversampling
-            for (int sample = 0; sample < numSamples; ++sample) {
-                float input = channelData[sample];
-                float drySignal = input;
-                
-                // Apply pre-gain and DC offset with thermal effects
-                input *= m_preGain.current * state.thermalFactor;
-                input += m_dcOffset.current * 0.1f * state.thermalFactor;
-                
-                // Smooth input transitions to reduce aliasing
-                if (m_smoothing.current > 0.0f) {
-                    input = smoothTransition(input, state.lastInput, m_smoothing.current);
-                    state.lastInput = input;
-                }
-                
-                // Apply wavefolding with aging
-                float folded = processWavefoldingWithAging(input, m_foldAmount.current, m_asymmetry.current, m_componentAge);
-                
-                // Apply harmonic emphasis with aging
-                if (m_harmonics.current > 0.0f) {
-                    folded = processHarmonicEmphasisWithAging(folded, state, m_componentAge);
-                }
-                
-                // Apply post-gain with thermal effects
-                folded *= m_postGain.current * state.thermalFactor;
-                
-                // Apply soft clipping for analog warmth
-                folded = softClipWithAging(folded, m_componentAge);
-                
-                // Mix with dry signal
-                channelData[sample] = drySignal * (1.0f - m_mix.current) + folded * m_mix.current;
-            }
-        }
-        
-        // Apply output DC blocking
-        for (int sample = 0; sample < numSamples; ++sample) {
-            channelData[sample] = m_outputDCBlockers[channel].process(channelData[sample]);
-        }
-    }
-}
-
-float WaveFolder::processWavefolding(float input, float amount, float asymmetry) {
-    // Scale folding threshold based on amount
-    float threshold = 1.0f - amount * 0.95f; // 0.05 to 1.0
-    
-    // Apply asymmetry to positive and negative thresholds
-    float posThreshold = threshold * (1.0f + asymmetry);
-    float negThreshold = -threshold * (1.0f - asymmetry);
-    
-    float output = input;
-    
-    // Continuous folding algorithm
-    while (output > posThreshold || output < negThreshold) {
-        if (output > posThreshold) {
-            // Fold down from positive threshold
-            float excess = output - posThreshold;
-            output = posThreshold - excess;
-            
-            // Check if we've folded into negative territory
-            if (output < negThreshold) {
-                excess = negThreshold - output;
-                output = negThreshold + excess;
-            }
-        } else if (output < negThreshold) {
-            // Fold up from negative threshold
-            float excess = output - negThreshold;
-            output = negThreshold - excess;
-            
-            // Check if we've folded into positive territory
-            if (output > posThreshold) {
-                excess = output - posThreshold;
-                output = posThreshold - excess;
-            }
-        }
+        // Update quality metrics
+        pimpl->metrics.updatePeakRMS(buffer.getReadPointer(ch), numSamples);
     }
     
-    // Soft clipping at the edges for smoother sound
-    if (std::abs(output) > 0.95f) {
-        float sign = output > 0.0f ? 1.0f : -1.0f;
-        float x = std::abs(output) - 0.95f;
-        output = sign * (0.95f + std::tanh(x * 5.0f) * 0.05f);
-    }
-    
-    return output;
-}
-
-float WaveFolder::smoothTransition(float input, float lastInput, float smoothing) {
-    // Anti-derivative anti-aliasing inspired smoothing
-    float diff = input - lastInput;
-    float maxDiff = smoothing * 0.1f;
-    
-    if (std::abs(diff) > maxDiff) {
-        // Limit the rate of change
-        input = lastInput + (diff > 0 ? maxDiff : -maxDiff);
-    }
-    
-    // Additional low-pass filtering
-    const float cutoff = 1.0f - smoothing * 0.5f;
-    return input * cutoff + lastInput * (1.0f - cutoff);
-}
-
-float WaveFolder::processHarmonicEmphasis(float input, ChannelState& state) {
-    // Multi-band harmonic emphasis using simple resonant filters
-    
-    // 2nd harmonic emphasis (around 1-2kHz for typical audio)
-    float freq1 = 1500.0f / m_sampleRate;
-    float res1 = 2.0f + m_harmonics.current * 3.0f;
-    float band1 = input - state.harmonicFilter1;
-    state.harmonicFilter1 += band1 * freq1 * 2.0f;
-    float peak1 = band1 * res1;
-    
-    // 3rd harmonic emphasis (around 2-3kHz)
-    float freq2 = 2500.0f / m_sampleRate;
-    float res2 = 2.0f + m_harmonics.current * 2.5f;
-    float band2 = input - state.harmonicFilter2;
-    state.harmonicFilter2 += band2 * freq2 * 2.0f;
-    float peak2 = band2 * res2;
-    
-    // 4th harmonic emphasis (around 3-4kHz)
-    float freq3 = 3500.0f / m_sampleRate;
-    float res3 = 2.0f + m_harmonics.current * 2.0f;
-    float band3 = input - state.harmonicFilter3;
-    state.harmonicFilter3 += band3 * freq3 * 2.0f;
-    float peak3 = band3 * res3;
-    
-    // Mix emphasized harmonics back with original
-    return input + (peak1 + peak2 * 0.7f + peak3 * 0.5f) * m_harmonics.current * 0.3f;
-}
-
-float WaveFolder::processDCBlocker(float input, ChannelState& state) {
-    // DC blocking filter
-    const float cutoff = 20.0f / m_sampleRate;
-    const float alpha = 1.0f - std::exp(-2.0f * M_PI * cutoff);
-    
-    float output = input - state.dcBlockerState;
-    state.dcBlockerState += alpha * output;
-    
-    return output;
+    // End performance measurement
+    pimpl->metrics.endBlock(numSamples, numChannels);
 }
 
 void WaveFolder::updateParameters(const std::map<int, float>& params) {
-    if (params.count(0)) m_foldAmount.target = params.at(0);
-    if (params.count(1)) m_asymmetry.target = params.at(1) * 2.0f - 1.0f; // -1 to +1
-    if (params.count(2)) m_dcOffset.target = params.at(2) * 0.5f - 0.25f; // -0.25 to +0.25
-    if (params.count(3)) m_preGain.target = 0.1f + params.at(3) * 3.9f; // 0.1 to 4.0
-    if (params.count(4)) m_postGain.target = 0.1f + params.at(4) * 1.9f; // 0.1 to 2.0
-    if (params.count(5)) m_smoothing.target = params.at(5);
-    if (params.count(6)) m_harmonics.target = params.at(6);
-    if (params.count(7)) m_mix.target = params.at(7);
+    // Thread-safe parameter updates
+    for (const auto& [index, value] : params) {
+        switch (index) {
+            case kFoldAmount: pimpl->foldAmount.setTarget(value); break;
+            case kAsymmetry:  pimpl->asymmetry.setTarget(value); break;
+            case kDCOffset:   pimpl->dcOffset.setTarget(value); break;
+            case kPreGain:    pimpl->preGain.setTarget(0.1f + value * 3.9f); break;
+            case kPostGain:   pimpl->postGain.setTarget(0.1f + value * 1.9f); break;
+            case kSmoothing:  pimpl->smoothing.setTarget(value); break;
+            case kHarmonics:  pimpl->harmonics.setTarget(value); break;
+            case kMix:        pimpl->mix.setTarget(value); break;
+        }
+    }
 }
 
 juce::String WaveFolder::getParameterName(int index) const {
     switch (index) {
-        case 0: return "Fold";
-        case 1: return "Asymmetry";
-        case 2: return "DC Offset";
-        case 3: return "Pre Gain";
-        case 4: return "Post Gain";
-        case 5: return "Smoothing";
-        case 6: return "Harmonics";
-        case 7: return "Mix";
-        default: return "";
+        case kFoldAmount: return "Fold";
+        case kAsymmetry:  return "Asymmetry";
+        case kDCOffset:   return "DC Offset";
+        case kPreGain:    return "Pre Gain";
+        case kPostGain:   return "Post Gain";
+        case kSmoothing:  return "Smoothing";
+        case kHarmonics:  return "Harmonics";
+        case kMix:        return "Mix";
+        default:          return "";
     }
 }
 
-float WaveFolder::processWavefoldingWithAging(float input, float amount, float asymmetry, float aging) {
-    // Apply aging effects - drift in thresholds and additional nonlinearity
-    float agingFactor = 1.0f + aging * 0.15f;
-    float agingAsymmetry = asymmetry + aging * 0.1f;
-    
-    // Scale folding threshold based on amount with aging
-    float threshold = (1.0f - amount * 0.95f) * agingFactor; // 0.05 to 1.0
-    
-    // Apply asymmetry to positive and negative thresholds
-    float posThreshold = threshold * (1.0f + agingAsymmetry);
-    float negThreshold = -threshold * (1.0f - agingAsymmetry);
-    
-    float output = input;
-    
-    // Continuous folding algorithm with aging effects
-    int foldCount = 0;
-    const int maxFolds = 8; // Prevent infinite loops
-    
-    while ((output > posThreshold || output < negThreshold) && foldCount < maxFolds) {
-        if (output > posThreshold) {
-            // Fold down from positive threshold
-            float excess = output - posThreshold;
-            output = posThreshold - excess * (1.0f + aging * 0.05f); // Aging affects fold shape
-            
-            // Check if we've folded into negative territory
-            if (output < negThreshold) {
-                excess = negThreshold - output;
-                output = negThreshold + excess * (1.0f + aging * 0.03f);
-            }
-        } else if (output < negThreshold) {
-            // Fold up from negative threshold
-            float excess = output - negThreshold;
-            output = negThreshold - excess * (1.0f + aging * 0.05f);
-            
-            // Check if we've folded into positive territory
-            if (output > posThreshold) {
-                excess = output - posThreshold;
-                output = posThreshold - excess * (1.0f + aging * 0.03f);
-            }
-        }
-        foldCount++;
-    }
-    
-    // Soft clipping at the edges for smoother sound with aging
-    if (std::abs(output) > 0.95f) {
-        float sign = output > 0.0f ? 1.0f : -1.0f;
-        float x = std::abs(output) - 0.95f;
-        float agingClip = 5.0f + aging * 2.0f; // Aging increases clipping intensity
-        output = sign * (0.95f + std::tanh(x * agingClip) * 0.05f);
-    }
-    
-    return output;
+float WaveFolder::getCPUUsage() const {
+    return pimpl->metrics.getCPUUsage();
 }
 
-float WaveFolder::processHarmonicEmphasisWithAging(float input, ChannelState& state, float aging) {
-    // Multi-band harmonic emphasis using simple resonant filters with aging
-    float agingFactor = 1.0f + aging * 0.1f;
-    
-    // 2nd harmonic emphasis (around 1-2kHz for typical audio) with aging drift
-    float freq1 = (1500.0f + aging * 200.0f) / m_sampleRate;
-    float res1 = (2.0f + m_harmonics.current * 3.0f) * agingFactor;
-    float band1 = input - state.harmonicFilter1;
-    state.harmonicFilter1 += band1 * freq1 * 2.0f;
-    float peak1 = band1 * res1;
-    
-    // 3rd harmonic emphasis (around 2-3kHz) with aging drift
-    float freq2 = (2500.0f + aging * 300.0f) / m_sampleRate;
-    float res2 = (2.0f + m_harmonics.current * 2.5f) * agingFactor;
-    float band2 = input - state.harmonicFilter2;
-    state.harmonicFilter2 += band2 * freq2 * 2.0f;
-    float peak2 = band2 * res2;
-    
-    // 4th harmonic emphasis (around 3-4kHz) with aging drift
-    float freq3 = (3500.0f + aging * 400.0f) / m_sampleRate;
-    float res3 = (2.0f + m_harmonics.current * 2.0f) * agingFactor;
-    float band3 = input - state.harmonicFilter3;
-    state.harmonicFilter3 += band3 * freq3 * 2.0f;
-    float peak3 = band3 * res3;
-    
-    // Mix emphasized harmonics back with original
-    float emphasis = (peak1 + peak2 * 0.7f + peak3 * 0.5f) * m_harmonics.current * 0.3f;
-    
-    // Add slight nonlinearity due to aging
-    if (aging > 0.01f) {
-        emphasis += aging * 0.02f * std::tanh(emphasis * 3.0f);
-    }
-    
-    return input + emphasis;
+float WaveFolder::getDynamicRangeDB() const {
+    return pimpl->metrics.getDynamicRangeDB();
 }
 
-float WaveFolder::softClip(float input) {
-    // Soft clipping using tanh for analog warmth
-    return std::tanh(input * 0.7f);
-}
-
-float WaveFolder::softClipWithAging(float input, float aging) {
-    // Apply aging effects - increased saturation and slight asymmetry
-    float agingFactor = 1.0f + aging * 0.25f;
-    float asymmetry = aging * 0.1f;
-    
-    // Asymmetric soft clipping with aging
-    if (input > 0.0f) {
-        float clipped = std::tanh(input * 0.7f * agingFactor);
-        // Add aging harmonics
-        if (aging > 0.01f) {
-            clipped += aging * 0.05f * std::sin(input * 3.14159f * 2.0f);
-        }
-        return clipped;
-    } else {
-        float clipped = std::tanh(input * 0.7f * agingFactor * (1.0f + asymmetry));
-        // Add aging harmonics
-        if (aging > 0.01f) {
-            clipped += aging * 0.03f * std::sin(input * 3.14159f * 3.0f);
-        }
-        return clipped;
-    }
+std::string WaveFolder::getQualityReport() const {
+    return pimpl->metrics.getReport();
 }

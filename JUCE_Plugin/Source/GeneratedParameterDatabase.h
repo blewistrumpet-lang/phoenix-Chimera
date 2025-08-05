@@ -1,5 +1,5 @@
 // Generated Parameter Database for ChimeraPhoenix
-// Generated from parameter_database.json on 2025-08-04 00:44:32
+// Generated from parameter_database.json on 2025-08-04 02:06:38
 // DO NOT EDIT MANUALLY - Edit parameter_database.json and regenerate
 
 #pragma once
@@ -42,10 +42,16 @@ static constexpr ParameterInfo k_style_params[] = {
 
 // Vintage Tube Preamp parameters
 static constexpr ParameterInfo vintage_tube_params[] = {
-    {"Drive", 0.3f, 0.0f, 1.0f, "Input drive amount", "percent", 0.5f},
+    {"Input Gain", 0.5f, 0.0f, 1.0f, "Input amplification ±20dB", "dB", 0.5f},
+    {"Drive", 0.3f, 0.0f, 1.0f, "Tube saturation amount", "percent", 0.5f},
     {"Bias", 0.5f, 0.0f, 1.0f, "Tube bias point", "percent", 0.5f},
-    {"Tone", 0.5f, 0.0f, 1.0f, "Tone control", "percent", 0.5f},
-    {"Output", 0.5f, 0.0f, 1.0f, "Output level", "percent", 0.5f},
+    {"Bass", 0.5f, 0.0f, 1.0f, "Low frequency control", "percent", 0.5f},
+    {"Mid", 0.5f, 0.0f, 1.0f, "Mid frequency control", "percent", 0.5f},
+    {"Treble", 0.5f, 0.0f, 1.0f, "High frequency control", "percent", 0.5f},
+    {"Presence", 0.5f, 0.0f, 1.0f, "High frequency clarity", "percent", 0.5f},
+    {"Output Gain", 0.5f, 0.0f, 1.0f, "Output level ±20dB", "dB", 0.5f},
+    {"Tube Type", 0.0f, 0.0f, 1.0f, "Tube characteristic (12AX7/12AU7/12AT7/6SN7/ECC88/6V6/EL34/EL84)", "type", 0.5f},
+    {"Mix", 1.0f, 0.0f, 1.0f, "Dry/wet balance", "percent", 0.5f},
 };
 
 // Tape Echo parameters
@@ -398,7 +404,7 @@ static constexpr ParameterInfo ladder_filter_params[] = {
 static constexpr EngineInfo engineDatabase[] = {
     {"bypass", "Bypass", -1, "ENGINE_BYPASS", 0, "Utility", 0, nullptr},
     {"k_style", "K-Style Overdrive", 38, "ENGINE_K_STYLE", 1, "Distortion", 4, k_style_params},
-    {"vintage_tube", "Vintage Tube Preamp", 0, "ENGINE_VINTAGE_TUBE", 48, "Saturation", 4, vintage_tube_params},
+    {"vintage_tube", "Vintage Tube Preamp", 0, "ENGINE_VINTAGE_TUBE", 48, "Saturation", 10, vintage_tube_params},
     {"tape_echo", "Tape Echo", 1, "ENGINE_TAPE_ECHO", 16, "Delay", 5, tape_echo_params},
     {"shimmer_reverb", "Shimmer Reverb", 2, "ENGINE_SHIMMER_REVERB", 13, "Reverb", 4, shimmer_reverb_params},
     {"plate_reverb", "Plate Reverb", 3, "ENGINE_PLATE_REVERB", 10, "Reverb", 4, plate_reverb_params},
