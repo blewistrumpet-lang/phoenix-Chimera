@@ -1,357 +1,521 @@
 #include "PitchShifter.h"
+#include <juce_audio_basics/juce_audio_basics.h>
+#include <juce_dsp/juce_dsp.h>
+#include <atomic>
 #include <cmath>
+#include <immintrin.h>
+#include <array>
+#include <algorithm>
 
-PitchShifter::PitchShifter() {
-    // Initialize smooth parameters
-    m_pitchRatio.setImmediate(1.0f);
-    m_formantShift.setImmediate(1.0f);
-    m_mixAmount.setImmediate(1.0f);
-    m_windowWidth.setImmediate(0.5f);
-    m_spectralGate.setImmediate(0.0f);
-    m_grainSize.setImmediate(0.5f);
-    m_feedback.setImmediate(0.0f);
-    m_stereoWidth.setImmediate(0.5f);
-    
-    // Set smoothing rates (faster for more responsive parameters)
-    m_pitchRatio.setSmoothingRate(0.990f);
-    m_formantShift.setSmoothingRate(0.992f);
-    m_mixAmount.setSmoothingRate(0.995f);
-    m_windowWidth.setSmoothingRate(0.998f);
-    m_spectralGate.setSmoothingRate(0.995f);
-    m_grainSize.setSmoothingRate(0.998f);
-    m_feedback.setSmoothingRate(0.995f);
-    m_stereoWidth.setSmoothingRate(0.995f);
+#include "Denorm.hpp"  // Unified denormal prevention
+
+// Define ALWAYS_INLINE
+#ifndef ALWAYS_INLINE
+  #if defined(__GNUC__) || defined(__clang__)
+    #define ALWAYS_INLINE __attribute__((always_inline)) inline
+  #elif defined(_MSC_VER)
+    #define ALWAYS_INLINE __forceinline
+  #else
+    #define ALWAYS_INLINE inline
+  #endif
+#endif
+
+// Enable FTZ/DAZ globally for denormal prevention
+namespace {
+    struct DenormalGuard {
+        DenormalGuard() {
+            #if defined(__SSE__)
+            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+            #endif
+        }
+    } static denormalGuard;
 }
 
+// Lock-free parameter with smoothing
+class AtomicSmoothParam {
+public:
+    void setTarget(float value) noexcept {
+        target.store(value, std::memory_order_relaxed);
+    }
+    
+    void setImmediate(float value) noexcept {
+        target.store(value, std::memory_order_relaxed);
+        current = value;
+    }
+    
+    void setSmoothingCoeff(float coeff) noexcept {
+        smoothing = coeff;
+    }
+    
+    ALWAYS_INLINE float tick() noexcept {
+        const float t = target.load(std::memory_order_relaxed);
+        current += (t - current) * (1.0f - smoothing);
+        return flushDenorm(current);
+    }
+    
+    float getValue() const noexcept {
+        return current;
+    }
+    
+private:
+    std::atomic<float> target{0.0f};
+    float current{0.0f};
+    float smoothing{0.995f};
+};
+
+// DC blocker with denormal protection
+class DCBlocker {
+public:
+    ALWAYS_INLINE float process(float input) noexcept {
+        const float output = input - x1 + R * y1;
+        x1 = input;
+        y1 = flushDenorm(output);  // Critical denormal prevention
+        return output;
+    }
+    
+    void reset() noexcept {
+        x1 = y1 = 0.0f;
+    }
+    
+private:
+    static constexpr float R = 0.995f;
+    float x1{0.0f}, y1{0.0f};
+};
+
+// Main implementation
+struct PitchShifter::Impl {
+    static constexpr int FFT_ORDER = 12;  // 2^12 = 4096
+    static constexpr int FFT_SIZE = 1 << FFT_ORDER;
+    static constexpr int OVERLAP_FACTOR = 4;
+    static constexpr int HOP_SIZE = FFT_SIZE / OVERLAP_FACTOR;
+    static constexpr int MAX_CHANNELS = 2;
+    
+    // Parameters (lock-free)
+    AtomicSmoothParam pitchRatio;
+    AtomicSmoothParam formantShift;
+    AtomicSmoothParam mixAmount;
+    AtomicSmoothParam windowWidth;
+    AtomicSmoothParam spectralGate;
+    AtomicSmoothParam grainSize;
+    AtomicSmoothParam feedback;
+    AtomicSmoothParam stereoWidth;
+    
+    // Per-channel state
+    struct alignas(64) ChannelState {  // Cache-line aligned
+        // Ring buffers for zero-copy overlap-add
+        alignas(32) std::array<float, FFT_SIZE * 2> inputRing{};
+        alignas(32) std::array<float, FFT_SIZE * 2> outputRing{};
+        alignas(32) std::array<std::complex<float>, FFT_SIZE> spectrum{};
+        alignas(32) std::array<float, FFT_SIZE> frameBuffer{};  // Temp for FFT input
+        
+        // Double precision for phase coherence
+        alignas(32) std::array<double, FFT_SIZE/2 + 1> phaseLast{};
+        alignas(32) std::array<double, FFT_SIZE/2 + 1> phaseSum{};
+        
+        // Structure-of-Arrays for SIMD efficiency
+        alignas(32) std::array<float, FFT_SIZE/2 + 1> magnitude{};
+        alignas(32) std::array<float, FFT_SIZE/2 + 1> frequency{};
+        
+        std::array<float, 8192> feedbackBuffer{};  // Fixed size
+        
+        // Window functions (computed once, aligned)
+        alignas(32) std::array<float, FFT_SIZE> analysisWindow{};
+        alignas(32) std::array<float, FFT_SIZE> synthesisWindow{};
+        
+        // Ring buffer indices
+        int inputWriteIdx{0};
+        int inputReadIdx{0};
+        int outputWriteIdx{0};
+        int outputReadIdx{0};
+        int feedbackPos{0};
+        int hopCounter{0};
+        
+        // FFT object
+        std::unique_ptr<juce::dsp::FFT> fft;
+        
+        // DC blockers
+        DCBlocker inputDC;
+        DCBlocker outputDC;
+        
+        void reset() noexcept {
+            inputRing.fill(0.0f);
+            outputRing.fill(0.0f);
+            phaseLast.fill(0.0);
+            phaseSum.fill(0.0);
+            feedbackBuffer.fill(0.0f);
+            inputWriteIdx = 0;
+            inputReadIdx = 0;
+            outputWriteIdx = 0;
+            outputReadIdx = 0;
+            feedbackPos = 0;
+            hopCounter = 0;
+            inputDC.reset();
+            outputDC.reset();
+        }
+        
+        // Ring buffer operations (zero-copy)
+        ALWAYS_INLINE void writeSample(float sample) noexcept {
+            inputRing[inputWriteIdx] = sample;
+            inputWriteIdx = (inputWriteIdx + 1) & (FFT_SIZE * 2 - 1);
+        }
+        
+        ALWAYS_INLINE float readOutput() noexcept {
+            float out = outputRing[outputReadIdx];
+            outputRing[outputReadIdx] = 0.0f;  // Clear after reading
+            outputReadIdx = (outputReadIdx + 1) & (FFT_SIZE * 2 - 1);
+            return out;
+        }
+        
+        ALWAYS_INLINE void gatherFrame() noexcept {
+            // Gather FFT_SIZE samples from ring buffer without copying
+            int idx = inputReadIdx;
+            for (int i = 0; i < FFT_SIZE; ++i) {
+                frameBuffer[i] = inputRing[idx];
+                idx = (idx + 1) & (FFT_SIZE * 2 - 1);
+            }
+            // Update read position by hop size
+            inputReadIdx = (inputReadIdx + HOP_SIZE) & (FFT_SIZE * 2 - 1);
+        }
+        
+        ALWAYS_INLINE void scatterFrame(const std::complex<float>* fftOut, float scale) noexcept {
+            // Overlap-add into output ring buffer
+            int idx = outputWriteIdx;
+            for (int i = 0; i < FFT_SIZE; ++i) {
+                outputRing[idx] += fftOut[i].real() * synthesisWindow[i] * scale;
+                idx = (idx + 1) & (FFT_SIZE * 2 - 1);
+            }
+            // Update write position by hop size
+            outputWriteIdx = (outputWriteIdx + HOP_SIZE) & (FFT_SIZE * 2 - 1);
+        }
+    };
+    
+    std::array<ChannelState, MAX_CHANNELS> channels;
+    int activeChannels{0};
+    double sampleRate{44100.0};
+    
+    // Pre-computed constants
+    float binFrequency{0.0f};
+    float expectedPhaseInc{0.0f};
+    float outputScale{0.0f};
+    
+    // Denormal flush counter
+    int denormalFlushCounter{0};
+    
+    Impl() {
+        // Initialize parameters with default values
+        pitchRatio.setImmediate(1.0f);
+        formantShift.setImmediate(1.0f);
+        mixAmount.setImmediate(1.0f);
+        windowWidth.setImmediate(0.5f);
+        spectralGate.setImmediate(0.0f);
+        grainSize.setImmediate(0.5f);
+        feedback.setImmediate(0.0f);
+        stereoWidth.setImmediate(0.5f);
+        
+        // Set smoothing coefficients
+        pitchRatio.setSmoothingCoeff(0.990f);
+        formantShift.setSmoothingCoeff(0.992f);
+        mixAmount.setSmoothingCoeff(0.995f);
+        windowWidth.setSmoothingCoeff(0.998f);
+        spectralGate.setSmoothingCoeff(0.995f);
+        grainSize.setSmoothingCoeff(0.998f);
+        feedback.setSmoothingCoeff(0.995f);
+        stereoWidth.setSmoothingCoeff(0.995f);
+    }
+    
+    void prepareToPlay(double sr, int /*samplesPerBlock*/) {
+        sampleRate = sr;
+        
+        // Pre-compute constants
+        binFrequency = static_cast<float>(sampleRate / FFT_SIZE);
+        expectedPhaseInc = 2.0f * static_cast<float>(M_PI) * HOP_SIZE / FFT_SIZE;
+        outputScale = 1.0f / (FFT_SIZE * OVERLAP_FACTOR * 0.5f);
+        
+        // Initialize FFT objects and windows
+        for (auto& ch : channels) {
+            ch.fft = std::make_unique<juce::dsp::FFT>(FFT_ORDER);
+            createWindows(ch.analysisWindow, ch.synthesisWindow);
+            ch.reset();
+        }
+    }
+    
+    void createWindows(std::array<float, FFT_SIZE>& analysis,
+                      std::array<float, FFT_SIZE>& synthesis) {
+        // Hann window
+        for (int i = 0; i < FFT_SIZE; ++i) {
+            const float t = static_cast<float>(i) / (FFT_SIZE - 1);
+            analysis[i] = 0.5f - 0.5f * std::cos(2.0f * static_cast<float>(M_PI) * t);
+        }
+        
+        // COLA-optimized synthesis window
+        synthesis = analysis;
+        
+        // Normalize for perfect reconstruction
+        std::array<float, FFT_SIZE> sum{};
+        for (int i = 0; i < OVERLAP_FACTOR; ++i) {
+            const int offset = i * HOP_SIZE;
+            for (int j = 0; j < FFT_SIZE; ++j) {
+                const int idx = (j + offset) % FFT_SIZE;
+                if (idx < FFT_SIZE) {
+                    sum[idx] += synthesis[j] * synthesis[j];
+                }
+            }
+        }
+        
+        for (int i = 0; i < FFT_SIZE; ++i) {
+            if (sum[i] > 1e-6f) {
+                synthesis[i] /= std::sqrt(sum[i]);
+            }
+        }
+    }
+    
+    ALWAYS_INLINE void processChannel(ChannelState& ch, float* data, int numSamples) {
+        // Process samples with per-sample parameter smoothing
+        for (int i = 0; i < numSamples; ++i) {
+            // Update ALL parameters per-sample for click-free automation
+            const float pitch = pitchRatio.tick();
+            const float formant = formantShift.tick();
+            const float mix = mixAmount.tick();
+            const float gate = spectralGate.tick();
+            const float fbAmount = feedback.tick() * 0.7f;
+            
+            // DC block input
+            float input = ch.inputDC.process(data[i]);
+            
+            // Add feedback with denormal prevention
+            if (fbAmount > 1e-6f) {
+                input += flushDenorm(ch.feedbackBuffer[ch.feedbackPos] * fbAmount);
+                ch.feedbackPos = (ch.feedbackPos + 1) % ch.feedbackBuffer.size();
+            }
+            
+            // Write to ring buffer
+            ch.writeSample(input);
+            ch.hopCounter++;
+            
+            // Process frame when ready
+            if (ch.hopCounter >= HOP_SIZE) {
+                ch.hopCounter = 0;
+                processSpectralFrame(ch, pitch, formant, gate);
+            }
+            
+            // Read from output ring buffer
+            float output = ch.readOutput();
+            
+            // Store feedback
+            if (fbAmount > 1e-6f) {
+                ch.feedbackBuffer[ch.feedbackPos] = output;
+            }
+            
+            // DC block output with denormal flush
+            output = flushDenorm(ch.outputDC.process(output));
+            
+            // Soft saturation for overloads
+            if (std::abs(output) > 0.95f) {
+                output = std::tanh(output);
+            }
+            
+            // Mix with dry (per-sample for smooth automation)
+            data[i] = flushDenorm(input * (1.0f - mix) + output * mix);
+        }
+    }
+    
+    void processSpectralFrame(ChannelState& ch, float pitch, float formant, float gate) {
+        // Gather frame from ring buffer (zero-copy)
+        ch.gatherFrame();
+        
+        // Window input with denormal prevention
+        alignas(32) std::array<float, FFT_SIZE> windowed;
+        for (int i = 0; i < FFT_SIZE; ++i) {
+            windowed[i] = flushDenorm(ch.frameBuffer[i] * ch.analysisWindow[i]);
+        }
+        
+        // Copy to complex array
+        for (int i = 0; i < FFT_SIZE; ++i) {
+            ch.spectrum[i] = std::complex<float>(windowed[i], 0.0f);
+        }
+        
+        // Forward FFT
+        ch.fft->perform(ch.spectrum.data(), ch.spectrum.data(), false);
+        
+        // Phase vocoder analysis with denormal prevention
+        analyzeSpectrum(ch);
+        
+        // Apply spectral gate with denormal prevention
+        if (gate > 1e-6f) {
+            const float threshold = gate * gate * 0.1f;
+            // Vectorized denormal prevention for magnitude array
+            flushDenormArray(ch.magnitude.data(), ch.magnitude.size());
+            
+            for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                if (ch.magnitude[bin] < threshold) {
+                    ch.magnitude[bin] = 0.0f;  // Hard gate prevents denormals
+                }
+            }
+        }
+        
+        // Shift spectrum
+        shiftSpectrum(ch, pitch, formant);
+        
+        // Inverse FFT
+        ch.fft->perform(ch.spectrum.data(), ch.spectrum.data(), true);
+        
+        // Scatter to output ring buffer with overlap-add
+        ch.scatterFrame(ch.spectrum.data(), outputScale);
+        
+        // Periodic denormal flush for phase accumulators
+        if (++denormalFlushCounter >= 256) {
+            denormalFlushCounter = 0;
+            for (int i = 0; i <= FFT_SIZE/2; ++i) {
+                ch.phaseSum[i] = flushDenorm(ch.phaseSum[i]);
+                ch.phaseLast[i] = flushDenorm(ch.phaseLast[i]);
+            }
+            // Also flush output ring buffer to prevent accumulation
+            flushDenormArray(ch.outputRing.data(), ch.outputRing.size());
+        }
+    }
+    
+    void analyzeSpectrum(ChannelState& ch) {
+        for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+            const auto& c = ch.spectrum[bin];
+            const float real = c.real();
+            const float imag = c.imag();
+            
+            // Magnitude with denormal prevention
+            ch.magnitude[bin] = flushDenorm(std::sqrt(real * real + imag * imag + 1e-20f));
+            
+            // Phase in double precision
+            const double phase = std::atan2(static_cast<double>(imag), 
+                                          static_cast<double>(real));
+            
+            // Phase difference with proper wrapping
+            double phaseDiff = phase - ch.phaseLast[bin];
+            ch.phaseLast[bin] = phase;
+            
+            // Wrap to [-pi, pi]
+            while (phaseDiff > M_PI) phaseDiff -= 2.0 * M_PI;
+            while (phaseDiff < -M_PI) phaseDiff += 2.0 * M_PI;
+            
+            // True frequency calculation
+            const double expectedPhase = expectedPhaseInc * bin;
+            const double deviation = phaseDiff - expectedPhase;
+            const double trueFreq = binFrequency * bin + 
+                                   deviation * sampleRate / (2.0 * M_PI * HOP_SIZE);
+            
+            ch.frequency[bin] = flushDenorm(static_cast<float>(trueFreq));
+        }
+    }
+    
+    void shiftSpectrum(ChannelState& ch, float pitch, float formant) {
+        // Temporary buffers for shifted spectrum
+        alignas(16) std::array<std::complex<float>, FFT_SIZE> shifted{};
+        alignas(16) std::array<float, FFT_SIZE/2 + 1> shiftedMag{};
+        
+        // Formant shift (magnitude envelope)
+        for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+            const int targetBin = static_cast<int>(bin * formant + 0.5f);
+            if (targetBin >= 0 && targetBin <= FFT_SIZE/2) {
+                shiftedMag[targetBin] += ch.magnitude[bin];
+            }
+        }
+        
+        // Pitch shift with phase coherence
+        for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+            if (shiftedMag[bin] > 1e-10f) {
+                // Update phase accumulator in double precision
+                const double shiftedFreq = ch.frequency[bin] * pitch;
+                ch.phaseSum[bin] += 2.0 * M_PI * shiftedFreq * HOP_SIZE / sampleRate;
+                
+                // Wrap phase to prevent accumulation errors
+                while (ch.phaseSum[bin] > M_PI) ch.phaseSum[bin] -= 2.0 * M_PI;
+                while (ch.phaseSum[bin] < -M_PI) ch.phaseSum[bin] += 2.0 * M_PI;
+                
+                // Reconstruct bin
+                const float mag = shiftedMag[bin];
+                const float phase = static_cast<float>(ch.phaseSum[bin]);
+                shifted[bin] = std::polar(mag, phase);
+                
+                // Hermitian symmetry for real output
+                if (bin > 0 && bin < FFT_SIZE/2) {
+                    shifted[FFT_SIZE - bin] = std::conj(shifted[bin]);
+                }
+            }
+        }
+        
+        ch.spectrum = shifted;
+    }
+    
+    void processStereoWidth(float* left, float* right, int numSamples) {
+        // Per-sample width processing for smooth automation
+        for (int i = 0; i < numSamples; ++i) {
+            const float width = stereoWidth.tick() * 2.0f;
+            const float mid = (left[i] + right[i]) * 0.5f;
+            const float side = (left[i] - right[i]) * 0.5f * width;
+            left[i] = flushDenorm(mid + side);
+            right[i] = flushDenorm(mid - side);
+        }
+    }
+};
+
+// Public interface implementation
+PitchShifter::PitchShifter() : pimpl(std::make_unique<Impl>()) {}
+PitchShifter::~PitchShifter() = default;
+
 void PitchShifter::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    m_sampleRate = sampleRate;
-    m_channelStates.clear();
-    
-    int numChannels = 2;
-    m_channelStates.resize(numChannels);
-    
-    // Initialize DC blockers
-    m_inputDCBlockers.resize(numChannels);
-    m_outputDCBlockers.resize(numChannels);
-    
-    // Prepare oversampler
-    if (m_useOversampling) {
-        m_oversampler.prepare(samplesPerBlock);
-    }
-    
-    // Reset component aging
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
-    
-    for (auto& state : m_channelStates) {
-        state.inputBuffer.resize(FFT_SIZE * 2);
-        state.outputBuffer.resize(FFT_SIZE * 2);
-        state.windowBuffer.resize(FFT_SIZE);
-        state.analysisWindow.resize(FFT_SIZE);
-        state.synthesisWindow.resize(FFT_SIZE);
-        state.spectrum.resize(FFT_SIZE);
-        state.phaseLast.resize(FFT_SIZE / 2 + 1);
-        state.phaseSum.resize(FFT_SIZE / 2 + 1);
-        state.magnitude.resize(FFT_SIZE / 2 + 1);
-        state.frequency.resize(FFT_SIZE / 2 + 1);
-        state.feedbackBuffer.resize(samplesPerBlock * 4);
-        
-        std::fill(state.inputBuffer.begin(), state.inputBuffer.end(), 0.0f);
-        std::fill(state.outputBuffer.begin(), state.outputBuffer.end(), 0.0f);
-        std::fill(state.phaseLast.begin(), state.phaseLast.end(), 0.0f);
-        std::fill(state.phaseSum.begin(), state.phaseSum.end(), 0.0f);
-        std::fill(state.feedbackBuffer.begin(), state.feedbackBuffer.end(), 0.0f);
-        
-        createWindows(state.analysisWindow, state.synthesisWindow);
-    }
-    
-    // Reset thermal model
-    m_thermalModel = ThermalModel();
+    pimpl->prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void PitchShifter::reset() {
-    // Reset all internal state
-    for (auto& state : m_channelStates) {
-        std::fill(state.inputBuffer.begin(), state.inputBuffer.end(), 0.0f);
-        std::fill(state.outputBuffer.begin(), state.outputBuffer.end(), 0.0f);
-        std::fill(state.phaseLast.begin(), state.phaseLast.end(), 0.0f);
-        std::fill(state.phaseSum.begin(), state.phaseSum.end(), 0.0f);
-        state.inputPos = 0;
-        state.outputPos = 0;
+    for (auto& ch : pimpl->channels) {
+        ch.reset();
     }
 }
 
 void PitchShifter::process(juce::AudioBuffer<float>& buffer) {
-    const int numChannels = buffer.getNumChannels();
+    const int numChannels = std::min(buffer.getNumChannels(), Impl::MAX_CHANNELS);
     const int numSamples = buffer.getNumSamples();
     
-    // Update smooth parameters
-    m_pitchRatio.update();
-    m_formantShift.update();
-    m_mixAmount.update();
-    m_windowWidth.update();
-    m_spectralGate.update();
-    m_grainSize.update();
-    m_feedback.update();
-    m_stereoWidth.update();
+    pimpl->activeChannels = numChannels;
     
-    // Update thermal model
-    m_thermalModel.update(m_sampleRate);
-    float thermalFactor = m_thermalModel.getThermalFactor();
-    
-    // Update component aging (very slow)
-    m_sampleCount += numSamples;
-    if (m_sampleCount > m_sampleRate * 10) { // Every 10 seconds
-        m_componentAge = std::min(1.0f, m_componentAge + 0.0001f);
-        m_sampleCount = 0;
+    // Process each channel
+    for (int ch = 0; ch < numChannels; ++ch) {
+        pimpl->processChannel(pimpl->channels[ch], buffer.getWritePointer(ch), numSamples);
     }
     
-    for (int channel = 0; channel < numChannels; ++channel) {
-        if (channel >= m_channelStates.size()) continue;
-        
-        auto& state = m_channelStates[channel];
-        float* channelData = buffer.getWritePointer(channel);
-        
-        for (int sample = 0; sample < numSamples; ++sample) {
-            float input = channelData[sample];
-            
-            // DC block input
-            input = m_inputDCBlockers[channel].process(input);
-            
-            // Add feedback with thermal and aging modulation
-            if (m_feedback.current > 0.0f) {
-                float feedbackAmount = m_feedback.current * 0.7f * thermalFactor * (1.0f - m_componentAge * 0.1f);
-                input += state.feedbackBuffer[state.feedbackPos] * feedbackAmount;
-                state.feedbackPos = (state.feedbackPos + 1) % state.feedbackBuffer.size();
-            }
-            
-            // Fill input buffer
-            state.inputBuffer[state.inputPos] = input;
-            state.inputPos++;
-            
-            // Process when we have enough samples
-            if (state.inputPos >= HOP_SIZE) {
-                processSpectralFrame(state);
-                state.inputPos = 0;
-                
-                // Shift buffers
-                std::copy(state.inputBuffer.begin() + HOP_SIZE, 
-                         state.inputBuffer.end(), 
-                         state.inputBuffer.begin());
-                std::fill(state.inputBuffer.end() - HOP_SIZE, 
-                         state.inputBuffer.end(), 0.0f);
-            }
-            
-            // Get output
-            float output = 0.0f;
-            if (state.outputPos < state.outputBuffer.size()) {
-                output = state.outputBuffer[state.outputPos];
-                state.outputPos++;
-                
-                if (state.outputPos >= HOP_SIZE) {
-                    // Shift output buffer
-                    std::copy(state.outputBuffer.begin() + HOP_SIZE,
-                             state.outputBuffer.end(),
-                             state.outputBuffer.begin());
-                    std::fill(state.outputBuffer.end() - HOP_SIZE,
-                             state.outputBuffer.end(), 0.0f);
-                    state.outputPos -= HOP_SIZE;
-                }
-            }
-            
-            // Store in feedback buffer
-            if (m_feedback.current > 0.0f && state.feedbackPos < state.feedbackBuffer.size()) {
-                state.feedbackBuffer[state.feedbackPos] = output;
-            }
-            
-            // DC block output
-            output = m_outputDCBlockers[channel].process(output);
-            
-            // Analog-style saturation with aging
-            float saturation = 1.0f + m_componentAge * 0.05f;
-            if (std::abs(output) > 0.8f) {
-                output = std::tanh(output * saturation) / saturation;
-            }
-            
-            // Mix with dry signal
-            channelData[sample] = input * (1.0f - m_mixAmount.current) + output * m_mixAmount.current;
-        }
-    }
-    
-    // Apply stereo width with thermal modulation
-    if (numChannels == 2 && m_stereoWidth.current != 0.5f) {
-        float* left = buffer.getWritePointer(0);
-        float* right = buffer.getWritePointer(1);
-        
-        float width = m_stereoWidth.current * 2.0f * thermalFactor;
-        float mid, side;
-        
-        for (int i = 0; i < numSamples; ++i) {
-            mid = (left[i] + right[i]) * 0.5f;
-            side = (left[i] - right[i]) * 0.5f * width;
-            left[i] = mid + side;
-            right[i] = mid - side;
-        }
-    }
-}
-
-void PitchShifter::processSpectralFrame(ChannelState& state) {
-    // Window the input
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        state.windowBuffer[i] = state.inputBuffer[i] * state.analysisWindow[i];
-    }
-    
-    // Copy to complex array for FFT
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        state.spectrum[i] = std::complex<float>(state.windowBuffer[i], 0.0f);
-    }
-    
-    // Forward FFT
-    state.fft.perform(state.spectrum.data(), state.spectrum.data(), false);
-    
-    // Analyze spectrum
-    const float binFreq = static_cast<float>(m_sampleRate) / FFT_SIZE;
-    const float expectedPhaseInc = 2.0f * M_PI * HOP_SIZE / FFT_SIZE;
-    
-    for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
-        float real = state.spectrum[bin].real();
-        float imag = state.spectrum[bin].imag();
-        
-        state.magnitude[bin] = std::sqrt(real * real + imag * imag);
-        float phase = std::atan2(imag, real);
-        
-        // Phase vocoder analysis
-        float phaseDiff = phase - state.phaseLast[bin];
-        state.phaseLast[bin] = phase;
-        
-        // Wrap phase difference to [-pi, pi]
-        while (phaseDiff > M_PI) phaseDiff -= 2.0f * M_PI;
-        while (phaseDiff < -M_PI) phaseDiff += 2.0f * M_PI;
-        
-        // Calculate true frequency
-        float deviation = phaseDiff - expectedPhaseInc * bin;
-        float frequency = binFreq * bin + deviation * m_sampleRate / (2.0f * M_PI * HOP_SIZE);
-        state.frequency[bin] = frequency;
-    }
-    
-    // Apply spectral gate with thermal and aging effects
-    if (m_spectralGate.current > 0.0f) {
-        float thermalFactor = m_thermalModel.getThermalFactor();
-        float threshold = m_spectralGate.current * m_spectralGate.current * 0.1f * thermalFactor;
-        float agingSmooth = 1.0f - m_componentAge * 0.2f; // Aging reduces gate precision
-        
-        for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
-            if (state.magnitude[bin] < threshold) {
-                state.magnitude[bin] *= agingSmooth;
-            }
-        }
-    }
-    
-    // Shift spectrum with thermal and aging modulation
-    float thermalFactor = m_thermalModel.getThermalFactor();
-    float pitchRatio = m_pitchRatio.current * thermalFactor * (1.0f - m_componentAge * 0.02f);
-    float formantShift = m_formantShift.current * (1.0f + m_componentAge * 0.01f);
-    
-    shiftSpectrum(state.spectrum, state.magnitude, state.frequency, 
-                  pitchRatio, formantShift);
-    
-    // Inverse FFT
-    state.fft.perform(state.spectrum.data(), state.spectrum.data(), true);
-    
-    // Window and overlap-add
-    const float scaleFactor = 1.0f / (FFT_SIZE * OVERLAP_FACTOR * 0.5f);
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        state.outputBuffer[i] += state.spectrum[i].real() * state.synthesisWindow[i] * scaleFactor;
-    }
-}
-
-void PitchShifter::shiftSpectrum(std::vector<std::complex<float>>& spectrum,
-                                const std::vector<float>& magnitude,
-                                const std::vector<float>& frequency,
-                                float pitchRatio, float formantRatio) {
-    std::vector<std::complex<float>> shiftedSpectrum(FFT_SIZE, std::complex<float>(0.0f, 0.0f));
-    std::vector<float> shiftedMagnitude(FFT_SIZE / 2 + 1, 0.0f);
-    
-    // Shift magnitudes (formant shift)
-    for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
-        int targetBin = static_cast<int>(bin * formantRatio + 0.5f);
-        if (targetBin > 0 && targetBin <= FFT_SIZE / 2) {
-            shiftedMagnitude[targetBin] += magnitude[bin];
-        }
-    }
-    
-    // Reconstruct spectrum with shifted frequencies (pitch shift)
-    // const float binFreq = static_cast<float>(m_sampleRate) / FFT_SIZE;
-    for (int bin = 0; bin <= FFT_SIZE / 2; ++bin) {
-        if (shiftedMagnitude[bin] > 0.0f) {
-            float shiftedFreq = frequency[bin] * pitchRatio;
-            m_channelStates[0].phaseSum[bin] += 2.0f * M_PI * shiftedFreq * HOP_SIZE / m_sampleRate;
-            
-            float phase = m_channelStates[0].phaseSum[bin];
-            shiftedSpectrum[bin] = std::polar(shiftedMagnitude[bin], phase);
-            
-            // Mirror for negative frequencies
-            if (bin > 0 && bin < FFT_SIZE / 2) {
-                shiftedSpectrum[FFT_SIZE - bin] = std::conj(shiftedSpectrum[bin]);
-            }
-        }
-    }
-    
-    spectrum = shiftedSpectrum;
-}
-
-float PitchShifter::getWindow(int pos, int size) {
-    // Hann window with adjustable width and thermal modulation
-    float thermalFactor = m_thermalModel.getThermalFactor();
-    float width = (0.5f + m_windowWidth.current * 0.45f) * thermalFactor;
-    float t = static_cast<float>(pos) / (size - 1);
-    return width - width * std::cos(2.0f * M_PI * t);
-}
-
-void PitchShifter::createWindows(std::vector<float>& analysis, std::vector<float>& synthesis) {
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        analysis[i] = getWindow(i, FFT_SIZE);
-        synthesis[i] = analysis[i];
-    }
-    
-    // Normalize synthesis window for COLA
-    std::vector<float> sum(FFT_SIZE, 0.0f);
-    for (int i = 0; i < OVERLAP_FACTOR; ++i) {
-        int offset = i * HOP_SIZE;
-        for (int j = 0; j < FFT_SIZE; ++j) {
-            int idx = (j + offset) % FFT_SIZE;
-            sum[idx] += synthesis[j] * synthesis[j];
-        }
-    }
-    
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        if (sum[i] > 0.0f) {
-            synthesis[i] /= std::sqrt(sum[i]);
-        }
+    // Apply stereo width if stereo
+    if (numChannels == 2) {
+        pimpl->processStereoWidth(buffer.getWritePointer(0), 
+                                 buffer.getWritePointer(1), 
+                                 numSamples);
     }
 }
 
 void PitchShifter::updateParameters(const std::map<int, float>& params) {
-    if (params.count(0)) m_pitchRatio.target = 0.25f + params.at(0) * 3.75f; // 0.25x to 4x
-    if (params.count(1)) m_formantShift.target = 0.5f + params.at(1) * 1.5f; // 0.5x to 2x
-    if (params.count(2)) m_mixAmount.target = params.at(2);
-    if (params.count(3)) m_windowWidth.target = params.at(3);
-    if (params.count(4)) m_spectralGate.target = params.at(4);
-    if (params.count(5)) m_grainSize.target = params.at(5);
-    if (params.count(6)) m_feedback.target = params.at(6) * 0.9f;
-    if (params.count(7)) m_stereoWidth.target = params.at(7);
+    // Thread-safe parameter updates
+    for (const auto& [index, value] : params) {
+        switch (index) {
+            case kPitch:    pimpl->pitchRatio.setTarget(0.25f + value * 3.75f); break;
+            case kFormant:  pimpl->formantShift.setTarget(0.5f + value * 1.5f); break;
+            case kMix:      pimpl->mixAmount.setTarget(value); break;
+            case kWindow:   pimpl->windowWidth.setTarget(value); break;
+            case kGate:     pimpl->spectralGate.setTarget(value); break;
+            case kGrain:    pimpl->grainSize.setTarget(value); break;
+            case kFeedback: pimpl->feedback.setTarget(value * 0.9f); break;
+            case kWidth:    pimpl->stereoWidth.setTarget(value); break;
+        }
+    }
 }
 
 juce::String PitchShifter::getParameterName(int index) const {
     switch (index) {
-        case 0: return "Pitch";
-        case 1: return "Formant";
-        case 2: return "Mix";
-        case 3: return "Window";
-        case 4: return "Gate";
-        case 5: return "Grain";
-        case 6: return "Feedback";
-        case 7: return "Width";
-        default: return "";
+        case kPitch:    return "Pitch";
+        case kFormant:  return "Formant";
+        case kMix:      return "Mix";
+        case kWindow:   return "Window";
+        case kGate:     return "Gate";
+        case kGrain:    return "Grain";
+        case kFeedback: return "Feedback";
+        case kWidth:    return "Width";
+        default:        return "";
     }
 }

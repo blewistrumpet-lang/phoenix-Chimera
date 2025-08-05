@@ -21,7 +21,7 @@
 #include "StereoChorus.h"
 #include "SpectralFreeze.h"
 #include "GranularCloud.h"
-#include "AnalogRingModulator.h"
+#include "PlatinumRingModulator.h"
 #include "MultibandSaturator.h"
 #include "CombResonator.h"
 #include "PitchShifter.h"
@@ -122,7 +122,7 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
             return std::make_unique<GranularCloud>();
             
         case ENGINE_RING_MODULATOR:
-            return std::make_unique<AnalogRingModulator>();
+            return std::make_unique<PlatinumRingModulator>();
             
         case ENGINE_MULTIBAND_SATURATOR:
             return std::make_unique<MultibandSaturator>();

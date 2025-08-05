@@ -8,6 +8,21 @@
 
 namespace AudioDSP {
 
+// Professional denormal prevention using bit manipulation
+inline float preventDenormal(float x) noexcept {
+    union { float f; uint32_t i; } u;
+    u.f = x;
+    if ((u.i & 0x7F800000) == 0) return 0.0f;
+    return x;
+}
+
+inline double preventDenormalDouble(double x) noexcept {
+    union { double d; uint64_t i; } u;
+    u.d = x;
+    if ((u.i & 0x7FF0000000000000ULL) == 0) return 0.0;
+    return x;
+}
+
 // Forward declarations
 class CrossoverFilter;
 class DopplerProcessor;

@@ -1,218 +1,259 @@
 #pragma once
 #include "EngineBase.h"
 #include <vector>
-#include <cmath>
-#include <random>
 #include <array>
+#include <atomic>
+#include <memory>
+#include <immintrin.h>
 
 class MultibandSaturator : public EngineBase {
 public:
     MultibandSaturator();
-    ~MultibandSaturator() override = default;
+    ~MultibandSaturator() override;
     
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void process(juce::AudioBuffer<float>& buffer) override;
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     
-    juce::String getName() const override { return "Multiband Saturator"; }
-    int getNumParameters() const override { return 5; }
+    juce::String getName() const override { return "Multiband Saturator Ultimate"; }
+    int getNumParameters() const override { return 7; }
     juce::String getParameterName(int index) const override;
     
 private:
-    // Parameters with smoothing
-    struct SmoothParam {
-        float target = 0.0f;
-        float current = 0.0f;
-        float smoothing = 0.995f;
-        
-        void update() {
-            current = target + (current - target) * smoothing;
-        }
-        
-        void setImmediate(float value) {
-            target = value;
-            current = value;
-        }
-        
-        void setSmoothingRate(float rate) {
-            smoothing = rate;
-        }
-    };
-    
-    SmoothParam m_lowDrive;           // Low band drive
-    SmoothParam m_midDrive;           // Mid band drive  
-    SmoothParam m_highDrive;          // High band drive
-    SmoothParam m_saturationType;     // Saturation character selector
-    SmoothParam m_harmonicCharacter;  // Even/odd harmonic balance
-    
-    // DSP State
-    double m_sampleRate = 44100.0;
-    
-    // Crossover frequencies
-    static constexpr float LOW_CROSSOVER = 200.0f;   // Hz
-    static constexpr float HIGH_CROSSOVER = 2000.0f; // Hz
-    
-    // Linkwitz-Riley crossover filter
-    struct LinkwitzRileyFilter {
-        // 2nd order butterworth sections (LR4 = 2x butterworth)
-        float a0 = 1.0f, a1 = 0.0f, a2 = 0.0f;
-        float b1 = 0.0f, b2 = 0.0f;
-        
-        // State variables for two cascaded sections
-        float x1_1 = 0.0f, x2_1 = 0.0f;
-        float y1_1 = 0.0f, y2_1 = 0.0f;
-        float x1_2 = 0.0f, x2_2 = 0.0f;
-        float y1_2 = 0.0f, y2_2 = 0.0f;
-        
-        void calculateCoefficients(float frequency, double sampleRate, bool highpass);
-        float process(float input);
-        float processWithAging(float input, float aging);
-        void reset();
-    };
-    
-    // Per-channel processing state
-    struct ChannelState {
-        // Crossover filters
-        LinkwitzRileyFilter lowpass1;   // For low band
-        LinkwitzRileyFilter highpass1;  // For mid+high
-        LinkwitzRileyFilter lowpass2;   // For mid band
-        LinkwitzRileyFilter highpass2;  // For high band
-        
-        // Band signals
-        float lowBand = 0.0f;
-        float midBand = 0.0f;
-        float highBand = 0.0f;
-        
-        // Component aging simulation
-        float componentDrift = 0.0f;
-        
-        // Noise floor for analog realism
-        float noiseFloor = 0.0f;
-        
-        void init(double sampleRate);
-        void reset();
-        void updateAging(float aging);
-    };
-    
-    std::vector<ChannelState> m_channels;
-    
-    // DC blocking
-    struct DCBlocker {
-        float x1 = 0.0f;
-        float y1 = 0.0f;
-        const float R = 0.995f;
-        
-        float process(float input) {
-            float output = input - x1 + R * y1;
-            x1 = input;
-            y1 = output;
-            return output;
-        }
-    };
-    
-    std::vector<DCBlocker> m_inputDCBlockers;
-    std::vector<DCBlocker> m_outputDCBlockers;
-    
-    // Thermal modeling
-    struct ThermalModel {
-        float temperature = 25.0f;  // Celsius
-        float thermalNoise = 0.0f;
-        std::mt19937 rng;
-        std::uniform_real_distribution<float> dist{-0.5f, 0.5f};
-        
-        ThermalModel() : rng(std::random_device{}()) {}
-        
-        void update(double sampleRate) {
-            // Slow thermal drift
-            thermalNoise += (dist(rng) * 0.001f) / sampleRate;
-            thermalNoise = std::max(-0.02f, std::min(0.02f, thermalNoise));
-        }
-        
-        float getThermalFactor() const {
-            return 1.0f + thermalNoise;
-        }
-    };
-    
-    ThermalModel m_thermalModel;
-    
-    // Component aging simulation
-    float m_componentAge = 0.0f;
-    int m_sampleCount = 0;
-    
     // Saturation types
-    enum SaturationType {
+    enum class SaturationType {
         TUBE = 0,
         TAPE,
         TRANSISTOR,
-        DIGITAL
+        DIODE
     };
     
-    // Saturation functions
-    float saturateTube(float input, float drive, float harmonics);
-    float saturateTape(float input, float drive, float harmonics);
-    float saturateTransistor(float input, float drive, float harmonics);
-    float saturateDigital(float input, float drive, float harmonics);
+    // Constants
+    static constexpr double LOW_CROSSOVER_FREQ = 250.0;
+    static constexpr double HIGH_CROSSOVER_FREQ = 2500.0;
+    static constexpr int OVERSAMPLE_FACTOR = 4;
+    static constexpr size_t ALIGNMENT = 32;
     
-    // Apply selected saturation
-    float applySaturation(float input, float drive, SaturationType type);
+    // Professional denormal prevention using bit manipulation
+    template<typename T>
+    static inline T preventDenormal(T x) noexcept {
+        if constexpr (std::is_same_v<T, float>) {
+            union { float f; uint32_t i; } u;
+            u.f = x;
+            if ((u.i & 0x7F800000) == 0) return 0.0f;
+            return x;
+        } else {
+            union { double d; uint64_t i; } u;
+            u.d = x;
+            if ((u.i & 0x7FF0000000000000ULL) == 0) return 0.0;
+            return x;
+        }
+    }
     
-    // Harmonic shaping
-    float shapeHarmonics(float x, float evenOddBalance);
-    
-    // Oversampling for cleaner saturation
-    struct Oversampler {
-        static constexpr int OVERSAMPLE_FACTOR = 2;
-        std::vector<float> upsampleBuffer;
-        std::vector<float> downsampleBuffer;
+    // Thread-safe parameter smoothing
+    struct SmoothParam {
+        std::atomic<double> target{0.0};
+        double current = 0.0;
+        double coeff = 0.999;
         
-        // Anti-aliasing filters
-        struct AAFilter {
-            std::array<float, 4> x = {0.0f};
-            std::array<float, 4> y = {0.0f};
+        inline double tick() noexcept {
+            double t = target.load(std::memory_order_relaxed);
+            current += (t - current) * (1.0 - coeff);
+            return preventDenormal(current);
+        }
+        
+        void setImmediate(double value) {
+            target.store(value, std::memory_order_relaxed);
+            current = value;
+        }
+        
+        void setSmoothingCoeff(double timeMs, double sampleRate) {
+            coeff = std::exp(-1.0 / (timeMs * 0.001 * sampleRate));
+        }
+    };
+    
+    // Butterworth section for Linkwitz-Riley
+    struct ButterworthSection {
+        double b0 = 1.0, b1 = 0.0, b2 = 0.0;
+        double a1 = 0.0, a2 = 0.0;
+        double x1 = 0.0, x2 = 0.0;
+        double y1 = 0.0, y2 = 0.0;
+        
+        void calculateCoefficients(double freq, double sampleRate, bool highpass);
+        
+        inline double process(double input) noexcept {
+            double w = input - a1 * y1 - a2 * y2;
+            double output = b0 * w + b1 * x1 + b2 * x2;
             
-            float process(float input) {
-                // 4th order Butterworth lowpass at Nyquist/2
-                const float a0 = 0.0947f, a1 = 0.3789f, a2 = 0.5684f, a3 = 0.3789f, a4 = 0.0947f;
-                const float b1 = -0.0000f, b2 = 0.4860f, b3 = -0.0000f, b4 = -0.0177f;
-                
-                float output = a0 * input + a1 * x[0] + a2 * x[1] + a3 * x[2] + a4 * x[3]
-                             - b1 * y[0] - b2 * y[1] - b3 * y[2] - b4 * y[3];
-                
-                // Shift delay line
-                x[3] = x[2]; x[2] = x[1]; x[1] = x[0]; x[0] = input;
-                y[3] = y[2]; y[2] = y[1]; y[1] = y[0]; y[0] = output;
-                
-                return output;
-            }
+            x2 = x1; x1 = w;
+            y2 = y1; y1 = preventDenormal(output);
+            
+            return output;
+        }
+        
+        void reset() {
+            x1 = x2 = y1 = y2 = 0.0;
+        }
+    };
+    
+    // Linkwitz-Riley filter (4th order)
+    struct LinkwitzRileyFilter {
+        ButterworthSection section1, section2;
+        
+        void setup(double freq, double sampleRate, bool highpass) {
+            section1.calculateCoefficients(freq, sampleRate, highpass);
+            section2.calculateCoefficients(freq, sampleRate, highpass);
+        }
+        
+        inline double process(double input) noexcept {
+            return section2.process(section1.process(input));
+        }
+        
+        void reset() {
+            section1.reset();
+            section2.reset();
+        }
+    };
+    
+    // Crossover network
+    struct CrossoverNetwork {
+        LinkwitzRileyFilter lowLP, lowHP;
+        LinkwitzRileyFilter midLP, midHP;
+        
+        struct BandOutputs {
+            double low, mid, high;
         };
         
-        AAFilter upsampleFilter;
-        AAFilter downsampleFilter;
-        
-        void prepare(int blockSize) {
-            upsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
-            downsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
-        }
-        
-        void upsample(const float* input, float* output, int numSamples) {
-            for (int i = 0; i < numSamples; ++i) {
-                output[i * 2] = upsampleFilter.process(input[i] * 2.0f);
-                output[i * 2 + 1] = upsampleFilter.process(0.0f);
-            }
-        }
-        
-        void downsample(const float* input, float* output, int numSamples) {
-            for (int i = 0; i < numSamples; ++i) {
-                downsampleFilter.process(input[i * 2]);
-                output[i] = downsampleFilter.process(input[i * 2 + 1]) * 0.5f;
-            }
-        }
+        void setup(double sampleRate);
+        inline BandOutputs process(double input) noexcept;
+        void reset();
     };
     
-    Oversampler m_oversampler;
-    bool m_useOversampling = true;
+    // All-pass section for polyphase oversampling
+    struct AllPassSection {
+        double coefficient = 0.0;
+        double state = 0.0;
+        
+        void setCoefficient(double coeff) { coefficient = coeff; }
+        
+        inline double process(double input) noexcept {
+            double output = coefficient * (input - state) + state;
+            state = preventDenormal(input);
+            return output;
+        }
+        
+        void reset() { state = 0.0; }
+    };
     
-    // Enhanced saturation with component modeling
-    float processComponentModeling(float input, float drive, SaturationType type, float thermalFactor, float aging);
+    // Polyphase IIR Oversampler
+    struct PolyphaseOversampler {
+        std::array<AllPassSection, OVERSAMPLE_FACTOR> upPhase;
+        std::array<AllPassSection, OVERSAMPLE_FACTOR> downPhase;
+        
+        void prepare();
+        void processUpsample(const double* input, double* output, int numSamples) noexcept;
+        void processDownsample(const double* input, double* output, int numSamples) noexcept;
+        void reset();
+    };
+    
+    // DC blocker
+    struct DCBlocker {
+        double x1 = 0.0, y1 = 0.0;
+        static constexpr double R = 0.995;
+        
+        inline double process(double input) noexcept {
+            double output = input - x1 + R * y1;
+            x1 = input;
+            y1 = preventDenormal(output);
+            return output;
+        }
+        
+        void reset() { x1 = y1 = 0.0; }
+    };
+    
+    // Per-channel processor with aligned memory
+    struct alignas(ALIGNMENT) ChannelProcessor {
+        CrossoverNetwork crossover;
+        std::array<PolyphaseOversampler, 3> oversamplers; // Low, Mid, High
+        DCBlocker inputDC, outputDC;
+        
+        // Pre-allocated aligned buffers
+        alignas(ALIGNMENT) std::vector<double> inputBuffer;
+        alignas(ALIGNMENT) std::vector<double> lowBand;
+        alignas(ALIGNMENT) std::vector<double> midBand;
+        alignas(ALIGNMENT) std::vector<double> highBand;
+        alignas(ALIGNMENT) std::vector<double> oversampledBuffer;
+        alignas(ALIGNMENT) std::vector<double> oversampledOutput;
+        
+        // Per-channel saturation states (no statics!)
+        struct SaturationStates {
+            // Tube states
+            double tubePreEmphState = 0.0;
+            double tubeDeEmphState = 0.0;
+            
+            // Tape states
+            double tapeHystState = 0.0;
+            double tapeHighState = 0.0;
+            
+            // Transistor states
+            double transistorCouplingState = 0.0;
+            
+            // Diode states
+            double diodeCapState = 0.0;
+            double diodeRecoveryState = 0.0;
+            double diodeTempDrift = 0.0;
+            
+            void reset() {
+                tubePreEmphState = tubeDeEmphState = 0.0;
+                tapeHystState = tapeHighState = 0.0;
+                transistorCouplingState = 0.0;
+                diodeCapState = diodeRecoveryState = diodeTempDrift = 0.0;
+            }
+        } satStates;
+        
+        void prepare(double sampleRate, int maxBlockSize);
+        void reset();
+    };
+    
+    // Member variables
+    double m_sampleRate = 44100.0;
+    int m_samplesPerBlock = 512;
+    
+    // Parameters with per-sample smoothing
+    SmoothParam m_lowDrive;
+    SmoothParam m_midDrive;
+    SmoothParam m_highDrive;
+    SmoothParam m_saturationType;
+    SmoothParam m_harmonicCharacter;
+    SmoothParam m_outputGain;
+    SmoothParam m_mix;
+    
+    // Channel processors
+    std::vector<std::unique_ptr<ChannelProcessor>> m_channelProcessors;
+    
+    // Processing methods
+    void processBand(double* samples, int numSamples,
+                    PolyphaseOversampler& oversampler,
+                    double* oversampledBuffer,
+                    double* oversampledOutput,
+                    SaturationType type,
+                    ChannelProcessor& processor) noexcept;
+    
+    // Saturation algorithms (all use channel-specific states)
+    double saturateTube(double input, double drive, double harmonics,
+                       ChannelProcessor::SaturationStates& states) const noexcept;
+    double saturateTape(double input, double drive, double harmonics,
+                       ChannelProcessor::SaturationStates& states) const noexcept;
+    double saturateTransistor(double input, double drive, double harmonics,
+                             ChannelProcessor::SaturationStates& states) const noexcept;
+    double saturateDiode(double input, double drive, double harmonics,
+                        ChannelProcessor::SaturationStates& states) const noexcept;
+    
+    // SIMD mixing
+    void mixBandsSIMD(float* output, const double* low, const double* mid,
+                     const double* high, int numSamples) noexcept;
+    
+    // RNG for thermal drift
+    std::mt19937 m_rng{std::random_device{}()};
 };

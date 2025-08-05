@@ -1,14 +1,18 @@
 #pragma once
 #include "EngineBase.h"
+#include "Denorm.hpp"
 #include <vector>
 #include <random>
 #include <cmath>
 #include <array>
+#include <atomic>
+#include <memory>
+#include <functional>
 
 class GranularCloud : public EngineBase {
 public:
     GranularCloud();
-    ~GranularCloud() override = default;
+    ~GranularCloud() override;
     
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void process(juce::AudioBuffer<float>& buffer) override;
@@ -19,181 +23,256 @@ public:
     int getNumParameters() const override { return 4; }
     juce::String getParameterName(int index) const override;
     
+    // Quality monitoring API
+    struct QualityReport {
+        float cpuUsage = 0.0f;
+        float thd = 0.0f;
+        float peakLevel = 0.0f;
+        float rmsLevel = 0.0f;
+        int activeGrains = 0;
+        int droppedGrains = 0;
+    };
+    
+    QualityReport getQualityReport() const;
+    
 private:
-    // Parameters with smoothing
+    // Per-sample parameter smoothing with denormal handling
     struct SmoothParam {
-        float target = 0.0f;
-        float current = 0.0f;
-        float smoothing = 0.995f;
+        std::atomic<double> target{0.0};
+        double current = 0.0;
+        double coeff = 0.995;
         
-        void update() {
-            current = target + (current - target) * smoothing;
+        inline double tick() noexcept {
+            current += coeff * (target.load(std::memory_order_relaxed) - current);
+            return flushDenorm(current);
         }
         
-        void setImmediate(float value) {
-            target = value;
-            current = value;
+        void setSmoothingRate(double rate) { 
+            coeff = std::clamp(rate, 0.0, 0.9999); 
         }
         
-        void setSmoothingRate(float rate) {
-            smoothing = rate;
+        void setImmediate(double v) { 
+            target.store(v, std::memory_order_relaxed);
+            current = v; 
+        }
+        
+        float getValue() const { 
+            return static_cast<float>(current); 
         }
     };
     
-    SmoothParam m_grainSize;      // ms (10-500)
-    SmoothParam m_density;        // grains per second
-    SmoothParam m_pitchScatter;   // ±2 octaves
+    SmoothParam m_grainSize;      // ms (0.1-2000)
+    SmoothParam m_density;        // grains/sec (0.1-500)  
+    SmoothParam m_pitchScatter;   // ±4 octaves
     SmoothParam m_cloudPosition;  // stereo spread
+    
+    // Pre-computed parameter atomics (updated in updateParameters)
+    std::atomic<float> m_grainSizeTarget{50.0f};
+    std::atomic<float> m_densityTarget{20.0f};
+    std::atomic<float> m_pitchScatterTarget{0.0f};
+    std::atomic<float> m_cloudPositionTarget{0.5f};
     
     // DSP State
     double m_sampleRate = 44100.0;
     
-    // Grain structure
+    // High-quality anti-aliasing filter with aligned storage
+    class AntiAliasingFilter {
+        static constexpr int ORDER = 8;
+        AlignedArray<double, ORDER + 1> a, b;
+        AlignedArray<double, ORDER> x_history, y_history;
+        
+    public:
+        void designButterworth(double cutoffFreq, double sampleRate);
+        
+        inline double process(double input) noexcept {
+            // Direct Form II with automatic denormal flushing
+            double w = input;
+            
+            // Unrolled for SIMD potential
+            w -= a[1] * y_history[0] + a[2] * y_history[1] + 
+                 a[3] * y_history[2] + a[4] * y_history[3] +
+                 a[5] * y_history[4] + a[6] * y_history[5] + 
+                 a[7] * y_history[6] + a[8] * y_history[7];
+            
+            double output = b[0] * w + b[1] * x_history[0] + 
+                           b[2] * x_history[1] + b[3] * x_history[2] + 
+                           b[4] * x_history[3] + b[5] * x_history[4] + 
+                           b[6] * x_history[5] + b[7] * x_history[6] + 
+                           b[8] * x_history[7];
+            
+            // Shift history (vectorizable)
+            for (int i = ORDER - 1; i > 0; --i) {
+                x_history[i] = x_history[i-1];
+                y_history[i] = y_history[i-1];
+            }
+            
+            x_history[0] = flushDenorm(w);
+            y_history[0] = flushDenorm(output);
+            
+            return output;
+        }
+        
+        void reset() {
+            x_history.clear();
+            y_history.clear();
+        }
+    };
+    
+    // Optimized Sinc interpolator with aligned tables
+    class SincInterpolator {
+        static constexpr int SINC_POINTS = 32;
+        static constexpr int TABLE_SIZE = 8192;
+        static constexpr size_t TABLE_ALIGNMENT = 64; // Cache line
+        
+        float* sincTable = nullptr;
+        
+    public:
+        void initialize();
+        ~SincInterpolator();
+        
+        inline double interpolate(const float* buffer, int bufferSize, 
+                                 double position) const noexcept;
+    };
+    
+    // Grain with integrated oversampling
     struct Grain {
         float* bufferPtr = nullptr;
         int bufferSize = 0;
-        int readPos = 0;
+        double readPosAccumulator = 0.0;
         int grainLength = 0;
-        float pitch = 1.0f;
+        double pitchRatio = 1.0;
         float amplitude = 1.0f;
         float pan = 0.5f;
-        bool active = false;
+        std::atomic<bool> active{false};
         
-        // Envelope
+        // Envelope state
         int envelopePos = 0;
+        static constexpr int FADE_SAMPLES = 64;
         
-        float process();
-        void reset();
+        // Per-grain filters
+        AntiAliasingFilter inputFilter;
+        AntiAliasingFilter outputFilter;
+        bool useInputFilter = false;
+        bool useOutputFilter = false;
+        
+        // Per-sample processing
+        inline float processSample(double sampleRate, const SincInterpolator& interp) noexcept;
+        double calculateEnvelope() const noexcept;
+        void reset() noexcept;
     };
     
-    // Grain pool
-    static constexpr int MAX_GRAINS = 64;
-    std::vector<Grain> m_grains;
+    // Lock-free grain pool
+    static constexpr int MAX_GRAINS = 128;
+    AlignedArray<Grain, MAX_GRAINS, 64> m_grains; // Cache-line aligned
+    std::atomic<uint32_t> m_grainAllocationIndex{0};
     
-    // Circular buffer for input
-    static constexpr int BUFFER_SIZE = 44100 * 2; // 2 seconds at 44.1kHz
-    std::vector<float> m_circularBuffer[2];
-    int m_writePos = 0;
+    // Aligned circular buffers
+    static constexpr int BUFFER_SIZE = 88200 * 4; // 4 seconds
+    std::array<float*, 2> m_circularBufferPtrs;
+    std::unique_ptr<float[]> m_circularBufferMemory;
+    std::atomic<int> m_writePos{0};
     
-    // Grain triggering
-    float m_grainTimer = 0.0f;
-    float m_nextGrainTime = 0.0f;
+    // Grain scheduling
+    double m_grainTimer = 0.0;
+    double m_nextGrainTime = 0.0;
     
-    // Random generators
-    std::mt19937 m_rng;
-    std::uniform_real_distribution<float> m_uniformDist{0.0f, 1.0f};
-    std::normal_distribution<float> m_normalDist{0.0f, 1.0f};
+    // RNG
+    std::mt19937_64 m_rng;
+    std::uniform_real_distribution<double> m_uniformDist{0.0, 1.0};
+    std::normal_distribution<double> m_normalDist{0.0, 1.0};
     
-    // Envelope generation
-    std::vector<float> m_hannWindow;
-    void generateHannWindow(int size);
+    // DSP components
+    SincInterpolator m_interpolator;
     
-    // Grain management
-    void triggerGrain();
-    Grain* findInactiveGrain();
+    // Window table (aligned)
+    static constexpr size_t MAX_WINDOW_SIZE = 88200 * 2;
+    float* m_windowTable = nullptr;
     
-    // Pitch shifting
-    float calculatePitchFactor(float scatter);
-    
-    // Stereo positioning
-    void calculateStereoPan(float& leftGain, float& rightGain, float pan);
-    
-    // DC blocking
-    struct DCBlocker {
-        float x1 = 0.0f;
-        float y1 = 0.0f;
-        float R = 0.995f;
+    // DC blocking with per-sample denormal handling
+    class DCBlocker {
+        double x1 = 0.0;
+        double y1 = 0.0;
+        static constexpr double R = 0.995;
         
-        float process(float input) {
-            float output = input - x1 + R * y1;
-            x1 = input;
-            y1 = output;
-            return output;
-        }
-    };
-    
-    std::array<DCBlocker, 2> m_inputDCBlockers;
-    std::array<DCBlocker, 2> m_outputDCBlockers;
-    
-    // Thermal modeling
-    struct ThermalModel {
-        float temperature = 25.0f;  // Celsius
-        float thermalNoise = 0.0f;
-        std::mt19937 rng;
-        std::uniform_real_distribution<float> dist{-0.5f, 0.5f};
-        
-        ThermalModel() : rng(std::random_device{}()) {}
-        
-        void update(double sampleRate) {
-            // Slow thermal drift
-            thermalNoise += (dist(rng) * 0.001f) / sampleRate;
-            thermalNoise = std::max(-0.02f, std::min(0.02f, thermalNoise));
+    public:
+        inline float process(float input) noexcept {
+            double in = static_cast<double>(input);
+            double output = in - x1 + R * y1;
+            x1 = in;
+            y1 = flushDenorm(output);
+            return static_cast<float>(output);
         }
         
-        float getThermalFactor() const {
-            return 1.0f + thermalNoise;
+        void reset() noexcept {
+            x1 = 0.0;
+            y1 = 0.0;
         }
     };
     
-    ThermalModel m_thermalModel;
+    AlignedArray<DCBlocker, 2> m_inputDCBlockers;
+    AlignedArray<DCBlocker, 2> m_outputDCBlockers;
     
-    // Component aging simulation
-    float m_componentAge = 0.0f;
-    int m_sampleCount = 0;
-    
-    // Enhanced grain processing with analog modeling
-    float processGrainWithModeling(Grain& grain, float thermalFactor, float aging);
-    
-    // Oversampling for high-quality granular processing
-    struct Oversampler {
-        static constexpr int OVERSAMPLE_FACTOR = 2;
-        std::vector<float> upsampleBuffer;
-        std::vector<float> downsampleBuffer;
+    // Advanced oversampling with per-grain support
+    class Oversampler {
+    public:
+        static constexpr int FACTOR = 4;
         
-        // Anti-aliasing filters
-        struct AAFilter {
-            std::array<float, 4> x = {0.0f};
-            std::array<float, 4> y = {0.0f};
-            
-            float process(float input) {
-                // 4th order Butterworth lowpass at Nyquist/2
-                const float a0 = 0.0947f, a1 = 0.3789f, a2 = 0.5684f, a3 = 0.3789f, a4 = 0.0947f;
-                const float b1 = -0.0000f, b2 = 0.4860f, b3 = -0.0000f, b4 = -0.0177f;
-                
-                float output = a0 * input + a1 * x[0] + a2 * x[1] + a3 * x[2] + a4 * x[3]
-                             - b1 * y[0] - b2 * y[1] - b3 * y[2] - b4 * y[3];
-                
-                // Shift delay line
-                x[3] = x[2]; x[2] = x[1]; x[1] = x[0]; x[0] = input;
-                y[3] = y[2]; y[2] = y[1]; y[1] = y[0]; y[0] = output;
-                
-                return output;
-            }
-        };
+        void initialize(double sampleRate);
         
-        AAFilter upsampleFilter;
-        AAFilter downsampleFilter;
+        // Process a single sample through oversampling
+        inline float processSample(float input, 
+                                  std::function<float(float)> processor) noexcept;
         
-        void prepare(int blockSize) {
-            upsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
-            downsampleBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
-        }
-        
-        void upsample(const float* input, float* output, int numSamples) {
-            for (int i = 0; i < numSamples; ++i) {
-                output[i * 2] = upsampleFilter.process(input[i] * 2.0f);
-                output[i * 2 + 1] = upsampleFilter.process(0.0f);
-            }
-        }
-        
-        void downsample(const float* input, float* output, int numSamples) {
-            for (int i = 0; i < numSamples; ++i) {
-                downsampleFilter.process(input[i * 2]);
-                output[i] = downsampleFilter.process(input[i * 2 + 1]) * 0.5f;
-            }
-        }
+    private:
+        // Polyphase FIR implementation
+        static constexpr int TAPS_PER_PHASE = 32;
+        AlignedArray<float, TAPS_PER_PHASE * FACTOR> upCoeffs;
+        AlignedArray<float, TAPS_PER_PHASE * FACTOR> downCoeffs;
+        AlignedArray<float, TAPS_PER_PHASE * FACTOR> upDelayLine;
+        AlignedArray<float, TAPS_PER_PHASE * FACTOR> downDelayLine;
+        int delayIndex = 0;
     };
     
     Oversampler m_oversampler;
     bool m_useOversampling = true;
+    
+    // Quality metrics
+    struct QualityMetrics {
+        std::atomic<float> cpuUsage{0.0f};
+        std::atomic<int> activeGrainCount{0};
+        std::atomic<int> droppedGrains{0};
+        std::atomic<float> peakLevel{0.0f};
+        std::atomic<float> rmsLevel{0.0f};
+        
+        // THD measurement
+        std::atomic<float> thd{0.0f};
+        AlignedArray<double, 8192> fftBuffer;
+        
+        void updateCPU(double processingTime, double availableTime) noexcept;
+        void updateLevels(const float* buffer, int numSamples) noexcept;
+        void measureTHD(const float* input, const float* output, int numSamples);
+    };
+    
+    mutable QualityMetrics m_metrics;
+    
+    // Helper methods
+    void triggerGrain() noexcept;
+    Grain* allocateGrain() noexcept;
+    double calculatePitchRatio(double scatterAmount) noexcept;
+    void calculateStereoPan(float& leftGain, float& rightGain, float pan) noexcept;
+    float validateParameter(float value, float min, float max) noexcept;
+    void generateWindowTable();
+    
+    // Optimized mixing
+    inline void mixGrainToOutput(float grainSample, float leftGain, float rightGain,
+                                float& leftOut, float& rightOut) noexcept {
+        leftOut += flushDenorm(grainSample * leftGain * 0.25f);
+        rightOut += flushDenorm(grainSample * rightGain * 0.25f);
+    }
+    
+    // CPU features
+    bool m_hasSSE2 = false;
+    bool m_hasAVX = false;
+    bool m_hasAVX2 = false;
+    void detectCPUFeatures() noexcept;
 };

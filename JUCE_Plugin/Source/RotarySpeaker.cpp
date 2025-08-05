@@ -312,7 +312,7 @@ void CrossoverFilter::updateCoefficients() noexcept {
 float DopplerProcessor::process(float input, double rotorAngle, double rotorVelocity, 
               double rotorRadius, double micAngle, double micDistance) noexcept {
     // Write input to buffer
-    m_buffer[m_writePos] = input + 1e-25f; // Denormal prevention
+    m_buffer[m_writePos] = preventDenormal(input); // Denormal prevention
     m_writePos = (m_writePos + 1) & BUFFER_MASK;
     
     // Calculate Doppler delay
@@ -605,7 +605,7 @@ float ParameterSmoother::getNextValue() noexcept {
         }
     }
     
-    return m_current + 1e-15f;
+    return preventDenormal(m_current);
 }
 
 void ParameterSmoother::reset(float value) noexcept {

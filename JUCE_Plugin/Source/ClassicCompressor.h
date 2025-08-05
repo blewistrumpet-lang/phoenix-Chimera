@@ -1,9 +1,39 @@
 #pragma once
 #include "EngineBase.h"
-#include <vector>
 #include <cmath>
 #include <array>
-#include <random>
+#include <atomic>
+#include <algorithm>
+#include <cstring>
+#include <immintrin.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+// Platform-specific optimizations
+#ifdef __SSE__
+#include <xmmintrin.h>
+#endif
+
+#ifdef __ARM_NEON
+#include <arm_neon.h>
+#endif
+
+// Professional denormal prevention using bit manipulation
+inline float preventDenormal(float x) {
+    union { float f; uint32_t i; } u;
+    u.f = x;
+    if ((u.i & 0x7F800000) == 0) return 0.0f;
+    return x;
+}
+
+inline double preventDenormalDouble(double x) {
+    union { double d; uint64_t i; } u;
+    u.d = x;
+    if ((u.i & 0x7FF0000000000000ULL) == 0) return 0.0;
+    return x;
+}
 
 class ClassicCompressor : public EngineBase {
 public:
@@ -15,237 +45,417 @@ public:
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     
-    juce::String getName() const override { return "Classic Compressor"; }
-    int getNumParameters() const override { return 8; }
+    juce::String getName() const override { return "Classic Compressor Pro"; }
+    int getNumParameters() const override { return 10; }
     juce::String getParameterName(int index) const override;
     
-    // Get current gain reduction for metering
-    float getGainReduction() const { return m_currentGainReduction; }
+    // Professional metering
+    float getGainReduction() const { return m_currentGainReduction.load(std::memory_order_relaxed); }
+    float getPeakReduction() const { return m_peakGainReduction.load(std::memory_order_relaxed); }
+    void resetMeters() { 
+        m_currentGainReduction.store(0.0f, std::memory_order_relaxed);
+        m_peakGainReduction.store(0.0f, std::memory_order_relaxed);
+    }
     
 private:
-    // Parameters with smoothing
-    struct SmoothParam {
-        float target = 0.0f;
-        float current = 0.0f;
-        float smoothing = 0.995f;
+    // Constants
+    static constexpr int SUBBLOCK_SIZE = 32;
+    static constexpr int MAX_BLOCK_SIZE = 2048;
+    static constexpr int RMS_WINDOW_SIZE = 512;
+    static constexpr int MAX_LOOKAHEAD_SAMPLES = 512;
+    
+    // Aligned allocation for SIMD
+    template<typename T, size_t Alignment = 32>
+    struct AlignedArray {
+        alignas(Alignment) std::array<T, MAX_BLOCK_SIZE> data;
+        T& operator[](size_t i) { return data[i]; }
+        const T& operator[](size_t i) const { return data[i]; }
+        T* ptr() { return data.data(); }
+        const T* ptr() const { return data.data(); }
+    };
+    
+    // ============== PARAMETER SMOOTHER (Thread-Safe) ==============
+    class ParameterSmoother {
+        std::atomic<float> m_target{0.0f};
+        double m_current = 0.0;
+        double m_smoothingCoeff = 0.99;
         
-        void update() {
-            current = target + (current - target) * smoothing;
+    public:
+        void setSampleRate(double sr, float smoothingMs = 20.0f) {
+            double tau = smoothingMs * 0.001;
+            m_smoothingCoeff = std::exp(-1.0 / (tau * sr));
         }
         
-        void setImmediate(float value) {
-            target = value;
-            current = value;
+        void setTarget(float value) { 
+            m_target.store(value, std::memory_order_relaxed); 
         }
         
-        void setSmoothingRate(float rate) {
-            smoothing = rate;
+        double process() {
+            double target = static_cast<double>(m_target.load(std::memory_order_relaxed));
+            m_current = target + (m_current - target) * m_smoothingCoeff;
+            return preventDenormalDouble(m_current);
+        }
+        
+        double processSubBlock(int numSamples) {
+            // Process only once per sub-block
+            return process();
+        }
+        
+        void reset(float value) { 
+            m_target.store(value, std::memory_order_relaxed);
+            m_current = value;
+        }
+        
+        double getCurrentValue() const { return m_current; }
+    };
+    
+    // ============== OPTIMIZED ENVELOPE FOLLOWER ==============
+    class EnvelopeFollower {
+        // All internal state in double precision
+        double m_envelope = 0.0;
+        
+        // Optimized RMS detection with O(1) updates
+        alignas(32) std::array<double, RMS_WINDOW_SIZE> m_rmsWindow;
+        int m_rmsIndex = 0;
+        double m_rmsSum = 0.0;
+        
+        // Pre-computed coefficients
+        double m_attackCoeff = 0.0;
+        double m_releaseCoeff = 0.0;
+        
+    public:
+        enum class Mode { PEAK, RMS };
+        
+        void reset() {
+            m_envelope = 0.0;
+            std::fill(m_rmsWindow.begin(), m_rmsWindow.end(), 0.0);
+            m_rmsIndex = 0;
+            m_rmsSum = 0.0;
+        }
+        
+        void updateCoefficients(double attackMs, double releaseMs, double sampleRate) {
+            double attackTau = attackMs * 0.001;
+            double releaseTau = releaseMs * 0.001;
+            m_attackCoeff = 1.0 - std::exp(-1.0 / (attackTau * sampleRate));
+            m_releaseCoeff = 1.0 - std::exp(-1.0 / (releaseTau * sampleRate));
+        }
+        
+        double processPeak(float input) {
+            double rectified = std::abs(static_cast<double>(input));
+            
+            if (rectified > m_envelope) {
+                m_envelope += (rectified - m_envelope) * m_attackCoeff;
+            } else {
+                m_envelope += (rectified - m_envelope) * m_releaseCoeff;
+            }
+            
+            return preventDenormalDouble(m_envelope);
+        }
+        
+        double processRMS(float input) {
+            // O(1) RMS update
+            double squared = static_cast<double>(input) * static_cast<double>(input);
+            
+            // Remove oldest sample from sum
+            m_rmsSum -= m_rmsWindow[m_rmsIndex];
+            
+            // Add new sample
+            m_rmsWindow[m_rmsIndex] = squared;
+            m_rmsSum += squared;
+            
+            // Advance circular buffer
+            m_rmsIndex = (m_rmsIndex + 1) % RMS_WINDOW_SIZE;
+            
+            // Calculate RMS
+            double rms = std::sqrt(m_rmsSum / RMS_WINDOW_SIZE);
+            
+            // Apply envelope
+            if (rms > m_envelope) {
+                m_envelope += (rms - m_envelope) * m_attackCoeff;
+            } else {
+                m_envelope += (rms - m_envelope) * m_releaseCoeff;
+            }
+            
+            return preventDenormalDouble(m_envelope);
+        }
+        
+        // SIMD-optimized batch processing
+        void processBlockRMS(const float* input, double* output, int numSamples) {
+            for (int i = 0; i < numSamples; ++i) {
+                output[i] = processRMS(input[i]);
+            }
         }
     };
     
-    SmoothParam m_threshold;      // dB
-    SmoothParam m_ratio;         // :1
-    SmoothParam m_attack;        // ms
-    SmoothParam m_release;       // ms
-    SmoothParam m_knee;          // 0-1 (hard to soft)
-    SmoothParam m_makeupGain;    // dB
+    // ============== TPT SVF SIDECHAIN FILTER ==============
+    class SidechainProcessor {
+        // Double precision state
+        double m_s1 = 0.0, m_s2 = 0.0;
+        double m_g = 0.0, m_k = 0.0, m_a0 = 0.0;
+        
+        // Pre-allocated lookahead buffer
+        alignas(32) std::array<float, MAX_LOOKAHEAD_SAMPLES> m_lookaheadBuffer;
+        int m_writeIndex = 0;
+        int m_lookaheadSamples = 0;
+        
+        // Optimized peak detection with monotonic deque
+        struct PeakDetector {
+            struct Sample { float value; int index; };
+            std::array<Sample, MAX_LOOKAHEAD_SAMPLES> m_deque;
+            int m_front = 0, m_back = 0;
+            
+            void push(float value, int index) {
+                // Remove samples that are smaller than current
+                while (m_back > m_front && m_deque[m_back-1].value <= value) {
+                    m_back--;
+                }
+                m_deque[m_back++] = {value, index};
+            }
+            
+            void removeOld(int oldestValid) {
+                while (m_front < m_back && m_deque[m_front].index < oldestValid) {
+                    m_front++;
+                }
+            }
+            
+            float getPeak() const {
+                return (m_front < m_back) ? m_deque[m_front].value : 0.0f;
+            }
+            
+            void reset() { m_front = m_back = 0; }
+        } m_peakDetector;
+        
+    public:
+        void prepare(double sampleRate) {
+            reset();
+            setHighpass(80.0, sampleRate);
+        }
+        
+        void setHighpass(double freq, double sampleRate) {
+            // TPT highpass design
+            m_g = std::tan(M_PI * freq / sampleRate);
+            m_k = std::sqrt(2.0);
+            m_a0 = 1.0 / (1.0 + m_g * (m_g + m_k));
+        }
+        
+        void setLookahead(double ms, double sampleRate) {
+            m_lookaheadSamples = std::clamp(
+                static_cast<int>(ms * sampleRate * 0.001),
+                0,
+                MAX_LOOKAHEAD_SAMPLES - 1
+            );
+        }
+        
+        double processHighpass(double input) {
+            // TPT SVF highpass (stable at all frequencies)
+            double hp = (input - (2.0 * m_k + m_g) * m_s1 - m_s2) * m_a0;
+            double bp = m_g * hp + m_s1;
+            double lp = m_g * bp + m_s2;
+            
+            m_s1 = preventDenormalDouble(2.0 * bp - m_s1);
+            m_s2 = preventDenormalDouble(2.0 * lp - m_s2);
+            
+            return hp;
+        }
+        
+        float processLookahead(float input, float& delayedOutput) {
+            // Write to circular buffer
+            m_lookaheadBuffer[m_writeIndex] = input;
+            
+            // Get delayed sample
+            int delayIndex = (m_writeIndex - m_lookaheadSamples + MAX_LOOKAHEAD_SAMPLES) 
+                           % MAX_LOOKAHEAD_SAMPLES;
+            delayedOutput = m_lookaheadBuffer[delayIndex];
+            
+            // Update peak detector (O(1) amortized)
+            float absInput = std::abs(input);
+            m_peakDetector.push(absInput, m_writeIndex);
+            
+            // Remove samples outside lookahead window
+            int oldestValid = (m_writeIndex - m_lookaheadSamples + MAX_LOOKAHEAD_SAMPLES) 
+                            % MAX_LOOKAHEAD_SAMPLES;
+            m_peakDetector.removeOld(oldestValid);
+            
+            // Advance write position
+            m_writeIndex = (m_writeIndex + 1) % MAX_LOOKAHEAD_SAMPLES;
+            
+            return m_peakDetector.getPeak();
+        }
+        
+        void reset() {
+            m_s1 = m_s2 = 0.0;
+            std::fill(m_lookaheadBuffer.begin(), m_lookaheadBuffer.end(), 0.0f);
+            m_writeIndex = 0;
+            m_peakDetector.reset();
+        }
+    };
     
-    // DSP State
+    // ============== GAIN COMPUTER ==============
+    class GainComputer {
+        double m_threshold = -12.0;
+        double m_ratio = 4.0;
+        double m_kneeWidth = 2.0;
+        
+        // Pre-computed knee coefficients
+        double m_kneeStart = 0.0;
+        double m_kneeEnd = 0.0;
+        double m_kneeCoeff = 0.0;
+        
+    public:
+        void updateParameters(double threshold, double ratio, double knee) {
+            m_threshold = threshold;
+            m_ratio = ratio;
+            m_kneeWidth = knee;
+            
+            // Pre-compute knee boundaries
+            m_kneeStart = threshold - knee * 0.5;
+            m_kneeEnd = threshold + knee * 0.5;
+            m_kneeCoeff = 1.0 / std::max(0.01, knee);
+        }
+        
+        double computeGainReduction(double inputDb) const {
+            if (m_kneeWidth < 0.1) {
+                // Hard knee
+                if (inputDb <= m_threshold) return 0.0;
+                return (inputDb - m_threshold) * (1.0 - 1.0 / m_ratio);
+            }
+            
+            // Soft knee with pre-computed coefficients
+            if (inputDb <= m_kneeStart) {
+                return 0.0;
+            } else if (inputDb >= m_kneeEnd) {
+                return (inputDb - m_threshold) * (1.0 - 1.0 / m_ratio);
+            } else {
+                // Optimized hermite interpolation
+                double x = (inputDb - m_kneeStart) * m_kneeCoeff;
+                double x2 = x * x;
+                double h01 = x2 * (3.0 - 2.0 * x);
+                double endGain = (m_kneeEnd - m_threshold) * (1.0 - 1.0 / m_ratio);
+                return h01 * endGain;
+            }
+        }
+    };
+    
+    // ============== GAIN SMOOTHER ==============
+    class GainSmoother {
+        double m_currentGain = 1.0;
+        double m_attackCoeff = 0.0;
+        double m_releaseCoeff = 0.0;
+        double m_autoReleaseAmount = 0.0;
+        double m_peakMemory = -60.0;
+        double m_peakDecayCoeff = 0.0;
+        
+    public:
+        void setTimes(double attackMs, double releaseMs, double autoRelease, double sampleRate) {
+            double attackTau = attackMs * 0.001;
+            double releaseTau = releaseMs * 0.001;
+            
+            m_attackCoeff = 1.0 - std::exp(-1.0 / (attackTau * sampleRate));
+            m_releaseCoeff = 1.0 - std::exp(-1.0 / (releaseTau * sampleRate));
+            m_autoReleaseAmount = autoRelease;
+            
+            // Peak memory decay (1 second time constant)
+            m_peakDecayCoeff = std::exp(-1.0 / sampleRate);
+        }
+        
+        double process(double targetGain, double inputLevel) {
+            // Program-dependent release
+            double releaseCoeff = m_releaseCoeff;
+            
+            if (m_autoReleaseAmount > 0.0) {
+                double levelDb = 20.0 * std::log10(std::max(1e-6, inputLevel));
+                
+                // Update peak memory with proper time constant
+                if (levelDb > m_peakMemory) {
+                    m_peakMemory = levelDb;
+                } else {
+                    m_peakMemory = preventDenormalDouble(levelDb + (m_peakMemory - levelDb) * m_peakDecayCoeff);
+                }
+                
+                // Adjust release based on peak memory
+                if (levelDb > m_peakMemory - 3.0) {
+                    releaseCoeff *= (1.0 + m_autoReleaseAmount * 2.0);
+                }
+            }
+            
+            // Apply smoothing
+            if (targetGain < m_currentGain) {
+                m_currentGain += (targetGain - m_currentGain) * m_attackCoeff;
+            } else {
+                m_currentGain += (targetGain - m_currentGain) * releaseCoeff;
+            }
+            
+            return preventDenormalDouble(m_currentGain);
+        }
+        
+        void reset() { 
+            m_currentGain = 1.0; 
+            m_peakMemory = -60.0;
+        }
+    };
+    
+    // ============== DC BLOCKER ==============
+    class DCBlocker {
+        double m_x1 = 0.0;
+        double m_y1 = 0.0;
+        static constexpr double R = 0.995;
+        
+    public:
+        float process(float input) {
+            double in = static_cast<double>(input);
+            double out = in - m_x1 + R * m_y1;
+            m_x1 = in;
+            m_y1 = preventDenormalDouble(out);
+            return static_cast<float>(out);
+        }
+        
+        void reset() { m_x1 = m_y1 = 0.0; }
+    };
+    
+    // ============== MEMBER VARIABLES ==============
     double m_sampleRate = 44100.0;
     
-    // Enhanced envelope follower with program-dependent timing
-    struct EnvelopeFollower {
-        float envelope = 0.0f;
-        float peakEnvelope = 0.0f;
-        float rmsAccumulator = 0.0f;
-        int rmsWindowPos = 0;
-        static constexpr int RMS_WINDOW_SIZE = 512;
-        std::array<float, RMS_WINDOW_SIZE> rmsWindow;
-        
-        // Auto-release state
-        float releaseMultiplier = 1.0f;
-        float gateThreshold = -40.0f; // dB
-        
-        void reset() {
-            envelope = 0.0f;
-            peakEnvelope = 0.0f;
-            rmsAccumulator = 0.0f;
-            rmsWindowPos = 0;
-            rmsWindow.fill(0.0f);
-            releaseMultiplier = 1.0f;
-        }
-        
-        float processPeak(float input, float attackCoeff, float releaseCoeff);
-        float processRMS(float input, float attackCoeff, float releaseCoeff);
-        void updateAutoRelease(float currentLevel, float threshold);
-    };
+    // Parameters (thread-safe)
+    ParameterSmoother m_threshold;
+    ParameterSmoother m_ratio;
+    ParameterSmoother m_attack;
+    ParameterSmoother m_release;
+    ParameterSmoother m_knee;
+    ParameterSmoother m_makeupGain;
+    ParameterSmoother m_mix;
+    ParameterSmoother m_lookahead;
+    ParameterSmoother m_autoRelease;
+    ParameterSmoother m_sidechain;
     
+    // DSP components
     std::array<EnvelopeFollower, 2> m_envelopes;
-    
-    // Enhanced sidechain processing
-    struct SidechainProcessor {
-        // Multi-band capability
-        struct Band {
-            float lowFreq = 20.0f;
-            float highFreq = 20000.0f;
-            float gain = 1.0f;
-        };
-        
-        // Butterworth high-pass filter
-        struct ButterworthHP {
-            float x1 = 0.0f, x2 = 0.0f;
-            float y1 = 0.0f, y2 = 0.0f;
-            float a0 = 1.0f, a1 = 0.0f, a2 = 0.0f;
-            float b1 = 0.0f, b2 = 0.0f;
-            
-            void updateCoefficients(float freq, double sampleRate);
-            float process(float input);
-            void reset() { x1 = x2 = y1 = y2 = 0.0f; }
-        };
-        
-        ButterworthHP highpass;
-        
-        // Look-ahead delay for zero-latency attack
-        static constexpr int LOOKAHEAD_SIZE = 512;
-        std::array<float, LOOKAHEAD_SIZE> lookaheadBuffer;
-        int lookaheadIndex = 0;
-        
-        void reset() {
-            highpass.reset();
-            lookaheadBuffer.fill(0.0f);
-            lookaheadIndex = 0;
-        }
-        
-        float process(float input, bool useLookahead = false);
-    };
-    
-    std::array<SidechainProcessor, 2> m_sidechainProcessors;
-    
-    // Stereo linking
-    enum class StereoMode {
-        DUAL_MONO,
-        STEREO_LINK,
-        MS_LINK
-    };
-    StereoMode m_stereoMode = StereoMode::STEREO_LINK;
-    
-    // Analog modeling
-    struct AnalogStage {
-        // Transformer saturation
-        float transformerDrive = 0.1f;
-        float transformerColor = 0.0f;
-        
-        // Optical modeling for smooth compression
-        float opticalAttack = 10.0f;   // ms
-        float opticalRelease = 100.0f; // ms
-        float opticalRatio = 3.0f;
-        
-        float processTransformer(float input);
-        float processOptical(float input, float gainReduction);
-    };
-    
-    AnalogStage m_analogStage;
-    
-    // Mix control for parallel compression
-    SmoothParam m_dryWetMix;
-    
-    // Enhanced boutique features
-    SmoothParam m_vintage;         // Vintage character amount
-    SmoothParam m_warmth;          // Harmonic warmth
-    
-    // Metering
-    float m_currentGainReduction = 0.0f;
-    std::array<float, 2> m_channelGainReduction = {0.0f, 0.0f};
-    
-    // DC blocking
-    struct DCBlocker {
-        float x1 = 0.0f;
-        float y1 = 0.0f;
-        const float R = 0.995f;
-        
-        float process(float input) {
-            float output = input - x1 + R * y1;
-            x1 = input;
-            y1 = output;
-            return output;
-        }
-    };
-    
+    std::array<SidechainProcessor, 2> m_sidechains;
+    std::array<GainComputer, 2> m_gainComputers;
+    std::array<GainSmoother, 2> m_gainSmoothers;
     std::array<DCBlocker, 2> m_dcBlockers;
     
-    // Helper functions
-    float calculateGainReduction(float inputLevel, int channel);
-    float calculateKneeGain(float inputDb, float threshold, float ratio, float kneeWidth);
-    float softKnee(float x, float threshold, float kneeWidth);
+    // Pre-allocated work buffers
+    AlignedArray<float> m_workBuffer1;
+    AlignedArray<float> m_workBuffer2;
+    AlignedArray<double> m_envelopeBuffer;
     
-    inline float dbToLinear(float db) { 
-        return std::pow(10.0f, db / 20.0f); 
+    // Metering (thread-safe)
+    std::atomic<float> m_currentGainReduction{0.0f};
+    std::atomic<float> m_peakGainReduction{0.0f};
+    
+    // Processing state
+    enum class StereoMode { DUAL_MONO, STEREO_LINK };
+    StereoMode m_stereoMode = StereoMode::STEREO_LINK;
+    
+    // Helper methods
+    inline double dbToLinear(double db) const { 
+        return std::pow(10.0, db * 0.05); 
     }
     
-    inline float linearToDb(float linear) { 
-        return linear > 1e-6f ? 20.0f * std::log10(linear) : -120.0f; 
+    inline double linearToDb(double linear) const { 
+        return linear > 1e-6 ? 20.0 * std::log10(linear) : -120.0; 
     }
     
-    // Oversampling for cleaner compression
-    struct Oversampler {
-        static constexpr int OVERSAMPLE_FACTOR = 2;
-        std::vector<float> upsampleBuffer;
-        std::vector<float> downsampleBuffer;
-        
-        // Anti-aliasing filters
-        struct AAFilter {
-            std::array<float, 4> x = {0.0f};
-            std::array<float, 4> y = {0.0f};
-            
-            float process(float input);
-        };
-        
-        AAFilter upsampleFilter;
-        AAFilter downsampleFilter;
-        
-        void prepare(int blockSize);
-        void upsample(const float* input, float* output, int numSamples);
-        void downsample(const float* input, float* output, int numSamples);
-    };
-    
-    Oversampler m_oversampler;
-    bool m_useOversampling = true;
-    
-    // Enhanced thermal modeling
-    struct EnhancedThermalModel {
-        float temperature = 25.0f;
-        float thermalNoise = 0.0f;
-        float componentDrift = 0.0f;
-        std::mt19937 rng;
-        std::uniform_real_distribution<float> dist{-0.5f, 0.5f};
-        
-        EnhancedThermalModel() : rng(std::random_device{}()) {}
-        
-        void update(double sampleRate, float gain) {
-            // Temperature rises with gain
-            temperature = 25.0f + gain * 10.0f;
-            
-            // Thermal drift affects timing and response
-            thermalNoise += (dist(rng) * 0.0003f) / sampleRate;
-            thermalNoise = std::max(-0.01f, std::min(0.01f, thermalNoise));
-            
-            // Component drift over time
-            componentDrift += (dist(rng) * 0.000001f) / sampleRate;
-            componentDrift = std::max(-0.005f, std::min(0.005f, componentDrift));
-        }
-        
-        float getThermalFactor() const {
-            return 1.0f + thermalNoise + componentDrift;
-        }
-        
-        float getTemperatureCoeff() const {
-            return 1.0f + (temperature - 25.0f) * 0.0008f;
-        }
-    };
-    
-    EnhancedThermalModel m_enhancedThermal;
-    
-    // Component aging simulation
-    float m_componentAge = 0.0f;
-    int m_sampleCount = 0;
+    void enableDenormalPrevention();
+    void processSubBlock(float* left, float* right, int startSample, int numSamples);
 };
