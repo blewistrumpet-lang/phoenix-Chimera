@@ -3,6 +3,8 @@
 #include <atomic>
 #include <cmath>
 #include <array>
+#include <chrono>
+#include <cstring>
 
 // Platform-specific includes
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
@@ -235,7 +237,7 @@ private:
     ALWAYS_INLINE float processBandpass(float input, float& s1, float& s2, 
                                        float freq, float q) noexcept {
         // State variable filter
-        const float f = 2.0f * std::sin(M_PI * freq);
+        const float f = 2.0f * std::sin(3.14159265358979323846f * freq);
         const float res = 1.0f / q;
         
         const float hp = input - s1 * res - s2;

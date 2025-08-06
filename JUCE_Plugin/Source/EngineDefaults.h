@@ -1,6 +1,6 @@
 #pragma once
 #include <map>
-#include "EngineIDs.h"
+#include "EngineTypes.h"
 
 // Safe default parameter values for each engine type
 // This prevents static noise from uninitialized parameters
@@ -17,8 +17,8 @@ namespace EngineDefaults {
         
         // Engine-specific safe defaults
         switch (engineID) {
-            case ENGINE_BYPASS:
-                // No parameters needed
+            case ENGINE_NONE:
+                // Pass through - all defaults remain at 0.5f
                 break;
                 
             case ENGINE_K_STYLE:
@@ -42,7 +42,7 @@ namespace EngineDefaults {
                 params[3] = 0.3f;  // Mix - 30% wet
                 break;
                 
-            case ENGINE_CLASSIC_COMPRESSOR:
+            case ENGINE_VCA_COMPRESSOR:
                 params[0] = 0.7f;  // Threshold -10dB
                 params[1] = 0.3f;  // Ratio 3:1
                 params[2] = 0.2f;  // Attack - fast
@@ -75,7 +75,7 @@ namespace EngineDefaults {
                 params[3] = 0.5f;  // Type - peak
                 break;
                 
-            case ENGINE_STEREO_CHORUS:
+            case ENGINE_DIGITAL_CHORUS:
                 params[0] = 0.2f;  // Rate - slow
                 params[1] = 0.3f;  // Depth - subtle
                 params[2] = 0.3f;  // Mix - 30%
@@ -155,8 +155,8 @@ namespace EngineDefaults {
             case ENGINE_MULTIBAND_SATURATOR:
             case ENGINE_HARMONIC_EXCITER:
             case ENGINE_WAVE_FOLDER:
-            case ENGINE_ANALOG_RING_MODULATOR:
-            case ENGINE_VINTAGE_TUBE_PREAMP:
+            case ENGINE_RING_MODULATOR:
+            case ENGINE_VINTAGE_TUBE:
                 params[0] = 0.2f;  // Drive - gentle
                 params[1] = 0.5f;  // Tone
                 params[2] = 0.3f;  // Mix
@@ -192,7 +192,7 @@ namespace EngineDefaults {
                 params[3] = 0.5f;  // Scale
                 break;
                 
-            case ENGINE_VOCAL_FORMANT_FILTER:
+            case ENGINE_VOCAL_FORMANT:
                 params[0] = 0.0f;  // Vowel 1
                 params[1] = 0.0f;  // Vowel 2
                 params[2] = 0.0f;  // Morph
@@ -200,7 +200,7 @@ namespace EngineDefaults {
                 params[4] = 0.3f;  // Mix
                 break;
                 
-            case ENGINE_VINTAGE_OPTO_COMPRESSOR:
+            case ENGINE_OPTO_COMPRESSOR:
                 params[0] = 0.7f;  // Threshold
                 params[1] = 0.3f;  // Ratio
                 params[2] = 0.5f;  // Speed
@@ -219,6 +219,33 @@ namespace EngineDefaults {
                 params[1] = 0.3f;  // Depth
                 params[2] = 0.3f;  // Resonance
                 params[3] = 0.3f;  // Mix
+                break;
+
+            // Utility Engines
+            case ENGINE_GAIN_UTILITY:
+                params[0] = 0.5f;  // Gain - 0dB
+                params[1] = 0.0f;  // High Pass - off
+                params[2] = 0.0f;  // Low Pass - off
+                break;
+
+            case ENGINE_MONO_MAKER:
+                params[0] = 0.0f;  // Frequency - all frequencies
+                params[1] = 0.5f;  // Stereo width
+                params[2] = 0.0f;  // Mix - 100% processed
+                break;
+
+            case ENGINE_PHASE_ALIGN:
+                params[0] = 0.5f;  // Low freq phase - neutral
+                params[1] = 0.5f;  // Mid freq phase - neutral
+                params[2] = 0.5f;  // High freq phase - neutral
+                params[3] = 0.0f;  // Mix - 100% processed
+                break;
+                
+            case ENGINE_COMB_RESONATOR:
+                params[0] = 0.5f;  // Frequency - ~440 Hz
+                params[1] = 0.4f;  // Resonance - moderate resonance
+                params[2] = 0.3f;  // Feedback - conservative feedback
+                params[3] = 0.5f;  // Mix - balanced resonation
                 break;
                 
             default:

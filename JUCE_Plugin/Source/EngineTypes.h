@@ -6,83 +6,88 @@
  * This file defines all DSP engine types used throughout Project Chimera.
  * All components (plugin, presets, AI system) must use these definitions.
  * 
- * Version: 1.0
- * Last Updated: 2025-08-02
+ * Version: 1.1
+ * Last Updated: 2025-08-06
  */
 
 // Engine Type Constants - DO NOT MODIFY ORDER (breaks preset compatibility)
 // When adding new engines, append to the end and increment ENGINE_COUNT
 
-// Effects - Classic & Vintage
-#define ENGINE_VINTAGE_TUBE             0   // Vintage Tube Preamp
-#define ENGINE_TAPE_ECHO                1   // Tape Echo/Delay
-#define ENGINE_SHIMMER_REVERB           2   // Shimmer Reverb
-#define ENGINE_PLATE_REVERB             3   // Plate Reverb
-#define ENGINE_CONVOLUTION_REVERB       4   // Convolution Reverb
-#define ENGINE_SPRING_REVERB            5   // Spring Reverb
-#define ENGINE_OPTO_COMPRESSOR          6   // Vintage Opto Compressor
-#define ENGINE_VCA_COMPRESSOR           7   // VCA Compressor
-#define ENGINE_MAGNETIC_DRUM_ECHO       8   // Magnetic Drum Echo
-#define ENGINE_BUCKET_BRIGADE_DELAY     9   // Bucket Brigade Delay
+// Special value for "no engine selected"
+#define ENGINE_NONE                     0   // No engine (passthrough)
 
-// Modulation Effects
-// #define ENGINE_ANALOG_CHORUS            10  // Analog Chorus - NOT IMPLEMENTED
-#define ENGINE_DIGITAL_CHORUS           11  // Digital/Stereo Chorus
-#define ENGINE_ANALOG_PHASER            12  // Analog Phaser
-// #define ENGINE_DIGITAL_PHASER           13  // Digital Phaser - NOT IMPLEMENTED
-#define ENGINE_PITCH_SHIFTER            14  // Pitch Shifter
-#define ENGINE_RING_MODULATOR           15  // Ring Modulator
-#define ENGINE_GRANULAR_CLOUD           16  // Granular Cloud Processor
-#define ENGINE_VOCAL_FORMANT            17  // Vocal Formant Filter
-#define ENGINE_DIMENSION_EXPANDER       18  // Dimension Expander
-#define ENGINE_FREQUENCY_SHIFTER        19  // Frequency Shifter
-#define ENGINE_TRANSIENT_SHAPER         20  // Transient Shaper
-#define ENGINE_HARMONIC_TREMOLO         21  // Harmonic Tremolo
-#define ENGINE_CLASSIC_TREMOLO          22  // Classic Tremolo
+// DYNAMICS & COMPRESSION (IDs 1-6)
+#define ENGINE_OPTO_COMPRESSOR          1   // Vintage Opto Compressor
+#define ENGINE_VCA_COMPRESSOR           2   // VCA/Classic Compressor  
+#define ENGINE_TRANSIENT_SHAPER         3   // Transient Shaper
+#define ENGINE_NOISE_GATE               4   // Noise Gate
+#define ENGINE_MASTERING_LIMITER        5   // Mastering Limiter
+#define ENGINE_DYNAMIC_EQ               6   // Dynamic EQ
 
-// Filters & EQ
-#define ENGINE_COMB_RESONATOR           23  // Comb Resonator
-#define ENGINE_ROTARY_SPEAKER           24  // Rotary Speaker Simulator
-#define ENGINE_MID_SIDE_PROCESSOR       25  // Mid-Side Processor
-#define ENGINE_VINTAGE_CONSOLE_EQ       26  // Vintage Console EQ
-#define ENGINE_PARAMETRIC_EQ            27  // Parametric EQ
-#define ENGINE_LADDER_FILTER            28  // Ladder Filter
-#define ENGINE_STATE_VARIABLE_FILTER    29  // State Variable Filter
-#define ENGINE_FORMANT_FILTER           30  // Formant Filter
+// FILTERS & EQ (IDs 7-14)
+#define ENGINE_PARAMETRIC_EQ            7   // Parametric EQ
+#define ENGINE_VINTAGE_CONSOLE_EQ       8   // Vintage Console EQ
+#define ENGINE_LADDER_FILTER            9   // Ladder Filter
+#define ENGINE_STATE_VARIABLE_FILTER    10  // State Variable Filter
+#define ENGINE_FORMANT_FILTER           11  // Formant Filter
+#define ENGINE_ENVELOPE_FILTER          12  // Envelope Filter
+#define ENGINE_COMB_RESONATOR           13  // Comb Resonator
+#define ENGINE_VOCAL_FORMANT            14  // Vocal Formant Filter
 
-// Distortion & Saturation
-#define ENGINE_WAVE_FOLDER              31  // Wave Folder
-#define ENGINE_HARMONIC_EXCITER         32  // Harmonic Exciter
-#define ENGINE_BIT_CRUSHER              33  // Bit Crusher
-#define ENGINE_MULTIBAND_SATURATOR      34  // Multiband Saturator
-#define ENGINE_MUFF_FUZZ                35  // Muff-style Fuzz
-#define ENGINE_RODENT_DISTORTION        36  // Rodent-style Distortion
-// #define ENGINE_TUBE_SCREAMER            37  // Tube Screamer - NOT IMPLEMENTED
-#define ENGINE_K_STYLE                  38  // K-style Overdrive
+// DISTORTION & SATURATION (IDs 15-22)
+#define ENGINE_VINTAGE_TUBE             15  // Vintage Tube Preamp
+#define ENGINE_WAVE_FOLDER              16  // Wave Folder
+#define ENGINE_HARMONIC_EXCITER         17  // Harmonic Exciter
+#define ENGINE_BIT_CRUSHER              18  // Bit Crusher
+#define ENGINE_MULTIBAND_SATURATOR      19  // Multiband Saturator
+#define ENGINE_MUFF_FUZZ                20  // Muff Fuzz
+#define ENGINE_RODENT_DISTORTION        21  // Rodent Distortion
+#define ENGINE_K_STYLE                  22  // K-Style Overdrive
 
-// Spatial & Time Effects
-#define ENGINE_SPECTRAL_FREEZE          39  // Spectral Freeze
-#define ENGINE_BUFFER_REPEAT            40  // Buffer Repeat/Glitch
-#define ENGINE_CHAOS_GENERATOR          41  // Chaos Generator
-#define ENGINE_INTELLIGENT_HARMONIZER   42  // Intelligent Harmonizer
+// MODULATION EFFECTS (IDs 23-33)
+#define ENGINE_DIGITAL_CHORUS           23  // Digital/Stereo Chorus
+#define ENGINE_RESONANT_CHORUS          24  // Resonant Chorus
+#define ENGINE_ANALOG_PHASER            25  // Analog Phaser
+#define ENGINE_RING_MODULATOR           26  // Ring Modulator
+#define ENGINE_FREQUENCY_SHIFTER        27  // Frequency Shifter
+#define ENGINE_HARMONIC_TREMOLO         28  // Harmonic Tremolo
+#define ENGINE_CLASSIC_TREMOLO          29  // Classic Tremolo
+#define ENGINE_ROTARY_SPEAKER           30  // Rotary Speaker
+#define ENGINE_PITCH_SHIFTER            31  // Pitch Shifter
+#define ENGINE_DETUNE_DOUBLER           32  // Detune Doubler
+#define ENGINE_INTELLIGENT_HARMONIZER   33  // Intelligent Harmonizer
+
+// REVERB & DELAY (IDs 34-43)
+#define ENGINE_TAPE_ECHO                34  // Tape Echo
+#define ENGINE_DIGITAL_DELAY            35  // Digital Delay
+#define ENGINE_MAGNETIC_DRUM_ECHO       36  // Magnetic Drum Echo
+#define ENGINE_BUCKET_BRIGADE_DELAY     37  // Bucket Brigade Delay
+#define ENGINE_BUFFER_REPEAT            38  // Buffer Repeat
+#define ENGINE_PLATE_REVERB             39  // Plate Reverb
+#define ENGINE_SPRING_REVERB            40  // Spring Reverb
+#define ENGINE_CONVOLUTION_REVERB       41  // Convolution Reverb
+#define ENGINE_SHIMMER_REVERB           42  // Shimmer Reverb
 #define ENGINE_GATED_REVERB             43  // Gated Reverb
-#define ENGINE_DETUNE_DOUBLER           44  // Detune Doubler
-#define ENGINE_PHASED_VOCODER           45  // Phased Vocoder
-#define ENGINE_SPECTRAL_GATE            46  // Spectral Gate
-#define ENGINE_NOISE_GATE               47  // Noise Gate
-#define ENGINE_ENVELOPE_FILTER          48  // Envelope Filter
-#define ENGINE_FEEDBACK_NETWORK         49  // Feedback Network
-#define ENGINE_MASTERING_LIMITER        50  // Mastering Limiter
 
-// Additional Engines
-#define ENGINE_STEREO_WIDENER           51  // Stereo Widener
-#define ENGINE_RESONANT_CHORUS          52  // Resonant Chorus
-#define ENGINE_DIGITAL_DELAY            53  // Digital Delay
-#define ENGINE_DYNAMIC_EQ               54  // Dynamic EQ
-#define ENGINE_STEREO_IMAGER            55  // Stereo Imager
+// SPATIAL & SPECIAL EFFECTS (IDs 44-52)
+#define ENGINE_STEREO_WIDENER           44  // Stereo Widener
+#define ENGINE_STEREO_IMAGER            45  // Stereo Imager
+#define ENGINE_DIMENSION_EXPANDER       46  // Dimension Expander
+#define ENGINE_SPECTRAL_FREEZE          47  // Spectral Freeze
+#define ENGINE_SPECTRAL_GATE            48  // Spectral Gate
+#define ENGINE_PHASED_VOCODER           49  // Phased Vocoder
+#define ENGINE_GRANULAR_CLOUD           50  // Granular Cloud
+#define ENGINE_CHAOS_GENERATOR          51  // Chaos Generator
+#define ENGINE_FEEDBACK_NETWORK         52  // Feedback Network
+
+// UTILITY (IDs 53-56)
+#define ENGINE_MID_SIDE_PROCESSOR       53  // Mid-Side Processor
+#define ENGINE_GAIN_UTILITY             54  // Gain Utility
+#define ENGINE_MONO_MAKER               55  // Mono Maker
+#define ENGINE_PHASE_ALIGN              56  // Phase Align
 
 // Engine Count - UPDATE when adding new engines
-#define ENGINE_COUNT                    56  // Total slots 0-55, with 3 engines commented out (10, 13, 37)
+#define ENGINE_COUNT                    57  // Total engines 1-56, plus ENGINE_NONE (0)
 
 // Engine Categories for UI organization
 namespace EngineCategory {
@@ -105,6 +110,9 @@ inline bool isValidEngineType(int engineType);
 // Implementation of helper functions
 inline const char* getEngineTypeName(int engineType) {
     switch (engineType) {
+        // Special case
+        case ENGINE_NONE:                   return "None";
+        
         // Vintage Effects
         case ENGINE_VINTAGE_TUBE:           return "Vintage Tube";
         case ENGINE_TAPE_ECHO:              return "Tape Echo";
@@ -173,12 +181,19 @@ inline const char* getEngineTypeName(int engineType) {
         case ENGINE_DYNAMIC_EQ:             return "Dynamic EQ";
         case ENGINE_STEREO_IMAGER:          return "Stereo Imager";
         
+        // Utility
+        case ENGINE_GAIN_UTILITY:           return "Gain Utility";
+        case ENGINE_MONO_MAKER:             return "Mono Maker";
+        case ENGINE_PHASE_ALIGN:            return "Phase Align";
+        
         default:                            return "Unknown Engine";
     }
 }
 
 inline int getEngineCategory(int engineType) {
-    if (engineType >= ENGINE_VINTAGE_TUBE && engineType <= ENGINE_BUCKET_BRIGADE_DELAY)
+    if (engineType == ENGINE_NONE)
+        return -1; // No category for "None"
+    else if (engineType >= ENGINE_VINTAGE_TUBE && engineType <= ENGINE_BUCKET_BRIGADE_DELAY)
         return EngineCategory::VINTAGE_EFFECTS;
     else if (engineType >= ENGINE_DIGITAL_CHORUS && engineType <= ENGINE_CLASSIC_TREMOLO)
         return EngineCategory::MODULATION;
@@ -188,14 +203,15 @@ inline int getEngineCategory(int engineType) {
         return EngineCategory::DISTORTION_SATURATION;
     else if (engineType >= ENGINE_SPECTRAL_FREEZE && engineType <= ENGINE_MASTERING_LIMITER)
         return EngineCategory::SPATIAL_TIME;
-    else if (engineType >= ENGINE_STEREO_WIDENER && engineType <= ENGINE_STEREO_IMAGER)
+    else if ((engineType >= ENGINE_STEREO_WIDENER && engineType <= ENGINE_STEREO_IMAGER) ||
+             (engineType >= ENGINE_GAIN_UTILITY && engineType <= ENGINE_PHASE_ALIGN))
         return EngineCategory::UTILITY;
     else
         return -1; // Invalid category
 }
 
 inline bool isValidEngineType(int engineType) {
-    return engineType >= 0 && engineType < ENGINE_COUNT;
+    return engineType == ENGINE_NONE || (engineType >= 0 && engineType < ENGINE_COUNT);
 }
 
 // Legacy mappings for backward compatibility

@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "EngineBase.h"
 #include "ParameterDefinitions.h"
+#include "SlotConfiguration.h"
 #include <array>
 #include <memory>
 #include <atomic>
@@ -63,7 +64,7 @@ public:
 
 private:
     juce::AudioProcessorValueTreeState parameters;
-    static constexpr int NUM_SLOTS = 6;
+    static constexpr int NUM_SLOTS = CHIMERA_NUM_SLOTS;  // Using centralized configuration
     std::array<std::unique_ptr<EngineBase>, NUM_SLOTS> m_activeEngines;
     
     void parameterChanged(const juce::String& parameterID, float newValue) override;

@@ -1,7 +1,8 @@
 #include "DefaultParameterValues.h"
 #include "ParameterDefinitions.h"
+#include "EngineTypes.h"
 
-// Default Parameter Values for all 50 Chimera Phoenix Engines
+// Default Parameter Values for all 57 Chimera Phoenix Engines (0-56)
 // 
 // This system provides musically useful default values for each engine,
 // organized by type and following these principles:
@@ -19,6 +20,12 @@ std::map<int, float> getDefaultParameters(int engineType) {
     std::map<int, float> defaults;
     
     switch (engineType) {
+        
+        // ==================== NONE ENGINE ====================
+        
+        case ENGINE_NONE: // Passthrough
+            // No parameters needed for passthrough
+            break;
         
         // ==================== DISTORTION/SATURATION ENGINES ====================
         
@@ -70,7 +77,7 @@ std::map<int, float> getDefaultParameters(int engineType) {
             defaults[4] = 0.7f;  // Mix - Mostly wet
             break;
             
-        case ENGINE_VINTAGE_TUBE_PREAMP: // Vintage Tube Preamp
+        case ENGINE_VINTAGE_TUBE: // Vintage Tube Preamp
             defaults[0] = 0.4f;  // Drive - Warm tube saturation
             defaults[1] = 0.3f;  // Warmth - Subtle tube coloration
             defaults[2] = 0.5f;  // Presence - Balanced high-end
@@ -199,7 +206,7 @@ std::map<int, float> getDefaultParameters(int engineType) {
             defaults[2] = 0.5f;   // Mix - Balanced original/doubled
             break;
             
-        case ENGINE_STEREO_CHORUS: // Stereo Chorus
+        case ENGINE_DIGITAL_CHORUS: // Stereo Chorus
             defaults[0] = 0.4f;   // Rate - Musical chorus rate
             defaults[1] = 0.4f;   // Depth - Noticeable but musical
             defaults[2] = 0.2f;   // Delay - Short delay time
@@ -208,7 +215,7 @@ std::map<int, float> getDefaultParameters(int engineType) {
             defaults[5] = 0.5f;   // Mix - 50/50 blend
             break;
             
-        case ENGINE_ANALOG_RING_MODULATOR: // Analog Ring Modulator
+        case ENGINE_RING_MODULATOR: // Analog Ring Modulator
             defaults[0] = 0.3f;   // Frequency - Musical frequency (~200 Hz)
             defaults[1] = 0.4f;   // Depth - Moderate ring mod effect
             defaults[2] = 0.0f;   // Shape - Sine wave
@@ -263,7 +270,7 @@ std::map<int, float> getDefaultParameters(int engineType) {
             defaults[4] = 1.0f;   // Mix - Full filtering
             break;
             
-        case ENGINE_VOCAL_FORMANT_FILTER: // Vocal Formant Filter
+        case ENGINE_VOCAL_FORMANT: // Vocal Formant Filter
             defaults[0] = 0.3f;   // Vowel Position - "A" vowel
             defaults[1] = 0.4f;   // Formant Intensity - Moderate shaping
             defaults[2] = 0.5f;   // Gender - Neutral
@@ -280,7 +287,7 @@ std::map<int, float> getDefaultParameters(int engineType) {
             
         // ==================== DYNAMICS ENGINES ====================
         
-        case ENGINE_CLASSIC_COMPRESSOR: // Classic Compressor
+        case ENGINE_VCA_COMPRESSOR: // Classic Compressor
             defaults[0] = 0.4f;   // Threshold - Moderate compression
             defaults[1] = 0.5f;   // Ratio - 4:1 compression
             defaults[2] = 0.2f;   // Attack - Fast attack
@@ -289,7 +296,7 @@ std::map<int, float> getDefaultParameters(int engineType) {
             defaults[5] = 1.0f;   // Mix - Full compression
             break;
             
-        case ENGINE_VINTAGE_OPTO_COMPRESSOR: // Vintage Opto Compressor
+        case ENGINE_OPTO_COMPRESSOR: // Vintage Opto Compressor
             defaults[0] = 0.5f;   // Gain - Moderate input gain
             defaults[1] = 0.3f;   // Peak Reduction - Gentle compression
             defaults[2] = 0.0f;   // HF Emphasis - Flat response
@@ -466,79 +473,78 @@ std::vector<EngineDefaultInfo> getAllEngineDefaults() {
     
     // Engine information with categories for organization
     std::vector<std::tuple<int, std::string, std::string>> engineInfo = {
-        // Distortion/Saturation
-        {ENGINE_K_STYLE, "K-Style Overdrive", "distortion"},
-        {ENGINE_RODENT_DISTORTION, "Rodent Distortion", "distortion"},
-        {ENGINE_MUFF_FUZZ, "Muff Fuzz", "distortion"},
-        {ENGINE_MULTIBAND_SATURATOR, "Multiband Saturator", "distortion"},
-        {ENGINE_BIT_CRUSHER, "Bit Crusher", "distortion"},
-        {ENGINE_WAVE_FOLDER, "Wave Folder", "distortion"},
-        {ENGINE_VINTAGE_TUBE_PREAMP, "Vintage Tube Preamp", "saturation"},
-        {ENGINE_HARMONIC_EXCITER, "Harmonic Exciter", "enhancement"},
+        // None/Passthrough
+        {ENGINE_NONE, "None (Passthrough)", "utility"},
         
-        // Delays
+        // Dynamics & Compression (1-6)
+        {ENGINE_OPTO_COMPRESSOR, "Vintage Opto Compressor", "dynamics"},
+        {ENGINE_VCA_COMPRESSOR, "VCA Compressor", "dynamics"},
+        {ENGINE_TRANSIENT_SHAPER, "Transient Shaper", "dynamics"},
+        {ENGINE_NOISE_GATE, "Noise Gate", "dynamics"},
+        {ENGINE_MASTERING_LIMITER, "Mastering Limiter", "dynamics"},
+        {ENGINE_DYNAMIC_EQ, "Dynamic EQ", "eq"},
+        
+        // Filters & EQ (7-14)
+        {ENGINE_PARAMETRIC_EQ, "Parametric EQ", "eq"},
+        {ENGINE_VINTAGE_CONSOLE_EQ, "Vintage Console EQ", "eq"},
+        {ENGINE_LADDER_FILTER, "Ladder Filter", "filter"},
+        {ENGINE_STATE_VARIABLE_FILTER, "State Variable Filter", "filter"},
+        {ENGINE_FORMANT_FILTER, "Formant Filter", "filter"},
+        {ENGINE_ENVELOPE_FILTER, "Envelope Filter", "filter"},
+        {ENGINE_COMB_RESONATOR, "Comb Resonator", "filter"},
+        {ENGINE_VOCAL_FORMANT, "Vocal Formant Filter", "filter"},
+        
+        // Distortion & Saturation (15-22)
+        {ENGINE_VINTAGE_TUBE, "Vintage Tube Preamp", "saturation"},
+        {ENGINE_WAVE_FOLDER, "Wave Folder", "distortion"},
+        {ENGINE_HARMONIC_EXCITER, "Harmonic Exciter", "enhancement"},
+        {ENGINE_BIT_CRUSHER, "Bit Crusher", "distortion"},
+        {ENGINE_MULTIBAND_SATURATOR, "Multiband Saturator", "distortion"},
+        {ENGINE_MUFF_FUZZ, "Muff Fuzz", "distortion"},
+        {ENGINE_RODENT_DISTORTION, "Rodent Distortion", "distortion"},
+        {ENGINE_K_STYLE, "K-Style Overdrive", "distortion"},
+        
+        // Modulation (23-33)
+        {ENGINE_DIGITAL_CHORUS, "Digital Chorus", "modulation"},
+        {ENGINE_RESONANT_CHORUS, "Resonant Chorus", "modulation"},
+        {ENGINE_ANALOG_PHASER, "Analog Phaser", "modulation"},
+        {ENGINE_RING_MODULATOR, "Ring Modulator", "modulation"},
+        {ENGINE_FREQUENCY_SHIFTER, "Frequency Shifter", "modulation"},
+        {ENGINE_HARMONIC_TREMOLO, "Harmonic Tremolo", "modulation"},
+        {ENGINE_CLASSIC_TREMOLO, "Classic Tremolo", "modulation"},
+        {ENGINE_ROTARY_SPEAKER, "Rotary Speaker", "modulation"},
+        {ENGINE_PITCH_SHIFTER, "Pitch Shifter", "pitch"},
+        {ENGINE_DETUNE_DOUBLER, "Detune Doubler", "modulation"},
+        {ENGINE_INTELLIGENT_HARMONIZER, "Intelligent Harmonizer", "pitch"},
+        
+        // Reverb & Delay (34-43)
         {ENGINE_TAPE_ECHO, "Tape Echo", "delay"},
+        {ENGINE_DIGITAL_DELAY, "Digital Delay", "delay"},
         {ENGINE_MAGNETIC_DRUM_ECHO, "Magnetic Drum Echo", "delay"},
         {ENGINE_BUCKET_BRIGADE_DELAY, "Bucket Brigade Delay", "delay"},
-        {ENGINE_DIGITAL_DELAY, "Digital Delay", "delay"},
-        
-        // Reverbs  
+        {ENGINE_BUFFER_REPEAT, "Buffer Repeat", "glitch"},
         {ENGINE_PLATE_REVERB, "Plate Reverb", "reverb"},
+        {ENGINE_SPRING_REVERB, "Spring Reverb", "reverb"},
         {ENGINE_CONVOLUTION_REVERB, "Convolution Reverb", "reverb"},
         {ENGINE_SHIMMER_REVERB, "Shimmer Reverb", "reverb"},
         {ENGINE_GATED_REVERB, "Gated Reverb", "reverb"},
-        {ENGINE_SPRING_REVERB, "Spring Reverb", "reverb"},
         
-        // Modulation
-        {ENGINE_CLASSIC_TREMOLO, "Classic Tremolo", "modulation"},
-        {ENGINE_HARMONIC_TREMOLO, "Harmonic Tremolo", "modulation"},
-        {ENGINE_ROTARY_SPEAKER, "Rotary Speaker", "modulation"},
-        {ENGINE_DETUNE_DOUBLER, "Detune Doubler", "modulation"},
-        {ENGINE_STEREO_CHORUS, "Stereo Chorus", "modulation"},
-        {ENGINE_ANALOG_RING_MODULATOR, "Analog Ring Modulator", "modulation"},
-        {ENGINE_FREQUENCY_SHIFTER, "Frequency Shifter", "modulation"},
-        {ENGINE_ANALOG_PHASER, "Analog Phaser", "modulation"},
-        {ENGINE_RESONANT_CHORUS, "Resonant Chorus", "modulation"},
-        
-        // Filters
-        {ENGINE_LADDER_FILTER, "Ladder Filter", "filter"},
-        {ENGINE_FORMANT_FILTER, "Formant Filter", "filter"},
-        {ENGINE_STATE_VARIABLE_FILTER, "State Variable Filter", "filter"},
-        {ENGINE_VOCAL_FORMANT_FILTER, "Vocal Formant Filter", "filter"},
-        {ENGINE_ENVELOPE_FILTER, "Envelope Filter", "filter"},
-        
-        // Dynamics
-        {ENGINE_CLASSIC_COMPRESSOR, "Classic Compressor", "dynamics"},
-        {ENGINE_VINTAGE_OPTO_COMPRESSOR, "Vintage Opto Compressor", "dynamics"},
-        {ENGINE_MASTERING_LIMITER, "Mastering Limiter", "dynamics"},
-        {ENGINE_NOISE_GATE, "Noise Gate", "dynamics"},
-        {ENGINE_TRANSIENT_SHAPER, "Transient Shaper", "dynamics"},
-        
-        // Spatial/Stereo
+        // Spatial & Special (44-52)
+        {ENGINE_STEREO_WIDENER, "Stereo Widener", "spatial"},
+        {ENGINE_STEREO_IMAGER, "Stereo Imager", "spatial"},
         {ENGINE_DIMENSION_EXPANDER, "Dimension Expander", "spatial"},
-        {ENGINE_MID_SIDE_PROCESSOR, "Mid-Side Processor", "spatial"},
-        
-        // EQ
-        {ENGINE_PARAMETRIC_EQ, "Parametric EQ", "eq"},
-        {ENGINE_VINTAGE_CONSOLE_EQ, "Vintage Console EQ", "eq"},
-        
-        // Spectral/Granular
         {ENGINE_SPECTRAL_FREEZE, "Spectral Freeze", "spectral"},
-        {ENGINE_GRANULAR_CLOUD, "Granular Cloud", "granular"},
         {ENGINE_SPECTRAL_GATE, "Spectral Gate", "spectral"},
         {ENGINE_PHASED_VOCODER, "Phased Vocoder", "spectral"},
-        
-        // Pitch
-        {ENGINE_PITCH_SHIFTER, "Pitch Shifter", "pitch"},
-        {ENGINE_INTELLIGENT_HARMONIZER, "Intelligent Harmonizer", "pitch"},
-        
-        // Resonators
-        {ENGINE_COMB_RESONATOR, "Comb Resonator", "filter"},
+        {ENGINE_GRANULAR_CLOUD, "Granular Cloud", "granular"},
+        {ENGINE_CHAOS_GENERATOR, "Chaos Generator", "experimental"},
         {ENGINE_FEEDBACK_NETWORK, "Feedback Network", "experimental"},
         
-        // Experimental/Glitch
-        {ENGINE_CHAOS_GENERATOR, "Chaos Generator", "experimental"},
-        {ENGINE_BUFFER_REPEAT, "Buffer Repeat", "glitch"}
+        // Utility (53-56)
+        {ENGINE_MID_SIDE_PROCESSOR, "Mid-Side Processor", "spatial"},
+        {ENGINE_GAIN_UTILITY, "Gain Utility", "utility"},
+        {ENGINE_MONO_MAKER, "Mono Maker", "utility"},
+        {ENGINE_PHASE_ALIGN, "Phase Align", "utility"}
     };
     
     for (const auto& [engineId, name, category] : engineInfo) {
@@ -556,57 +562,65 @@ std::vector<EngineDefaultInfo> getAllEngineDefaults() {
 std::map<std::string, std::vector<int>> getEnginesByCategory() {
     std::map<std::string, std::vector<int>> categories;
     
-    // Distortion/Saturation
-    categories["distortion"] = {
-        ENGINE_K_STYLE, ENGINE_RODENT_DISTORTION, ENGINE_MUFF_FUZZ,
-        ENGINE_MULTIBAND_SATURATOR, ENGINE_BIT_CRUSHER, ENGINE_WAVE_FOLDER
+    // Utility
+    categories["utility"] = {
+        ENGINE_NONE, ENGINE_GAIN_UTILITY, ENGINE_MONO_MAKER, ENGINE_PHASE_ALIGN
     };
     
+    // Dynamics & Compression (1-6)
+    categories["dynamics"] = {
+        ENGINE_OPTO_COMPRESSOR, ENGINE_VCA_COMPRESSOR, ENGINE_TRANSIENT_SHAPER, ENGINE_NOISE_GATE, ENGINE_MASTERING_LIMITER
+    };
+    
+    // Filters & EQ (7-14)
+    categories["eq"] = {
+        ENGINE_DYNAMIC_EQ, ENGINE_PARAMETRIC_EQ, ENGINE_VINTAGE_CONSOLE_EQ
+    };
+    
+    categories["filter"] = {
+        ENGINE_LADDER_FILTER, ENGINE_STATE_VARIABLE_FILTER, ENGINE_FORMANT_FILTER, ENGINE_ENVELOPE_FILTER, ENGINE_COMB_RESONATOR, ENGINE_VOCAL_FORMANT
+    };
+    
+    // Distortion & Saturation (15-22)
     categories["saturation"] = {
-        ENGINE_VINTAGE_TUBE_PREAMP, ENGINE_HARMONIC_EXCITER
+        ENGINE_VINTAGE_TUBE, ENGINE_HARMONIC_EXCITER
     };
     
-    // Time-based effects
+    categories["distortion"] = {
+        ENGINE_WAVE_FOLDER, ENGINE_BIT_CRUSHER, ENGINE_MULTIBAND_SATURATOR, ENGINE_MUFF_FUZZ, ENGINE_RODENT_DISTORTION, ENGINE_K_STYLE
+    };
+    
+    categories["enhancement"] = {
+        ENGINE_HARMONIC_EXCITER
+    };
+    
+    // Modulation (23-33)
+    categories["modulation"] = {
+        ENGINE_DIGITAL_CHORUS, ENGINE_RESONANT_CHORUS, ENGINE_ANALOG_PHASER, ENGINE_RING_MODULATOR, ENGINE_FREQUENCY_SHIFTER, ENGINE_HARMONIC_TREMOLO, ENGINE_CLASSIC_TREMOLO, ENGINE_ROTARY_SPEAKER, ENGINE_DETUNE_DOUBLER
+    };
+    
+    categories["pitch"] = {
+        ENGINE_PITCH_SHIFTER, ENGINE_INTELLIGENT_HARMONIZER
+    };
+    
+    // Reverb & Delay (34-43)
     categories["delay"] = {
-        ENGINE_TAPE_ECHO, ENGINE_MAGNETIC_DRUM_ECHO, 
-        ENGINE_BUCKET_BRIGADE_DELAY, ENGINE_DIGITAL_DELAY
+        ENGINE_TAPE_ECHO, ENGINE_DIGITAL_DELAY, ENGINE_MAGNETIC_DRUM_ECHO, ENGINE_BUCKET_BRIGADE_DELAY
     };
     
     categories["reverb"] = {
-        ENGINE_PLATE_REVERB, ENGINE_CONVOLUTION_REVERB, ENGINE_SHIMMER_REVERB,
-        ENGINE_GATED_REVERB, ENGINE_SPRING_REVERB
+        ENGINE_PLATE_REVERB, ENGINE_SPRING_REVERB, ENGINE_CONVOLUTION_REVERB, ENGINE_SHIMMER_REVERB, ENGINE_GATED_REVERB
     };
     
-    // Modulation
-    categories["modulation"] = {
-        ENGINE_CLASSIC_TREMOLO, ENGINE_HARMONIC_TREMOLO, ENGINE_ROTARY_SPEAKER,
-        ENGINE_DETUNE_DOUBLER, ENGINE_STEREO_CHORUS, ENGINE_ANALOG_RING_MODULATOR,
-        ENGINE_FREQUENCY_SHIFTER, ENGINE_ANALOG_PHASER, ENGINE_RESONANT_CHORUS
+    categories["glitch"] = {
+        ENGINE_BUFFER_REPEAT
     };
     
-    // Filtering
-    categories["filter"] = {
-        ENGINE_LADDER_FILTER, ENGINE_FORMANT_FILTER, ENGINE_STATE_VARIABLE_FILTER,
-        ENGINE_VOCAL_FORMANT_FILTER, ENGINE_ENVELOPE_FILTER, ENGINE_COMB_RESONATOR
-    };
-    
-    // Dynamics
-    categories["dynamics"] = {
-        ENGINE_CLASSIC_COMPRESSOR, ENGINE_VINTAGE_OPTO_COMPRESSOR,
-        ENGINE_MASTERING_LIMITER, ENGINE_NOISE_GATE, ENGINE_TRANSIENT_SHAPER
-    };
-    
-    // Spatial processing
+    // Spatial & Special (44-52)
     categories["spatial"] = {
-        ENGINE_DIMENSION_EXPANDER, ENGINE_MID_SIDE_PROCESSOR
+        ENGINE_STEREO_WIDENER, ENGINE_STEREO_IMAGER, ENGINE_DIMENSION_EXPANDER, ENGINE_MID_SIDE_PROCESSOR
     };
     
-    // EQ
-    categories["eq"] = {
-        ENGINE_PARAMETRIC_EQ, ENGINE_VINTAGE_CONSOLE_EQ
-    };
-    
-    // Spectral/Advanced
     categories["spectral"] = {
         ENGINE_SPECTRAL_FREEZE, ENGINE_SPECTRAL_GATE, ENGINE_PHASED_VOCODER
     };
@@ -615,18 +629,8 @@ std::map<std::string, std::vector<int>> getEnginesByCategory() {
         ENGINE_GRANULAR_CLOUD
     };
     
-    // Pitch
-    categories["pitch"] = {
-        ENGINE_PITCH_SHIFTER, ENGINE_INTELLIGENT_HARMONIZER
-    };
-    
-    // Experimental
     categories["experimental"] = {
-        ENGINE_FEEDBACK_NETWORK, ENGINE_CHAOS_GENERATOR
-    };
-    
-    categories["glitch"] = {
-        ENGINE_BUFFER_REPEAT
+        ENGINE_CHAOS_GENERATOR, ENGINE_FEEDBACK_NETWORK
     };
     
     return categories;
