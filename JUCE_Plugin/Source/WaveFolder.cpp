@@ -3,7 +3,14 @@
 #include <atomic>
 #include <cmath>
 #include <array>
-#include <immintrin.h>
+
+// Platform-specific includes
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+    #define HAS_SSE2 1
+#else
+    #define HAS_SSE2 0
+#endif
 
 // Platform-specific optimizations
 #if defined(__GNUC__) || defined(__clang__)
@@ -18,7 +25,7 @@
 namespace {
     struct DenormalGuard {
         DenormalGuard() {
-            #if defined(__SSE__)
+            #if HAS_SSE2
             _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
             _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
             #endif

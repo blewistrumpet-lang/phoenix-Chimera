@@ -2692,5 +2692,582 @@
     ],
     "default_value": 1.0,
     "display_name": "Mix"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_LOW_GAIN",
+    "primitive": "eq",
+    "description": "Low shelf gain control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Low Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_LOW_FREQ",
+    "primitive": "eq",
+    "description": "Low shelf frequency control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = 30Hz, 1.0 = 300Hz",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Low Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_MID_GAIN",
+    "primitive": "eq",
+    "description": "Mid bell gain control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_MID_FREQ",
+    "primitive": "eq",
+    "description": "Mid frequency control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = 200Hz, 1.0 = 8kHz (logarithmic)",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_MID_Q",
+    "primitive": "eq",
+    "description": "Mid Q width control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = 0.3 (wide), 1.0 = 3.0 (narrow)",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Q"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_HIGH_GAIN",
+    "primitive": "eq",
+    "description": "High shelf gain control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "High Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_HIGH_FREQ",
+    "primitive": "eq",
+    "description": "High shelf frequency control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = 3kHz, 1.0 = 16kHz",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "High Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_DRIVE",
+    "primitive": "eq",
+    "description": "Console saturation amount",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = clean, 1.0 = maximum color",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Drive"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_CONSOLE_TYPE",
+    "primitive": "eq",
+    "description": "Console model selection",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0-0.25 = SSL, 0.25-0.5 = API, 0.5-0.75 = Neve, 0.75-1.0 = Pultec",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Console Type"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_VINTAGE",
+    "primitive": "eq",
+    "description": "Vintage character amount",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = modern, 1.0 = vintage",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Vintage"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_MIX",
+    "primitive": "eq",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = dry, 1.0 = wet",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_MID_GAIN",
+    "primitive": "spatial",
+    "description": "Mid channel gain control",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -20dB, 0.5 = 0dB, 1.0 = +20dB",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_SIDE_GAIN",
+    "primitive": "spatial",
+    "description": "Side channel gain control",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -20dB, 0.5 = 0dB, 1.0 = +20dB",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Side Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_WIDTH",
+    "primitive": "spatial",
+    "description": "Stereo width control",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = mono, 0.5 = 100%, 1.0 = 200%",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Width",
+    "unit": "%"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_MID_LOW",
+    "primitive": "spatial",
+    "description": "Mid channel low shelf EQ",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB @ 200Hz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Low",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_MID_HIGH",
+    "primitive": "spatial",
+    "description": "Mid channel high shelf EQ",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB @ 5kHz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid High",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_SIDE_LOW",
+    "primitive": "spatial",
+    "description": "Side channel low shelf EQ",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB @ 200Hz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Side Low",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_SIDE_HIGH",
+    "primitive": "spatial",
+    "description": "Side channel high shelf EQ",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB @ 5kHz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Side High",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_BASS_MONO",
+    "primitive": "spatial",
+    "description": "Bass mono frequency cutoff",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = off, 1.0 = 500Hz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Bass Mono",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_SOLO_MODE",
+    "primitive": "spatial",
+    "description": "Solo monitoring mode",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = off, 0.33 = mid only, 0.66 = side only",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Solo Mode"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_PRESENCE",
+    "primitive": "spatial",
+    "description": "Presence boost amount",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = off, 1.0 = +6dB @ 10kHz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Presence",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_SPEED",
+    "primitive": "modulation",
+    "description": "Rotor speed control",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. 0=stop, 0.5=slow (chorale), 1=fast (tremolo)",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Speed"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_ACCELERATION",
+    "primitive": "modulation",
+    "description": "Rotor acceleration/inertia",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. Controls how quickly rotors change speed",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Acceleration"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_DRIVE",
+    "primitive": "modulation",
+    "description": "Tube preamp saturation",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. Adds warmth and harmonic saturation",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Drive"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_MIC_DISTANCE",
+    "primitive": "modulation",
+    "description": "Virtual microphone distance",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. Affects Doppler intensity and stereo image",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.6,
+    "display_name": "Mic Distance"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_STEREO_WIDTH",
+    "primitive": "modulation",
+    "description": "Stereo spread amount",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. 0=mono, 1=wide stereo (45° mic angle)",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.8,
+    "display_name": "Stereo Width"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_MIX",
+    "primitive": "modulation",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. 0=dry, 1=wet",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_RATE",
+    "primitive": "modulation",
+    "description": "LFO rate control",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. Maps to 0.01-20Hz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Rate",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_DEPTH",
+    "primitive": "modulation",
+    "description": "Modulation depth amount",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0=no modulation, 1=maximum depth",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Depth"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_RESONANCE",
+    "primitive": "modulation",
+    "description": "Filter resonance amount",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0=no resonance, 1=self-oscillation",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Resonance"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_FILTER_FREQ",
+    "primitive": "modulation",
+    "description": "Filter cutoff frequency",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. Maps to 20Hz-20kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Filter Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_VOICES",
+    "primitive": "modulation",
+    "description": "Number of chorus voices",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. Maps to 1-6 voices",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Voices"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_SPREAD",
+    "primitive": "modulation",
+    "description": "Stereo spread width",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0=narrow, 1=wide stereo field",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Spread"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_FEEDBACK",
+    "primitive": "modulation",
+    "description": "Feedback amount control",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0.5=no feedback, 0=-100%, 1=+100%",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Feedback"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_MIX",
+    "primitive": "modulation",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_TENSION",
+    "primitive": "reverb",
+    "description": "Spring tension control",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Controls brightness/darkness of spring character",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Tension"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_DAMPING",
+    "primitive": "reverb",
+    "description": "High frequency damping",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Controls how quickly high frequencies decay",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Damping"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_DECAY",
+    "primitive": "reverb",
+    "description": "Reverb decay time",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Maps to 0.1-5.0 seconds",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Decay",
+    "unit": "s"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_MODULATION",
+    "primitive": "reverb",
+    "description": "Spring wobble modulation",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Adds authentic spring movement",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Modulation"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_CHIRP",
+    "primitive": "reverb",
+    "description": "Transient chirp amount",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Classic spring 'boing' on transients",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Chirp"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_DRIVE",
+    "primitive": "reverb",
+    "description": "Input saturation drive",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Tube-style saturation",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Drive"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_WIDTH",
+    "primitive": "reverb",
+    "description": "Stereo width control",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. 0=narrow, 1=wide stereo field",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.8,
+    "display_name": "Width"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_MIX",
+    "primitive": "reverb",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
   }
 ]

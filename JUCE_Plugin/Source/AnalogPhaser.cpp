@@ -1,303 +1,534 @@
 #include "AnalogPhaser.h"
+#include "Denorm.hpp"
+#include "QualityMetrics.hpp"
+#include <juce_audio_basics/juce_audio_basics.h>
+#include <atomic>
 #include <cmath>
+#include <array>
+#include <random>
 
-AnalogPhaser::AnalogPhaser() {
-    // Initialize smooth parameters
-    m_rate.setImmediate(0.5f);
-    m_depth.setImmediate(0.5f);
-    m_feedback.setImmediate(0.3f);
-    m_stages.setImmediate(0.5f);
-    m_stereoSpread.setImmediate(0.5f);
-    m_centerFreq.setImmediate(0.5f);
-    m_resonance.setImmediate(0.3f);
-    m_mix.setImmediate(0.5f);
-    
-    // Set smoothing rates
-    m_rate.setSmoothingRate(0.995f);
-    m_depth.setSmoothingRate(0.990f);
-    m_feedback.setSmoothingRate(0.995f);
-    m_stages.setSmoothingRate(0.999f); // Very slow for stage changes
-    m_stereoSpread.setSmoothingRate(0.995f);
-    m_centerFreq.setSmoothingRate(0.992f);
-    m_resonance.setSmoothingRate(0.995f);
-    m_mix.setSmoothingRate(0.995f);
+// Platform-specific SIMD includes
+#if HAS_SSE
+    #include <immintrin.h>
+#endif
+
+// Enable FTZ/DAZ globally
+namespace {
+    struct DenormalGuard {
+        DenormalGuard() {
+            #if HAS_SSE
+            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+            #endif
+        }
+    } static denormalGuard;
 }
 
-void AnalogPhaser::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    m_sampleRate = sampleRate;
+// Thread-safe random number generation
+class RTRandom {
+public:
+    RTRandom() : state(std::random_device{}()) {}
     
-    // Initialize both channels
-    for (auto& channel : m_channelStates) {
-        // Clear all-pass filters
-        for (auto& filter : channel.allpassFilters) {
-            filter.state = 0.0f;
-            filter.coefficient = 0.0f;
+    // Linear congruential generator - fast and RT-safe
+    ALWAYS_INLINE float nextFloat() noexcept {
+        state = state * 1664525u + 1013904223u;
+        return (state >> 9) * (1.0f / 8388608.0f) - 1.0f;
+    }
+    
+private:
+    uint32_t state;
+};
+
+// Lock-free parameter with smoothing
+class AtomicParam {
+public:
+    void setTarget(float value) noexcept {
+        target.store(value, std::memory_order_relaxed);
+    }
+    
+    void setImmediate(float value) noexcept {
+        target.store(value, std::memory_order_relaxed);
+        current = value;
+    }
+    
+    void setSmoothingCoeff(float coeff) noexcept {
+        smoothing = coeff;
+    }
+    
+    ALWAYS_INLINE float tick() noexcept {
+        const float t = target.load(std::memory_order_relaxed);
+        current += (t - current) * (1.0f - smoothing);
+        return flushDenorm(current);
+    }
+    
+    float getValue() const noexcept { return current; }
+    
+private:
+    std::atomic<float> target{0.0f};
+    float current{0.0f};
+    float smoothing{0.995f};
+};
+
+// All-pass filter with denormal prevention
+class AllPassFilter {
+public:
+    void reset() noexcept {
+        state = 0.0f;
+        coefficient = 0.0f;
+        lastCoeff = 0.0f;
+        smoothingRate = 0.001f;
+    }
+    
+    void setCoefficient(float coeff) noexcept {
+        coefficient = coeff;
+    }
+    
+    void setSmoothingRate(float rate) noexcept {
+        smoothingRate = rate;
+    }
+    
+    ALWAYS_INLINE float process(float input) noexcept {
+        // Interpolate coefficient for click-free modulation
+        lastCoeff += (coefficient - lastCoeff) * smoothingRate;
+        lastCoeff = flushDenorm(lastCoeff);
+        
+        // All-pass difference equation with denormal prevention
+        const float output = flushDenorm(-input + state);
+        state = flushDenorm(input + lastCoeff * output);
+        
+        return output;
+    }
+    
+private:
+    float state{0.0f};
+    float coefficient{0.0f};
+    float lastCoeff{0.0f};
+    float smoothingRate{0.001f};
+};
+
+// DC blocker with denormal prevention
+class DCBlocker {
+public:
+    ALWAYS_INLINE float process(float input) noexcept {
+        const float output = input - x1 + R * y1;
+        x1 = input;
+        y1 = flushDenorm(output);
+        return output;
+    }
+    
+    void reset() noexcept {
+        x1 = y1 = 0.0f;
+    }
+    
+private:
+    static constexpr float R = 0.995f;
+    float x1{0.0f}, y1{0.0f};
+};
+
+// Main implementation
+struct AnalogPhaser::Impl {
+    static constexpr int MAX_STAGES = 8;
+    static constexpr int MAX_CHANNELS = 2;
+    static constexpr int COEFFICIENT_TABLE_SIZE = 4096;
+    static constexpr int EXP2_TABLE_SIZE = 256;
+    
+    // Lock-free parameters
+    AtomicParam rate;
+    AtomicParam depth;
+    AtomicParam feedback;
+    AtomicParam stages;
+    AtomicParam stereoSpread;
+    AtomicParam centerFreq;
+    AtomicParam resonance;
+    AtomicParam mix;
+    
+    // Pre-computed lookup tables
+    alignas(64) std::array<float, COEFFICIENT_TABLE_SIZE> coeffTable;
+    alignas(64) std::array<float, EXP2_TABLE_SIZE> exp2Table;
+    
+    // Per-channel state
+    struct alignas(64) ChannelState {
+        std::array<AllPassFilter, MAX_STAGES> allpassFilters;
+        DCBlocker inputDC;
+        DCBlocker outputDC;
+        RTRandom rng;
+        
+        double lfoPhase{0.0};
+        float feedbackSample{0.0f};
+        float thermalDrift{0.0f};
+        
+        void reset() noexcept {
+            for (auto& filter : allpassFilters) {
+                filter.reset();
+            }
+            inputDC.reset();
+            outputDC.reset();
+            lfoPhase = 0.0;
+            feedbackSample = 0.0f;
+            thermalDrift = 0.0f;
+        }
+    };
+    
+    std::array<ChannelState, MAX_CHANNELS> channels;
+    double sampleRate{44100.0};
+    float invSampleRate{1.0f / 44100.0f};
+    int denormalFlushCounter{0};
+    
+    // Quality metrics for monitoring
+    QualityMetrics metrics;
+    
+    // Parameter buffer for lock-free access
+    alignas(64) std::array<float, 8> paramBuffer{};
+    
+    Impl() {
+        // Initialize parameters
+        rate.setImmediate(0.5f);
+        depth.setImmediate(0.5f);
+        feedback.setImmediate(0.3f);
+        stages.setImmediate(0.5f);
+        stereoSpread.setImmediate(0.5f);
+        centerFreq.setImmediate(0.5f);
+        resonance.setImmediate(0.3f);
+        mix.setImmediate(0.5f);
+        
+        // Set smoothing coefficients
+        rate.setSmoothingCoeff(0.995f);
+        depth.setSmoothingCoeff(0.990f);
+        feedback.setSmoothingCoeff(0.995f);
+        stages.setSmoothingCoeff(0.999f);
+        stereoSpread.setSmoothingCoeff(0.995f);
+        centerFreq.setSmoothingCoeff(0.992f);
+        resonance.setSmoothingCoeff(0.995f);
+        mix.setSmoothingCoeff(0.995f);
+        
+        // Pre-compute coefficient table
+        initCoefficientTable();
+        
+        // Pre-compute exp2 table
+        initExp2Table();
+    }
+    
+    void initCoefficientTable() {
+        // Pre-compute all-pass coefficients for efficiency
+        for (int i = 0; i < COEFFICIENT_TABLE_SIZE; ++i) {
+            float normalizedFreq = static_cast<float>(i) / COEFFICIENT_TABLE_SIZE;
+            float freq = 20.0f * std::pow(1000.0f, normalizedFreq); // 20Hz to 20kHz
+            
+            // Bilinear transform coefficient
+            // Using fast approximation for tan
+            float w = freq * 2.0f * M_PI / 48000.0f; // Normalized for 48kHz
+            float tanw = fastTan(w * 0.5f);
+            coeffTable[i] = (tanw - 1.0f) / (tanw + 1.0f);
+        }
+    }
+    
+    void initExp2Table() {
+        // Pre-compute 2^x for x in [-1, 1]
+        for (int i = 0; i < EXP2_TABLE_SIZE; ++i) {
+            float x = -1.0f + 2.0f * i / (EXP2_TABLE_SIZE - 1);
+            exp2Table[i] = flushDenorm(std::pow(2.0f, x));
+        }
+    }
+    
+    // Fast tan approximation for real-time use
+    static ALWAYS_INLINE float fastTan(float x) noexcept {
+        // Padé approximant for tan(x)
+        const float x2 = x * x;
+        const float num = x * (1.0f + x2 * (0.3333333f + x2 * 0.1333333f));
+        const float den = 1.0f + x2 * (0.3333333f + x2 * 0.0666666f);
+        return flushDenorm(num / den);
+    }
+    
+    // Fast exp2 using lookup table
+    ALWAYS_INLINE float fastExp2(float x) noexcept {
+        // Clamp to table range [-1, 1]
+        x = std::max(-1.0f, std::min(1.0f, x));
+        
+        // Convert to table index
+        float fidx = (x + 1.0f) * 0.5f * (EXP2_TABLE_SIZE - 1);
+        int idx = static_cast<int>(fidx);
+        float frac = fidx - idx;
+        
+        // Bounds check
+        if (idx >= EXP2_TABLE_SIZE - 1) {
+            return exp2Table[EXP2_TABLE_SIZE - 1];
         }
         
-        // Initialize LFO phase
-        channel.lfoPhase = 0.0f;
-        channel.feedbackSample = 0.0f;
-        channel.currentDepth = m_depth.current;
-        channel.targetDepth = m_depth.current;
-        channel.componentDrift = 0.0f;
-        channel.noiseLevel = 0.0f;
+        // Linear interpolation with denormal prevention
+        float result = exp2Table[idx] + frac * (exp2Table[idx + 1] - exp2Table[idx]);
+        return flushDenorm(result);
     }
     
-    // Set different initial phases for stereo effect
-    m_channelStates[1].lfoPhase = M_PI;
-    
-    // Prepare oversampler
-    if (m_useOversampling) {
-        m_oversampler.prepare(samplesPerBlock);
+    void prepareToPlay(double sr, int /*samplesPerBlock*/) {
+        sampleRate = sr;
+        invSampleRate = 1.0f / sr;
+        
+        // Rebuild coefficient table for actual sample rate
+        const float minFreq = 20.0f;
+        const float maxFreq = 20000.0f;
+        
+        for (int i = 0; i < COEFFICIENT_TABLE_SIZE; ++i) {
+            float normalizedFreq = static_cast<float>(i) / (COEFFICIENT_TABLE_SIZE - 1);
+            float freq = minFreq * std::pow(maxFreq / minFreq, normalizedFreq);
+            float w = freq * 2.0f * static_cast<float>(M_PI) * invSampleRate;
+            float tanw = fastTan(w * 0.5f);
+            coeffTable[i] = flushDenorm((tanw - 1.0f) / (tanw + 1.0f));
+        }
+        
+        // Reset channels
+        for (auto& ch : channels) {
+            ch.reset();
+            // Set smoothing rate for all-pass filters based on sample rate
+            float smoothingMs = 1.0f; // 1ms smoothing time
+            float smoothingRate = 1.0f - std::exp(-1000.0f / (smoothingMs * sr));
+            for (auto& filter : ch.allpassFilters) {
+                filter.setSmoothingRate(smoothingRate);
+            }
+        }
+        
+        // Set stereo phase offset
+        channels[1].lfoPhase = M_PI;
+        
+        // Set initial all-pass smoothing based on rate
+        updateAllPassSmoothing();
+        
+        // Initialize metrics
+        metrics.setSampleRate(sr);
+        metrics.reset();
+        
+        // Initialize exp2 table
+        initExp2Table();
+        
+        denormalFlushCounter = 0;
     }
     
-    // Reset component aging
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
+    void updateAllPassSmoothing() {
+        // Dynamic smoothing based on LFO rate and resonance
+        float rateValue = rate.getValue();
+        float resValue = resonance.getValue();
+        
+        // Faster rates need tighter tracking
+        float baseSmoothing = 1.0f - std::exp(-(rateValue * 10.0f + 0.1f));
+        
+        // Higher resonance needs smoother changes to avoid instability
+        float smoothingFactor = baseSmoothing * (1.0f - resValue * 0.5f);
+        
+        for (auto& ch : channels) {
+            for (auto& filter : ch.allpassFilters) {
+                filter.setSmoothingRate(flushDenorm(smoothingFactor));
+            }
+        }
+    }
     
-    // Reset thermal model
-    m_thermalModel = ThermalModel();
+    ALWAYS_INLINE float generateLFO(double phase) noexcept {
+        // Triangle wave with sine shaping
+        float triangle = 1.0f - 4.0f * std::abs(0.5f - std::fmod(phase / (2.0 * M_PI), 1.0f));
+        
+        // Add sine component for smoother modulation
+        float sine = std::sin(phase);
+        
+        // Blend with denormal prevention
+        float shaped = triangle * 0.7f + sine * 0.3f;
+        return flushDenorm(shaped);
+    }
+    
+    ALWAYS_INLINE int getActiveStages(float stageParam) noexcept {
+        if (stageParam < 0.25f) return 2;
+        else if (stageParam < 0.5f) return 4;
+        else if (stageParam < 0.75f) return 6;
+        else return 8;
+    }
+    
+    ALWAYS_INLINE float lookupCoefficient(float freq) noexcept {
+        // Convert frequency to table index
+        float normalizedFreq = (std::log(freq / 20.0f) / std::log(1000.0f));
+        normalizedFreq = std::max(0.0f, std::min(1.0f, normalizedFreq));
+        
+        // Linear interpolation in table
+        float fidx = normalizedFreq * (COEFFICIENT_TABLE_SIZE - 1);
+        int idx = static_cast<int>(fidx);
+        float frac = fidx - idx;
+        
+        if (idx >= COEFFICIENT_TABLE_SIZE - 1) {
+            return coeffTable[COEFFICIENT_TABLE_SIZE - 1];
+        }
+        
+        float interp = coeffTable[idx] + frac * (coeffTable[idx + 1] - coeffTable[idx]);
+        return flushDenorm(interp);
+    }
+    
+    void processChannel(ChannelState& ch, float* data, int numSamples, int channelIndex) {
+        for (int i = 0; i < numSamples; ++i) {
+            // Per-sample parameter updates for smooth automation
+            const float rateHz = rate.tick() * 10.0f;
+            const float depthAmt = depth.tick();
+            const float fbAmt = feedback.tick() * 0.95f;
+            const float stageParam = stages.tick();
+            const float spread = stereoSpread.tick();
+            const float center = centerFreq.tick();
+            const float res = resonance.tick();
+            const float mixAmt = mix.tick();
+            
+            // DC block input
+            float input = ch.inputDC.process(data[i]);
+            const float dry = input;
+            
+            // Update LFO phase with proper modulo wrap and denormal prevention
+            float phaseDelta = rateHz * 2.0 * M_PI * invSampleRate;
+            ch.lfoPhase = flushDenorm(std::fmod(ch.lfoPhase + phaseDelta, 2.0 * M_PI));
+            
+            // Generate LFO with stereo offset
+            float lfoValue = generateLFO(ch.lfoPhase + channelIndex * spread * M_PI);
+            
+            // Add subtle thermal drift with denormal prevention
+            float noise = ch.rng.nextFloat();
+            noise = flushDenorm(noise * 0.00001f);
+            ch.thermalDrift = flushDenorm(ch.thermalDrift + noise);
+            ch.thermalDrift = std::max(-0.01f, std::min(0.01f, ch.thermalDrift));
+            lfoValue = flushDenorm(lfoValue + ch.thermalDrift);
+            
+            // Calculate modulated frequency using fast exp2
+            float centerFreqHz = 200.0f + center * 1800.0f; // 200Hz to 2kHz
+            float modDepth = depthAmt * 0.9f;
+            float exponent = lfoValue * modDepth;
+            float modFactor = fastExp2(exponent);
+            float modulatedFreq = flushDenorm(centerFreqHz * modFactor);
+            
+            // Apply feedback with soft clipping and denormal prevention
+            float resonanceBoost = 1.0f + res * 2.0f;
+            float fbSample = flushDenorm(ch.feedbackSample * fbAmt * resonanceBoost);
+            input += flushDenorm(std::tanh(fbSample));
+            
+            // Get active stages
+            int activeStages = getActiveStages(stageParam);
+            
+            // Process through all-pass stages
+            float output = input;
+            for (int stage = 0; stage < activeStages; ++stage) {
+                // Calculate stage frequency with slight detuning
+                float stageDetune = 1.0f + 0.08f * stage; // Avoid pow()
+                float stageFreq = flushDenorm(modulatedFreq * stageDetune);
+                
+                // Lookup coefficient from table
+                float coeff = lookupCoefficient(stageFreq);
+                ch.allpassFilters[stage].setCoefficient(coeff);
+                
+                // Process with denormal prevention
+                output = ch.allpassFilters[stage].process(output);
+            }
+            
+            // Store feedback with denormal prevention
+            ch.feedbackSample = flushDenorm(output);
+            
+            // Soft saturation
+            output = flushDenorm(std::tanh(output * 0.7f) * 1.4f);
+            
+            // DC block output
+            output = ch.outputDC.process(output);
+            
+            // Mix with dry - flush final result
+            data[i] = flushDenorm(dry * (1.0f - mixAmt) + output * mixAmt);
+        }
+        
+        // Periodic denormal flush and smoothing update
+        if (++denormalFlushCounter >= 512) {
+            denormalFlushCounter = 0;
+            ch.feedbackSample = flushDenorm(ch.feedbackSample);
+            ch.thermalDrift = flushDenorm(ch.thermalDrift);
+            
+            // Update all-pass smoothing periodically
+            updateAllPassSmoothing();
+            
+            for (auto& filter : ch.allpassFilters) {
+                // Force state flush through process
+                filter.process(0.0f);
+            }
+        }
+    }
+};
+
+// Public interface
+AnalogPhaser::AnalogPhaser() : pimpl(std::make_unique<Impl>()) {}
+AnalogPhaser::~AnalogPhaser() = default;
+
+void AnalogPhaser::prepareToPlay(double sampleRate, int samplesPerBlock) {
+    pimpl->prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void AnalogPhaser::reset() {
-    // Reset all channel states
-    for (auto& channel : m_channelStates) {
-        // Clear all-pass filters
-        for (auto& filter : channel.allpassFilters) {
-            filter.state = 0.0f;
-            filter.coefficient = 0.0f;
-        }
-        
-        // Reset LFO phase (keep stereo spread)
-        channel.lfoPhase = 0.0f;
-        channel.feedbackSample = 0.0f;
-        channel.currentDepth = m_depth.current;
-        channel.targetDepth = m_depth.current;
-        channel.componentDrift = 0.0f;
-        channel.noiseLevel = 0.0f;
+    for (auto& ch : pimpl->channels) {
+        ch.reset();
     }
-    
-    // Restore stereo phase relationship
-    m_channelStates[1].lfoPhase = M_PI;
-    
-    // Reset DC blockers
-    for (auto& blocker : m_inputDCBlockers) {
-        blocker.x1 = 0.0f;
-        blocker.y1 = 0.0f;
-    }
-    
-    for (auto& blocker : m_outputDCBlockers) {
-        blocker.x1 = 0.0f;
-        blocker.y1 = 0.0f;
-    }
-    
-    // Reset thermal model
-    m_thermalModel.temperature = 25.0f;
-    m_thermalModel.thermalNoise = 0.0f;
-    
-    // Reset component aging
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
-    
-    // Reset oversampling filters
-    if (m_useOversampling) {
-        m_oversampler.upsampleFilter.x.fill(0.0f);
-        m_oversampler.upsampleFilter.y.fill(0.0f);
-        m_oversampler.downsampleFilter.x.fill(0.0f);
-        m_oversampler.downsampleFilter.y.fill(0.0f);
-    }
+    pimpl->channels[1].lfoPhase = M_PI; // Restore stereo offset
 }
 
 void AnalogPhaser::process(juce::AudioBuffer<float>& buffer) {
-    const int numChannels = buffer.getNumChannels();
+    const int numChannels = std::min(buffer.getNumChannels(), Impl::MAX_CHANNELS);
     const int numSamples = buffer.getNumSamples();
     
-    // Update smooth parameters
-    m_rate.update();
-    m_depth.update();
-    m_feedback.update();
-    m_stages.update();
-    m_stereoSpread.update();
-    m_centerFreq.update();
-    m_resonance.update();
-    m_mix.update();
+    // Start performance measurement
+    pimpl->metrics.startBlock();
     
-    // Update thermal model
-    m_thermalModel.update(m_sampleRate);
-    float thermalFactor = m_thermalModel.getThermalFactor();
-    
-    // Update component aging (very slow)
-    m_sampleCount += numSamples;
-    if (m_sampleCount > m_sampleRate * 8) { // Every 8 seconds
-        m_componentAge = std::min(1.0f, m_componentAge + 0.00005f);
-        m_sampleCount = 0;
+    for (int ch = 0; ch < numChannels; ++ch) {
+        pimpl->processChannel(pimpl->channels[ch], buffer.getWritePointer(ch), 
+                            numSamples, ch);
         
-        // Update channel aging
-        for (auto& state : m_channelStates) {
-            state.componentDrift = m_componentAge * 0.01f;
-            state.noiseLevel = m_componentAge * 0.0005f;
-        }
+        // Update quality metrics
+        pimpl->metrics.updatePeakRMS(buffer.getReadPointer(ch), numSamples);
+        
+        #ifdef DEBUG
+        // Check for denormals in debug builds
+        pimpl->metrics.checkDenormals(buffer.getReadPointer(ch), numSamples);
+        #endif
     }
     
-    // Calculate active stages based on parameter
-    int activeStages = getActiveStages();
-    
-    for (int channel = 0; channel < numChannels; ++channel) {
-        if (channel >= 2) break; // Process only stereo
-        
-        auto& state = m_channelStates[channel];
-        float* channelData = buffer.getWritePointer(channel);
-        
-        // Smooth depth changes
-        float depthSmoothing = 0.999f;
-        state.targetDepth = m_depth.current;
-        
-        for (int sample = 0; sample < numSamples; ++sample) {
-            float input = channelData[sample];
-            float drySignal = input;
-            
-            // DC block input
-            input = m_inputDCBlockers[channel].process(input);
-            
-            // Smooth depth parameter
-            state.currentDepth = state.currentDepth * depthSmoothing + 
-                               state.targetDepth * (1.0f - depthSmoothing);
-            
-            // Generate LFO with thermal drift
-            float lfo = generateLFOWithThermal(state.lfoPhase, thermalFactor);
-            
-            // Apply stereo spread to LFO phase
-            float stereoOffset = channel * m_stereoSpread.current * 0.5f;
-            state.lfoPhase += 2.0f * M_PI * m_rate.current / m_sampleRate;
-            if (state.lfoPhase > 2.0f * M_PI) {
-                state.lfoPhase -= 2.0f * M_PI;
-            }
-            
-            // Calculate modulated frequency with thermal and aging effects
-            float centerFreqHz = (200.0f + m_centerFreq.current * 1800.0f) * thermalFactor; // 200Hz to 2kHz
-            float modDepth = (state.currentDepth * 0.9f) * (1.0f - m_componentAge * 0.1f); // Aging reduces depth
-            float modulatedFreq = centerFreqHz * std::pow(2.0f, lfo * modDepth);
-            
-            // Add feedback with enhanced soft clipping and aging
-            float feedbackAmount = m_feedback.current * 0.95f * (1.0f + m_componentAge * 0.1f); // Aging increases feedback
-            float resonanceBoost = (1.0f + m_resonance.current * 2.0f) * thermalFactor;
-            input += softClipWithAging(state.feedbackSample * feedbackAmount * resonanceBoost, m_componentAge);
-            
-            // Process through all-pass stages with aging
-            float output = input;
-            for (int stage = 0; stage < activeStages; ++stage) {
-                // Set frequency for this stage with component drift
-                float stageFreq = modulatedFreq * std::pow(1.1f, stage) * (1.0f + state.componentDrift);
-                state.allpassFilters[stage].setFrequency(stageFreq, m_sampleRate);
-                
-                // Process through all-pass with aging effects
-                output = state.allpassFilters[stage].processWithAging(output, m_componentAge);
-                
-                // Add subtle noise from aging components
-                if (m_componentAge > 0.01f) {
-                    output += state.noiseLevel * ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
-                }
-            }
-            
-            // Store feedback sample
-            state.feedbackSample = output;
-            
-            // Apply analog-style saturation with aging
-            output = softClipWithAging(output * 0.95f, m_componentAge) * 1.05f;
-            
-            // DC block output
-            output = m_outputDCBlockers[channel].process(output);
-            
-            // Mix with dry signal
-            channelData[sample] = drySignal * (1.0f - m_mix.current) + output * m_mix.current;
-        }
-    }
-}
-
-float AnalogPhaser::generateLFO(float phase) {
-    // Triangle wave LFO for classic phaser sound
-    float triangle = 2.0f * std::abs(2.0f * (phase / (2.0f * M_PI) - 0.5f)) - 1.0f;
-    
-    // Add slight sine shaping for smoother modulation
-    float sine = std::sin(phase);
-    
-    // Blend for more musical modulation
-    return triangle * 0.7f + sine * 0.3f;
-}
-
-float AnalogPhaser::generateLFOWithThermal(float phase, float thermalFactor) {
-    float baseLFO = generateLFO(phase);
-    
-    // Add thermal instability
-    float thermalModulation = (thermalFactor - 1.0f) * 5.0f; // Amplify thermal effect
-    baseLFO += thermalModulation * std::sin(phase * 3.7f) * 0.1f; // Subtle thermal wobble
-    
-    return baseLFO;
-}
-
-int AnalogPhaser::getActiveStages() const {
-    // 2, 4, 6, or 8 stages based on parameter
-    if (m_stages.current < 0.25f) return 2;
-    else if (m_stages.current < 0.5f) return 4;
-    else if (m_stages.current < 0.75f) return 6;
-    else return 8;
-}
-
-float AnalogPhaser::softClip(float input) {
-    // Soft clipping for analog-style saturation
-    float threshold = 0.7f;
-    
-    if (std::abs(input) < threshold) {
-        return input;
-    }
-    
-    float sign = input > 0.0f ? 1.0f : -1.0f;
-    float excess = std::abs(input) - threshold;
-    
-    // Smooth clipping curve
-    return sign * (threshold + std::tanh(excess * 2.0f) * (1.0f - threshold));
-}
-
-float AnalogPhaser::softClipWithAging(float input, float aging) {
-    float clipped = softClip(input);
-    
-    // Aging adds slight nonlinearity and asymmetry
-    if (aging > 0.01f) {
-        float asymmetry = aging * 0.1f;
-        if (clipped > 0) {
-            clipped *= (1.0f + asymmetry);
-        } else {
-            clipped *= (1.0f - asymmetry * 0.5f);
-        }
-        
-        // Add harmonic distortion from aging
-        clipped += aging * 0.05f * clipped * clipped * clipped;
-    }
-    
-    return clipped;
+    // End performance measurement
+    pimpl->metrics.endBlock(numSamples, numChannels);
 }
 
 void AnalogPhaser::updateParameters(const std::map<int, float>& params) {
-    if (params.count(0)) m_rate.target = params.at(0) * 10.0f; // 0-10 Hz
-    if (params.count(1)) m_depth.target = params.at(1);
-    if (params.count(2)) m_feedback.target = params.at(2) * 0.95f; // Max 95% feedback
-    if (params.count(3)) m_stages.target = params.at(3);
-    if (params.count(4)) m_stereoSpread.target = params.at(4);
-    if (params.count(5)) m_centerFreq.target = params.at(5);
-    if (params.count(6)) m_resonance.target = params.at(6);
-    if (params.count(7)) m_mix.target = params.at(7);
+    // Thread-safe parameter updates - this runs on the message thread
+    // First, update the parameter buffer (lock-free write)
+    for (const auto& [index, value] : params) {
+        if (index >= 0 && index < 8) {
+            pimpl->paramBuffer[index] = value;
+        }
+    }
+    
+    // Then update atomic parameters from the buffer
+    // This ensures the RT thread never touches the std::map
+    if (params.count(kRate))         pimpl->rate.setTarget(pimpl->paramBuffer[kRate]);
+    if (params.count(kDepth))        pimpl->depth.setTarget(pimpl->paramBuffer[kDepth]);
+    if (params.count(kFeedback))     pimpl->feedback.setTarget(pimpl->paramBuffer[kFeedback]);
+    if (params.count(kStages))       pimpl->stages.setTarget(pimpl->paramBuffer[kStages]);
+    if (params.count(kStereoSpread)) pimpl->stereoSpread.setTarget(pimpl->paramBuffer[kStereoSpread]);
+    if (params.count(kCenterFreq))   pimpl->centerFreq.setTarget(pimpl->paramBuffer[kCenterFreq]);
+    if (params.count(kResonance))    pimpl->resonance.setTarget(pimpl->paramBuffer[kResonance]);
+    if (params.count(kMix))          pimpl->mix.setTarget(pimpl->paramBuffer[kMix]);
 }
 
 juce::String AnalogPhaser::getParameterName(int index) const {
     switch (index) {
-        case 0: return "Rate";
-        case 1: return "Depth";
-        case 2: return "Feedback";
-        case 3: return "Stages";
-        case 4: return "Spread";
-        case 5: return "Center";
-        case 6: return "Resonance";
-        case 7: return "Mix";
-        default: return "";
+        case kRate:         return "Rate";
+        case kDepth:        return "Depth";
+        case kFeedback:     return "Feedback";
+        case kStages:       return "Stages";
+        case kStereoSpread: return "Spread";
+        case kCenterFreq:   return "Center";
+        case kResonance:    return "Resonance";
+        case kMix:          return "Mix";
+        default:            return "";
     }
+}
+
+float AnalogPhaser::getCPUUsage() const {
+    return pimpl->metrics.getCPUUsage();
+}
+
+float AnalogPhaser::getDynamicRangeDB() const {
+    return pimpl->metrics.getDynamicRangeDB();
+}
+
+std::string AnalogPhaser::getQualityReport() const {
+    return pimpl->metrics.getReport();
 }
