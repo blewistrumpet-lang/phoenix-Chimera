@@ -1,6 +1,7 @@
 #include "EngineQualityTest.h"
 #include "EngineFactory.h"
 #include "ParameterDefinitions.h"
+#include "EngineTypes.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -17,11 +18,11 @@ QualityTestRunner::QualityTestRunner() {
 void QualityTestRunner::runAllEngineTests() {
     std::cout << "================================\n";
     std::cout << "Chimera Phoenix Quality Test Suite\n";
-    std::cout << "Testing all 50 engines...\n";
+    std::cout << "Testing all " << (ENGINE_COUNT - 1) << " engines...\n";
     std::cout << "================================\n\n";
     
     // Test all engines
-    for (int engineType = 0; engineType < 50; ++engineType) {
+    for (int engineType = 1; engineType < ENGINE_COUNT; ++engineType) {
         runEngineTest(engineType);
     }
     
@@ -92,7 +93,7 @@ void QualityTestRunner::runTestSuite(const std::string& suiteName) {
     std::cout << "Running test suite: " << suiteName << "\n";
     
     if (suiteName == "audio_quality") {
-        for (int i = 0; i < 50; ++i) {
+        for (int i = 1; i < ENGINE_COUNT; ++i) {
             auto engine = EngineFactory::createEngine(i);
             if (engine) {
                 AudioQualityResults results = m_tester.testAudioQuality(engine.get());
@@ -101,7 +102,7 @@ void QualityTestRunner::runTestSuite(const std::string& suiteName) {
             }
         }
     } else if (suiteName == "performance") {
-        for (int i = 0; i < 50; ++i) {
+        for (int i = 1; i < ENGINE_COUNT; ++i) {
             auto engine = EngineFactory::createEngine(i);
             if (engine) {
                 PerformanceMetrics metrics = m_tester.benchmarkPerformance(engine.get());
@@ -110,7 +111,7 @@ void QualityTestRunner::runTestSuite(const std::string& suiteName) {
             }
         }
     } else if (suiteName == "boutique") {
-        for (int i = 0; i < 50; ++i) {
+        for (int i = 1; i < ENGINE_COUNT; ++i) {
             auto engine = EngineFactory::createEngine(i);
             if (engine) {
                 BoutiqueQualityResults results = m_tester.testBoutiqueFeatures(engine.get());
@@ -159,7 +160,7 @@ void QualityTestRunner::printSummary() {
     }
     
     std::cout << "\nBoutique Quality Summary:\n";
-    std::cout << "Engines with all boutique features: " << boutiquePassCount << "/50\n";
+    std::cout << "Engines with all boutique features: " << boutiquePassCount << "/" << (ENGINE_COUNT - 1) << "\n";
     
     // List failed engines
     if (m_failedTests > 0) {

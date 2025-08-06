@@ -400,10 +400,30 @@ static constexpr ParameterInfo ladder_filter_params[] = {
     {"Mix", 1.0f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
 };
 
+// Utility Engine parameters
+static constexpr ParameterInfo gain_utility_params[] = {
+    {"Gain", 0.5f, 0.0f, 1.0f, "Input/Output gain (-24dB to +24dB)", "dB", 0.5f},
+    {"High Pass", 0.0f, 0.0f, 1.0f, "High-pass filter cutoff (20Hz-1kHz)", "Hz", 0.0f},
+    {"Low Pass", 1.0f, 0.0f, 1.0f, "Low-pass filter cutoff (1kHz-20kHz)", "Hz", 1.0f},
+    {"Phase Invert", 0.0f, 0.0f, 1.0f, "Invert signal phase", "toggle", 0.0f},
+};
+
+static constexpr ParameterInfo mono_maker_params[] = {
+    {"Frequency", 0.0f, 0.0f, 1.0f, "Transition frequency (all/low/mid/high)", "Hz", 0.0f},
+    {"Stereo Width", 0.5f, 0.0f, 1.0f, "Stereo width control", "percent", 0.5f},
+    {"Mix", 1.0f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.0f},
+};
+
+static constexpr ParameterInfo phase_align_params[] = {
+    {"Low Phase", 0.5f, 0.0f, 1.0f, "Low frequency phase (-180° to +180°)", "degrees", 0.5f},
+    {"Mid Phase", 0.5f, 0.0f, 1.0f, "Mid frequency phase (-180° to +180°)", "degrees", 0.5f},
+    {"High Phase", 0.5f, 0.0f, 1.0f, "High frequency phase (-180° to +180°)", "degrees", 0.5f},
+    {"Mix", 1.0f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.0f},
+};
+
 // Complete engine database
 static constexpr EngineInfo engineDatabase[] = {
-    {"bypass", "Bypass", -1, "ENGINE_BYPASS", 0, "Utility", 0, nullptr},
-    {"k_style", "K-Style Overdrive", 38, "ENGINE_K_STYLE", 1, "Distortion", 4, k_style_params},
+    {"k_style", "K-Style Overdrive", 38, "ENGINE_K_STYLE", 0, "Distortion", 4, k_style_params},
     {"vintage_tube", "Vintage Tube Preamp", 0, "ENGINE_VINTAGE_TUBE", 48, "Saturation", 10, vintage_tube_params},
     {"tape_echo", "Tape Echo", 1, "ENGINE_TAPE_ECHO", 16, "Delay", 5, tape_echo_params},
     {"shimmer_reverb", "Shimmer Reverb", 2, "ENGINE_SHIMMER_REVERB", 13, "Reverb", 4, shimmer_reverb_params},
@@ -441,9 +461,12 @@ static constexpr EngineInfo engineDatabase[] = {
     {"stereo_imager", "Stereo Imager", 55, "ENGINE_STEREO_IMAGER", 53, "Spatial", 4, stereo_imager_params},
     {"rodent_distortion", "Rodent Distortion", 36, "ENGINE_RODENT_DISTORTION", 2, "Distortion", 8, rodent_distortion_params},
     {"muff_fuzz", "Muff Fuzz", 35, "ENGINE_MUFF_FUZZ", 3, "Distortion", 7, muff_fuzz_params},
-    {"rotary_speaker", "Rotary Speaker", 56, "ENGINE_ROTARY_SPEAKER", 54, "Modulation", 6, rotary_speaker_params},
+    {"rotary_speaker", "Rotary Speaker", 30, "ENGINE_ROTARY_SPEAKER", 54, "Modulation", 6, rotary_speaker_params},
     {"comb_resonator", "Comb Resonator", 23, "ENGINE_COMB_RESONATOR", 9, "Filter", 3, comb_resonator_params},
-    {"ladder_filter", "Ladder Filter Pro", 57, "ENGINE_LADDER_FILTER", 55, "Filter", 7, ladder_filter_params},
+    {"ladder_filter", "Ladder Filter Pro", 9, "ENGINE_LADDER_FILTER", 55, "Filter", 7, ladder_filter_params},
+    {"gain_utility", "Gain Utility", 54, "ENGINE_GAIN_UTILITY", 53, "Utility", 4, gain_utility_params},
+    {"mono_maker", "Mono Maker", 55, "ENGINE_MONO_MAKER", 54, "Utility", 3, mono_maker_params},
+    {"phase_align", "Phase Align", 56, "ENGINE_PHASE_ALIGN", 55, "Utility", 4, phase_align_params},
 };
 
 // Helper functions

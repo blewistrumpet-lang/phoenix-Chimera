@@ -367,6 +367,13 @@ void ChimeraAudioProcessor::parameterChanged(const juce::String& parameterID, fl
 void ChimeraAudioProcessor::loadEngine(int slot, int engineID) {
     DBG("Loading engine ID " + juce::String(engineID) + " into slot " + juce::String(slot));
     
+    // Runtime assertion to guarantee only valid engines are loaded
+    jassert(engineID >= 0 && engineID < ENGINE_COUNT);
+    if (engineID < 0 || engineID >= ENGINE_COUNT) {
+        DBG("ERROR: Invalid engine ID " + juce::String(engineID) + " - using ENGINE_NONE");
+        engineID = ENGINE_NONE;
+    }
+    
     m_activeEngines[slot] = EngineFactory::createEngine(engineID);
     if (m_activeEngines[slot]) {
         m_activeEngines[slot]->prepareToPlay(m_sampleRate, m_samplesPerBlock);

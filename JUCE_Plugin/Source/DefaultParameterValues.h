@@ -27,7 +27,7 @@ std::map<int, float> getDefaultParameters(int engineType);
 /**
  * Get complete default information for all engines
  * 
- * @return Vector of EngineDefaultInfo structures for all 50 engines
+ * @return Vector of EngineDefaultInfo structures for all 57 engines (0-56)
  */
 std::vector<EngineDefaultInfo> getAllEngineDefaults();
 

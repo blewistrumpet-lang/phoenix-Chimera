@@ -10,60 +10,60 @@
 
 // Copy of the mapping from PluginProcessor.cpp
 static const std::map<int, int> engineIDToChoiceMap = {
-    {-1, 0},  // ENGINE_BYPASS (-1) -> "Bypass" is at index 0
-    {38, 1},  // ENGINE_K_STYLE -> "K-Style Overdrive" at index 1
-    {1, 2},   // ENGINE_TAPE_ECHO -> "Tape Echo" at index 2
-    {3, 3},   // ENGINE_PLATE_REVERB -> "Plate Reverb" at index 3
-    {36, 4},  // ENGINE_RODENT_DISTORTION -> "Rodent Distortion" at index 4
-    {35, 5},  // ENGINE_MUFF_FUZZ -> "Muff Fuzz" at index 5
-    {22, 6},  // ENGINE_CLASSIC_TREMOLO -> "Classic Tremolo" at index 6
-    {8, 7},   // ENGINE_MAGNETIC_DRUM_ECHO -> "Magnetic Drum Echo" at index 7
-    {9, 8},   // ENGINE_BUCKET_BRIGADE_DELAY -> "Bucket Brigade Delay" at index 8
-    {53, 9},  // ENGINE_DIGITAL_DELAY -> "Digital Delay" at index 9
-    {21, 10}, // ENGINE_HARMONIC_TREMOLO -> "Harmonic Tremolo" at index 10
-    {24, 11}, // ENGINE_ROTARY_SPEAKER -> "Rotary Speaker" at index 11
-    {44, 12}, // ENGINE_DETUNE_DOUBLER -> "Detune Doubler" at index 12
-    {28, 13}, // ENGINE_LADDER_FILTER -> "Ladder Filter" at index 13
-    {30, 14}, // ENGINE_FORMANT_FILTER -> "Formant Filter" at index 14
-    {7, 15},  // ENGINE_VCA_COMPRESSOR -> "Classic Compressor" at index 15
-    {29, 16}, // ENGINE_STATE_VARIABLE_FILTER -> "State Variable Filter" at index 16
-    {11, 17}, // ENGINE_DIGITAL_CHORUS -> "Stereo Chorus" at index 17
-    {39, 18}, // ENGINE_SPECTRAL_FREEZE -> "Spectral Freeze" at index 18
-    {16, 19}, // ENGINE_GRANULAR_CLOUD -> "Granular Cloud" at index 19
-    {15, 20}, // ENGINE_RING_MODULATOR -> "Analog Ring Modulator" at index 20
-    {34, 21}, // ENGINE_MULTIBAND_SATURATOR -> "Multiband Saturator" at index 21
-    {23, 22}, // ENGINE_COMB_RESONATOR -> "Comb Resonator" at index 22
-    {14, 23}, // ENGINE_PITCH_SHIFTER -> "Pitch Shifter" at index 23
-    {45, 24}, // ENGINE_PHASED_VOCODER -> "Phased Vocoder" at index 24
-    {4, 25},  // ENGINE_CONVOLUTION_REVERB -> "Convolution Reverb" at index 25
-    {33, 26}, // ENGINE_BIT_CRUSHER -> "Bit Crusher" at index 26
-    {19, 27}, // ENGINE_FREQUENCY_SHIFTER -> "Frequency Shifter" at index 27
-    {31, 28}, // ENGINE_WAVE_FOLDER -> "Wave Folder" at index 28
-    {2, 29},  // ENGINE_SHIMMER_REVERB -> "Shimmer Reverb" at index 29
-    {17, 30}, // ENGINE_VOCAL_FORMANT -> "Vocal Formant Filter" at index 30
-    {20, 31}, // ENGINE_TRANSIENT_SHAPER -> "Transient Shaper" at index 31
-    {18, 32}, // ENGINE_DIMENSION_EXPANDER -> "Dimension Expander" at index 32
-    {12, 33}, // ENGINE_ANALOG_PHASER -> "Analog Phaser" at index 33
-    {48, 34}, // ENGINE_ENVELOPE_FILTER -> "Envelope Filter" at index 34
-    {43, 35}, // ENGINE_GATED_REVERB -> "Gated Reverb" at index 35
-    {32, 36}, // ENGINE_HARMONIC_EXCITER -> "Harmonic Exciter" at index 36
-    {49, 37}, // ENGINE_FEEDBACK_NETWORK -> "Feedback Network" at index 37
-    {42, 38}, // ENGINE_INTELLIGENT_HARMONIZER -> "Intelligent Harmonizer" at index 38
-    {27, 39}, // ENGINE_PARAMETRIC_EQ -> "Parametric EQ" at index 39
-    {50, 40}, // ENGINE_MASTERING_LIMITER -> "Mastering Limiter" at index 40
-    {47, 41}, // ENGINE_NOISE_GATE -> "Noise Gate" at index 41
-    {6, 42},  // ENGINE_OPTO_COMPRESSOR -> "Vintage Opto" at index 42
-    {46, 43}, // ENGINE_SPECTRAL_GATE -> "Spectral Gate" at index 43
-    {41, 44}, // ENGINE_CHAOS_GENERATOR -> "Chaos Generator" at index 44
-    {40, 45}, // ENGINE_BUFFER_REPEAT -> "Buffer Repeat" at index 45
-    {26, 46}, // ENGINE_VINTAGE_CONSOLE_EQ -> "Vintage Console EQ" at index 46
-    {25, 47}, // ENGINE_MID_SIDE_PROCESSOR -> "Mid/Side Processor" at index 47
-    {0, 48},  // ENGINE_VINTAGE_TUBE -> "Vintage Tube Preamp" at index 48
-    {5, 49},  // ENGINE_SPRING_REVERB -> "Spring Reverb" at index 49
-    {52, 50}, // ENGINE_RESONANT_CHORUS -> "Resonant Chorus" at index 50
-    {51, 51}, // ENGINE_STEREO_WIDENER -> "Stereo Widener" at index 51
-    {54, 52}, // ENGINE_DYNAMIC_EQ -> "Dynamic EQ" at index 52
-    {55, 53}  // ENGINE_STEREO_IMAGER -> "Stereo Imager" at index 53
+    {38, 0},  // ENGINE_K_STYLE -> "K-Style Overdrive" at index 0
+    {1, 1},   // ENGINE_TAPE_ECHO -> "Tape Echo" at index 1
+    {3, 2},   // ENGINE_PLATE_REVERB -> "Plate Reverb" at index 2
+    {36, 3},  // ENGINE_RODENT_DISTORTION -> "Rodent Distortion" at index 3
+    {35, 4},  // ENGINE_MUFF_FUZZ -> "Muff Fuzz" at index 4
+    {22, 5},  // ENGINE_CLASSIC_TREMOLO -> "Classic Tremolo" at index 5
+    {8, 6},   // ENGINE_MAGNETIC_DRUM_ECHO -> "Magnetic Drum Echo" at index 6
+    {9, 7},   // ENGINE_BUCKET_BRIGADE_DELAY -> "Bucket Brigade Delay" at index 7
+    {53, 8},  // ENGINE_DIGITAL_DELAY -> "Digital Delay" at index 8
+    {21, 9}, // ENGINE_HARMONIC_TREMOLO -> "Harmonic Tremolo" at index 9
+    {24, 10}, // ENGINE_ROTARY_SPEAKER -> "Rotary Speaker" at index 10
+    {44, 11}, // ENGINE_DETUNE_DOUBLER -> "Detune Doubler" at index 11
+    {28, 12}, // ENGINE_LADDER_FILTER -> "Ladder Filter" at index 12
+    {30, 13}, // ENGINE_FORMANT_FILTER -> "Formant Filter" at index 13
+    {7, 14},  // ENGINE_VCA_COMPRESSOR -> "Classic Compressor" at index 14
+    {29, 15}, // ENGINE_STATE_VARIABLE_FILTER -> "State Variable Filter" at index 15
+    {11, 16}, // ENGINE_DIGITAL_CHORUS -> "Stereo Chorus" at index 16
+    {39, 17}, // ENGINE_SPECTRAL_FREEZE -> "Spectral Freeze" at index 17
+    {16, 18}, // ENGINE_GRANULAR_CLOUD -> "Granular Cloud" at index 18
+    {15, 19}, // ENGINE_RING_MODULATOR -> "Analog Ring Modulator" at index 19
+    {34, 20}, // ENGINE_MULTIBAND_SATURATOR -> "Multiband Saturator" at index 20
+    {23, 21}, // ENGINE_COMB_RESONATOR -> "Comb Resonator" at index 21
+    {14, 22}, // ENGINE_PITCH_SHIFTER -> "Pitch Shifter" at index 22
+    {45, 23}, // ENGINE_PHASED_VOCODER -> "Phased Vocoder" at index 23
+    {4, 24},  // ENGINE_CONVOLUTION_REVERB -> "Convolution Reverb" at index 24
+    {33, 25}, // ENGINE_BIT_CRUSHER -> "Bit Crusher" at index 25
+    {19, 26}, // ENGINE_FREQUENCY_SHIFTER -> "Frequency Shifter" at index 26
+    {31, 27}, // ENGINE_WAVE_FOLDER -> "Wave Folder" at index 27
+    {2, 28},  // ENGINE_SHIMMER_REVERB -> "Shimmer Reverb" at index 28
+    {17, 29}, // ENGINE_VOCAL_FORMANT -> "Vocal Formant Filter" at index 29
+    {20, 30}, // ENGINE_TRANSIENT_SHAPER -> "Transient Shaper" at index 30
+    {18, 31}, // ENGINE_DIMENSION_EXPANDER -> "Dimension Expander" at index 31
+    {12, 32}, // ENGINE_ANALOG_PHASER -> "Analog Phaser" at index 32
+    {48, 33}, // ENGINE_ENVELOPE_FILTER -> "Envelope Filter" at index 33
+    {43, 34}, // ENGINE_GATED_REVERB -> "Gated Reverb" at index 34
+    {32, 35}, // ENGINE_HARMONIC_EXCITER -> "Harmonic Exciter" at index 35
+    {49, 36}, // ENGINE_FEEDBACK_NETWORK -> "Feedback Network" at index 36
+    {42, 37}, // ENGINE_INTELLIGENT_HARMONIZER -> "Intelligent Harmonizer" at index 37
+    {27, 38}, // ENGINE_PARAMETRIC_EQ -> "Parametric EQ" at index 38
+    {50, 39}, // ENGINE_MASTERING_LIMITER -> "Mastering Limiter" at index 39
+    {47, 40}, // ENGINE_NOISE_GATE -> "Noise Gate" at index 40
+    {6, 41},  // ENGINE_OPTO_COMPRESSOR -> "Vintage Opto" at index 41
+    {46, 42}, // ENGINE_SPECTRAL_GATE -> "Spectral Gate" at index 42
+    {41, 43}, // ENGINE_CHAOS_GENERATOR -> "Chaos Generator" at index 43
+    {40, 44}, // ENGINE_BUFFER_REPEAT -> "Buffer Repeat" at index 44
+    {26, 45}, // ENGINE_VINTAGE_CONSOLE_EQ -> "Vintage Console EQ" at index 45
+    {25, 46}, // ENGINE_MID_SIDE_PROCESSOR -> "Mid/Side Processor" at index 46
+    {0, 47},  // ENGINE_VINTAGE_TUBE -> "Vintage Tube Preamp" at index 47
+    {5, 48},  // ENGINE_SPRING_REVERB -> "Spring Reverb" at index 48
+    {52, 49}, // ENGINE_RESONANT_CHORUS -> "Resonant Chorus" at index 49
+    {51, 50}, // ENGINE_STEREO_WIDENER -> "Stereo Widener" at index 50
+    {54, 51}, // ENGINE_DYNAMIC_EQ -> "Dynamic EQ" at index 51
+    {55, 52}, // ENGINE_STEREO_IMAGER -> "Stereo Imager" at index 52
+    {56, 53}  // ENGINE_GAIN_UTILITY -> "Gain Utility" at index 53
 };
 
 // Expected engine choices array order
@@ -85,7 +85,7 @@ static const std::vector<std::string> expectedChoices = {
     "Spectral Gate", "Chaos Generator", "Buffer Repeat",
     "Vintage Console EQ", "Mid/Side Processor", "Vintage Tube Preamp",
     "Spring Reverb", "Resonant Chorus", "Stereo Widener",
-    "Dynamic EQ", "Stereo Imager"
+    "Dynamic EQ", "Stereo Imager", "Gain Utility"
 };
 
 void testEngineMapping() {
@@ -98,7 +98,6 @@ void testEngineMapping() {
     
     // Check all defined engines (including gaps)
     std::vector<int> allEngineIDs = {
-        ENGINE_BYPASS,
         ENGINE_VINTAGE_TUBE, ENGINE_TAPE_ECHO, ENGINE_SHIMMER_REVERB, ENGINE_PLATE_REVERB,
         ENGINE_CONVOLUTION_REVERB, ENGINE_SPRING_REVERB, ENGINE_OPTO_COMPRESSOR, ENGINE_VCA_COMPRESSOR,
         ENGINE_MAGNETIC_DRUM_ECHO, ENGINE_BUCKET_BRIGADE_DELAY,
@@ -117,7 +116,8 @@ void testEngineMapping() {
         ENGINE_INTELLIGENT_HARMONIZER, ENGINE_GATED_REVERB, ENGINE_DETUNE_DOUBLER,
         ENGINE_PHASED_VOCODER, ENGINE_SPECTRAL_GATE, ENGINE_NOISE_GATE, ENGINE_ENVELOPE_FILTER,
         ENGINE_FEEDBACK_NETWORK, ENGINE_MASTERING_LIMITER, ENGINE_STEREO_WIDENER,
-        ENGINE_RESONANT_CHORUS, ENGINE_DIGITAL_DELAY, ENGINE_DYNAMIC_EQ, ENGINE_STEREO_IMAGER
+        ENGINE_RESONANT_CHORUS, ENGINE_DIGITAL_DELAY, ENGINE_DYNAMIC_EQ, ENGINE_STEREO_IMAGER,
+        ENGINE_GAIN_UTILITY
     };
     
     for (int engineID : allEngineIDs) {

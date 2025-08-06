@@ -3269,5 +3269,1041 @@
     ],
     "default_value": 0.5,
     "display_name": "Mix"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_FREQUENCY",
+    "primitive": "harmonics",
+    "description": "Target frequency range for harmonic generation",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. Maps to 1kHz-10kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Frequency",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_DRIVE",
+    "primitive": "harmonics",
+    "description": "Harmonic generation amount",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=bypass, 1=maximum harmonics",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Drive"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_HARMONICS",
+    "primitive": "harmonics",
+    "description": "Even vs odd harmonic balance",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=even harmonics (warm), 1=odd harmonics (bright)",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Harmonics"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_CLARITY",
+    "primitive": "harmonics",
+    "description": "Phase coherence control",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=none, 1=maximum phase alignment",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Clarity"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_WARMTH",
+    "primitive": "harmonics",
+    "description": "Low frequency enhancement",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=flat, 1=+6dB @ 100Hz",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Warmth",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_PRESENCE",
+    "primitive": "harmonics",
+    "description": "High frequency enhancement",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=flat, 1=+6dB @ 8kHz",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.4,
+    "display_name": "Presence",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_COLOR",
+    "primitive": "harmonics",
+    "description": "Harmonic character selection",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=tube (even), 1=transistor (odd)",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Color"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_MIX",
+    "primitive": "harmonics",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=100% dry, 1=100% wet",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_LOW_GAIN",
+    "primitive": "eq",
+    "description": "Low frequency band gain",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to -18dB to +18dB",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Low Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_LOW_FREQ",
+    "primitive": "eq",
+    "description": "Low frequency band center frequency",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to 20Hz-500Hz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Low Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_MID_GAIN",
+    "primitive": "eq",
+    "description": "Mid frequency band gain",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to -18dB to +18dB",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_MID_FREQ",
+    "primitive": "eq",
+    "description": "Mid frequency band center frequency",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to 200Hz-5kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_MID_Q",
+    "primitive": "eq",
+    "description": "Mid frequency band Q factor",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to 0.1-10.0",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Q"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_HIGH_GAIN",
+    "primitive": "eq",
+    "description": "High frequency band gain",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to -18dB to +18dB",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "High Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_HIGH_FREQ",
+    "primitive": "eq",
+    "description": "High frequency band center frequency",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to 2kHz-20kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "High Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_OUTPUT_GAIN",
+    "primitive": "eq",
+    "description": "Overall output gain",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to -12dB to +12dB",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Output",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_MIX",
+    "primitive": "eq",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_THRESHOLD",
+    "primitive": "dynamics",
+    "description": "Gate threshold level",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to -60dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Threshold",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_RANGE",
+    "primitive": "dynamics",
+    "description": "Maximum attenuation when gate is closed",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to -40dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Range",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_ATTACK",
+    "primitive": "dynamics",
+    "description": "Gate opening time",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 0.1ms to 100ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.1,
+    "display_name": "Attack",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_HOLD",
+    "primitive": "dynamics",
+    "description": "Gate hold time",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 0ms to 500ms",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.1,
+    "display_name": "Hold",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_RELEASE",
+    "primitive": "dynamics",
+    "description": "Gate closing time",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 1ms to 1000ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Release",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_HYSTERESIS",
+    "primitive": "dynamics",
+    "description": "Threshold hysteresis to prevent chattering",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 0dB to 10dB",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Hysteresis",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_SIDECHAIN",
+    "primitive": "dynamics",
+    "description": "Sidechain filter frequency",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 20Hz to 2kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Sidechain",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_LOOKAHEAD",
+    "primitive": "dynamics",
+    "description": "Lookahead time for smoother gating",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 0ms to 10ms",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Lookahead",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_GAIN",
+    "primitive": "dynamics",
+    "description": "Input gain control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. Maps to -20dB to +20dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_PEAK_REDUCTION",
+    "primitive": "dynamics",
+    "description": "Amount of peak reduction",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. Maps to 0% to 100%",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Peak Reduction"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_EMPHASIS",
+    "primitive": "dynamics",
+    "description": "HF emphasis sidechain filter",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. Maps to flat to +10dB @ 10kHz",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Emphasis"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_OUTPUT",
+    "primitive": "dynamics",
+    "description": "Output level control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. Maps to -20dB to +20dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Output",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_MIX",
+    "primitive": "dynamics",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_KNEE",
+    "primitive": "dynamics",
+    "description": "Compression knee softness",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. 0=hard knee, 1=soft knee",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Knee"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_HARMONICS",
+    "primitive": "dynamics",
+    "description": "Tube-style harmonic saturation",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. 0=clean, 1=maximum harmonics",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Harmonics"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_STEREO_LINK",
+    "primitive": "dynamics",
+    "description": "Stereo channel linking",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. 0=dual mono, 1=stereo linked",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Stereo Link"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_DIVISION",
+    "primitive": "delay",
+    "description": "Beat division for repeat length",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. Maps from 1/64 to 4 bars",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Division"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_PROBABILITY",
+    "primitive": "delay",
+    "description": "Repeat trigger probability",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=never, 1=always",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Probability"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_FEEDBACK",
+    "primitive": "delay",
+    "description": "Feedback amount",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=no feedback, 1=infinite",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Feedback"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_FILTER",
+    "primitive": "delay",
+    "description": "Filter cutoff and type",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. <0.5=lowpass, >0.5=highpass",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Filter"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_PITCH",
+    "primitive": "delay",
+    "description": "Pitch shift amount",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. Maps to -1 to +1 octave",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Pitch"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_REVERSE",
+    "primitive": "delay",
+    "description": "Reverse playback probability",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=never reverse, 1=always reverse",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Reverse"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_STUTTER",
+    "primitive": "delay",
+    "description": "Stutter gate amount",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=smooth, 1=maximum stutter",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Stutter"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_MIX",
+    "primitive": "delay",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_THRESHOLD",
+    "primitive": "spectral",
+    "description": "Gate threshold level",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to -80dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Threshold",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_RATIO",
+    "primitive": "spectral",
+    "description": "Gate expansion ratio",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 1:1 to 1:20",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Ratio"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_ATTACK",
+    "primitive": "spectral",
+    "description": "Gate attack time",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 0.1ms to 100ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.1,
+    "display_name": "Attack",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_RELEASE",
+    "primitive": "spectral",
+    "description": "Gate release time",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 1ms to 1000ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Release",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_FREQ_LOW",
+    "primitive": "spectral",
+    "description": "Low frequency boundary",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 20Hz to 20kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Freq Low",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_FREQ_HIGH",
+    "primitive": "spectral",
+    "description": "High frequency boundary",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 20Hz to 20kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Freq High",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_LOOKAHEAD",
+    "primitive": "spectral",
+    "description": "Lookahead time for smoother gating",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 0ms to 20ms",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Lookahead",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_MIX",
+    "primitive": "spectral",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_THRESHOLD",
+    "primitive": "dynamics",
+    "description": "Limiting threshold",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to -30dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.9,
+    "display_name": "Threshold",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_CEILING",
+    "primitive": "dynamics",
+    "description": "Output ceiling level",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to -3dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.97,
+    "display_name": "Ceiling",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_RELEASE",
+    "primitive": "dynamics",
+    "description": "Release time",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to 1ms to 1000ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Release",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_LOOKAHEAD",
+    "primitive": "dynamics",
+    "description": "Lookahead time",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to 0ms to 10ms",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Lookahead",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_KNEE",
+    "primitive": "dynamics",
+    "description": "Knee softness",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=hard knee, 1=soft knee",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Knee"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_MAKEUP",
+    "primitive": "dynamics",
+    "description": "Makeup gain",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to 0dB to +12dB",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Makeup",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_SATURATION",
+    "primitive": "dynamics",
+    "description": "Soft saturation amount",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=clean, 1=maximum saturation",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.2,
+    "display_name": "Saturation"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_STEREO_LINK",
+    "primitive": "dynamics",
+    "description": "Stereo channel linking",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=independent, 1=linked",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Stereo Link"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_TRUE_PEAK",
+    "primitive": "dynamics",
+    "description": "True peak limiting mode",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=off, 1=on",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "True Peak"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_MIX",
+    "primitive": "dynamics",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_RATE",
+    "primitive": "modulation",
+    "description": "Chaos generation rate",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. Maps to 0.01Hz to 100Hz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Rate",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_DEPTH",
+    "primitive": "modulation",
+    "description": "Modulation depth",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. 0=no modulation, 1=maximum",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Depth"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_TYPE",
+    "primitive": "modulation",
+    "description": "Chaos algorithm type",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. Selects between different chaos algorithms",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Type"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_SMOOTHING",
+    "primitive": "modulation",
+    "description": "Output smoothing amount",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. 0=raw chaos, 1=heavily smoothed",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Smoothing"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_MOD_TARGET",
+    "primitive": "modulation",
+    "description": "Modulation target selection",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. Selects which parameter to modulate",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Mod Target"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_SYNC",
+    "primitive": "modulation",
+    "description": "Tempo sync enable",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. 0=free running, 1=tempo synced",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Sync"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_SEED",
+    "primitive": "modulation",
+    "description": "Random seed value",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. Changes the chaos pattern",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Seed"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_MIX",
+    "primitive": "modulation",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_ATTACK",
+    "primitive": "dynamics",
+    "description": "Attack transient emphasis",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to -100% to +100%",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Attack"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_SUSTAIN",
+    "primitive": "dynamics",
+    "description": "Sustain level control",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to -100% to +100%",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Sustain"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_ATTACK_TIME",
+    "primitive": "dynamics",
+    "description": "Attack detection time",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 0.1ms to 50ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Attack Time",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_RELEASE_TIME",
+    "primitive": "dynamics",
+    "description": "Release detection time",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 1ms to 500ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Release Time",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_SEPARATION",
+    "primitive": "dynamics",
+    "description": "Transient/sustain separation",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Controls detection sensitivity",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Separation"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_DETECTION",
+    "primitive": "dynamics",
+    "description": "Detection mode",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0=peak, 1=RMS",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Detection"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_LOOKAHEAD",
+    "primitive": "dynamics",
+    "description": "Lookahead time",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 0ms to 10ms",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Lookahead",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_SOFT_KNEE",
+    "primitive": "dynamics",
+    "description": "Processing knee softness",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0=hard, 1=soft",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Soft Knee"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_OVERSAMPLING",
+    "primitive": "dynamics",
+    "description": "Oversampling mode",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0=off, 0.5=2x, 1=4x",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Oversampling"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_MIX",
+    "primitive": "dynamics",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
   }
 ]

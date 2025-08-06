@@ -207,60 +207,63 @@ ChimeraAudioProcessorEditor::ChimeraAudioProcessorEditor(ChimeraAudioProcessor& 
         
         // Engine selector
         slotUI.engineSelector = std::make_unique<juce::ComboBox>();
-        slotUI.engineSelector->addItem("Bypass", ENGINE_BYPASS + 2);
-        slotUI.engineSelector->addItem("K-Style Overdrive", ENGINE_K_STYLE + 2);
-        slotUI.engineSelector->addItem("Tape Echo", ENGINE_TAPE_ECHO + 2);
-        slotUI.engineSelector->addItem("Plate Reverb", ENGINE_PLATE_REVERB + 2);
-        slotUI.engineSelector->addItem("Rodent Distortion", ENGINE_RODENT_DISTORTION + 2);
-        slotUI.engineSelector->addItem("Muff Fuzz", ENGINE_MUFF_FUZZ + 2);
-        slotUI.engineSelector->addItem("Classic Tremolo", ENGINE_CLASSIC_TREMOLO + 2);
-        slotUI.engineSelector->addItem("Magnetic Drum Echo", ENGINE_MAGNETIC_DRUM_ECHO + 2);
-        slotUI.engineSelector->addItem("Bucket Brigade Delay", ENGINE_BUCKET_BRIGADE_DELAY + 2);
-        slotUI.engineSelector->addItem("Digital Delay", ENGINE_DIGITAL_DELAY + 2);
-        slotUI.engineSelector->addItem("Harmonic Tremolo", ENGINE_HARMONIC_TREMOLO + 2);
-        slotUI.engineSelector->addItem("Rotary Speaker", ENGINE_ROTARY_SPEAKER + 2);
-        slotUI.engineSelector->addItem("Detune Doubler", ENGINE_DETUNE_DOUBLER + 2);
-        slotUI.engineSelector->addItem("Ladder Filter", ENGINE_LADDER_FILTER + 2);
-        slotUI.engineSelector->addItem("Formant Filter", ENGINE_FORMANT_FILTER + 2);
-        slotUI.engineSelector->addItem("Classic Compressor", ENGINE_CLASSIC_COMPRESSOR + 2);
-        slotUI.engineSelector->addItem("State Variable Filter", ENGINE_STATE_VARIABLE_FILTER + 2);
-        slotUI.engineSelector->addItem("Stereo Chorus", ENGINE_STEREO_CHORUS + 2);
-        slotUI.engineSelector->addItem("Spectral Freeze", ENGINE_SPECTRAL_FREEZE + 2);
-        slotUI.engineSelector->addItem("Granular Cloud", ENGINE_GRANULAR_CLOUD + 2);
-        slotUI.engineSelector->addItem("Analog Ring Modulator", ENGINE_ANALOG_RING_MODULATOR + 2);
-        slotUI.engineSelector->addItem("Multiband Saturator", ENGINE_MULTIBAND_SATURATOR + 2);
-        slotUI.engineSelector->addItem("Comb Resonator", ENGINE_COMB_RESONATOR + 2);
-        slotUI.engineSelector->addItem("Pitch Shifter", ENGINE_PITCH_SHIFTER + 2);
-        slotUI.engineSelector->addItem("Phased Vocoder", ENGINE_PHASED_VOCODER + 2);
-        slotUI.engineSelector->addItem("Convolution Reverb", ENGINE_CONVOLUTION_REVERB + 2);
-        slotUI.engineSelector->addItem("Bit Crusher", ENGINE_BIT_CRUSHER + 2);
-        slotUI.engineSelector->addItem("Frequency Shifter", ENGINE_FREQUENCY_SHIFTER + 2);
-        slotUI.engineSelector->addItem("Wave Folder", ENGINE_WAVE_FOLDER + 2);
-        slotUI.engineSelector->addItem("Shimmer Reverb", ENGINE_SHIMMER_REVERB + 2);
-        slotUI.engineSelector->addItem("Vocal Formant Filter", ENGINE_VOCAL_FORMANT_FILTER + 2);
-        slotUI.engineSelector->addItem("Transient Shaper", ENGINE_TRANSIENT_SHAPER + 2);
-        slotUI.engineSelector->addItem("Dimension Expander", ENGINE_DIMENSION_EXPANDER + 2);
-        slotUI.engineSelector->addItem("Analog Phaser", ENGINE_ANALOG_PHASER + 2);
-        slotUI.engineSelector->addItem("Envelope Filter", ENGINE_ENVELOPE_FILTER + 2);
-        slotUI.engineSelector->addItem("Gated Reverb", ENGINE_GATED_REVERB + 2);
-        slotUI.engineSelector->addItem("Harmonic Exciter", ENGINE_HARMONIC_EXCITER + 2);
-        slotUI.engineSelector->addItem("Feedback Network", ENGINE_FEEDBACK_NETWORK + 2);
-        slotUI.engineSelector->addItem("Intelligent Harmonizer", ENGINE_INTELLIGENT_HARMONIZER + 2);
-        slotUI.engineSelector->addItem("Parametric EQ", ENGINE_PARAMETRIC_EQ + 2);
-        slotUI.engineSelector->addItem("Mastering Limiter", ENGINE_MASTERING_LIMITER + 2);
-        slotUI.engineSelector->addItem("Noise Gate", ENGINE_NOISE_GATE + 2);
-        slotUI.engineSelector->addItem("Vintage Opto", ENGINE_VINTAGE_OPTO_COMPRESSOR + 2);
-        slotUI.engineSelector->addItem("Spectral Gate", ENGINE_SPECTRAL_GATE + 2);
-        slotUI.engineSelector->addItem("Chaos Generator", ENGINE_CHAOS_GENERATOR + 2);
-        slotUI.engineSelector->addItem("Buffer Repeat", ENGINE_BUFFER_REPEAT + 2);
-        slotUI.engineSelector->addItem("Vintage Console EQ", ENGINE_VINTAGE_CONSOLE_EQ + 2);
-        slotUI.engineSelector->addItem("Mid/Side Processor", ENGINE_MID_SIDE_PROCESSOR + 2);
-        slotUI.engineSelector->addItem("Vintage Tube Preamp", ENGINE_VINTAGE_TUBE_PREAMP + 2);
-        slotUI.engineSelector->addItem("Spring Reverb", ENGINE_SPRING_REVERB + 2);
-        slotUI.engineSelector->addItem("Resonant Chorus", ENGINE_RESONANT_CHORUS + 2);
-        slotUI.engineSelector->addItem("Stereo Widener", ENGINE_STEREO_WIDENER + 2);
-        slotUI.engineSelector->addItem("Dynamic EQ", ENGINE_DYNAMIC_EQ + 2);
-        slotUI.engineSelector->addItem("Stereo Imager", ENGINE_STEREO_IMAGER + 2);
+        // ComboBox items use sequential IDs starting from 1, choice indices start from 0
+        slotUI.engineSelector->addItem("K-Style Overdrive", 1);     // choice index 0
+        slotUI.engineSelector->addItem("Tape Echo", 2);              // choice index 1
+        slotUI.engineSelector->addItem("Plate Reverb", 3);           // choice index 2
+        slotUI.engineSelector->addItem("Rodent Distortion", 4);      // choice index 3
+        slotUI.engineSelector->addItem("Muff Fuzz", 5);              // choice index 4
+        slotUI.engineSelector->addItem("Classic Tremolo", 6);        // choice index 5
+        slotUI.engineSelector->addItem("Magnetic Drum Echo", 7);     // choice index 6
+        slotUI.engineSelector->addItem("Bucket Brigade Delay", 8);   // choice index 7
+        slotUI.engineSelector->addItem("Digital Delay", 9);          // choice index 8
+        slotUI.engineSelector->addItem("Harmonic Tremolo", 10);      // choice index 9
+        slotUI.engineSelector->addItem("Rotary Speaker", 11);        // choice index 10
+        slotUI.engineSelector->addItem("Detune Doubler", 12);        // choice index 11
+        slotUI.engineSelector->addItem("Ladder Filter", 13);         // choice index 12
+        slotUI.engineSelector->addItem("Formant Filter", 14);        // choice index 13
+        slotUI.engineSelector->addItem("Classic Compressor", 15);    // choice index 14
+        slotUI.engineSelector->addItem("State Variable Filter", 16); // choice index 15
+        slotUI.engineSelector->addItem("Stereo Chorus", 17);         // choice index 16
+        slotUI.engineSelector->addItem("Spectral Freeze", 18);       // choice index 17
+        slotUI.engineSelector->addItem("Granular Cloud", 19);        // choice index 18
+        slotUI.engineSelector->addItem("Analog Ring Modulator", 20); // choice index 19
+        slotUI.engineSelector->addItem("Multiband Saturator", 21);   // choice index 20
+        slotUI.engineSelector->addItem("Comb Resonator", 22);        // choice index 21
+        slotUI.engineSelector->addItem("Pitch Shifter", 23);         // choice index 22
+        slotUI.engineSelector->addItem("Phased Vocoder", 24);        // choice index 23
+        slotUI.engineSelector->addItem("Convolution Reverb", 25);    // choice index 24
+        slotUI.engineSelector->addItem("Bit Crusher", 26);           // choice index 25
+        slotUI.engineSelector->addItem("Frequency Shifter", 27);     // choice index 26
+        slotUI.engineSelector->addItem("Wave Folder", 28);           // choice index 27
+        slotUI.engineSelector->addItem("Shimmer Reverb", 29);        // choice index 28
+        slotUI.engineSelector->addItem("Vocal Formant Filter", 30);  // choice index 29
+        slotUI.engineSelector->addItem("Transient Shaper", 31);      // choice index 30
+        slotUI.engineSelector->addItem("Dimension Expander", 32);    // choice index 31
+        slotUI.engineSelector->addItem("Analog Phaser", 33);         // choice index 32
+        slotUI.engineSelector->addItem("Envelope Filter", 34);       // choice index 33
+        slotUI.engineSelector->addItem("Gated Reverb", 35);          // choice index 34
+        slotUI.engineSelector->addItem("Harmonic Exciter", 36);      // choice index 35
+        slotUI.engineSelector->addItem("Feedback Network", 37);      // choice index 36
+        slotUI.engineSelector->addItem("Intelligent Harmonizer", 38);// choice index 37
+        slotUI.engineSelector->addItem("Parametric EQ", 39);         // choice index 38
+        slotUI.engineSelector->addItem("Mastering Limiter", 40);     // choice index 39
+        slotUI.engineSelector->addItem("Noise Gate", 41);            // choice index 40
+        slotUI.engineSelector->addItem("Vintage Opto", 42);          // choice index 41
+        slotUI.engineSelector->addItem("Spectral Gate", 43);         // choice index 42
+        slotUI.engineSelector->addItem("Chaos Generator", 44);       // choice index 43
+        slotUI.engineSelector->addItem("Buffer Repeat", 45);         // choice index 44
+        slotUI.engineSelector->addItem("Vintage Console EQ", 46);    // choice index 45
+        slotUI.engineSelector->addItem("Mid/Side Processor", 47);    // choice index 46
+        slotUI.engineSelector->addItem("Vintage Tube Preamp", 48);   // choice index 47
+        slotUI.engineSelector->addItem("Spring Reverb", 49);         // choice index 48
+        slotUI.engineSelector->addItem("Resonant Chorus", 50);       // choice index 49
+        slotUI.engineSelector->addItem("Stereo Widener", 51);        // choice index 50
+        slotUI.engineSelector->addItem("Dynamic EQ", 52);            // choice index 51
+        slotUI.engineSelector->addItem("Stereo Imager", 53);         // choice index 52
+        slotUI.engineSelector->addItem("Gain Utility", 54);          // choice index 53
+        slotUI.engineSelector->addItem("Mono Maker", 55);            // choice index 54
+        slotUI.engineSelector->addItem("Phase Align", 56);           // choice index 55
         slotUI.slotPanel.addAndMakeVisible(slotUI.engineSelector.get());
         
         slotUI.engineAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(

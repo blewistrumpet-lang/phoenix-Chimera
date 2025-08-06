@@ -1,4 +1,5 @@
 #include "PresetValidator.h"
+#include "EngineTypes.h"
 #include <algorithm>
 #include <cmath>
 
@@ -109,7 +110,7 @@ bool PresetValidator::validateEngineConfiguration(const GoldenPreset& preset,
     for (int i = 0; i < 6; ++i) {
         if (preset.engineTypes[i] >= 0) {
             // Validate engine type ID
-            if (preset.engineTypes[i] >= 50) {
+            if (preset.engineTypes[i] >= ENGINE_COUNT) {
                 result.errors.add("Invalid engine type ID in slot " + String(i));
                 valid = false;
             }

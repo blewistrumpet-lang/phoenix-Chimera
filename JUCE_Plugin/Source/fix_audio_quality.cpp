@@ -136,9 +136,9 @@ void ChimeraAudioProcessor::initializeParameters() {
             param->setValueNotifyingHost(1.0f); // Bypassed by default
         }
         
-        // Set engine to bypass
+        // Set engine to first valid engine (K-Style at choice index 0)
         if (auto* param = parameters.getParameter("slot" + slotStr + "_engine")) {
-            param->setValueNotifyingHost(0.0f); // ENGINE_BYPASS
+            param->setValueNotifyingHost(0.0f); // First engine choice index
         }
         
         // Set mix to 50%
@@ -185,9 +185,6 @@ void ChimeraAudioProcessor::createEngine(int slot, int engineId) {
         
         // Special cases for certain parameters that should start differently
         switch (engineId) {
-            case ENGINE_BYPASS:
-                // No parameters needed
-                break;
                 
             case ENGINE_CLASSIC_COMPRESSOR:
                 safeParams[0] = 0.7f; // Threshold at -10dB

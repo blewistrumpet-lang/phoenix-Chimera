@@ -15,10 +15,7 @@ void EngineTestSuite::runAllEngineTests() {
     std::vector<int> engineIDs;
     
     // Add all engine IDs from EngineTypes.h
-    for (int id = 0; id <= 60; ++id) {
-        // Skip invalid IDs
-        if (id == ENGINE_BYPASS) continue;
-        
+    for (int id = 0; id < ENGINE_COUNT; ++id) {
         // Try to create the engine to see if it's valid
         auto engine = EngineFactory::createEngine(id);
         if (engine) {
