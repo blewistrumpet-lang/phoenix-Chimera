@@ -2,7 +2,9 @@
 #include "PhasedVocoder.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
-#include <immintrin.h>
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+  #include <immintrin.h>
+#endif
 #include <atomic>
 #include <cmath>
 #include <algorithm>
@@ -37,7 +39,7 @@ namespace {
             _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
         }
-    } g_denormGuard;
+    } static g_denormGuard;
     
     // Inline helpers
     template<typename T>
@@ -239,7 +241,7 @@ struct PhasedVocoder::Impl {
         juce::dsp::FFT fft{FFT_ORDER};
     };
     
-    std::vector<ChannelState> channelStates;
+    std::vector<std::unique_ptr<ChannelState>> channelStates;
     double sampleRate{44100.0};
     float invFFTSize{1.0f / FFT_SIZE};
     float windowSum{0.0f};
@@ -271,16 +273,19 @@ void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
         pimpl->params.mixAmount, 2.0f, sampleRate);
     
     // Pre-allocate for 2 channels (stereo)
-    pimpl->channelStates.resize(2);
+    pimpl->channelStates.clear();
+    for (int i = 0; i < 2; ++i) {
+        pimpl->channelStates.push_back(std::make_unique<Impl::ChannelState>());
+    }
     
     // Initialize windows and calculate normalization
     pimpl->windowSum = 0.0f;
-    for (auto& state : pimpl->channelStates) {
-        pimpl->initializeWindow(state.window);
+    for (auto& statePtr : pimpl->channelStates) {
+        pimpl->initializeWindow(statePtr->window);
         
         // Calculate window sum for proper normalization
         for (int i = 0; i < FFT_SIZE; i += HOP_SIZE) {
-            pimpl->windowSum += state.window[i];
+            pimpl->windowSum += statePtr->window[i];
         }
         
         // Verify against analytical value
@@ -290,31 +295,32 @@ void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
         }
         
         // Clear all buffers
-        std::fill(state.inputBuffer.begin(), state.inputBuffer.end(), 0.0f);
-        std::fill(state.outputBuffer.begin(), state.outputBuffer.end(), 0.0f);
-        std::fill(state.lastPhase.begin(), state.lastPhase.end(), 0.0);
-        std::fill(state.phaseAccum.begin(), state.phaseAccum.end(), 0.0);
+        std::fill(statePtr->inputBuffer.begin(), statePtr->inputBuffer.end(), 0.0f);
+        std::fill(statePtr->outputBuffer.begin(), statePtr->outputBuffer.end(), 0.0f);
+        std::fill(statePtr->lastPhase.begin(), statePtr->lastPhase.end(), 0.0);
+        std::fill(statePtr->phaseAccum.begin(), statePtr->phaseAccum.end(), 0.0);
         
-        state.readPos = 0.0;
-        state.writePos = 0;
-        state.outputWritePos = 0;
-        state.outputReadPos = 0;
-        state.hopCounter = 0;
-        state.isFrozen = false;
-        state.denormFlushCounter = 0;
+        statePtr->readPos = 0.0;
+        statePtr->writePos = 0;
+        statePtr->outputWritePos = 0;
+        statePtr->outputReadPos = 0;
+        statePtr->hopCounter = 0;
+        statePtr->isFrozen = false;
+        statePtr->denormFlushCounter = 0;
         
         // Initialize transient detector
         const float attack = pimpl->params.transientAttack.load(std::memory_order_relaxed);
         const float release = pimpl->params.transientRelease.load(std::memory_order_relaxed);
-        state.transientDetector.prepare(sampleRate, attack, release);
+        statePtr->transientDetector.prepare(sampleRate, attack, release);
         
-        state.freezeCrossfade.reset();
-        state.silenceDetector.reset();
+        statePtr->freezeCrossfade.reset();
+        statePtr->silenceDetector.reset();
     }
 }
 
 void PhasedVocoder::reset() {
-    for (auto& state : pimpl->channelStates) {
+    for (auto& statePtr : pimpl->channelStates) {
+        auto& state = *statePtr;
         // Zero all audio buffers
         std::fill(state.inputBuffer.begin(), state.inputBuffer.end(), 0.0f);
         std::fill(state.outputBuffer.begin(), state.outputBuffer.end(), 0.0f);
@@ -360,7 +366,7 @@ void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {
     const bool shouldFreeze = freeze > 0.5f;
     
     for (int ch = 0; ch < numChannels && ch < pimpl->channelStates.size(); ++ch) {
-        auto& state = pimpl->channelStates[ch];
+        auto& state = *pimpl->channelStates[ch];
         float* channelData = buffer.getWritePointer(ch);
         
         // Calculate RMS for silence detection
@@ -542,7 +548,7 @@ void PhasedVocoder::Impl::applySpectralProcessing(ChannelState& state) noexcept 
             int count = 0;
             
             const size_t start = (bin > smearWidth) ? bin - smearWidth : 0;
-            const size_t end = std::min(bin + smearWidth + 1, FFT_SIZE/2 + 1);
+            const size_t end = std::min(bin + smearWidth + 1, static_cast<size_t>(FFT_SIZE/2 + 1));
             
             for (size_t idx = start; idx < end; ++idx) {
                 sum += state.magnitude[idx];
@@ -730,8 +736,8 @@ void PhasedVocoder::updateParameters(const std::map<int, float>& params) {
                     
                     // Update transient detectors
                     const float releaseMs = pimpl->params.transientRelease.load();
-                    for (auto& state : pimpl->channelStates) {
-                        state.transientDetector.prepare(pimpl->sampleRate, attackMs, releaseMs);
+                    for (auto& statePtr : pimpl->channelStates) {
+                        statePtr->transientDetector.prepare(pimpl->sampleRate, attackMs, releaseMs);
                     }
                 }
                 break;
@@ -742,8 +748,8 @@ void PhasedVocoder::updateParameters(const std::map<int, float>& params) {
                     
                     // Update transient detectors
                     const float attackMs = pimpl->params.transientAttack.load();
-                    for (auto& state : pimpl->channelStates) {
-                        state.transientDetector.prepare(pimpl->sampleRate, attackMs, releaseMs);
+                    for (auto& statePtr : pimpl->channelStates) {
+                        statePtr->transientDetector.prepare(pimpl->sampleRate, attackMs, releaseMs);
                     }
                 }
                 break;

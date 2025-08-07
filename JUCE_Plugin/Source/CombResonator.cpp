@@ -2,14 +2,7 @@
 #include <algorithm>
 #include <cstring>
 
-// Enable FTZ/DAZ globally
-namespace {
-    struct DenormalDisabler {
-        DenormalDisabler() {
-            initializeDenormalHandling();
-        }
-    } denormalDisabler;
-}
+// Denormal handling is done per-sample using flushDenorm from Denorm.hpp
 
 //==============================================================================
 // ProfessionalCombFilter Implementation

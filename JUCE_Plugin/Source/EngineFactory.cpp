@@ -159,7 +159,7 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
             return std::make_unique<ClassicTremolo>();
             
         case 30: // ENGINE_ROTARY_SPEAKER
-            return std::make_unique<RotarySpeaker_Platinum>();
+            return std::make_unique<AudioDSP::RotarySpeaker_Platinum>();
             
         case 31: // ENGINE_PITCH_SHIFTER
             return std::make_unique<PitchShifter>();

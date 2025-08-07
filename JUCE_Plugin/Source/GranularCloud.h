@@ -9,6 +9,23 @@
 #include <memory>
 #include <functional>
 
+// Simple aligned array template
+template<typename T, size_t N, size_t Alignment = 32>
+struct AlignedArray {
+    alignas(Alignment) std::array<T, N> data;
+    
+    T& operator[](size_t i) { return data[i]; }
+    const T& operator[](size_t i) const { return data[i]; }
+    
+    T* begin() { return data.begin(); }
+    T* end() { return data.end(); }
+    const T* begin() const { return data.begin(); }
+    const T* end() const { return data.end(); }
+    
+    void fill(const T& value) { data.fill(value); }
+    void clear() { data.fill(T{}); }
+};
+
 class GranularCloud : public EngineBase {
 public:
     GranularCloud();
@@ -169,7 +186,10 @@ private:
     // Aligned circular buffers
     static constexpr int BUFFER_SIZE = 88200 * 4; // 4 seconds
     std::array<float*, 2> m_circularBufferPtrs;
-    std::unique_ptr<float[]> m_circularBufferMemory;
+    struct AlignedDeleter {
+        void operator()(float* ptr) const;
+    };
+    std::unique_ptr<float, AlignedDeleter> m_circularBufferMemory;
     std::atomic<int> m_writePos{0};
     
     // Grain scheduling

@@ -11,7 +11,13 @@
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
     #include <immintrin.h>
     #define HAS_SSE2 1
-    #define HAS_AVX2 (defined(__AVX2__) || defined(_M_AVX2))
+    #ifdef __AVX2__
+        #define HAS_AVX2 1
+    #elif defined(_M_AVX2)
+        #define HAS_AVX2 1
+    #else
+        #define HAS_AVX2 0
+    #endif
 #else
     #define HAS_SSE2 0
     #define HAS_AVX2 0
@@ -43,7 +49,7 @@ namespace {
             _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
         }
-    } g_denormGuard;
+    } static g_denormGuard;
     
     // Thread-safe denormal flusher
     template<typename T>
@@ -58,7 +64,7 @@ namespace {
     
     // SIMD-aligned allocation
     template<typename T>
-    using AlignedVector = std::vector<T, juce::HeapBlockAllocator<T, 32>>;
+    using AlignedVector = std::vector<T>;
 }
 
 // ============================================================================

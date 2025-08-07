@@ -10,19 +10,19 @@ namespace AudioDSP {
 DigitalDelay::DigitalDelay() {
     // Initialize DSP components
     for (int i = 0; i < 2; ++i) {
-        m_delayLines[i] = std::make_unique<DelayLine>();
-        m_filters[i] = std::make_unique<BiquadFilter>();
-        m_dcBlockers[i] = std::make_unique<DCBlocker>();
+        m_delayLines[i] = std::make_unique<DigitalDelayImpl::DelayLine>();
+        m_filters[i] = std::make_unique<DigitalDelayImpl::BiquadFilter>();
+        m_dcBlockers[i] = std::make_unique<DigitalDelayImpl::DCBlocker>();
     }
     
-    m_clipper = std::make_unique<SoftClipper>();
-    m_modulator = std::make_unique<ModulationProcessor>();
+    m_clipper = std::make_unique<DigitalDelayImpl::SoftClipper>();
+    m_modulator = std::make_unique<DigitalDelayImpl::ModulationProcessor>();
     
     // Initialize parameter smoothers
-    m_delayTime = std::make_unique<ParameterSmoother>();
-    m_feedback = std::make_unique<ParameterSmoother>();
-    m_mix = std::make_unique<ParameterSmoother>();
-    m_highCut = std::make_unique<ParameterSmoother>();
+    m_delayTime = std::make_unique<DigitalDelayImpl::ParameterSmoother>();
+    m_feedback = std::make_unique<DigitalDelayImpl::ParameterSmoother>();
+    m_mix = std::make_unique<DigitalDelayImpl::ParameterSmoother>();
+    m_highCut = std::make_unique<DigitalDelayImpl::ParameterSmoother>();
     
     // Set default values
     m_delayTime->reset(0.4f);
@@ -197,16 +197,16 @@ juce::String DigitalDelay::getParameterName(int index) const {
 
 // ==================== DelayLine Implementation ====================
 
-DelayLine::DelayLine() {
+DigitalDelayImpl::DelayLine::DelayLine() {
     reset();
 }
 
-void DelayLine::reset() noexcept {
+void DigitalDelayImpl::DelayLine::reset() noexcept {
     std::memset(m_buffer.data(), 0, m_buffer.size() * sizeof(float));
     m_writePos = 0;
 }
 
-void DelayLine::write(float sample) noexcept {
+void DigitalDelayImpl::DelayLine::write(float sample) noexcept {
     m_buffer[m_writePos] = sample + DENORMAL_PREVENTION;
     
     // Update ghost samples for wrap-around interpolation
@@ -217,7 +217,7 @@ void DelayLine::write(float sample) noexcept {
     m_writePos = (m_writePos + 1) & BUFFER_MASK;
 }
 
-float DelayLine::read(double delaySamples) noexcept {
+float DigitalDelayImpl::DelayLine::read(double delaySamples) noexcept {
     double readPos = static_cast<double>(m_writePos) - delaySamples;
     
     // Wrap negative positions
@@ -228,7 +228,7 @@ float DelayLine::read(double delaySamples) noexcept {
     return hermiteInterpolate(readPos);
 }
 
-float DelayLine::readModulated(double delaySamples, float modulation) noexcept {
+float DigitalDelayImpl::DelayLine::readModulated(double delaySamples, float modulation) noexcept {
     // Apply smooth modulation to delay time
     double modulatedDelay = delaySamples * (1.0 + modulation * 0.01);
     
@@ -238,7 +238,7 @@ float DelayLine::readModulated(double delaySamples, float modulation) noexcept {
     return read(modulatedDelay);
 }
 
-float DelayLine::hermiteInterpolate(double position) const noexcept {
+float DigitalDelayImpl::DelayLine::hermiteInterpolate(double position) const noexcept {
     // Get integer and fractional parts
     int intPos = static_cast<int>(position);
     float frac = static_cast<float>(position - intPos);
@@ -266,7 +266,7 @@ float DelayLine::hermiteInterpolate(double position) const noexcept {
 
 // ==================== BiquadFilter Implementation ====================
 
-void BiquadFilter::reset() noexcept {
+void DigitalDelayImpl::BiquadFilter::reset() noexcept {
     m_x1 = m_x2 = 0.0;
     m_y1 = m_y2 = 0.0;
     
@@ -278,7 +278,7 @@ void BiquadFilter::reset() noexcept {
     #endif
 }
 
-void BiquadFilter::setLowpass(double frequency, double sampleRate, double q) noexcept {
+void DigitalDelayImpl::BiquadFilter::setLowpass(double frequency, double sampleRate, double q) noexcept {
     double omega = 2.0 * M_PI * frequency / sampleRate;
     double sinOmega = std::sin(omega);
     double cosOmega = std::cos(omega);
@@ -308,7 +308,7 @@ void BiquadFilter::setLowpass(double frequency, double sampleRate, double q) noe
     #endif
 }
 
-float BiquadFilter::processSample(float input) noexcept {
+float DigitalDelayImpl::BiquadFilter::processSample(float input) noexcept {
     double in = static_cast<double>(input);
     double out = m_a0 * in + m_a1 * m_x1 + m_a2 * m_x2 - m_b1 * m_y1 - m_b2 * m_y2;
     
@@ -324,7 +324,7 @@ float BiquadFilter::processSample(float input) noexcept {
     return static_cast<float>(out);
 }
 
-void BiquadFilter::processBlock(const float* input, float* output, int numSamples) noexcept {
+void DigitalDelayImpl::BiquadFilter::processBlock(const float* input, float* output, int numSamples) noexcept {
     #ifdef __SSE2__
     // Process in groups of 4 for SIMD optimization
     int simdSamples = numSamples & ~3;
@@ -346,7 +346,7 @@ void BiquadFilter::processBlock(const float* input, float* output, int numSample
 }
 
 #ifdef __SSE2__
-void BiquadFilter::processBlockSIMD(const float* input, float* output, int numSamples) noexcept {
+void DigitalDelayImpl::BiquadFilter::processBlockSIMD(const float* input, float* output, int numSamples) noexcept {
     // Process 4 samples at a time using SSE2
     for (int i = 0; i < numSamples; i += 4) {
         __m128 in = _mm_loadu_ps(&input[i]);
@@ -379,7 +379,7 @@ void BiquadFilter::processBlockSIMD(const float* input, float* output, int numSa
     }
 }
 #else
-void BiquadFilter::processBlockSIMD(const float* input, float* output, int numSamples) noexcept {
+void DigitalDelayImpl::BiquadFilter::processBlockSIMD(const float* input, float* output, int numSamples) noexcept {
     // Non-SIMD fallback
     processBlock(input, output, numSamples);
 }
@@ -387,18 +387,18 @@ void BiquadFilter::processBlockSIMD(const float* input, float* output, int numSa
 
 // ==================== SoftClipper Implementation ====================
 
-SoftClipper::SoftClipper() {
+DigitalDelayImpl::SoftClipper::SoftClipper() {
     m_oversampler = std::make_unique<Oversampler>();
     reset();
 }
 
-void SoftClipper::reset() noexcept {
+void DigitalDelayImpl::SoftClipper::reset() noexcept {
     if (m_oversampler) {
         m_oversampler->reset();
     }
 }
 
-float SoftClipper::processSample(float input) noexcept {
+float DigitalDelayImpl::SoftClipper::processSample(float input) noexcept {
     // 4x oversampling for anti-aliased clipping
     float upsampled[4];
     m_oversampler->upsample(input, upsampled);
@@ -412,13 +412,13 @@ float SoftClipper::processSample(float input) noexcept {
     return m_oversampler->downsample(upsampled);
 }
 
-void SoftClipper::processBlock(float* data, int numSamples) noexcept {
+void DigitalDelayImpl::SoftClipper::processBlock(float* data, int numSamples) noexcept {
     for (int i = 0; i < numSamples; ++i) {
         data[i] = processSample(data[i]);
     }
 }
 
-float SoftClipper::softClip(float x) const noexcept {
+float DigitalDelayImpl::SoftClipper::softClip(float x) const noexcept {
     const float threshold = 0.7f;
     float absX = std::abs(x);
     
@@ -442,7 +442,7 @@ float SoftClipper::softClip(float x) const noexcept {
 
 // ==================== Oversampler Implementation ====================
 
-SoftClipper::Oversampler::Oversampler() {
+DigitalDelayImpl::SoftClipper::Oversampler::Oversampler() {
     reset();
     
     // Design polyphase FIR filter coefficients (Kaiser window)
@@ -485,12 +485,12 @@ SoftClipper::Oversampler::Oversampler() {
     }
 }
 
-void SoftClipper::Oversampler::reset() noexcept {
+void DigitalDelayImpl::SoftClipper::Oversampler::reset() noexcept {
     std::memset(m_state, 0, sizeof(m_state));
     m_stateIndex = 0;
 }
 
-void SoftClipper::Oversampler::upsample(float input, float* output) noexcept {
+void DigitalDelayImpl::SoftClipper::Oversampler::upsample(float input, float* output) noexcept {
     // Insert input into delay line
     m_state[m_stateIndex] = input;
     
@@ -510,7 +510,7 @@ void SoftClipper::Oversampler::upsample(float input, float* output) noexcept {
     m_stateIndex = (m_stateIndex + 1) % FILTER_SIZE;
 }
 
-float SoftClipper::Oversampler::downsample(const float* input) noexcept {
+float DigitalDelayImpl::SoftClipper::Oversampler::downsample(const float* input) noexcept {
     // Simple averaging for downsampling (after upsampled processing)
     float sum = 0.0f;
     for (int i = 0; i < OVERSAMPLE_FACTOR; ++i) {
@@ -521,26 +521,26 @@ float SoftClipper::Oversampler::downsample(const float* input) noexcept {
 
 // ==================== ModulationProcessor Implementation ====================
 
-ModulationProcessor::ModulationProcessor() {
-    m_smoothingFilter = std::make_unique<BiquadFilter>();
+DigitalDelayImpl::ModulationProcessor::ModulationProcessor() {
+    m_smoothingFilter = std::make_unique<DigitalDelayImpl::BiquadFilter>();
     reset();
 }
 
-void ModulationProcessor::setSampleRate(double sampleRate) noexcept {
+void DigitalDelayImpl::ModulationProcessor::setSampleRate(double sampleRate) noexcept {
     m_sampleRate = sampleRate;
     
     // Configure smoothing filter
     m_smoothingFilter->setLowpass(2.0, sampleRate, 0.7);
 }
 
-void ModulationProcessor::reset() noexcept {
+void DigitalDelayImpl::ModulationProcessor::reset() noexcept {
     m_phase = 0.0f;
     if (m_smoothingFilter) {
         m_smoothingFilter->reset();
     }
 }
 
-float ModulationProcessor::process(float rate, float depth) noexcept {
+float DigitalDelayImpl::ModulationProcessor::process(float rate, float depth) noexcept {
     // Generate LFO
     m_phase += rate / static_cast<float>(m_sampleRate);
     if (m_phase >= 1.0f) {

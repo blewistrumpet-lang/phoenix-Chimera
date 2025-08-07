@@ -24,7 +24,7 @@
 #else
     #define ENABLE_DENORMAL_PREVENTION() ((void)0)
     #define FLUSH_DENORMAL(x) \
-        ((std::abs(x) < 1e-30f) ? ((x) = 0.0f) : (void)0)
+        do { if (std::abs(x) < 1e-30f) (x) = 0.0f; } while(0)
 #endif
 
 //==============================================================================

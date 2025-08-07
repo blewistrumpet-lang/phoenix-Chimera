@@ -1,6 +1,7 @@
 #include "RotarySpeaker_Platinum.h"
-#include <chrono>
+#include <JuceHeader.h>
 #include <algorithm>
+#include <cmath>
 
 // Platform-specific SIMD headers with detection
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
@@ -8,6 +9,11 @@
     #define HAS_SSE2 1
 #else
     #define HAS_SSE2 0
+#endif
+
+// M_PI constant definition for platforms that don't have it
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
 #endif
 
 namespace AudioDSP {
@@ -88,8 +94,6 @@ void RotarySpeaker_Platinum::reset() noexcept {
 //==============================================================================
 
 void RotarySpeaker_Platinum::process(juce::AudioBuffer<float>& buffer) noexcept {
-    const auto startTime = std::chrono::high_resolution_clock::now();
-    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -151,13 +155,8 @@ void RotarySpeaker_Platinum::process(juce::AudioBuffer<float>& buffer) noexcept 
         }
     }
     
-    // Update metrics
-    const auto endTime = std::chrono::high_resolution_clock::now();
-    const double elapsed = std::chrono::duration<double>(endTime - startTime).count();
-    const double blockTime = numSamples / m_sampleRate;
-    const float cpuPercent = static_cast<float>((elapsed / blockTime) * 100.0);
-    
-    m_metrics.cpuUsage.store(cpuPercent, std::memory_order_relaxed);
+    // Update metrics (simplified without timing)
+    m_metrics.cpuUsage.store(0.0f, std::memory_order_relaxed);
     m_metrics.hornSpeed.store(m_hornRotor.velocity, std::memory_order_relaxed);
     m_metrics.drumSpeed.store(m_drumRotor.velocity, std::memory_order_relaxed);
     
@@ -418,6 +417,15 @@ float RotarySpeaker_Platinum::DopplerProcessor::cubicInterpolate(float position)
 //==============================================================================
 
 #if HAS_SSE2
+// SSE tanh approximation - must be declared before use
+static inline __m128 _mm_tanh_ps(__m128 x) {
+    // Fast approximation using rational function
+    __m128 x2 = _mm_mul_ps(x, x);
+    __m128 a = _mm_add_ps(_mm_set1_ps(1.0f), _mm_mul_ps(x2, _mm_set1_ps(0.1653f)));
+    __m128 b = _mm_add_ps(_mm_set1_ps(1.0f), _mm_mul_ps(x2, _mm_set1_ps(0.4545f)));
+    return _mm_div_ps(_mm_mul_ps(x, a), b);
+}
+
 void RotarySpeaker_Platinum::processBlockSSE(float* left, float* right, int numSamples) noexcept {
     // Process 4 samples at a time where possible
     // This is a simplified version - full implementation would process
@@ -469,15 +477,6 @@ void RotarySpeaker_Platinum::processBlockSSE(float* left, float* right, int numS
         left[i] = std::tanh(left[i] * 0.8f) * 1.25f;
         right[i] = std::tanh(right[i] * 0.8f) * 1.25f;
     }
-}
-
-// SSE tanh approximation
-inline __m128 _mm_tanh_ps(__m128 x) {
-    // Fast approximation using rational function
-    __m128 x2 = _mm_mul_ps(x, x);
-    __m128 a = _mm_add_ps(_mm_set1_ps(1.0f), _mm_mul_ps(x2, _mm_set1_ps(0.1653f)));
-    __m128 b = _mm_add_ps(_mm_set1_ps(1.0f), _mm_mul_ps(x2, _mm_set1_ps(0.4545f)));
-    return _mm_div_ps(_mm_mul_ps(x, a), b);
 }
 #endif
 

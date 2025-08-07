@@ -4,7 +4,15 @@
 #include <array>
 #include <atomic>
 #include <memory>
-#include <immintrin.h>
+#include <random>
+
+// Platform-specific SIMD includes
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+    #define HAS_SIMD 1
+#else
+    #define HAS_SIMD 0
+#endif
 
 class MultibandSaturator : public EngineBase {
 public:
@@ -255,5 +263,5 @@ private:
                      const double* high, int numSamples) noexcept;
     
     // RNG for thermal drift
-    std::mt19937 m_rng{std::random_device{}()};
+    mutable std::mt19937 m_rng{std::random_device{}()};
 };

@@ -1,1 +1,8 @@
 pluginval.zip
+
+# Precompiled headers
+*.gch
+*.pch
+
+# Test binaries
+test_namespace_only

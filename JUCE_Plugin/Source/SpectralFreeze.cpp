@@ -6,6 +6,13 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+// Platform-specific SIMD support (should match header)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #define HAS_SIMD 1
+#else
+    #define HAS_SIMD 0
+#endif
+
 //==============================================================================
 // SmoothParam Implementation
 //==============================================================================
@@ -27,12 +34,18 @@ void SpectralFreeze::SmoothParam::setSmoothingRate(float timeMs, double sampleRa
 // DenormalDisabler Implementation
 //==============================================================================
 SpectralFreeze::DenormalDisabler::DenormalDisabler() {
+#if HAS_SIMD
     oldMXCSR = _mm_getcsr();
     _mm_setcsr(oldMXCSR | 0x8040);  // Set flush-to-zero and denormals-are-zero
+#else
+    oldMXCSR = 0;  // Not used on non-x86 platforms
+#endif
 }
 
 SpectralFreeze::DenormalDisabler::~DenormalDisabler() {
+#if HAS_SIMD
     _mm_setcsr(oldMXCSR);
+#endif
 }
 
 //==============================================================================

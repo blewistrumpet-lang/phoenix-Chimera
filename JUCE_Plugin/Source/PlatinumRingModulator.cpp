@@ -1,10 +1,53 @@
 // PlatinumRingModulator.cpp - Ultimate professional ring modulator implementation
 #include "PlatinumRingModulator.h"
+#include <JuceHeader.h>
 #include <algorithm>
 #include <numeric>
+#include <cstring>
+#include <cmath>
+#include <complex>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
+#endif
+
+// Check if Bessel functions are available
+// Force to use fallback implementation as std::cyl_bessel_i is not available on all compilers
+#ifdef HAS_BESSEL_FUNCTION
+    #undef HAS_BESSEL_FUNCTION
+#endif
+#define HAS_BESSEL_FUNCTION 0
+
+// Ensure we have the float versions of math functions
+using std::sin;
+using std::cos;
+using std::tan;
+using std::sqrt;
+using std::exp;
+using std::abs;
+using std::pow;
+using std::max;
+using std::min;
+
+// Fallback implementation for modified Bessel function if not available
+#if !HAS_BESSEL_FUNCTION
+inline double cyl_bessel_i0_approx(double x) {
+    // Approximation of modified Bessel function of first kind, order 0
+    if (x < 0) x = -x;
+    if (x < 3.75) {
+        double t = x / 3.75;
+        t = t * t;
+        return 1.0 + 3.5156229 * t + 3.0899424 * t * t + 1.2067492 * t * t * t +
+               0.2659732 * t * t * t * t + 0.0360768 * t * t * t * t * t +
+               0.0045813 * t * t * t * t * t * t;
+    } else {
+        double t = 3.75 / x;
+        return (std::exp(x) / std::sqrt(x)) * 
+               (0.39894228 + 0.01328592 * t + 0.00225319 * t * t -
+                0.00157565 * t * t * t + 0.00916281 * t * t * t * t -
+                0.02057706 * t * t * t * t * t);
+    }
+}
 #endif
 
 //==============================================================================
@@ -126,8 +169,8 @@ void PlatinumRingModulator::HilbertTransform::generateCoefficients() {
                 coefficients[i] = 2.0f / (M_PI * n);
                 
                 // Apply Blackman window
-                float w = 0.42f - 0.5f * cosf(2.0f * M_PI * i / (FILTER_LENGTH - 1))
-                        + 0.08f * cosf(4.0f * M_PI * i / (FILTER_LENGTH - 1));
+                float w = 0.42f - 0.5f * static_cast<float>(cos(2.0 * M_PI * i / (FILTER_LENGTH - 1)))
+                        + 0.08f * static_cast<float>(cos(4.0 * M_PI * i / (FILTER_LENGTH - 1)));
                 coefficients[i] *= w;
             }
         }
@@ -161,7 +204,7 @@ void PlatinumRingModulator::EllipticFilter::designLowpass(double cutoff, double 
     // 8th order elliptic filter coefficients
     // Designed for 0.01dB passband ripple, 96dB stopband attenuation
     double wc = 2.0 * M_PI * cutoff / sampleRate;
-    double wc2 = wc * wc;
+    // double wc2 = wc * wc; // Unused for now
     
     // Pre-warped frequency
     double k = tan(wc / 2.0);
@@ -176,7 +219,7 @@ void PlatinumRingModulator::EllipticFilter::designLowpass(double cutoff, double 
     
     // Transform to digital domain using bilinear transform
     for (int i = 0; i < 4; ++i) {
-        double sz = sin(zeros[i]);
+        // double sz = sin(zeros[i]); // Unused for now
         double cz = cos(zeros[i]);
         double sp_re = poles_re[i];
         double sp_im = poles_im[i];
@@ -230,7 +273,11 @@ void PlatinumRingModulator::Oversampler::generatePolyphaseCoefficients() {
                 // Apply Kaiser window
                 float w = FIR_LENGTH - 1;
                 float arg = beta * sqrt(1.0f - pow(2.0f * n / w, 2.0f));
-                float bessel = std::cyl_bessel_i(0, arg) / std::cyl_bessel_i(0, beta);
+                #if HAS_BESSEL_FUNCTION
+                    float bessel = std::cyl_bessel_i(0, arg) / std::cyl_bessel_i(0, beta);
+                #else
+                    float bessel = static_cast<float>(cyl_bessel_i0_approx(arg) / cyl_bessel_i0_approx(beta));
+                #endif
                 h *= bessel;
             }
             
@@ -296,7 +343,7 @@ void PlatinumRingModulator::PhaseVocoder::init() {
     
     // Generate Hann window
     for (int i = 0; i < FFT_SIZE; ++i) {
-        window[i] = 0.5f * (1.0f - cosf(2.0f * M_PI * i / (FFT_SIZE - 1)));
+        window[i] = 0.5f * (1.0f - static_cast<float>(cos(2.0 * M_PI * i / (FFT_SIZE - 1))));
     }
     
     reset();

@@ -17,13 +17,17 @@ static constexpr double M_PI = 3.141592653589793;
 
 namespace AudioDSP {
 
-// Forward declarations
+// Forward declarations for classes in global AudioDSP namespace
 class PitchShifter;
-class DelayLine;
-class AllPassNetwork;
-class ModulationGenerator;
-class BiquadFilter;
-class ParameterSmoother;
+
+// Forward declarations for DetuneDoublerImpl namespace
+namespace DetuneDoublerImpl {
+    class DelayLine;
+    class BiquadFilter;
+    class ParameterSmoother;
+    class AllPassNetwork;
+    class ModulationGenerator;
+}
 
 class DetuneDoubler : public ::EngineBase {
 public:
@@ -42,10 +46,10 @@ private:
     // Core components for each voice
     struct Voice {
         std::unique_ptr<PitchShifter> pitchShifter;
-        std::unique_ptr<DelayLine> delay;
-        std::unique_ptr<AllPassNetwork> phaseNetwork;
-        std::unique_ptr<ModulationGenerator> modulator;
-        std::unique_ptr<BiquadFilter> tapeFilter;
+        std::unique_ptr<DetuneDoublerImpl::DelayLine> delay;
+        std::unique_ptr<DetuneDoublerImpl::AllPassNetwork> phaseNetwork;
+        std::unique_ptr<DetuneDoublerImpl::ModulationGenerator> modulator;
+        std::unique_ptr<DetuneDoublerImpl::BiquadFilter> tapeFilter;
         
         void reset();
     };
@@ -54,11 +58,11 @@ private:
     std::array<Voice, 4> m_voices; // L1, L2, R1, R2
     
     // Parameter smoothers
-    std::unique_ptr<ParameterSmoother> m_detuneParam;
-    std::unique_ptr<ParameterSmoother> m_delayParam;
-    std::unique_ptr<ParameterSmoother> m_widthParam;
-    std::unique_ptr<ParameterSmoother> m_thicknessParam;
-    std::unique_ptr<ParameterSmoother> m_mixParam;
+    std::unique_ptr<DetuneDoublerImpl::ParameterSmoother> m_detuneParam;
+    std::unique_ptr<DetuneDoublerImpl::ParameterSmoother> m_delayParam;
+    std::unique_ptr<DetuneDoublerImpl::ParameterSmoother> m_widthParam;
+    std::unique_ptr<DetuneDoublerImpl::ParameterSmoother> m_thicknessParam;
+    std::unique_ptr<DetuneDoublerImpl::ParameterSmoother> m_mixParam;
     
     // State
     double m_sampleRate = 44100.0;
@@ -173,6 +177,8 @@ private:
         if (grainPos >= GRAIN_SIZE) grainPos -= GRAIN_SIZE;
     }
 };
+
+namespace DetuneDoublerImpl {
 
 // DelayLine.h - Simple fractional delay
 class DelayLine {
@@ -442,6 +448,8 @@ private:
         m_smoothingCoeff = a;
     }
 };
+
+} // namespace DetuneDoublerImpl
 
 // Implementation of Voice::reset() after all class definitions
 inline void DetuneDoubler::Voice::reset() {

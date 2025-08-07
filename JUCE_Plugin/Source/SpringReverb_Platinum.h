@@ -25,7 +25,7 @@
  * - THD+N: < 0.01% (clean mode)
  * - Dynamic Range: > 110dB
  */
-class SpringReverb_Platinum : public ::EngineBase {
+class SpringReverb_Platinum : public EngineBase {
 public:
     SpringReverb_Platinum();
     ~SpringReverb_Platinum() override;

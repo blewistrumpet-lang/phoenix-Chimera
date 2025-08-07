@@ -1,4 +1,5 @@
 #include "NoiseGate_Platinum.h"
+#include <JuceHeader.h>
 #include <cmath>
 #include <algorithm>
 #include <chrono>
@@ -363,6 +364,48 @@ public:
         
         return envelope;
     }
+    
+    ALWAYS_INLINE float process(float input) noexcept {
+        float rectified = std::abs(input);
+        
+        // RMS calculation
+        float squared = rectified * rectified;
+        float oldValue = rmsBuffer[rmsWritePos & RMS_MASK];
+        rmsBuffer[rmsWritePos & RMS_MASK] = squared;
+        rmsWritePos = (rmsWritePos + 1) & RMS_MASK;
+        
+        // Update running sum (convert to scalar operations)
+        float runningSum = _mm_cvtss_f32(rmsRunningSum);
+        runningSum = runningSum - oldValue + squared;
+        if (std::abs(runningSum) < 1e-30f) runningSum = 0.0f;
+        rmsRunningSum = _mm_set_ss(runningSum);
+        
+        float rms = std::sqrt(runningSum / RMS_SIZE);
+        
+        // Peak detection with decay
+        float currentPeak = _mm_cvtss_f32(peakHold);
+        if (rectified > currentPeak) {
+            currentPeak = rectified;
+        } else {
+            currentPeak *= _mm_cvtss_f32(peakDecayVec);
+            if (currentPeak < 1e-30f) currentPeak = 0.0f;
+        }
+        peakHold = _mm_set_ss(currentPeak);
+        
+        // Combine RMS and Peak
+        float target = 0.7f * rms + 0.3f * currentPeak;
+        
+        // Adaptive envelope
+        float currentEnvelope = _mm_cvtss_f32(envelope);
+        float rate = (target > currentEnvelope) ? _mm_cvtss_f32(oneMinusAttack) : _mm_cvtss_f32(oneMinusRelease);
+        currentEnvelope += (target - currentEnvelope) * rate;
+        
+        // Denormal protection
+        if (std::abs(currentEnvelope) < 1e-30f) currentEnvelope = 0.0f;
+        envelope = _mm_set_ss(currentEnvelope);
+        
+        return currentEnvelope;
+    }
 };
 #endif
 
@@ -449,6 +492,21 @@ public:
         
         return hp;
     }
+    
+    ALWAYS_INLINE float processHighpass(float input) noexcept {
+        __m128 in_vec = _mm_set_ss(input);
+        
+        // SVF highpass
+        __m128 hp = _mm_mul_ss(_mm_sub_ss(_mm_sub_ss(in_vec, _mm_mul_ss(k, s1)), s2), denomInv);
+        __m128 bp = _mm_add_ss(_mm_mul_ss(g, hp), s1);
+        __m128 lp = _mm_add_ss(_mm_mul_ss(g, bp), s2);
+        
+        // Update states with denormal flush
+        s1 = _mm_shuffle_ps(s1, flushDenormalsSIMD(_mm_add_ss(_mm_mul_ss(g, hp), bp)), _MM_SHUFFLE(0,0,0,1));
+        s2 = _mm_shuffle_ps(s2, flushDenormalsSIMD(_mm_add_ss(_mm_mul_ss(g, bp), lp)), _MM_SHUFFLE(0,0,0,1));
+        
+        return _mm_cvtss_f32(hp);
+    }
 };
 #endif
 
@@ -518,11 +576,24 @@ public:
         writePos.store((pos + SIMD_WIDTH) & mask, std::memory_order_relaxed);
     }
     
+    ALWAYS_INLINE void write(float sample) noexcept {
+        const int pos = writePos.load(std::memory_order_relaxed);
+        buffer[pos & mask] = sample;
+        writePos.store((pos + 1) & mask, std::memory_order_relaxed);
+    }
+    
     ALWAYS_INLINE __m128 read4(int delaySamples) const noexcept {
         if (delaySamples == 0) return _mm_setzero_ps();
         const int pos = writePos.load(std::memory_order_relaxed);
         const int readPos = (pos - delaySamples) & mask;
         return _mm_load_ps(&buffer[readPos]);
+    }
+    
+    ALWAYS_INLINE float read(int delaySamples) const noexcept {
+        if (delaySamples == 0) return 0.0f;
+        const int pos = writePos.load(std::memory_order_relaxed);
+        const int readPos = (pos - delaySamples) & mask;
+        return buffer[readPos];
     }
     
     void reset() noexcept {
@@ -556,6 +627,10 @@ struct NoiseGate_Platinum::Impl {
         __m128 releaseRate = _mm_set1_ps(0.001f);
         __m128 openThreshold = _mm_set1_ps(0.1f);
         __m128 closeThreshold = _mm_set1_ps(0.05f);
+        
+        // Scalar accessors for compatibility
+        float gain = 0.0f;
+        float target = 0.0f;
 #else
         DCBlocker dcBlockerIn;
         DCBlocker dcBlockerOut;
@@ -583,6 +658,7 @@ struct NoiseGate_Platinum::Impl {
             lookahead.reset();
 #if HAS_SSE2
             gainVec = targetVec = _mm_setzero_ps();
+            gain = target = 0.0f;
 #else
             gain = target = 0.0f;
 #endif
@@ -608,6 +684,19 @@ struct NoiseGate_Platinum::Impl {
 #else
             openThreshold = threshold;
             closeThreshold = threshold * (1.0f - hysteresis);
+#endif
+        }
+        
+        // Helper methods to sync scalar/SIMD state
+        void syncGainToScalar() noexcept {
+#if HAS_SSE2
+            gain = _mm_cvtss_f32(gainVec);
+#endif
+        }
+        
+        void syncScalarToGain() noexcept {
+#if HAS_SSE2
+            gainVec = _mm_set1_ps(gain);
 #endif
         }
     };
@@ -754,6 +843,9 @@ void NoiseGate_Platinum::Impl::processSIMD(float* left, float* right, int numSam
         channels[0].gainVec = _mm_max_ps(_mm_setzero_ps(), 
                                         _mm_min_ps(_mm_set1_ps(1.0f), channels[0].gainVec));
         
+        // Sync to scalar for compatibility
+        channels[0].syncGainToScalar();
+        
         // Lookahead buffer operations
         channels[0].lookahead.write4(&left[i]);
         channels[1].lookahead.write4(&right[i]);
@@ -786,6 +878,7 @@ void NoiseGate_Platinum::Impl::processSIMD(float* left, float* right, int numSam
         // Mirror gain state for stereo link
         if (stereoLink) {
             channels[1].gainVec = channels[0].gainVec;
+            channels[1].gain = channels[0].gain;
             channels[1].holdCounter = channels[0].holdCounter;
         }
     }
@@ -813,13 +906,24 @@ void NoiseGate_Platinum::Impl::processScalar(float* left, float* right, int numS
                                              float thresholdLin, float rangeLin, float hysteresisLin,
                                              int holdSamples, int lookaheadSamples, float scMix) {
     // Precompute per-block constants
+    #if HAS_SSE2
+    // For scalar processing in SIMD build, use local variables
+    float scalarRangeMin = rangeLin;
+    float scalarRangeScale = 1.0f - rangeLin;
+    #else
     rangeMin = rangeLin;
     rangeScale = 1.0f - rangeLin;
+    #endif
     
     // Update thresholds
     channels[0].setThresholds(thresholdLin, hysteresisLin);
     channels[0].holdSamples = holdSamples;
-    channels[1] = channels[0]; // Copy settings
+    
+    // Copy settings to channel 1
+    channels[1].setThresholds(thresholdLin, hysteresisLin);
+    channels[1].holdSamples = holdSamples;
+    channels[1].attackRate = channels[0].attackRate;
+    channels[1].releaseRate = channels[0].releaseRate;
     
     for (int i = 0; i < numSamples; ++i) {
         // DC blocking
@@ -837,13 +941,25 @@ void NoiseGate_Platinum::Impl::processScalar(float* left, float* right, int numS
         float env = channels[0].envelope.process(detection);
         
         // Calculate target gain
+        #if HAS_SSE2
+        float closeThresh = _mm_cvtss_f32(channels[0].closeThreshold);
+        float openThresh = _mm_cvtss_f32(channels[0].openThreshold);
+        float targetGain = smoothstep(closeThresh, openThresh, env);
+        #else
         float targetGain = smoothstep(channels[0].closeThreshold, channels[0].openThreshold, env);
+        #endif
         
         // Hold logic
         if (channels[0].holdCounter > 0) {
             channels[0].holdCounter--;
             targetGain = std::max(targetGain, 0.9f);
-        } else if (channels[0].gain > 0.5f && env < channels[0].closeThreshold) {
+        } else if (channels[0].gain > 0.5f && env < 
+        #if HAS_SSE2
+        _mm_cvtss_f32(channels[0].closeThreshold)
+        #else
+        channels[0].closeThreshold
+        #endif
+        ) {
             channels[0].holdCounter = channels[0].holdSamples;
         }
         
@@ -852,7 +968,13 @@ void NoiseGate_Platinum::Impl::processScalar(float* left, float* right, int numS
         }
         
         // Update gain
+        #if HAS_SSE2
+        float attackRate = _mm_cvtss_f32(channels[0].attackRate);
+        float releaseRate = _mm_cvtss_f32(channels[0].releaseRate);
+        float rate = (targetGain > channels[0].gain) ? attackRate : releaseRate;
+        #else
         float rate = (targetGain > channels[0].gain) ? channels[0].attackRate : channels[0].releaseRate;
+        #endif
         channels[0].gain += (targetGain - channels[0].gain) * rate;
         channels[0].gain = std::clamp(channels[0].gain, 0.0f, 1.0f);
         
@@ -867,7 +989,11 @@ void NoiseGate_Platinum::Impl::processScalar(float* left, float* right, int numS
         float rightDelayed = (lookaheadSamples > 0) ? channels[1].lookahead.read(lookaheadSamples) : r;
         
         // Apply gain
+        #if HAS_SSE2
+        float finalGain = scalarRangeMin + scalarRangeScale * channels[0].gain;
+        #else
         float finalGain = rangeMin + rangeScale * channels[0].gain;
+        #endif
         
         // Output with DC blocking
         left[i] = channels[0].dcBlockerOut.process(leftDelayed * finalGain);

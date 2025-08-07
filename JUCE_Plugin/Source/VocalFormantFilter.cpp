@@ -1,10 +1,17 @@
 #include "VocalFormantFilter.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
-#include <immintrin.h>
 #include <atomic>
 #include <array>
 #include <cmath>
+
+// Platform-specific includes
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+    #define HAS_SSE2 1
+#else
+    #define HAS_SSE2 0
+#endif
 
 // Platform-specific optimizations
 #if defined(__GNUC__) || defined(__clang__)
@@ -18,12 +25,12 @@
 // Global denormal protection
 static struct DenormGuard {
     DenormGuard() {
-#ifdef __SSE2__
+#if HAS_SSE2
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
     }
-} g_denormGuard;
+} static g_denormGuard;
 
 namespace {
     // Denormal flushers
@@ -283,7 +290,7 @@ void VocalFormantFilter::prepareToPlay(double sampleRate, int samplesPerBlock) {
     
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = static_cast<uint32>(samplesPerBlock);
+    spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
     spec.numChannels = 2;
     pimpl->oversampler->initProcessing(spec.maximumBlockSize);
     

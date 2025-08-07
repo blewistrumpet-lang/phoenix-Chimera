@@ -233,8 +233,8 @@ private:
             
             FORCE_INLINE double process(double input, double gain, double sampleRate) {
                 // Open-loop gain with frequency rolloff
-                double openLoopGain = DistortionConstants::RAT_OPAMP_GAIN;
-                double gbProduct = 1e6; // 1MHz gain-bandwidth product
+                // double openLoopGain = DistortionConstants::RAT_OPAMP_GAIN; // TODO: Use for frequency response modeling
+                // double gbProduct = 1e6; // 1MHz gain-bandwidth product // TODO: Use for frequency response modeling
                 
                 // Slew rate limiting
                 double maxDelta = slewRate / sampleRate;

@@ -9,7 +9,26 @@
 #include <random>
 #include <thread>
 #include <functional>
-#include <immintrin.h>
+// Platform-specific SIMD includes
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+    #define HAS_SIMD 1
+#else
+    #define HAS_SIMD 0
+#endif
+
+// Check for availability of Bessel functions
+#ifndef HAS_BESSEL_FUNCTION
+    #if defined(__APPLE__) && __cplusplus >= 201703L
+        #define HAS_BESSEL_FUNCTION 1
+    #elif defined(__GNUC__) && __cplusplus >= 201703L && __GNUC__ >= 7
+        #define HAS_BESSEL_FUNCTION 1
+    #elif defined(_MSC_VER) && _MSC_VER >= 1914
+        #define HAS_BESSEL_FUNCTION 1
+    #else
+        #define HAS_BESSEL_FUNCTION 0
+    #endif
+#endif
 
 // Define ALWAYS_INLINE for cross-platform optimization
 #ifdef _MSC_VER

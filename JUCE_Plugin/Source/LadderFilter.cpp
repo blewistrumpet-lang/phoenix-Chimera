@@ -1,7 +1,11 @@
 #include "LadderFilter.h"
 #include <cstring>
-#ifdef __SSE2__
-#include <immintrin.h>
+// Platform-specific SIMD includes
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+    #define HAS_SIMD 1
+#else
+    #define HAS_SIMD 0
 #endif
 
 #ifndef M_PI

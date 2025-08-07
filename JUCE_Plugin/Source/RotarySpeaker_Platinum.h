@@ -4,6 +4,11 @@
 #include <atomic>
 #include <cmath>
 
+// M_PI constant definition for platforms that don't have it
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 // Platform-specific SIMD headers with detection
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
     #include <immintrin.h>
@@ -426,7 +431,7 @@ private:
     void processBlockSSE(float* left, float* right, int numSamples) noexcept;
     #endif
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RotarySpeaker_Platinum)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RotarySpeaker_Platinum);
 };
 
 } // namespace AudioDSP

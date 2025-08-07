@@ -2,10 +2,17 @@
 // Ultra-realistic spring modeling with chirp, boing, and saturation
 
 #include "SpringReverb_Platinum.h"
+#include <JuceHeader.h>
 #include <cmath>
 #include <algorithm>
 #include <numeric>
 #include <chrono>
+#include <atomic>
+#include <memory>
+#include <map>
+#include <cstdlib>
+#include <sstream>
+#include <iomanip>
 
 // Platform-specific SIMD headers with detection
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
@@ -445,6 +452,7 @@ private:
     void processMono(float* data, int numSamples, float drive) {
         const float mix = smoothers.mix.tick();
         const float decay = smoothers.decay.tick();
+        const float damping = smoothers.damping.tick();
         
         for (int i = 0; i < numSamples; ++i) {
             const float dry = data[i];
@@ -506,6 +514,7 @@ private:
         const float mix = smoothers.mix.tick();
         const float width = smoothers.width.tick();
         const float decay = smoothers.decay.tick();
+        const float damping = smoothers.damping.tick();
         
         for (int i = 0; i < numSamples; ++i) {
             const float dryL = left[i];
@@ -716,17 +725,34 @@ float SpringReverb_Platinum::getParameterDefaultValue(int index) const {
 
 juce::String SpringReverb_Platinum::getParameterText(int index) const {
     const float value = getParameterValue(index);
+    std::ostringstream oss;
     
     switch (index) {
-        case 0: return juce::String(value * 100.0f, 1) + "%";
-        case 1: return juce::String(value * 100.0f, 1) + "%";
-        case 2: return juce::String(0.1f + value * 4.9f, 2) + "s";
-        case 3: return juce::String(value * 100.0f, 1) + "%";
-        case 4: return juce::String(value * 100.0f, 1) + "%";
-        case 5: return juce::String(value * 100.0f, 1) + "%";
-        case 6: return juce::String(value * 100.0f, 1) + "%";
-        case 7: return juce::String(value * 100.0f, 1) + "%";
-        default: return "";
+        case 0: 
+            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
+            return juce::String(oss.str().c_str());
+        case 1: 
+            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
+            return juce::String(oss.str().c_str());
+        case 2: 
+            oss << std::fixed << std::setprecision(2) << (0.1f + value * 4.9f) << "s";
+            return juce::String(oss.str().c_str());
+        case 3: 
+            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
+            return juce::String(oss.str().c_str());
+        case 4: 
+            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
+            return juce::String(oss.str().c_str());
+        case 5: 
+            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
+            return juce::String(oss.str().c_str());
+        case 6: 
+            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
+            return juce::String(oss.str().c_str());
+        case 7: 
+            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
+            return juce::String(oss.str().c_str());
+        default: return juce::String("");
     }
 }
 

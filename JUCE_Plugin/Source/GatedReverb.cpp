@@ -30,7 +30,7 @@ static struct DenormGuard {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
     }
-} g_denormGuard;
+} static g_denormGuard;
 
 namespace {
     // Denormal flushers

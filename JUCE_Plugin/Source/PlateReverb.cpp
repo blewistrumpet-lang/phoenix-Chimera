@@ -515,6 +515,8 @@ PlateReverb::PlateReverb() {
     m_fdnDampingSmooth->reset(0.5f);
 }
 
+PlateReverb::~PlateReverb() = default;
+
 void PlateReverb::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
     m_currentBlockSize = PlateConstants::getBlockSize(m_performanceMode.load());

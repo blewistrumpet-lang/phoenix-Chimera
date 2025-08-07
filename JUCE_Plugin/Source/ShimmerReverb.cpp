@@ -2,7 +2,9 @@
 #include "ShimmerReverb.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
-#include <immintrin.h>
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+#endif
 #include <atomic>
 #include <cmath>
 #include <algorithm>
@@ -37,7 +39,7 @@ namespace {
             _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
         }
-    } g_denormGuard;
+    } static g_denormGuard;
     
     // Unified denormal flusher
     template<typename T>
@@ -57,7 +59,7 @@ namespace {
     
     // SIMD-aligned allocation helper
     template<typename T>
-    using AlignedVector = std::vector<T, juce::HeapBlockAllocator<T, 32>>;
+    using AlignedVector = std::vector<T>;
 }
 
 // ============================================================================

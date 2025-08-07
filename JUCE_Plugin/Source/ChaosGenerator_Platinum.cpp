@@ -4,8 +4,6 @@
 #include <atomic>
 #include <cstring>
 #include <array>
-#include <immintrin.h>
-
 // Platform-specific includes
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
     #include <immintrin.h>

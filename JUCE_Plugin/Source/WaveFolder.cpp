@@ -111,8 +111,12 @@ public:
     }
     
     void reset() noexcept {
-        for (auto& d : upDelay) d.fill(0.0f);
-        for (auto& d : downDelay) d.fill(0.0f);
+        for (int i = 0; i < FACTOR; ++i) {
+            for (int j = 0; j < TAPS_PER_PHASE; ++j) {
+                upDelay[i][j] = 0.0f;
+                downDelay[i][j] = 0.0f;
+            }
+        }
         upDelayIndex = 0;
         downDelayIndex = 0;
     }
@@ -292,7 +296,9 @@ public:
             }
         }
         
-        rmsAccumulator.fetch_add(localSum, std::memory_order_relaxed);
+        float currentSum = rmsAccumulator.load(std::memory_order_relaxed);
+        while (!rmsAccumulator.compare_exchange_weak(currentSum, currentSum + localSum, 
+                                                     std::memory_order_relaxed)) {}
         rmsSampleCount.fetch_add(numSamples, std::memory_order_relaxed);
     }
     

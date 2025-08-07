@@ -21,10 +21,14 @@
         _mm_setcsr(_mm_getcsr() | 0x8040)
     #define FLUSH_DENORMAL(x) \
         _mm_store_ss(&(x), _mm_set_ss(x))
+    #define FLUSH_DENORMAL_DOUBLE(x) \
+        _mm_store_sd(&(x), _mm_set_sd(x))
 #else
     #define ENABLE_DENORMAL_PREVENTION() ((void)0)
     #define FLUSH_DENORMAL(x) \
-        ((std::abs(x) < 1e-30f) ? ((x) = 0.0f) : (void)0)
+        do { if (std::abs(x) < 1e-30f) (x) = 0.0f; } while(0)
+    #define FLUSH_DENORMAL_DOUBLE(x) \
+        do { if (std::abs(x) < 1e-30) (x) = 0.0; } while(0)
 #endif
 
 //==============================================================================
@@ -123,9 +127,9 @@ struct MidSideProcessor_Platinum::Impl {
             y2 = y1;
             y1 = output;
             
-            FLUSH_DENORMAL(output);
-            FLUSH_DENORMAL(y1);
-            FLUSH_DENORMAL(y2);
+            FLUSH_DENORMAL_DOUBLE(output);
+            FLUSH_DENORMAL_DOUBLE(y1);
+            FLUSH_DENORMAL_DOUBLE(y2);
             
             return output;
         }
@@ -147,8 +151,7 @@ struct MidSideProcessor_Platinum::Impl {
                 bypassed = false;
                 // 4th order Butterworth highpass
                 double q = 0.5412; // Butterworth Q for 2nd order sections
-                stage1.calculateHighpass(freq, q, sr);
-                stage2.calculateHighpass(freq, q, sr);
+                calculateHighpass(freq, q, sr);
             }
         }
         
@@ -194,7 +197,7 @@ struct MidSideProcessor_Platinum::Impl {
                 active = false;
             } else {
                 active = true;
-                filter.calculateBell(10000.0, gain * 6.0, 2.0, sr);
+                calculateBell(10000.0, gain * 6.0, 2.0, sr);
             }
         }
         
@@ -511,10 +514,10 @@ void MidSideProcessor_Platinum::process(juce::AudioBuffer<float>& buffer) {
         side *= widthValue * 2.0f; // 0-200%
         
         // Solo monitoring
-        Impl::SoloMode solo = pimpl->getCurrentSoloMode();
-        if (solo == Impl::SoloMode::MID_ONLY) {
+        SoloMode solo = pimpl->getCurrentSoloMode();
+        if (solo == SoloMode::MID_ONLY) {
             side = 0.0f;
-        } else if (solo == Impl::SoloMode::SIDE_ONLY) {
+        } else if (solo == SoloMode::SIDE_ONLY) {
             mid = 0.0f;
         }
         

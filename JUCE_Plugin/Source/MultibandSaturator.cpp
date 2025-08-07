@@ -7,11 +7,18 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+// Platform-specific SIMD support (should match header)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #define HAS_SIMD 1
+#else
+    #define HAS_SIMD 0
+#endif
+
 // Enable FTZ/DAZ globally for denormal prevention
 namespace {
     struct DenormalDisabler {
         DenormalDisabler() {
-            #if defined(__SSE__)
+            #if HAS_SIMD && defined(__SSE__)
             _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
             _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
             #endif
@@ -657,6 +664,7 @@ juce::String MultibandSaturator::getParameterName(int index) const {
 
 void MultibandSaturator::mixBandsSIMD(float* output, const double* low, const double* mid,
                                      const double* high, int numSamples) noexcept {
+#if HAS_SIMD
     // Process 4 samples at a time using SSE
     int simdSamples = numSamples & ~3;
     
@@ -684,4 +692,10 @@ void MultibandSaturator::mixBandsSIMD(float* output, const double* low, const do
     for (int i = simdSamples; i < numSamples; ++i) {
         output[i] = static_cast<float>(low[i] + mid[i] + high[i]);
     }
+#else
+    // Non-SIMD fallback
+    for (int i = 0; i < numSamples; ++i) {
+        output[i] = static_cast<float>(low[i] + mid[i] + high[i]);
+    }
+#endif
 }

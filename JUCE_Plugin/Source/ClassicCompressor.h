@@ -5,19 +5,23 @@
 #include <atomic>
 #include <algorithm>
 #include <cstring>
-#include <immintrin.h>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-// Platform-specific optimizations
-#ifdef __SSE__
-#include <xmmintrin.h>
+// Platform-specific SIMD includes
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+    #define HAS_SIMD 1
+    #ifdef __SSE__
+    #include <xmmintrin.h>
+    #endif
+#else
+    #define HAS_SIMD 0
 #endif
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>
+#endif
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
 #endif
 
 // Professional denormal prevention using bit manipulation

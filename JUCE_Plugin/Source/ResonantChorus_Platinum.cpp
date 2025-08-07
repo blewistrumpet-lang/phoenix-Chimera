@@ -2,16 +2,28 @@
 // Copyright (c) 2024 - Ultimate DSP Series
 
 #include "ResonantChorus_Platinum.h"
+#include <JuceHeader.h>
 #include <cmath>
 #include <algorithm>
 #include <cstring>
 #include <random>
+#include <map>
+#include <cstdlib>
+
+// Ensure M_PI is defined
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 // Platform-specific SIMD headers with detection
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
     #include <immintrin.h>
     #define HAS_SSE2 1
-    #define HAS_AVX2 __AVX2__
+    #ifdef __AVX2__
+        #define HAS_AVX2 1
+    #else
+        #define HAS_AVX2 0
+    #endif
 #else
     #define HAS_SSE2 0
     #define HAS_AVX2 0
@@ -33,7 +45,7 @@ struct DenormalGuard {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
     }
-} g_denormGuard;
+} static g_denormGuard;
 
 // Branchless SSE2 denormal flush
 inline float flushDenormSSE(float x) noexcept {
@@ -237,12 +249,6 @@ public:
         }
     };
     
-    // Initialize static members
-    alignas(64) float TableLFO::s_sineTable[LFO_TABLE_SIZE];
-    alignas(64) float TableLFO::s_triangleTable[LFO_TABLE_SIZE];
-    alignas(64) float TableLFO::s_sawTable[LFO_TABLE_SIZE];
-    bool TableLFO::s_tablesInitialized = false;
-    
     // ========================================================================
     // Optimized State Variable Filter with Cached Coefficients
     // ========================================================================
@@ -320,12 +326,33 @@ public:
         
     public:
         OptimizedDelayLine() {
+#if HAS_SSE2
             m_buffer = static_cast<float*>(_mm_malloc(8192 * sizeof(float), 64));
+#else
+            // Portable aligned allocation fallback
+            #if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
+                void* ptr = nullptr;
+                if (posix_memalign(&ptr, 64, 8192 * sizeof(float)) == 0) {
+                    m_buffer = static_cast<float*>(ptr);
+                } else {
+                    m_buffer = static_cast<float*>(malloc(8192 * sizeof(float)));
+                }
+            #else
+                // Simple malloc fallback for systems without posix_memalign
+                m_buffer = static_cast<float*>(malloc(8192 * sizeof(float)));
+            #endif
+#endif
             reset();
         }
         
         ~OptimizedDelayLine() {
-            if (m_buffer) _mm_free(m_buffer);
+            if (m_buffer) {
+#if HAS_SSE2
+                _mm_free(m_buffer);
+#else
+                free(m_buffer);
+#endif
+            }
         }
         
         void write(float input) noexcept {
@@ -603,12 +630,7 @@ public:
             }
         }
         
-        // Process audio with vectorized accumulation
-#if HAS_SSE2
-        __m128 accumL = _mm_setzero_ps();
-        __m128 accumR = _mm_setzero_ps();
-#endif
-        
+        // Process audio
         for (int i = 0; i < numSamples; ++i) {
             // Get input
             float input = 0.0f;
@@ -763,6 +785,12 @@ public:
     void setConfig(const Config& config) { m_config = config; }
     Config getConfig() const { return m_config; }
 };
+
+// Initialize static members of TableLFO
+alignas(64) float ResonantChorus_Platinum::Impl::TableLFO::s_sineTable[1024];
+alignas(64) float ResonantChorus_Platinum::Impl::TableLFO::s_triangleTable[1024];  
+alignas(64) float ResonantChorus_Platinum::Impl::TableLFO::s_sawTable[1024];
+bool ResonantChorus_Platinum::Impl::TableLFO::s_tablesInitialized = false;
 
 // ============================================================================
 // Public Implementation

@@ -232,7 +232,7 @@ std::vector<float> ConvolutionReverb::IRGenerator::generateAdvancedIR(
     }
     
     // Apply size scaling
-    float scaledRT60 = params.rt60 * (0.5f + size * 1.5f);
+    // float scaledRT60 = params.rt60 * (0.5f + size * 1.5f); // TODO: Use in advanced IR generation
     
     // Generate sophisticated IR using multiple algorithms
     // ... (implementation would continue with advanced IR generation)

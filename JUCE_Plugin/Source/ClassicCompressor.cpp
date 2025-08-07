@@ -1,5 +1,12 @@
 #include "ClassicCompressor.h"
 
+// Platform-specific SIMD support (should match header)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #define HAS_SIMD 1
+#else
+    #define HAS_SIMD 0
+#endif
+
 ClassicCompressor::ClassicCompressor() {
     // Initialize with professional defaults
     m_threshold.reset(-12.0f);
@@ -56,18 +63,17 @@ void ClassicCompressor::reset() {
 }
 
 void ClassicCompressor::enableDenormalPrevention() {
-#ifdef __SSE__
+#if HAS_SIMD && defined(__SSE__)
     // Enable flush-to-zero and denormals-are-zero
     _mm_setcsr(_mm_getcsr() | 0x8040);
+#elif defined(__ARM_NEON) && defined(__ARM_FP)
+    // ARM NEON equivalent - use proper ARM64 syntax
+    uint64_t fpcr;
+    __asm__ __volatile__ ("mrs %0, fpcr" : "=r" (fpcr));
+    fpcr |= (1ULL << 24); // FZ bit
+    __asm__ __volatile__ ("msr fpcr, %0" : : "r" (fpcr));
 #endif
-    
-#ifdef __ARM_NEON
-    // ARM equivalent
-    uint32_t fpscr;
-    __asm__ __volatile__ ("vmrs %0, fpscr" : "=r" (fpscr));
-    fpscr |= (1 << 24); // FZ bit
-    __asm__ __volatile__ ("vmsr fpscr, %0" : : "r" (fpscr));
-#endif
+    // For other architectures, rely on compiler flags or runtime denormal handling
 }
 
 void ClassicCompressor::process(juce::AudioBuffer<float>& buffer) {

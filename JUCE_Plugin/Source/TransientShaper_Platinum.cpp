@@ -1,10 +1,20 @@
 #include "TransientShaper_Platinum.h"
-#include <juce_audio_basics/juce_audio_basics.h>
-#include <juce_dsp/juce_dsp.h>
-#include <immintrin.h>
+#include <JuceHeader.h>
+
+// Platform-specific SIMD includes
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+    #define HAS_SIMD 1
+#else
+    #define HAS_SIMD 0
+#endif
 #include <atomic>
 #include <cmath>
 #include <algorithm>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 // Feature flags for compile-time optimization
 #ifndef TRANSIENT_SHAPER_ENABLE_HILBERT
@@ -22,7 +32,7 @@
 // Enable FTZ/DAZ globally
 static struct DenormGuard {
     DenormGuard() {
-#if defined(__SSE__)
+#if defined(__SSE__) && HAS_SIMD
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
@@ -35,6 +45,89 @@ inline T flushDenorm(T v) noexcept {
     constexpr T tiny = static_cast<T>(1.0e-30);
     return std::fabs(v) < tiny ? static_cast<T>(0) : v;
 }
+
+// Custom IIR implementation to avoid JUCE conflicts
+class CustomIIRCoefficients {
+    public:
+        static CustomIIRCoefficients makeHighPass(double sampleRate, double frequency) {
+            CustomIIRCoefficients c;
+            // Simple high-pass implementation
+            double omega = 2.0 * M_PI * frequency / sampleRate;
+            double cosOmega = std::cos(omega);
+            double sinOmega = std::sin(omega);
+            double alpha = sinOmega / (2.0 * 0.707); // Q = 0.707
+            
+            double b0 = (1.0 + cosOmega) / 2.0;
+            double b1 = -(1.0 + cosOmega);
+            double b2 = (1.0 + cosOmega) / 2.0;
+            double a0 = 1.0 + alpha;
+            double a1 = -2.0 * cosOmega;
+            double a2 = 1.0 - alpha;
+            
+            c.coeffs[0] = b0 / a0;
+            c.coeffs[1] = b1 / a0;
+            c.coeffs[2] = b2 / a0;
+            c.coeffs[3] = a1 / a0;
+            c.coeffs[4] = a2 / a0;
+            return c;
+        }
+        
+        static CustomIIRCoefficients makeLowPass(double sampleRate, double frequency) {
+            CustomIIRCoefficients c;
+            // Simple low-pass implementation  
+            double omega = 2.0 * M_PI * frequency / sampleRate;
+            double cosOmega = std::cos(omega);
+            double sinOmega = std::sin(omega);
+            double alpha = sinOmega / (2.0 * 0.707); // Q = 0.707
+            
+            double b0 = (1.0 - cosOmega) / 2.0;
+            double b1 = 1.0 - cosOmega;
+            double b2 = (1.0 - cosOmega) / 2.0;
+            double a0 = 1.0 + alpha;
+            double a1 = -2.0 * cosOmega;
+            double a2 = 1.0 - alpha;
+            
+            c.coeffs[0] = b0 / a0;
+            c.coeffs[1] = b1 / a0;
+            c.coeffs[2] = b2 / a0;
+            c.coeffs[3] = a1 / a0;
+            c.coeffs[4] = a2 / a0;
+            return c;
+        }
+        
+        double coeffs[5] = {0};
+    };
+    
+    // Custom IIR filter
+    class CustomIIRFilter {
+    public:
+        void setCoefficients(const CustomIIRCoefficients& newCoeffs) {
+            coeffs = newCoeffs;
+        }
+        
+        float processSample(float sample) {
+            float output = coeffs.coeffs[0] * sample + 
+                          coeffs.coeffs[1] * x1 + 
+                          coeffs.coeffs[2] * x2 - 
+                          coeffs.coeffs[3] * y1 - 
+                          coeffs.coeffs[4] * y2;
+            
+            x2 = x1;
+            x1 = sample;
+            y2 = y1;
+            y1 = output;
+            
+            return output;
+        }
+        
+        void reset() {
+            x1 = x2 = y1 = y2 = 0.0f;
+        }
+        
+    private:
+        CustomIIRCoefficients coeffs;
+        float x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    };
 
 // Lock-free parameter smoothing
 class SmoothParam {
@@ -164,7 +257,7 @@ private:
         hilbertDelay[hilbertIndex] = input;
         hilbertIndex = (hilbertIndex + 1) & (HILBERT_SIZE - 1);
         
-#ifdef __AVX2__
+#if defined(__AVX2__) && HAS_SIMD
         // AVX2 optimized Hilbert transform
         __m256 sum = _mm256_setzero_ps();
         
@@ -249,8 +342,8 @@ public:
         fs = static_cast<float>(sampleRate);
         
         // Initialize filters for spectral separation
-        highpass.setCoefficients(juce::IIRCoefficients::makeHighPass(sampleRate, 200.0));
-        lowpass.setCoefficients(juce::IIRCoefficients::makeLowPass(sampleRate, 5000.0));
+        highpass.setCoefficients(CustomIIRCoefficients::makeHighPass(sampleRate, 200.0));
+        lowpass.setCoefficients(CustomIIRCoefficients::makeLowPass(sampleRate, 5000.0));
         
         reset();
     }
@@ -262,8 +355,8 @@ public:
         float hpFreq = 100.0f + amount * 400.0f;  // 100-500 Hz
         float lpFreq = 8000.0f - amount * 3000.0f; // 5000-8000 Hz
         
-        highpass.setCoefficients(juce::IIRCoefficients::makeHighPass(fs, hpFreq));
-        lowpass.setCoefficients(juce::IIRCoefficients::makeLowPass(fs, lpFreq));
+        highpass.setCoefficients(CustomIIRCoefficients::makeHighPass(fs, hpFreq));
+        lowpass.setCoefficients(CustomIIRCoefficients::makeLowPass(fs, lpFreq));
     }
     
     inline void process(float input, float envelope, 
@@ -291,7 +384,7 @@ public:
     }
     
     // Vectorized batch processing for oversampled blocks
-#ifdef __AVX2__
+#if defined(__AVX2__) && HAS_SIMD
     void processBatch(const float* input, const float* envelope, 
                       float* transientOut, float* sustainOut, int numSamples) noexcept {
         // Process 8 samples at a time
@@ -345,8 +438,11 @@ public:
             _mm256_storeu_ps(&sustainOut[i], sust);
             
             // Update scalar amounts from last vector element
-            transientAmount = transAmtVec[7];
-            sustainAmount = sustAmtVec[7];
+            alignas(32) float transAmtArray[8], sustAmtArray[8];
+            _mm256_store_ps(transAmtArray, transAmtVec);
+            _mm256_store_ps(sustAmtArray, sustAmtVec);
+            transientAmount = transAmtArray[7];
+            sustainAmount = sustAmtArray[7];
         }
         
         // Process remaining samples
@@ -372,8 +468,8 @@ private:
     float transientAmount = 0.0f;
     float sustainAmount = 1.0f;
     
-    juce::IIRFilter highpass;
-    juce::IIRFilter lowpass;
+    CustomIIRFilter highpass;
+    CustomIIRFilter lowpass;
 };
 
 // Soft knee processor for smooth dynamics
@@ -392,7 +488,7 @@ public:
         inverseRatio = 1.0f / r;
     }
     
-    inline float process(float input, float envelope) noexcept {
+    inline float process(float input, float /*envelope*/) noexcept {
         float level = std::abs(input);
         
         if (level < threshold - knee) {
@@ -434,7 +530,7 @@ public:
     
     inline float process(float input) noexcept {
         buffer[writeIndex] = input;
-        int readIndex = (writeIndex - delaySamples + buffer.size()) % buffer.size();
+        int readIndex = static_cast<int>((writeIndex - delaySamples + buffer.size()) % buffer.size());
         writeIndex = (writeIndex + 1) % buffer.size();
         return buffer[readIndex];
     }
@@ -489,7 +585,7 @@ struct TransientShaper_Platinum::Impl {
             spec.sampleRate = sampleRate;
             spec.maximumBlockSize = blockSize;
             spec.numChannels = 1;
-            oversampler.prepare(spec);
+            oversampler.initProcessing(blockSize);
         }
         
         void reset() {

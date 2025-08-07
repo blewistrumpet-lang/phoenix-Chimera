@@ -4,19 +4,25 @@
 #include "EngineBase.h"
 #include <array>
 #include <memory>
-#ifdef __SSE2__
-#include <immintrin.h>
+// Platform-specific SIMD includes
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+    #define HAS_SIMD 1
+#else
+    #define HAS_SIMD 0
 #endif
 
 namespace AudioDSP {
 
-// Forward declarations
-class DelayLine;
-class ParameterSmoother;
-class BiquadFilter;
-class SoftClipper;
-class DCBlocker;
-class ModulationProcessor;
+// Forward declarations for DigitalDelayImpl types
+namespace DigitalDelayImpl {
+    class DelayLine;
+    class ParameterSmoother;
+    class BiquadFilter;
+    class SoftClipper;
+    class DCBlocker;
+    class ModulationProcessor;
+}
 
 class DigitalDelay : public EngineBase {
 public:
@@ -34,17 +40,17 @@ public:
     
 private:
     // Core DSP components
-    std::unique_ptr<DelayLine> m_delayLines[2];
-    std::unique_ptr<BiquadFilter> m_filters[2];
-    std::unique_ptr<SoftClipper> m_clipper;
-    std::unique_ptr<DCBlocker> m_dcBlockers[2];
-    std::unique_ptr<ModulationProcessor> m_modulator;
+    std::unique_ptr<DigitalDelayImpl::DelayLine> m_delayLines[2];
+    std::unique_ptr<DigitalDelayImpl::BiquadFilter> m_filters[2];
+    std::unique_ptr<DigitalDelayImpl::SoftClipper> m_clipper;
+    std::unique_ptr<DigitalDelayImpl::DCBlocker> m_dcBlockers[2];
+    std::unique_ptr<DigitalDelayImpl::ModulationProcessor> m_modulator;
     
     // Parameters
-    std::unique_ptr<ParameterSmoother> m_delayTime;
-    std::unique_ptr<ParameterSmoother> m_feedback;
-    std::unique_ptr<ParameterSmoother> m_mix;
-    std::unique_ptr<ParameterSmoother> m_highCut;
+    std::unique_ptr<DigitalDelayImpl::ParameterSmoother> m_delayTime;
+    std::unique_ptr<DigitalDelayImpl::ParameterSmoother> m_feedback;
+    std::unique_ptr<DigitalDelayImpl::ParameterSmoother> m_mix;
+    std::unique_ptr<DigitalDelayImpl::ParameterSmoother> m_highCut;
     
     // State
     double m_sampleRate = 44100.0;
@@ -72,6 +78,8 @@ private:
     static constexpr float MAX_OUTPUT = 0.99f;
     static constexpr int PROCESS_BLOCK_SIZE = 64;
 };
+
+namespace DigitalDelayImpl {
 
 // ParameterSmoother.h
 class ParameterSmoother {
@@ -175,7 +183,7 @@ private:
     double m_y1 = 0.0, m_y2 = 0.0;
     
     // For SIMD processing
-    #ifdef __SSE2__
+    #if HAS_SIMD
     __m128d m_coeffs[5]; // a0, a1, a2, b1, b2
     __m128d m_state[4];   // x1, x2, y1, y2
     #endif
@@ -255,5 +263,7 @@ private:
     // 2-pole smoothing filter
     std::unique_ptr<BiquadFilter> m_smoothingFilter;
 };
+
+} // namespace DigitalDelayImpl
 
 } // namespace AudioDSP

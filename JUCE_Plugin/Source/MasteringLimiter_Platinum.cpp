@@ -47,7 +47,7 @@ struct DenormalGuard {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
     }
-} g_denormGuard;
+} static g_denormGuard;
 
 // Constants
 constexpr int OVERSAMPLE_FACTOR = 16;

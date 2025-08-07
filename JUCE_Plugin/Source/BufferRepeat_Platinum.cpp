@@ -15,6 +15,23 @@
     #define HAS_SSE2 0
 #endif
 
+// Platform-agnostic aligned memory allocation
+#if HAS_SSE2
+    #define ALIGNED_ALLOC(size, align) _mm_malloc(size, align)
+    #define ALIGNED_FREE(ptr) _mm_free(ptr)
+#else
+    #include <stdlib.h>
+    inline void* aligned_alloc_fallback(size_t size, size_t align) {
+        void* ptr = nullptr;
+        if (posix_memalign(&ptr, align, size) != 0) {
+            return nullptr;
+        }
+        return ptr;
+    }
+    #define ALIGNED_ALLOC(size, align) aligned_alloc_fallback(size, align)
+    #define ALIGNED_FREE(ptr) free(ptr)
+#endif
+
 // ============================================================================
 // Unified Configuration
 // ============================================================================
@@ -32,7 +49,7 @@ struct DenormalGuard {
         _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
     }
-} g_denormGuard;
+} static g_denormGuard;
 
 // Branchless denormal flush with SSE
 inline float flushDenormSSE(float x) noexcept {
@@ -146,10 +163,10 @@ public:
     public:
         UltraPitchShifter() {
             // Use power-of-2 ring buffer for fast masking
-            m_ringBuffer = static_cast<float*>(_mm_malloc(WINDOW_SIZE * 2 * sizeof(float), 64));
-            m_outputBuffer = static_cast<float*>(_mm_malloc(WINDOW_SIZE * 2 * sizeof(float), 64));
-            m_window = static_cast<float*>(_mm_malloc(WINDOW_SIZE * sizeof(float), 64));
-            m_grainBuffer = static_cast<float*>(_mm_malloc(WINDOW_SIZE * sizeof(float), 64));
+            m_ringBuffer = static_cast<float*>(ALIGNED_ALLOC(WINDOW_SIZE * 2 * sizeof(float), 64));
+            m_outputBuffer = static_cast<float*>(ALIGNED_ALLOC(WINDOW_SIZE * 2 * sizeof(float), 64));
+            m_window = static_cast<float*>(ALIGNED_ALLOC(WINDOW_SIZE * sizeof(float), 64));
+            m_grainBuffer = static_cast<float*>(ALIGNED_ALLOC(WINDOW_SIZE * sizeof(float), 64));
             
             // Initialize Hann window
             for (int i = 0; i < WINDOW_SIZE; ++i) {
@@ -160,10 +177,10 @@ public:
         }
         
         ~UltraPitchShifter() {
-            if (m_ringBuffer) _mm_free(m_ringBuffer);
-            if (m_outputBuffer) _mm_free(m_outputBuffer);
-            if (m_window) _mm_free(m_window);
-            if (m_grainBuffer) _mm_free(m_grainBuffer);
+            if (m_ringBuffer) ALIGNED_FREE(m_ringBuffer);
+            if (m_outputBuffer) ALIGNED_FREE(m_outputBuffer);
+            if (m_window) ALIGNED_FREE(m_window);
+            if (m_grainBuffer) ALIGNED_FREE(m_grainBuffer);
         }
         
         float process(float input, float pitchRatio) noexcept {
@@ -317,28 +334,21 @@ public:
         
         // Pre-computed crossfade table
         static constexpr int XFADE_SIZE = 64;
-        alignas(64) static float s_xfadeTable[XFADE_SIZE];
-        static bool s_xfadeInitialized;
         int m_xfadeIndex{0};
         
-        static void initXfadeTable() {
-            if (!s_xfadeInitialized) {
-                for (int i = 0; i < XFADE_SIZE; ++i) {
-                    s_xfadeTable[i] = static_cast<float>(i) / (XFADE_SIZE - 1);
-                }
-                s_xfadeInitialized = true;
-            }
+        void initXfadeTable() {
+            // Initialize crossfade table in constructor instead
         }
         
     public:
         UltraSlicePlayer() {
-            m_buffer = static_cast<float*>(_mm_malloc(MAX_BUFFER_SAMPLES * sizeof(float), 64));
+            m_buffer = static_cast<float*>(ALIGNED_ALLOC(MAX_BUFFER_SAMPLES * sizeof(float), 64));
             initXfadeTable();
             reset();
         }
         
         ~UltraSlicePlayer() {
-            if (m_buffer) _mm_free(m_buffer);
+            if (m_buffer) ALIGNED_FREE(m_buffer);
         }
         
         void copyBuffer(const float* source, int size) noexcept {
@@ -394,9 +404,10 @@ public:
             
             float sample = static_cast<float>(((c3 * frac + c2) * frac + c1) * frac + c0);
             
-            // Apply crossfade using lookup table
+            // Apply crossfade
             if (m_xfadeIndex < XFADE_SIZE) {
-                sample *= s_xfadeTable[m_xfadeIndex++];
+                sample *= static_cast<float>(m_xfadeIndex) / (XFADE_SIZE - 1);
+                m_xfadeIndex++;
             }
             
             // Update read position
@@ -443,9 +454,8 @@ public:
         bool isPlaying() const noexcept { return m_isPlaying; }
     };
     
-    // Initialize static members
-    alignas(64) float UltraSlicePlayer::s_xfadeTable[XFADE_SIZE];
-    bool UltraSlicePlayer::s_xfadeInitialized = false;
+    // Static member definitions must be outside the class
+    // but we'll move them to the end of the file to avoid issues
     
     // ========================================================================
     // Optimized Channel State
@@ -473,7 +483,7 @@ public:
         uint32_t rngState{0x12345678};
         
         ChannelState() {
-            recordBuffer = static_cast<float*>(_mm_malloc(MAX_BUFFER_SAMPLES * sizeof(float), 64));
+            recordBuffer = static_cast<float*>(ALIGNED_ALLOC(MAX_BUFFER_SAMPLES * sizeof(float), 64));
             for (auto& player : slicePlayers) {
                 player = std::make_unique<UltraSlicePlayer>();
             }
@@ -481,7 +491,7 @@ public:
         }
         
         ~ChannelState() {
-            if (recordBuffer) _mm_free(recordBuffer);
+            if (recordBuffer) ALIGNED_FREE(recordBuffer);
         }
         
         void reset() {
@@ -974,3 +984,4 @@ float BufferRepeat_Platinum::getOutputLevel() const {
     // Would need to expose from implementation
     return -60.0f;
 }
+

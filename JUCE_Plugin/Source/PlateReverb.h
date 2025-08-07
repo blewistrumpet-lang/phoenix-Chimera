@@ -110,7 +110,7 @@ namespace PlateConstants {
 class PlateReverb : public EngineBase {
 public:
     PlateReverb();
-    ~PlateReverb() = default;
+    ~PlateReverb();
     
     // Audio thread only - NOT thread-safe with process()
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;

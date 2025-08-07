@@ -8,6 +8,20 @@
 #include <algorithm>
 #include <atomic>
 
+// Simple aligned array template - use namespace to avoid conflicts
+namespace CombResonatorImpl {
+template<typename T, size_t N, size_t Alignment = 32>
+struct AlignedArray {
+    alignas(Alignment) std::array<T, N> data;
+    
+    T& operator[](size_t i) { return data[i]; }
+    const T& operator[](size_t i) const { return data[i]; }
+    
+    void fill(const T& value) { data.fill(value); }
+    void clear() { data.fill(T{}); }
+};
+}
+
 class CombResonator : public EngineBase {
 public:
     CombResonator();
@@ -41,7 +55,7 @@ private:
         void reset();
         
     private:
-        AlignedArray<float, MAX_DELAY_SAMPLES, 64> delayLine;
+        CombResonatorImpl::AlignedArray<float, MAX_DELAY_SAMPLES, 64> delayLine;
         float feedback = 0.0f;
         float feedforward = 1.0f;
         float damping = 0.0f;

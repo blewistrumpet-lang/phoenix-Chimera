@@ -135,6 +135,10 @@
             file="Source/VocalFormantFilter.h"/>
       <FILE id="vW2xY3" name="VocalFormantFilter.cpp" compile="1" resource="0"
             file="Source/VocalFormantFilter.cpp"/>
+      <FILE id="zA4bC5" name="TransientShaper.h" compile="0" resource="0"
+            file="Source/TransientShaper.h"/>
+      <FILE id="dE6fG7" name="TransientShaper.cpp" compile="1" resource="0"
+            file="Source/TransientShaper.cpp"/>
       <FILE id="hI8jK9" name="DimensionExpander.h" compile="0" resource="0"
             file="Source/DimensionExpander.h"/>
       <FILE id="lM0nO1" name="DimensionExpander.cpp" compile="1" resource="0"
@@ -167,6 +171,10 @@
             file="Source/ParametricEQ.h"/>
       <FILE id="nO2sS5" name="ParametricEQ.cpp" compile="1" resource="0"
             file="Source/ParametricEQ.cpp"/>
+      <FILE id="pQ3tT6" name="MasteringLimiter.h" compile="0" resource="0"
+            file="Source/MasteringLimiter.h"/>
+      <FILE id="qR4uU7" name="MasteringLimiter.cpp" compile="1" resource="0"
+            file="Source/MasteringLimiter.cpp"/>
       <FILE id="sT5vV8" name="NoiseGate.h" compile="0" resource="0"
             file="Source/NoiseGate.h"/>
       <FILE id="tU6wW9" name="NoiseGate.cpp" compile="1" resource="0"
@@ -191,6 +199,10 @@
             file="Source/VintageConsoleEQ.h"/>
       <FILE id="eF6gH9" name="VintageConsoleEQ.cpp" compile="1" resource="0"
             file="Source/VintageConsoleEQ.cpp"/>
+      <FILE id="fG7hI0" name="MidSideProcessor.h" compile="0" resource="0"
+            file="Source/MidSideProcessor.h"/>
+      <FILE id="gH8iJ1" name="MidSideProcessor.cpp" compile="1" resource="0"
+            file="Source/MidSideProcessor.cpp"/>
       <FILE id="hI9jK2" name="VintageTubePreamp.h" compile="0" resource="0"
             file="Source/VintageTubePreamp.h"/>
       <FILE id="iJ0kL3" name="VintageTubePreamp.cpp" compile="1" resource="0"
@@ -203,94 +215,6 @@
             file="Source/ResonantChorus.h"/>
       <FILE id="mN4oP7" name="ResonantChorus.cpp" compile="1" resource="0"
             file="Source/ResonantChorus.cpp"/>
-      <FILE id="sI1tE2" name="StereoImager.h" compile="0" resource="0"
-            file="Source/StereoImager.h"/>
-      <FILE id="sI3mA4" name="StereoImager.cpp" compile="1" resource="0"
-            file="Source/StereoImager.cpp"/>
-      <FILE id="sW5iD6" name="StereoWidener.h" compile="0" resource="0"
-            file="Source/StereoWidener.h"/>
-      <FILE id="sW7eN8" name="StereoWidener.cpp" compile="1" resource="0"
-            file="Source/StereoWidener.cpp"/>
-    </GROUP>
-    <GROUP id="{6F7G8H9I-0J1K-2L3M-4N5O-P6Q7R8S9T0U1}" name="PlatinumEngines">
-      <FILE id="bR1pL2" name="BufferRepeat_Platinum.h" compile="0" resource="0"
-            file="Source/BufferRepeat_Platinum.h"/>
-      <FILE id="bR3pL4" name="BufferRepeat_Platinum.cpp" compile="1" resource="0"
-            file="Source/BufferRepeat_Platinum.cpp"/>
-      <FILE id="cG5pL6" name="ChaosGenerator_Platinum.h" compile="0" resource="0"
-            file="Source/ChaosGenerator_Platinum.h"/>
-      <FILE id="cG7pL8" name="ChaosGenerator_Platinum.cpp" compile="1" resource="0"
-            file="Source/ChaosGenerator_Platinum.cpp"/>
-      <FILE id="gU9pL0" name="GainUtility_Platinum.h" compile="0" resource="0"
-            file="Source/GainUtility_Platinum.h"/>
-      <FILE id="gU1pL2" name="GainUtility_Platinum.cpp" compile="1" resource="0"
-            file="Source/GainUtility_Platinum.cpp"/>
-      <FILE id="hE3pL4" name="HarmonicExciter_Platinum.h" compile="0" resource="0"
-            file="Source/HarmonicExciter_Platinum.h"/>
-      <FILE id="hE5pL6" name="HarmonicExciter_Platinum.cpp" compile="1" resource="0"
-            file="Source/HarmonicExciter_Platinum.cpp"/>
-      <FILE id="mL7pL8" name="MasteringLimiter_Platinum.h" compile="0" resource="0"
-            file="Source/MasteringLimiter_Platinum.h"/>
-      <FILE id="mL9pL0" name="MasteringLimiter_Platinum.cpp" compile="1" resource="0"
-            file="Source/MasteringLimiter_Platinum.cpp"/>
-      <FILE id="mS1pL2" name="MidSideProcessor_Platinum.h" compile="0" resource="0"
-            file="Source/MidSideProcessor_Platinum.h"/>
-      <FILE id="mS3pL4" name="MidSideProcessor_Platinum.cpp" compile="1" resource="0"
-            file="Source/MidSideProcessor_Platinum.cpp"/>
-      <FILE id="mM5pL6" name="MonoMaker_Platinum.h" compile="0" resource="0"
-            file="Source/MonoMaker_Platinum.h"/>
-      <FILE id="mM7pL8" name="MonoMaker_Platinum.cpp" compile="1" resource="0"
-            file="Source/MonoMaker_Platinum.cpp"/>
-      <FILE id="nG9pL0" name="NoiseGate_Platinum.h" compile="0" resource="0"
-            file="Source/NoiseGate_Platinum.h"/>
-      <FILE id="nG1pL2" name="NoiseGate_Platinum.cpp" compile="1" resource="0"
-            file="Source/NoiseGate_Platinum.cpp"/>
-      <FILE id="pE3pL4" name="ParametricEQ_Platinum.h" compile="0" resource="0"
-            file="Source/ParametricEQ_Platinum.h"/>
-      <FILE id="pE5pL6" name="ParametricEQ_Platinum.cpp" compile="1" resource="0"
-            file="Source/ParametricEQ_Platinum.cpp"/>
-      <FILE id="pA7pL8" name="PhaseAlign_Platinum.h" compile="0" resource="0"
-            file="Source/PhaseAlign_Platinum.h"/>
-      <FILE id="pA9pL0" name="PhaseAlign_Platinum.cpp" compile="1" resource="0"
-            file="Source/PhaseAlign_Platinum.cpp"/>
-      <FILE id="rC1pL2" name="ResonantChorus_Platinum.h" compile="0" resource="0"
-            file="Source/ResonantChorus_Platinum.h"/>
-      <FILE id="rC3pL4" name="ResonantChorus_Platinum.cpp" compile="1" resource="0"
-            file="Source/ResonantChorus_Platinum.cpp"/>
-      <FILE id="rS5pL6" name="RotarySpeaker_Platinum.h" compile="0" resource="0"
-            file="Source/RotarySpeaker_Platinum.h"/>
-      <FILE id="rS7pL8" name="RotarySpeaker_Platinum.cpp" compile="1" resource="0"
-            file="Source/RotarySpeaker_Platinum.cpp"/>
-      <FILE id="sG9pL0" name="SpectralGate_Platinum.h" compile="0" resource="0"
-            file="Source/SpectralGate_Platinum.h"/>
-      <FILE id="sG1pL2" name="SpectralGate_Platinum.cpp" compile="1" resource="0"
-            file="Source/SpectralGate_Platinum.cpp"/>
-      <FILE id="sR3pL4" name="SpringReverb_Platinum.h" compile="0" resource="0"
-            file="Source/SpringReverb_Platinum.h"/>
-      <FILE id="sR5pL6" name="SpringReverb_Platinum.cpp" compile="1" resource="0"
-            file="Source/SpringReverb_Platinum.cpp"/>
-      <FILE id="tS7pL8" name="TransientShaper_Platinum.h" compile="0" resource="0"
-            file="Source/TransientShaper_Platinum.h"/>
-      <FILE id="tS9pL0" name="TransientShaper_Platinum.cpp" compile="1" resource="0"
-            file="Source/TransientShaper_Platinum.cpp"/>
-      <FILE id="vC1pL2" name="VintageConsoleEQ_Platinum.h" compile="0" resource="0"
-            file="Source/VintageConsoleEQ_Platinum.h"/>
-      <FILE id="vC3pL4" name="VintageConsoleEQ_Platinum.cpp" compile="1" resource="0"
-            file="Source/VintageConsoleEQ_Platinum.cpp"/>
-      <FILE id="vO5pL6" name="VintageOptoCompressor_Platinum.h" compile="0" resource="0"
-            file="Source/VintageOptoCompressor_Platinum.h"/>
-      <FILE id="vO7pL8" name="VintageOptoCompressor_Platinum.cpp" compile="1" resource="0"
-            file="Source/VintageOptoCompressor_Platinum.cpp"/>
-    </GROUP>
-    <GROUP id="{7G8H9I0J-1K2L-3M4N-5O6P-Q7R8S9T0U1V2}" name="UtilityEngines">
-      <FILE id="dE1uE2" name="DynamicEQ.h" compile="0" resource="0"
-            file="Source/DynamicEQ.h"/>
-      <FILE id="dE3uE4" name="DynamicEQ.cpp" compile="1" resource="0"
-            file="Source/DynamicEQ.cpp"/>
-      <FILE id="pR5uE6" name="PlatinumRingModulator.h" compile="0" resource="0"
-            file="Source/PlatinumRingModulator.h"/>
-      <FILE id="pR7uE8" name="PlatinumRingModulator.cpp" compile="1" resource="0"
-            file="Source/PlatinumRingModulator.cpp"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>

@@ -7,18 +7,18 @@ DetuneDoubler::DetuneDoubler() {
     // Initialize voices with shared RNG
     for (auto& voice : m_voices) {
         voice.pitchShifter = std::make_unique<PitchShifter>(m_randomGen);
-        voice.delay = std::make_unique<DelayLine>();
-        voice.phaseNetwork = std::make_unique<AllPassNetwork>(m_randomGen);
-        voice.modulator = std::make_unique<ModulationGenerator>(m_randomGen);
-        voice.tapeFilter = std::make_unique<BiquadFilter>();
+        voice.delay = std::make_unique<DetuneDoublerImpl::DelayLine>();
+        voice.phaseNetwork = std::make_unique<DetuneDoublerImpl::AllPassNetwork>(m_randomGen);
+        voice.modulator = std::make_unique<DetuneDoublerImpl::ModulationGenerator>(m_randomGen);
+        voice.tapeFilter = std::make_unique<DetuneDoublerImpl::BiquadFilter>();
     }
     
     // Initialize parameters
-    m_detuneParam = std::make_unique<ParameterSmoother>();
-    m_delayParam = std::make_unique<ParameterSmoother>();
-    m_widthParam = std::make_unique<ParameterSmoother>();
-    m_thicknessParam = std::make_unique<ParameterSmoother>();
-    m_mixParam = std::make_unique<ParameterSmoother>();
+    m_detuneParam = std::make_unique<DetuneDoublerImpl::ParameterSmoother>();
+    m_delayParam = std::make_unique<DetuneDoublerImpl::ParameterSmoother>();
+    m_widthParam = std::make_unique<DetuneDoublerImpl::ParameterSmoother>();
+    m_thicknessParam = std::make_unique<DetuneDoublerImpl::ParameterSmoother>();
+    m_mixParam = std::make_unique<DetuneDoublerImpl::ParameterSmoother>();
     
     // Set defaults
     m_detuneParam->reset(0.3f);

@@ -2,32 +2,62 @@
 #include <algorithm>
 #include <cstring>
 #include <chrono>
-#include <immintrin.h>
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #include <immintrin.h>
+#endif
 
-#ifdef _MSC_VER
-    #include <intrin.h>
-    void __cpuid(int cpuInfo[4], int function_id) {
-        __cpuid(cpuInfo, function_id);
-    }
-#else
-    #include <cpuid.h>
-    void __cpuid(int cpuInfo[4], int function_id) {
-        __cpuid_count(function_id, 0, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
-    }
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #ifdef _MSC_VER
+        #include <intrin.h>
+        void my_cpuid(int cpuInfo[4], int function_id) {
+            __cpuid(cpuInfo, function_id);
+        }
+    #else
+        #include <cpuid.h>
+        void my_cpuid(int cpuInfo[4], int function_id) {
+            __cpuid_count(function_id, 0, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
+        }
+    #endif
 #endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
+// Simple aligned memory allocation helpers
+static void* alignedAlloc(size_t size, size_t alignment) {
+#ifdef _MSC_VER
+    return _aligned_malloc(size, alignment);
+#else
+    void* ptr = nullptr;
+    if (posix_memalign(&ptr, alignment, size) != 0)
+        return nullptr;
+    return ptr;
+#endif
+}
+
+static void alignedFree(void* ptr) {
+#ifdef _MSC_VER
+    _aligned_free(ptr);
+#else
+    free(ptr);
+#endif
+}
+
+void GranularCloud::AlignedDeleter::operator()(float* ptr) const {
+    alignedFree(ptr);
+}
+
 GranularCloud::GranularCloud() : m_rng(std::random_device{}()) {
-    // Initialize global denormal handling FIRST
-    initializeDenormalHandling();
+    // Initialize denormal handling
+#if defined(__SSE__) || defined(__SSE2__)
+    _mm_setcsr(_mm_getcsr() | 0x8040); // Set flush-to-zero and denormals-are-zero
+#endif
     
     // Allocate aligned circular buffer memory
     const size_t totalSamples = BUFFER_SIZE * 2; // Stereo
     const size_t alignment = 64; // Cache line size
-    m_circularBufferMemory.reset(new (std::align_val_t(alignment)) float[totalSamples]());
+    m_circularBufferMemory.reset(static_cast<float*>(alignedAlloc(totalSamples * sizeof(float), alignment)));
     
     // Set up channel pointers
     m_circularBufferPtrs[0] = m_circularBufferMemory.get();
@@ -90,7 +120,12 @@ void GranularCloud::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& dcb : m_outputDCBlockers) dcb.reset();
     
     // Reset metrics
-    m_metrics = QualityMetrics();
+    m_metrics.cpuUsage.store(0.0f);
+    m_metrics.activeGrainCount.store(0);
+    m_metrics.droppedGrains.store(0);
+    m_metrics.peakLevel.store(0.0f);
+    m_metrics.rmsLevel.store(0.0f);
+    m_metrics.thd.store(0.0f);
 }
 
 void GranularCloud::process(juce::AudioBuffer<float>& buffer) {
@@ -431,7 +466,7 @@ void GranularCloud::Grain::reset() noexcept {
 void GranularCloud::generateWindowTable() {
     // Allocate aligned window table
     alignedFree(m_windowTable);
-    m_windowTable = alignedAlloc<float>(MAX_WINDOW_SIZE, 64);
+    m_windowTable = static_cast<float*>(alignedAlloc(MAX_WINDOW_SIZE * sizeof(float), 64));
     
     if (!m_windowTable) return;
     
@@ -478,14 +513,24 @@ void GranularCloud::detectCPUFeatures() noexcept {
     int cpuInfo[4];
     
     // Check for SSE2
-    __cpuid(cpuInfo, 1);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    my_cpuid(cpuInfo, 1);
+#else
+    m_hasSSE = false;
+    m_hasSSE2 = false;
+    return;
+#endif
     m_hasSSE2 = (cpuInfo[3] & (1 << 26)) != 0;
     
     // Check for AVX
     m_hasAVX = (cpuInfo[2] & (1 << 28)) != 0;
     
     // Check for AVX2
-    __cpuid(cpuInfo, 7);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    my_cpuid(cpuInfo, 7);
+#else
+    m_hasAVX2 = false;
+#endif
     m_hasAVX2 = (cpuInfo[1] & (1 << 5)) != 0;
 #endif
 }
@@ -514,7 +559,7 @@ GranularCloud::QualityReport GranularCloud::getQualityReport() const {
 // SincInterpolator implementation
 void GranularCloud::SincInterpolator::initialize() {
     alignedFree(sincTable);
-    sincTable = alignedAlloc<float>(TABLE_SIZE * SINC_POINTS, TABLE_ALIGNMENT);
+    sincTable = static_cast<float*>(alignedAlloc(TABLE_SIZE * SINC_POINTS * sizeof(float), TABLE_ALIGNMENT));
     
     if (!sincTable) return;
     
