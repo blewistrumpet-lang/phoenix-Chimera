@@ -50,6 +50,9 @@ public:
     static int engineIDToChoiceIndex(int engineID);
     static int choiceIndexToEngineID(int choiceIndex);
     
+    // Mix parameter index mapping
+    static int getMixParameterIndex(int engineID);
+    
     // Initialize mappings in constructor
     static void initializeEngineMappings();
     
