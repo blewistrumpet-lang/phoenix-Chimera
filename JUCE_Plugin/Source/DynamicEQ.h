@@ -4,6 +4,8 @@
 #include <array>
 #include <cmath>
 #include <complex>
+#include <random>
+#include <limits>
 
 class DynamicEQ : public EngineBase {
 public:
@@ -62,6 +64,10 @@ private:
         float k2 = 0.0f;   // Double resonance for allpass
         float a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
         
+        // Thread-safe random generation for thermal noise
+        mutable std::mt19937 thermalRng{std::random_device{}()};
+        mutable std::uniform_real_distribution<float> thermalDist{-0.0005f, 0.0005f};
+        
         void setParameters(float frequency, float Q, double sampleRate) {
             // Safety checks to prevent crashes
             frequency = std::max(1.0f, std::min(frequency, static_cast<float>(sampleRate * 0.49f)));
@@ -101,8 +107,8 @@ private:
         FilterOutputs process(float input) {
             FilterOutputs outputs;
             
-            // Apply thermal and aging effects to input
-            float thermalInput = input + ((rand() % 1000) / 1000000.0f - 0.0005f); // Tiny thermal noise
+            // Apply thermal and aging effects to input (thread-safe)
+            float thermalInput = input + thermalDist(thermalRng); // Tiny thermal noise
             
             v0 = thermalInput;
             v1 = a1 * v0 - a2 * v1 - a3 * v2 + ic1eq;
@@ -343,15 +349,19 @@ private:
         float thermalNoise = 0.0f;
         float thermalDrift = 0.0f;
         
+        // Thread-safe random generation for thermal effects
+        mutable std::mt19937 thermalRng{std::random_device{}()};
+        mutable std::uniform_real_distribution<float> noiseDist{-0.5f, 0.5f};
+        
         void update(double sampleRate) {
             // Slow temperature variations
             static float phase = 0.0f;
             phase += 0.00001f / sampleRate; // Very slow variation
             temperature = 25.0f + std::sin(phase) * 1.5f; // ±1.5°C variation
             
-            // Thermal noise increases with temperature
+            // Thermal noise increases with temperature (thread-safe)
             float noiseLevel = (temperature - 20.0f) * 0.000005f;
-            thermalNoise = ((rand() % 1000) / 1000.0f - 0.5f) * noiseLevel;
+            thermalNoise = noiseDist(thermalRng) * noiseLevel;
             
             // Thermal drift affects filter parameters
             thermalDrift = (temperature - 25.0f) * 0.0008f;

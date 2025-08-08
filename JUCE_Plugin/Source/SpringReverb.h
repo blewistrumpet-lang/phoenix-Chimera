@@ -146,6 +146,11 @@ private:
             float randomWalk = 0.0f;
             float randomTarget = 0.0f;
             
+            // Thread-safe random generation for spring imperfections
+            mutable std::mt19937 springRng{std::random_device{}()};
+            mutable std::uniform_int_distribution<int> changeDist{0, 1999};
+            mutable std::uniform_real_distribution<float> targetDist{-1.0f, 1.0f};
+            
             float process(float amount, double sampleRate) {
                 float phaseInc = 2.0f * M_PI / sampleRate;
                 
@@ -161,9 +166,9 @@ private:
                 if (tensionPhase > 2.0f * M_PI) tensionPhase -= 2.0f * M_PI;
                 if (randomPhase > 2.0f * M_PI) randomPhase -= 2.0f * M_PI;
                 
-                // Random walk for imperfections
-                if ((rand() % 2000) < 5) { // Very occasional changes
-                    randomTarget = (rand() / float(RAND_MAX) - 0.5f) * 2.0f;
+                // Random walk for imperfections (thread-safe)
+                if (changeDist(springRng) < 5) { // Very occasional changes
+                    randomTarget = targetDist(springRng);
                 }
                 randomWalk += (randomTarget - randomWalk) * 0.0001f;
                 

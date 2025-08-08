@@ -411,11 +411,20 @@ private:
     std::array<DCBlocker, 2> m_inputDCBlockers;
     std::array<DCBlocker, 2> m_outputDCBlockers;
     
+    // Pre-allocated processing buffers (thread-safe, no dynamic allocation)
+    std::vector<double> m_inputDouble;
+    std::vector<double> m_oversampledInput;
+    std::vector<double> m_oversampledOutput;
+    std::vector<double> m_outputDouble;
+    
     // Circuit-specific processing
     double processRATCircuit(double input, int channel);
     double processTubeScreamerCircuit(double input, int channel);
     double processBigMuffCircuit(double input, int channel);
     double processFuzzFaceCircuit(double input, int channel);
+    
+    // Thread-safe instance variables for Fuzz Face feedback
+    std::array<double, 2> m_fuzzFaceFeedback;
     
     // Helper functions
     static double tanhApproximation(double x);

@@ -207,63 +207,18 @@ ChimeraAudioProcessorEditor::ChimeraAudioProcessorEditor(ChimeraAudioProcessor& 
         
         // Engine selector
         slotUI.engineSelector = std::make_unique<juce::ComboBox>();
-        // ComboBox items use sequential IDs starting from 1, choice indices start from 0
-        slotUI.engineSelector->addItem("K-Style Overdrive", 1);     // choice index 0
-        slotUI.engineSelector->addItem("Tape Echo", 2);              // choice index 1
-        slotUI.engineSelector->addItem("Plate Reverb", 3);           // choice index 2
-        slotUI.engineSelector->addItem("Rodent Distortion", 4);      // choice index 3
-        slotUI.engineSelector->addItem("Muff Fuzz", 5);              // choice index 4
-        slotUI.engineSelector->addItem("Classic Tremolo", 6);        // choice index 5
-        slotUI.engineSelector->addItem("Magnetic Drum Echo", 7);     // choice index 6
-        slotUI.engineSelector->addItem("Bucket Brigade Delay", 8);   // choice index 7
-        slotUI.engineSelector->addItem("Digital Delay", 9);          // choice index 8
-        slotUI.engineSelector->addItem("Harmonic Tremolo", 10);      // choice index 9
-        slotUI.engineSelector->addItem("Rotary Speaker", 11);        // choice index 10
-        slotUI.engineSelector->addItem("Detune Doubler", 12);        // choice index 11
-        slotUI.engineSelector->addItem("Ladder Filter", 13);         // choice index 12
-        slotUI.engineSelector->addItem("Formant Filter", 14);        // choice index 13
-        slotUI.engineSelector->addItem("Classic Compressor", 15);    // choice index 14
-        slotUI.engineSelector->addItem("State Variable Filter", 16); // choice index 15
-        slotUI.engineSelector->addItem("Stereo Chorus", 17);         // choice index 16
-        slotUI.engineSelector->addItem("Spectral Freeze", 18);       // choice index 17
-        slotUI.engineSelector->addItem("Granular Cloud", 19);        // choice index 18
-        slotUI.engineSelector->addItem("Analog Ring Modulator", 20); // choice index 19
-        slotUI.engineSelector->addItem("Multiband Saturator", 21);   // choice index 20
-        slotUI.engineSelector->addItem("Comb Resonator", 22);        // choice index 21
-        slotUI.engineSelector->addItem("Pitch Shifter", 23);         // choice index 22
-        slotUI.engineSelector->addItem("Phased Vocoder", 24);        // choice index 23
-        slotUI.engineSelector->addItem("Convolution Reverb", 25);    // choice index 24
-        slotUI.engineSelector->addItem("Bit Crusher", 26);           // choice index 25
-        slotUI.engineSelector->addItem("Frequency Shifter", 27);     // choice index 26
-        slotUI.engineSelector->addItem("Wave Folder", 28);           // choice index 27
-        slotUI.engineSelector->addItem("Shimmer Reverb", 29);        // choice index 28
-        slotUI.engineSelector->addItem("Vocal Formant Filter", 30);  // choice index 29
-        slotUI.engineSelector->addItem("Transient Shaper", 31);      // choice index 30
-        slotUI.engineSelector->addItem("Dimension Expander", 32);    // choice index 31
-        slotUI.engineSelector->addItem("Analog Phaser", 33);         // choice index 32
-        slotUI.engineSelector->addItem("Envelope Filter", 34);       // choice index 33
-        slotUI.engineSelector->addItem("Gated Reverb", 35);          // choice index 34
-        slotUI.engineSelector->addItem("Harmonic Exciter", 36);      // choice index 35
-        slotUI.engineSelector->addItem("Feedback Network", 37);      // choice index 36
-        slotUI.engineSelector->addItem("Intelligent Harmonizer", 38);// choice index 37
-        slotUI.engineSelector->addItem("Parametric EQ", 39);         // choice index 38
-        slotUI.engineSelector->addItem("Mastering Limiter", 40);     // choice index 39
-        slotUI.engineSelector->addItem("Noise Gate", 41);            // choice index 40
-        slotUI.engineSelector->addItem("Vintage Opto", 42);          // choice index 41
-        slotUI.engineSelector->addItem("Spectral Gate", 43);         // choice index 42
-        slotUI.engineSelector->addItem("Chaos Generator", 44);       // choice index 43
-        slotUI.engineSelector->addItem("Buffer Repeat", 45);         // choice index 44
-        slotUI.engineSelector->addItem("Vintage Console EQ", 46);    // choice index 45
-        slotUI.engineSelector->addItem("Mid/Side Processor", 47);    // choice index 46
-        slotUI.engineSelector->addItem("Vintage Tube Preamp", 48);   // choice index 47
-        slotUI.engineSelector->addItem("Spring Reverb", 49);         // choice index 48
-        slotUI.engineSelector->addItem("Resonant Chorus", 50);       // choice index 49
-        slotUI.engineSelector->addItem("Stereo Widener", 51);        // choice index 50
-        slotUI.engineSelector->addItem("Dynamic EQ", 52);            // choice index 51
-        slotUI.engineSelector->addItem("Stereo Imager", 53);         // choice index 52
-        slotUI.engineSelector->addItem("Gain Utility", 54);          // choice index 53
-        slotUI.engineSelector->addItem("Mono Maker", 55);            // choice index 54
-        slotUI.engineSelector->addItem("Phase Align", 56);           // choice index 55
+        
+        // Dynamically populate ComboBox from APVTS parameter choices
+        // This ensures UI matches the processor's engine order exactly
+        auto* engineParam = dynamic_cast<juce::AudioParameterChoice*>(
+            audioProcessor.getValueTreeState().getParameter("slot" + slotStr + "_engine"));
+        
+        if (engineParam) {
+            // Add all engine choices with 1-based IDs (ComboBox requirement)
+            for (int i = 0; i < engineParam->choices.size(); ++i) {
+                slotUI.engineSelector->addItem(engineParam->choices[i], i + 1);
+            }
+        }
         slotUI.slotPanel.addAndMakeVisible(slotUI.engineSelector.get());
         
         slotUI.engineAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
@@ -277,7 +232,7 @@ ChimeraAudioProcessorEditor::ChimeraAudioProcessorEditor(ChimeraAudioProcessor& 
             audioProcessor.getValueTreeState(), "slot" + slotStr + "_bypass", *slotUI.bypassButton);
         
         // Create parameter sliders
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < 15; ++i) {
             auto slider = std::make_unique<juce::Slider>();
             slider->setSliderStyle(juce::Slider::RotaryVerticalDrag);
             slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
@@ -446,12 +401,12 @@ void ChimeraAudioProcessorEditor::resized() {
         controlRow.removeFromLeft(10);
         slotUI.bypassButton->setBounds(controlRow.removeFromLeft(60));
         
-        // Parameter sliders in 2 rows of 5
+        // Parameter sliders in 3 rows of 5
         auto paramArea = panelBounds.reduced(5);
         int paramWidth = paramArea.getWidth() / 5;
-        int paramHeight = paramArea.getHeight() / 2;
+        int paramHeight = paramArea.getHeight() / 3;
         
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < 15; ++i) {
             int pRow = i / 5;
             int pCol = i % 5;
             

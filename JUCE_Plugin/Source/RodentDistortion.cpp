@@ -29,6 +29,9 @@ RodentDistortion::RodentDistortion() {
     for (int i = 0; i < 2; ++i) {
         m_oversamplers[i] = std::make_unique<Oversampler>();
     }
+    
+    // Initialize feedback arrays and processing buffers
+    m_fuzzFaceFeedback.fill(0.0);
 }
 
 // ==================== ELLIPTIC FILTER DESIGN ====================
@@ -153,6 +156,13 @@ void RodentDistortion::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_presence->setSmoothingTime(0.02);       // 20ms
     
     // Initialize filters
+    // Pre-allocate processing buffers to avoid dynamic allocation in audio thread
+    const int oversampledSize = samplesPerBlock * DistortionConstants::OVERSAMPLE_FACTOR;
+    m_inputDouble.resize(samplesPerBlock);
+    m_oversampledInput.resize(oversampledSize);
+    m_oversampledOutput.resize(oversampledSize);
+    m_outputDouble.resize(samplesPerBlock);
+    
     for (int ch = 0; ch < 2; ++ch) {
         m_inputFilters[ch].updateCoefficients(2000.0, 0.7, sampleRate);
         m_toneFilters[ch].updateCoefficients(5000.0, 0.5, sampleRate);
@@ -176,6 +186,15 @@ void RodentDistortion::reset() {
         m_outputDCBlockers[ch].reset();
         m_opAmps[ch].reset();
     }
+    
+    // Clear fuzz face feedback
+    m_fuzzFaceFeedback.fill(0.0);
+    
+    // Clear processing buffers
+    std::fill(m_inputDouble.begin(), m_inputDouble.end(), 0.0);
+    std::fill(m_oversampledInput.begin(), m_oversampledInput.end(), 0.0);
+    std::fill(m_oversampledOutput.begin(), m_oversampledOutput.end(), 0.0);
+    std::fill(m_outputDouble.begin(), m_outputDouble.end(), 0.0);
 }
 
 void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
@@ -184,12 +203,22 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
     
     if (numChannels == 0 || numSamples == 0) return;
     
-    // Prepare oversampled buffers
+    // Use pre-allocated buffers (no dynamic allocation in audio thread)
     const int oversampledSize = numSamples * DistortionConstants::OVERSAMPLE_FACTOR;
-    std::vector<double> inputDouble(numSamples);
-    std::vector<double> oversampledInput(oversampledSize);
-    std::vector<double> oversampledOutput(oversampledSize);
-    std::vector<double> outputDouble(numSamples);
+    
+    // Ensure buffers are large enough (shouldn't need to resize in normal operation)
+    if (m_inputDouble.size() < static_cast<size_t>(numSamples)) {
+        m_inputDouble.resize(numSamples);
+    }
+    if (m_oversampledInput.size() < static_cast<size_t>(oversampledSize)) {
+        m_oversampledInput.resize(oversampledSize);
+    }
+    if (m_oversampledOutput.size() < static_cast<size_t>(oversampledSize)) {
+        m_oversampledOutput.resize(oversampledSize);
+    }
+    if (m_outputDouble.size() < static_cast<size_t>(numSamples)) {
+        m_outputDouble.resize(numSamples);
+    }
     
     // Process each channel
     for (int ch = 0; ch < std::min(numChannels, 2); ++ch) {
@@ -197,16 +226,16 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
         
         // Convert to double precision
         for (int i = 0; i < numSamples; ++i) {
-            inputDouble[i] = static_cast<double>(channelData[i]);
+            m_inputDouble[i] = static_cast<double>(channelData[i]);
         }
         
         // DC blocking on input
         for (int i = 0; i < numSamples; ++i) {
-            inputDouble[i] = m_inputDCBlockers[ch].process(inputDouble[i]);
+            m_inputDouble[i] = m_inputDCBlockers[ch].process(m_inputDouble[i]);
         }
         
         // Upsample
-        m_oversamplers[ch]->upsample(inputDouble.data(), oversampledInput.data(), numSamples);
+        m_oversamplers[ch]->upsample(m_inputDouble.data(), m_oversampledInput.data(), numSamples);
         
         // Process at oversampled rate
         for (int i = 0; i < oversampledSize; ++i) {
@@ -230,17 +259,26 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
             }
             
             // Get sample
-            double sample = oversampledInput[i];
+            double sample = m_oversampledInput[i];
             
             // Input filter (highpass to remove mud)
             auto filterOut = m_inputFilters[ch].process(sample);
             sample = filterOut.highpass;
             
-            // Apply gain
-            double gainLinear = std::pow(10.0, (DistortionConstants::MIN_GAIN_DB + 
-                                                gain * (DistortionConstants::MAX_GAIN_DB - 
-                                                       DistortionConstants::MIN_GAIN_DB)) / 20.0);
+            // Apply gain with safety limits
+            double gainDB = DistortionConstants::MIN_GAIN_DB + 
+                           gain * (DistortionConstants::MAX_GAIN_DB - DistortionConstants::MIN_GAIN_DB);
+            // Clamp gain to safe range to prevent std::pow overflow
+            gainDB = std::clamp(gainDB, -60.0, 60.0);
+            double gainLinear = std::pow(10.0, gainDB / 20.0);
+            // Additional safety clamp on linear gain
+            gainLinear = std::clamp(gainLinear, 0.001, 1000.0);
             sample *= gainLinear;
+            
+            // Safety check for NaN/Inf
+            if (!std::isfinite(sample)) {
+                sample = 0.0;
+            }
             
             // Distortion based on mode
             int mode = static_cast<int>(distMode * 3.99);
@@ -273,25 +311,35 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
             // Output gain
             sample *= outputGain * 2.0; // 0-2 range
             
+            // Final safety check before output
+            if (!std::isfinite(sample)) {
+                sample = 0.0;
+            }
+            
             // Soft limiting for safety
             sample = tanhApproximation(sample * 0.5) * 2.0;
             
-            oversampledOutput[i] = sample;
+            // Final NaN/Inf check
+            if (!std::isfinite(sample)) {
+                sample = 0.0;
+            }
+            
+            m_oversampledOutput[i] = sample;
         }
         
         // Downsample
-        m_oversamplers[ch]->downsample(oversampledOutput.data(), outputDouble.data(), numSamples);
+        m_oversamplers[ch]->downsample(m_oversampledOutput.data(), m_outputDouble.data(), numSamples);
         
         // DC blocking on output
         for (int i = 0; i < numSamples; ++i) {
-            outputDouble[i] = m_outputDCBlockers[ch].process(outputDouble[i]);
+            m_outputDouble[i] = m_outputDCBlockers[ch].process(m_outputDouble[i]);
         }
         
         // Mix dry/wet and convert back to float
         double mix = m_mix->getCurrent();
         for (int i = 0; i < numSamples; ++i) {
-            double dry = inputDouble[i];
-            double wet = outputDouble[i];
+            double dry = m_inputDouble[i];
+            double wet = m_outputDouble[i];
             channelData[i] = static_cast<float>(wet * mix + dry * (1.0 - mix));
         }
     }
@@ -305,8 +353,10 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
 
 double RodentDistortion::processRATCircuit(double input, int channel) {
     // ProCo RAT circuit emulation
-    // Input stage - op-amp with gain
-    double opAmpGain = 1.0 + m_clipping->getCurrent() * 1000.0; // Up to 1000x gain
+    // Input stage - op-amp with gain (safe limits)
+    double clippingAmount = std::clamp(m_clipping->getCurrent(), 0.0, 1.0);
+    double opAmpGain = 1.0 + clippingAmount * 100.0; // Reduced from 1000x to 100x for safety
+    opAmpGain = std::clamp(opAmpGain, 1.0, 200.0); // Hard limit to prevent extreme values
     double output = m_opAmps[channel].process(input, opAmpGain, 
                                               m_sampleRate * DistortionConstants::OVERSAMPLE_FACTOR);
     
@@ -318,7 +368,10 @@ double RodentDistortion::processRATCircuit(double input, int channel) {
         output = -diodeThreshold + (output + diodeThreshold) * 0.05;
     }
     
-    // Output filter (compensate for harsh harmonics)
+    // Safety check and output filter (compensate for harsh harmonics)
+    if (!std::isfinite(output)) {
+        output = 0.0;
+    }
     return output * 0.5;
 }
 
@@ -340,6 +393,10 @@ double RodentDistortion::processTubeScreamerCircuit(double input, int channel) {
         clipped = m_diodeClippers[channel].process(clipped * 0.9, false);
     }
     
+    // Safety check
+    if (!std::isfinite(clipped)) {
+        clipped = 0.0;
+    }
     return clipped * 0.3;
 }
 
@@ -366,6 +423,10 @@ double RodentDistortion::processBigMuffCircuit(double input, int channel) {
     signal *= 10.0;
     signal = softClipAsymmetric(signal, 0.2);
     
+    // Safety check
+    if (!std::isfinite(signal)) {
+        signal = 0.0;
+    }
     return signal * 0.1;
 }
 
@@ -381,11 +442,10 @@ double RodentDistortion::processFuzzFaceCircuit(double input, int channel) {
     double q1Out = m_transistors[channel].process(input * 10.0, bias);
     
     // Second transistor stage (Q2) with feedback
-    static double feedback[2] = {0.0, 0.0};
-    double q2Input = q1Out - feedback[channel] * 0.5;
+    double q2Input = q1Out - m_fuzzFaceFeedback[channel] * 0.5;
     double q2Out = m_transistors[channel].process(q2Input * 50.0, bias * 1.2);
     
-    feedback[channel] = q2Out * 0.1;
+    m_fuzzFaceFeedback[channel] = q2Out * 0.1;
     
     // Fuzz control affects the input impedance and gain
     double fuzzAmount = m_clipping->getCurrent();
@@ -396,6 +456,10 @@ double RodentDistortion::processFuzzFaceCircuit(double input, int channel) {
         q2Out *= std::abs(input) * 20.0;
     }
     
+    // Safety check
+    if (!std::isfinite(q2Out)) {
+        q2Out = 0.0;
+    }
     return q2Out * 0.5;
 }
 

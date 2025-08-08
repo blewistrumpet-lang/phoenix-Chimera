@@ -399,15 +399,20 @@ private:
         double m_ic2Offset = 0.0;
         double m_capLeakage = 0.0;  // Capacitor leakage
         
+        // Thread-safe random generation for component variations
+        mutable std::mt19937 m_componentRng{std::random_device{}()};
+        mutable std::uniform_real_distribution<double> m_offsetDist{-0.5, 0.5};
+        mutable std::uniform_real_distribution<double> m_leakageDist{0.0, 1.0};
+        
     public:
         void updateCoefficients(double freq, double resonance, double sampleRate) {
             m_frequency = freq;
             m_resonance = resonance * 5.0;  // Can self-oscillate
             
-            // Component variations
-            m_ic1Offset = (std::rand() / double(RAND_MAX) - 0.5) * 0.001;  // ±0.5mV
-            m_ic2Offset = (std::rand() / double(RAND_MAX) - 0.5) * 0.001;
-            m_capLeakage = (std::rand() / double(RAND_MAX)) * 0.0001;
+            // Component variations (thread-safe)
+            m_ic1Offset = m_offsetDist(m_componentRng) * 0.001;  // ±0.5mV
+            m_ic2Offset = m_offsetDist(m_componentRng) * 0.001;
+            m_capLeakage = m_leakageDist(m_componentRng) * 0.0001;
         }
         
         double process(double input, double sampleRate, double lpHpMix) {

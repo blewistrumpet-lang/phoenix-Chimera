@@ -3,6 +3,8 @@
 #include <vector>
 #include <array>
 #include <cmath>
+#include <random>
+#include <limits>
 
 class VintageOptoCompressor : public EngineBase {
 public:
@@ -102,27 +104,31 @@ private:
     // Tube stage simulation
     struct TubeStage {
         // Simple tube transfer curve
-        float process(float input, float drive) {
+        float process(float input, float drive, VintageOptoCompressor* parent) {
             if (drive < 0.01f) return input;
+            
+            // Safety check input
+            input = parent->safeFloat(input);
+            drive = std::clamp(drive, 0.0f, 1.0f);
             
             // Asymmetric clipping (tube-like)
             float positive = input > 0.0f ? input : 0.0f;
             float negative = input < 0.0f ? -input : 0.0f;
             
             // Different curves for positive and negative
-            positive = std::tanh(positive * (1.0f + drive * 2.0f));
-            negative = std::tanh(negative * (1.0f + drive * 1.5f));
+            positive = parent->safeFloat(std::tanh(parent->safeFloat(positive * (1.0f + drive * 2.0f))));
+            negative = parent->safeFloat(std::tanh(parent->safeFloat(negative * (1.0f + drive * 1.5f))));
             
-            float output = positive - negative;
+            float output = parent->safeFloat(positive - negative);
             
             // Add even harmonics
             float harmonic2 = output * output * (output > 0 ? 1.0f : -1.0f);
-            output += harmonic2 * drive * 0.05f;
+            output += parent->safeFloat(harmonic2 * drive * 0.05f);
             
             // Soft saturation
-            output = std::tanh(output * 0.7f) * 1.43f;
+            output = parent->safeFloat(std::tanh(parent->safeFloat(output * 0.7f)) * 1.43f);
             
-            return output;
+            return parent->safeFloat(output);
         }
     };
     
@@ -242,7 +248,7 @@ private:
         float thermalNoise = 0.0f;
         float thermalDrift = 0.0f;
         
-        void update(double sampleRate) {
+        void update(double sampleRate, std::mt19937& randomEngine, std::uniform_real_distribution<float>& uniformDist) {
             // Slow temperature variations
             static float phase = 0.0f;
             phase += 0.00001f / sampleRate; // Very slow variation
@@ -250,7 +256,7 @@ private:
             
             // Thermal noise increases with temperature
             float noiseLevel = (temperature - 20.0f) * 0.00001f;
-            thermalNoise = ((rand() % 1000) / 1000.0f - 0.5f) * noiseLevel;
+            thermalNoise = uniformDist(randomEngine) * 0.5f * noiseLevel;
             
             // Thermal drift affects parameters
             thermalDrift = (temperature - 25.0f) * 0.001f;
@@ -262,6 +268,10 @@ private:
     };
     
     ThermalModel m_thermalModel;
+    
+    // Thread-safe random number generation
+    mutable std::mt19937 m_randomEngine;
+    mutable std::uniform_real_distribution<float> m_uniformDist;
     
     // Component aging simulation
     float m_componentAge = 0.0f; // In hours of operation
@@ -275,6 +285,8 @@ private:
     float dbToLinear(float db) { return std::pow(10.0f, db / 20.0f); }
     float linearToDb(float linear) { return 20.0f * std::log10(std::max(0.00001f, linear)); }
     float softKnee(float input, float threshold, float knee);
+    float safeFloat(float value) const;
+    bool isChannelValid(int channel, int maxChannels) const;
     
     // Analog modeling
     float applyAnalogNoise(float input);

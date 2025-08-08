@@ -4,6 +4,7 @@
 #include "DefaultParameterValues.h"
 #include "EngineTypes.h"
 #include "EngineTestRunner.h"
+#include "QuickEngineDiagnostic.h"
 
 // Engine ID to Choice Index mapping table - NEW SIMPLIFIED SYSTEM
 // Direct 1:1 mapping where engine ID = dropdown index (0-56)
@@ -239,6 +240,30 @@ void ChimeraAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock
             engine->prepareToPlay(sampleRate, samplesPerBlock);
         }
     }
+    
+    // Run diagnostic on first load (only once)
+    // DISABLED - causing crashes
+    // static bool diagnosticRun = false;
+    // if (!diagnosticRun) {
+    //     diagnosticRun = true;
+    //     runComprehensiveDiagnostic();
+    // }
+    
+    // Run isolated engine tests (temporary for debugging)
+    // DISABLED - causing crashes
+    // static bool testRun = false;
+    // if (!testRun) {
+    //     testRun = true;
+    //     runIsolatedEngineTests();
+    // }
+    
+    // Quick diagnostic test
+    // DISABLED - for debugging only
+    // static bool quickTestRun = false;
+    // if (!quickTestRun) {
+    //     quickTestRun = true;
+    //     QuickEngineDiagnostic::runQuickTest();
+    // }
 }
 
 void ChimeraAudioProcessor::releaseResources() {
@@ -259,6 +284,14 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                                         juce::MidiBuffer& midiMessages) {
     juce::ScopedNoDenormals noDenormals;
     
+    // Validate buffer size to prevent crashes
+    const int numSamples = buffer.getNumSamples();
+    if (numSamples <= 0 || numSamples > 8192) {
+        // Abnormal buffer size - skip processing
+        buffer.clear();
+        return;
+    }
+    
     // Update engine parameters for all slots
     for (int slot = 0; slot < NUM_SLOTS; ++slot) {
         updateEngineParameters(slot);
@@ -268,18 +301,25 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     for (int slot = 0; slot < NUM_SLOTS; ++slot) {
         bool isBypassed = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_bypass")->load() > 0.5f;
         
-        if (!isBypassed && m_activeEngines[slot]) {
-            // Check if this is the None engine (ID == 0)
-            auto* engineParam = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_engine");
-            int engineChoice = static_cast<int>(engineParam->load());
-            
-            // Skip None engines (engine ID 0)
-            if (engineChoice == 0) {
-                continue;
+        if (!isBypassed) {
+            // Thread-safe engine access
+            std::unique_ptr<EngineBase> engineCopy;
+            {
+                std::lock_guard<std::mutex> lock(m_engineMutex);
+                if (m_activeEngines[slot]) {
+                    // Check if this is the None engine (ID == 0)
+                    auto* engineParam = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_engine");
+                    int engineChoice = static_cast<int>(engineParam->load());
+                    
+                    // Skip None engines (engine ID 0)
+                    if (engineChoice == 0) {
+                        continue;
+                    }
+                    
+                    // Process through the engine (still under lock)
+                    m_activeEngines[slot]->process(buffer);
+                }
             }
-            
-            // Process through the engine
-            m_activeEngines[slot]->process(buffer);
         }
     }
     
@@ -301,7 +341,7 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         for (int ch = 0; ch < buffer.getNumChannels(); ++ch) {
             auto* data = buffer.getWritePointer(ch);
             for (int s = 0; s < buffer.getNumSamples(); ++s) {
-                data[s] *= 0.95f; // More conservative gain reduction
+                data[s] *= 0.99f; // Minimal gain reduction (1% max)
             }
         }
     }
@@ -314,12 +354,12 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             float& sampleValue = channelData[sample];
             
             // Soft clipping to prevent harsh distortion
-            if (std::abs(sampleValue) > 0.95f) {
+            if (std::abs(sampleValue) > 0.98f) {
                 sampleValue = std::tanh(sampleValue * 0.7f) * 1.3f;
             }
             
-            // Hard limit at -0.5dB to prevent digital clipping
-            sampleValue = juce::jlimit(-0.95f, 0.95f, sampleValue);
+            // Hard limit at -0.2dB to prevent digital clipping
+            sampleValue = juce::jlimit(-0.98f, 0.98f, sampleValue);
         }
     }
     
@@ -388,17 +428,26 @@ void ChimeraAudioProcessor::loadEngine(int slot, int engineID) {
         engineID = ENGINE_NONE;
     }
     
-    m_activeEngines[slot] = EngineFactory::createEngine(engineID);
-    if (m_activeEngines[slot]) {
-        m_activeEngines[slot]->prepareToPlay(m_sampleRate, m_samplesPerBlock);
+    // Create and prepare engine outside of critical section
+    std::unique_ptr<EngineBase> newEngine = EngineFactory::createEngine(engineID);
+    if (newEngine) {
+        newEngine->prepareToPlay(m_sampleRate, m_samplesPerBlock);
         
         // Apply default parameters for this engine
         applyDefaultParameters(slot, engineID);
+        
+        // Lock only for the actual swap
+        {
+            std::lock_guard<std::mutex> lock(m_engineMutex);
+            m_activeEngines[slot] = std::move(newEngine);
+        }
         
         updateEngineParameters(slot);
         
         DBG("Successfully loaded engine into slot " + juce::String(slot));
     } else {
+        std::lock_guard<std::mutex> lock(m_engineMutex);
+        m_activeEngines[slot].reset();
         DBG("ERROR: Failed to create engine for ID " + juce::String(engineID));
     }
 }
@@ -417,7 +466,7 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
     
     // Get the correct Mix parameter index for this engine
     int mixIndex = getMixParameterIndex(engineID);
-    juce::String mixParamID = slotPrefix + juce::String(mixIndex + 1); // Convert 0-based to 1-based
+    juce::String mixParamID = mixIndex >= 0 ? slotPrefix + juce::String(mixIndex + 1) : ""; // Convert 0-based to 1-based, handle -1 case
     
     // Engine-specific safe defaults to prevent static/noise
     // NOTE: Parameters are 1-based in UI but 0-based in engine (param1 -> index 0)
@@ -430,19 +479,17 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.4f); // Release (index 3)
             // Set Mix at correct index
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.8f); // High mix for compressors
+                mixParam->setValueNotifyingHost(1.0f); // Full wet for compressors
             }
             break;
             
-        case ENGINE_TAPE_ECHO:
-        case ENGINE_DIGITAL_DELAY:
         case ENGINE_MAGNETIC_DRUM_ECHO:
         case ENGINE_BUFFER_REPEAT:
             parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.4f); // Delay time
             parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.3f); // Feedback (index 2)
             // Set Mix at correct index (should be index 3 for these)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.5f); // 50% mix for delays
+                mixParam->setValueNotifyingHost(0.8f); // 80% mix for delays
             }
             break;
             
@@ -453,13 +500,11 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "5")->setValueNotifyingHost(0.3f); // Tone
             // Set Mix at correct index (should be index 5 for BBD)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.35f); // Lower mix for analog delay
+                mixParam->setValueNotifyingHost(0.8f); // Higher mix for analog delay
             }
             break;
             
         case ENGINE_PLATE_REVERB:
-        case ENGINE_SHIMMER_REVERB:
-        case ENGINE_SPRING_REVERB:
         case ENGINE_CONVOLUTION_REVERB:
         case ENGINE_GATED_REVERB:
             parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.5f); // Size (index 0)
@@ -467,7 +512,7 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.1f); // Predelay (index 2)
             // Set Mix at correct index (should be index 3 for reverbs)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.3f); // Conservative mix for reverbs
+                mixParam->setValueNotifyingHost(0.8f); // Higher mix for reverbs
             }
             break;
             
@@ -476,7 +521,7 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.9f); // Sample rate (index 1)
             // Set Mix at correct index (should be index 3)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.3f); // Lower mix for bit crusher
+                mixParam->setValueNotifyingHost(1.0f); // Full wet for bit crusher
             }
             break;
             
@@ -486,7 +531,7 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.1f); // Minimal effect
             // Set Mix at correct index
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.3f); // Conservative mix for experimental effects
+                mixParam->setValueNotifyingHost(0.8f); // Higher mix for experimental effects
             }
             break;
             
@@ -496,7 +541,7 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Output (index 2)
             // Set Mix at correct index (should be index 3)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.7f); // Higher mix for overdrive
+                mixParam->setValueNotifyingHost(1.0f); // Full wet for overdrive
             }
             break;
             
@@ -506,7 +551,7 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Output
             // Set Mix at correct index (should be index 5)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.6f); // Good mix for distortion
+                mixParam->setValueNotifyingHost(1.0f); // Full wet for distortion
             }
             break;
             
@@ -516,7 +561,7 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Volume
             // Set Mix at correct index (should be index 6)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.5f); // Balanced mix for fuzz
+                mixParam->setValueNotifyingHost(1.0f); // Full wet for fuzz
             }
             break;
             
@@ -527,7 +572,7 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Voices/Width
             // Set Mix at correct index (should be index 5)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.35f); // Conservative mix for chorus
+                mixParam->setValueNotifyingHost(0.8f); // Higher mix for chorus
             }
             break;
             
@@ -536,7 +581,7 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.5f); // Horn/Drum Mix
             // Set Mix at correct index (should be index 5)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.4f); // Good mix for rotary
+                mixParam->setValueNotifyingHost(0.8f); // Higher mix for rotary
             }
             break;
             
@@ -559,20 +604,20 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.2f); // High drive
             // Set Mix at correct index (should be index 6)
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.5f); // Balanced mix for multiband
+                mixParam->setValueNotifyingHost(1.0f); // Full wet for multiband
             }
             break;
             
         default:
             // For all other engines, set Mix parameter at correct index
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
-                mixParam->setValueNotifyingHost(0.5f); // Default 50% mix
+                mixParam->setValueNotifyingHost(0.8f); // Default 80% mix
             }
             break;
     }
     
     DBG("Applied default parameters for engine " + juce::String(engineID) + " in slot " + juce::String(slot) + 
-        " with Mix at param index " + juce::String(mixIndex + 1));
+        " with Mix at param index " + (mixIndex >= 0 ? juce::String(mixIndex + 1) : "N/A"));
 }
 
 void ChimeraAudioProcessor::updateEngineParameters(int slot) {
@@ -761,30 +806,18 @@ int ChimeraAudioProcessor::getMixParameterIndex(int engineID) {
     switch (engineID) {
         // Mix at index 3 (parameter 4)
         case ENGINE_PLATE_REVERB:
-        case ENGINE_SHIMMER_REVERB:
-        case ENGINE_SPRING_REVERB:
         case ENGINE_CONVOLUTION_REVERB:
         case ENGINE_GATED_REVERB:
-        case ENGINE_TAPE_ECHO:
-        case ENGINE_DIGITAL_DELAY:
         case ENGINE_MAGNETIC_DRUM_ECHO:
         case ENGINE_BUFFER_REPEAT:
         case ENGINE_K_STYLE:
-        case ENGINE_BIT_CRUSHER:
         case ENGINE_CHAOS_GENERATOR:
         case ENGINE_SPECTRAL_FREEZE:
-        case ENGINE_GRANULAR_CLOUD:
-        case ENGINE_LADDER_FILTER:
-        case ENGINE_STATE_VARIABLE_FILTER:
         case ENGINE_FORMANT_FILTER:
-        case ENGINE_ENVELOPE_FILTER:
         case ENGINE_COMB_RESONATOR:
         case ENGINE_VOCAL_FORMANT:
         case ENGINE_WAVE_FOLDER:
-        case ENGINE_HARMONIC_EXCITER:
         case ENGINE_FREQUENCY_SHIFTER:
-        case ENGINE_RING_MODULATOR:
-        case ENGINE_PITCH_SHIFTER:
         case ENGINE_PHASED_VOCODER:
         case ENGINE_INTELLIGENT_HARMONIZER:
             return 3;
@@ -795,10 +828,8 @@ int ChimeraAudioProcessor::getMixParameterIndex(int engineID) {
         case ENGINE_RESONANT_CHORUS:
         case ENGINE_BUCKET_BRIGADE_DELAY:
         case ENGINE_ROTARY_SPEAKER:
-        case ENGINE_ANALOG_PHASER:
         case ENGINE_DETUNE_DOUBLER:
         case ENGINE_HARMONIC_TREMOLO:
-        case ENGINE_CLASSIC_TREMOLO:
             return 5;
             
         // Mix at index 6 (parameter 7)
@@ -812,7 +843,6 @@ int ChimeraAudioProcessor::getMixParameterIndex(int engineID) {
         case ENGINE_TRANSIENT_SHAPER:
         case ENGINE_NOISE_GATE:
         case ENGINE_MASTERING_LIMITER:
-        case ENGINE_OPTO_COMPRESSOR:
         case ENGINE_STEREO_WIDENER:
         case ENGINE_STEREO_IMAGER:
         case ENGINE_DIMENSION_EXPANDER:
@@ -822,13 +852,300 @@ int ChimeraAudioProcessor::getMixParameterIndex(int engineID) {
         case ENGINE_MONO_MAKER:
         case ENGINE_PHASE_ALIGN:
         case ENGINE_FEEDBACK_NETWORK:
+        case ENGINE_LADDER_FILTER:
             return 6;
+            
+        // Mix at index 7 (parameter 8)
+        case ENGINE_BIT_CRUSHER:
+        case ENGINE_SPRING_REVERB:
+        case ENGINE_ENVELOPE_FILTER:
+            return 7;
+            
+        // Mix at index 2 (parameter 3)
+        case ENGINE_DIGITAL_DELAY:
+            return 2;
+            
+        // Mix at index 4 (parameter 5)
+        case ENGINE_OPTO_COMPRESSOR:
+        case ENGINE_TAPE_ECHO:
+        case ENGINE_ANALOG_PHASER:
+            return 4;
+            
+        // Mix at index 9 (parameter 10)
+        case ENGINE_SHIMMER_REVERB:
+        case ENGINE_STATE_VARIABLE_FILTER:
+            return 9;
+            
+        // Special cases
+        case ENGINE_GRANULAR_CLOUD: // No mix parameter
+        case ENGINE_RING_MODULATOR: // No mix parameter (hardcoded 50/50)
+            return -1; // Special value to indicate no mix
             
         // Default case
         case ENGINE_NONE:
         default:
             return 3; // Default to index 3 for unknown engines
     }
+}
+
+// Comprehensive Engine Diagnostic
+void ChimeraAudioProcessor::runComprehensiveDiagnostic()
+{
+    m_diagnosticResults.clear();
+    
+    const double sampleRate = 48000.0;
+    const int blockSize = 512;
+    const int numChannels = 2;
+    
+    // Create test buffer
+    juce::AudioBuffer<float> testBuffer(numChannels, blockSize);
+    juce::AudioBuffer<float> originalBuffer(numChannels, blockSize);
+    
+    // Generate test signal (1kHz sine wave)
+    for (int ch = 0; ch < numChannels; ++ch) {
+        auto* data = testBuffer.getWritePointer(ch);
+        for (int i = 0; i < blockSize; ++i) {
+            float phase = (float)i / blockSize * 2.0f * M_PI;
+            data[i] = 0.5f * std::sin(1000.0f * phase / sampleRate * 2.0f * M_PI);
+        }
+    }
+    
+    DBG("=== CHIMERA ENGINE DIAGNOSTIC ===");
+    DBG("Testing " << ENGINE_COUNT << " engines...");
+    
+    // Test each engine
+    for (int engineID = 0; engineID < ENGINE_COUNT; ++engineID) {
+        DiagnosticResult result;
+        result.engineID = engineID;
+        result.engineName = getEngineTypeName(engineID);
+        result.passed = false;
+        result.confidence = 0.0f;
+        result.issues = "";
+        
+        if (engineID == ENGINE_NONE) {
+            result.passed = true;
+            result.confidence = 100.0f;
+            result.issues = "None engine (bypassed)";
+            m_diagnosticResults.push_back(result);
+            continue;
+        }
+        
+        try {
+            // Create engine instance
+            auto engine = EngineFactory::createEngine(engineID);
+            if (!engine) {
+                result.issues = "Failed to create engine";
+                m_diagnosticResults.push_back(result);
+                continue;
+            }
+            
+            // Prepare engine
+            engine->prepareToPlay(sampleRate, blockSize);
+            engine->reset();
+            
+            // Set test parameters
+            std::map<int, float> params;
+            
+            // Get mix parameter index for this engine
+            int mixIndex = getMixParameterIndex(engineID);
+            
+            // Set all parameters to safe defaults
+            for (int i = 0; i < 15; ++i) {
+                params[i] = 0.5f;
+            }
+            
+            // Set mix to 100% wet to ensure we hear the effect
+            params[mixIndex] = 1.0f;
+            
+            // Set engine-specific test parameters
+            switch (getEngineCategory(engineID)) {
+                case 1: // Dynamics
+                    params[0] = 0.3f; // Low threshold
+                    params[1] = 0.7f; // High ratio
+                    break;
+                case 2: // Filters
+                    params[0] = 0.5f; // Mid frequency
+                    params[1] = 0.7f; // Moderate Q
+                    break;
+                case 3: // Distortion
+                    params[0] = 0.7f; // High drive
+                    params[1] = 0.5f; // Tone
+                    break;
+                case 4: // Modulation
+                    params[0] = 0.5f; // Rate
+                    params[1] = 0.7f; // Depth
+                    break;
+                case 5: // Reverb/Delay
+                    params[0] = 0.5f; // Time/Size
+                    params[1] = 0.3f; // Feedback/Damping
+                    break;
+            }
+            
+            engine->updateParameters(params);
+            
+            // Copy test buffer
+            originalBuffer.makeCopyOf(testBuffer);
+            
+            // Process audio
+            engine->process(testBuffer);
+            
+            // Analyze results
+            float inputRMS = 0.0f, outputRMS = 0.0f;
+            float maxDiff = 0.0f;
+            
+            for (int ch = 0; ch < numChannels; ++ch) {
+                const float* original = originalBuffer.getReadPointer(ch);
+                const float* processed = testBuffer.getReadPointer(ch);
+                
+                for (int i = 0; i < blockSize; ++i) {
+                    inputRMS += original[i] * original[i];
+                    outputRMS += processed[i] * processed[i];
+                    maxDiff = std::max(maxDiff, std::abs(processed[i] - original[i]));
+                }
+            }
+            
+            inputRMS = std::sqrt(inputRMS / (blockSize * numChannels));
+            outputRMS = std::sqrt(outputRMS / (blockSize * numChannels));
+            
+            // Determine if audio was modified
+            bool audioModified = maxDiff > 0.001f || std::abs(outputRMS - inputRMS) > 0.001f;
+            
+            if (audioModified) {
+                result.passed = true;
+                result.confidence = std::min(100.0f, maxDiff * 200.0f); // Scale difference to confidence
+                
+                float gainDB = 20.0f * std::log10(outputRMS / (inputRMS + 0.00001f));
+                result.issues = juce::String::formatted("RMS change: %.1f dB, Mix: %.0f%%", 
+                    gainDB, params[mixIndex] * 100.0f);
+            } else {
+                result.passed = false;
+                result.confidence = 0.0f;
+                result.issues = "No audio modification detected";
+            }
+            
+        } catch (const std::exception& e) {
+            result.issues = "Exception: " + juce::String(e.what());
+        } catch (...) {
+            result.issues = "Unknown exception";
+        }
+        
+        m_diagnosticResults.push_back(result);
+        
+        // Log result
+        DBG(juce::String::formatted("[%d] %s: %s (%.0f%%) - %s",
+            engineID,
+            result.engineName.toRawUTF8(),
+            result.passed ? "PASS" : "FAIL",
+            result.confidence,
+            result.issues.toRawUTF8()));
+    }
+    
+    // Summary
+    int passed = 0;
+    int failed = 0;
+    for (const auto& result : m_diagnosticResults) {
+        if (result.engineID != ENGINE_NONE) {
+            if (result.passed) passed++;
+            else failed++;
+        }
+    }
+    
+    DBG("=== DIAGNOSTIC SUMMARY ===");
+    DBG("Total engines tested: " << (ENGINE_COUNT - 1)); // Exclude NONE
+    DBG("Passed: " << passed);
+    DBG("Failed: " << failed);
+    DBG("Pass rate: " << ((float)passed / (ENGINE_COUNT - 1) * 100.0f) << "%");
+}
+
+void ChimeraAudioProcessor::runIsolatedEngineTests() {
+    DBG("=== ISOLATED ENGINE TESTS ===");
+    DBG("Testing engines in complete isolation from plugin architecture");
+    DBG("");
+    
+    // Also write to file for easier access
+    juce::File testFile("/tmp/chimera_engine_test_results.txt");
+    testFile.replaceWithText("=== ISOLATED ENGINE TESTS ===\n");
+    
+    // Test critical engines
+    std::vector<int> testEngines = {0, 1, 2, 6, 11, 21, 31, 16, 26};
+    
+    for (int engineID : testEngines) {
+        DBG("Testing Engine ID: " << engineID);
+        
+        auto engine = EngineFactory::createEngine(engineID);
+        if (!engine) {
+            DBG("  FAILED to create engine!");
+            continue;
+        }
+        
+        DBG("  Name: " << engine->getName());
+        
+        // Prepare
+        engine->prepareToPlay(44100.0, 512);
+        
+        // Create test buffer
+        juce::AudioBuffer<float> buffer(2, 512);
+        juce::AudioBuffer<float> original(2, 512);
+        
+        // Fill with test signal
+        for (int ch = 0; ch < 2; ++ch) {
+            auto* data = buffer.getWritePointer(ch);
+            for (int i = 0; i < 512; ++i) {
+                data[i] = 0.5f * std::sin(2.0f * M_PI * 440.0f * i / 44100.0f);
+            }
+        }
+        original.makeCopyOf(buffer);
+        
+        // Calculate input level
+        float inputLevel = 0;
+        for (int ch = 0; ch < 2; ++ch) {
+            const auto* data = buffer.getReadPointer(ch);
+            for (int i = 0; i < 512; ++i) {
+                inputLevel += std::abs(data[i]);
+            }
+        }
+        inputLevel /= (2 * 512);
+        
+        // Set parameters for maximum effect
+        std::map<int, float> params;
+        params[0] = 0.8f;  // Main parameter high
+        params[3] = 1.0f;  // Mix 100%
+        params[5] = 1.0f;  // Alternate mix 100%
+        params[6] = 1.0f;  // Alternate mix 100%
+        params[7] = 1.0f;  // Alternate mix 100%
+        
+        engine->updateParameters(params);
+        engine->process(buffer);
+        
+        // Calculate output level and difference
+        float outputLevel = 0;
+        float maxDiff = 0;
+        for (int ch = 0; ch < 2; ++ch) {
+            const auto* outData = buffer.getReadPointer(ch);
+            const auto* inData = original.getReadPointer(ch);
+            for (int i = 0; i < 512; ++i) {
+                outputLevel += std::abs(outData[i]);
+                maxDiff = std::max(maxDiff, std::abs(outData[i] - inData[i]));
+            }
+        }
+        outputLevel /= (2 * 512);
+        
+        DBG("  Input level:  " << inputLevel);
+        DBG("  Output level: " << outputLevel);
+        DBG("  Max diff:     " << maxDiff);
+        DBG("  Result: " << (maxDiff > 0.01f ? "WORKING ✅" : "NOT WORKING ❌"));
+        DBG("");
+        
+        // Write to file
+        juce::String result = juce::String::formatted("Engine %d (%s): Input=%.4f, Output=%.4f, Diff=%.4f - %s\n",
+            engineID, engine->getName().toRawUTF8(), inputLevel, outputLevel, maxDiff,
+            maxDiff > 0.01f ? "WORKING" : "NOT WORKING");
+        testFile.appendText(result);
+    }
+    
+    DBG("=== TESTS COMPLETE ===");
+    DBG("");
+    testFile.appendText("\n=== TESTS COMPLETE ===\n");
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {

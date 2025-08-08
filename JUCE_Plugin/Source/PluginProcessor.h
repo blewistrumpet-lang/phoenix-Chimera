@@ -7,6 +7,7 @@
 #include <array>
 #include <memory>
 #include <atomic>
+#include <mutex>
 
 class ChimeraAudioProcessor : public juce::AudioProcessor,
                               private juce::AudioProcessorValueTreeState::Listener {
@@ -53,17 +54,32 @@ public:
     // Mix parameter index mapping
     static int getMixParameterIndex(int engineID);
     
+    // Diagnostic methods
+    void runComprehensiveDiagnostic();
+    struct DiagnosticResult {
+        int engineID;
+        juce::String engineName;
+        bool passed;
+        float confidence;
+        juce::String issues;
+    };
+    std::vector<DiagnosticResult> getLastDiagnosticResults() const { return m_diagnosticResults; }
+    
+    // Level metering (public for UI)
+    float getCurrentOutputLevel() const { return m_currentOutputLevel.load(); }
+    
+private:
+    std::vector<DiagnosticResult> m_diagnosticResults;
+    
     // Initialize mappings in constructor
     static void initializeEngineMappings();
     
     // Validation
     static bool isValidEngineID(int engineID);
     
-    // Level metering
-    float getCurrentOutputLevel() const { return m_currentOutputLevel.load(); }
-    
     // Testing
     void runEngineTests();
+    void runIsolatedEngineTests();
 
 private:
     juce::AudioProcessorValueTreeState parameters;
@@ -85,6 +101,10 @@ private:
     
     // Level metering
     std::atomic<float> m_currentOutputLevel{0.0f};
+    
+    // Thread safety for engine management
+    mutable std::mutex m_engineMutex;
+    std::atomic<bool> m_engineChangePending{false};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChimeraAudioProcessor)
 };

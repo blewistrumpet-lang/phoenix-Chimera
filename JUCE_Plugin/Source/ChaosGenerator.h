@@ -342,6 +342,9 @@ private:
     
     // Enhanced modulation processors with aging
     struct EnhancedPitchShift : public SimplePitchShift {
+        mutable std::mt19937 rng{std::random_device{}()};
+        mutable std::uniform_real_distribution<float> wobbleDist{-0.5f, 0.5f};
+        
         float processWithAging(float input, float pitchFactor, float aging, float thermalFactor) {
             // Apply thermal drift to pitch factor
             float adjustedPitchFactor = pitchFactor * thermalFactor;
@@ -351,9 +354,9 @@ private:
             
             // Add aging artifacts
             if (aging > 0.05f) {
-                // Slight pitch instability with aging
+                // Slight pitch instability with aging (thread-safe)
                 static float pitchWobble = 0.0f;
-                pitchWobble += (((rand() % 1000) / 1000.0f - 0.5f) * aging * 0.001f);
+                pitchWobble += wobbleDist(rng) * aging * 0.001f;
                 pitchWobble *= 0.999f;  // Slow decay
                 
                 float wobbleFactor = 1.0f + pitchWobble;
