@@ -64,16 +64,7 @@ struct AllpassTPT {
     void reset() noexcept { z = 0.f; }
 };
 
-struct DCBlocker {
-    float x1=0.f, y1=0.f;
-    static constexpr float R = 0.995f;
-    float process(float x) noexcept {
-        const float y = x - x1 + R * y1;
-        x1 = x; y1 = flushD(y);
-        return y;
-    }
-    void reset() noexcept { x1 = y1 = 0.f; }
-};
+// Local DCBlocker removed - using DCBlocker from DspEngineUtilities
 
 inline float softClip(float x) noexcept { return std::tanh(x); }
 } // namespace
@@ -158,6 +149,8 @@ struct AnalogPhaser::Impl {
         // reset states
         for (int ch=0; ch<kChannels; ++ch) {
             for (auto& s : ap[ch]) s.reset();
+            inDC[ch].prepare(sampleRate);
+            outDC[ch].prepare(sampleRate);
             inDC[ch].reset();
             outDC[ch].reset();
             fbState[ch] = 0.f;

@@ -369,7 +369,7 @@ private:
 // ============================================================================
 // DC Blocker with block processing
 // ============================================================================
-class DCBlocker {
+class EnvelopeDCBlocker {
 public:
     void prepare(double sampleRate) noexcept {
         // First-order high-pass at 20Hz
@@ -491,7 +491,7 @@ struct EnvelopeFilter::Impl {
     struct Channel {
         StateVariableFilterTPT filter;
         EnvelopeFollower envelope;
-        DCBlocker dcBlocker;
+        EnvelopeDCBlocker dcBlocker;
         AnalogSaturator saturator;
         
         // Smoothed cutoff

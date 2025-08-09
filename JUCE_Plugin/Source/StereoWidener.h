@@ -1,6 +1,8 @@
 #pragma once
+#include "JuceHeader.h"
 #include "EngineBase.h"
-#include "DspEngineUtilities.h"#include <vector>
+#include "DspEngineUtilities.h"
+#include <vector>
 #include <array>
 #include <cmath>
 
@@ -198,21 +200,7 @@ private:
     std::array<ChannelState, 2> m_channelStates;
     double m_sampleRate = 44100.0;
     
-    // DC Blocking for boutique quality
-    struct DCBlocker {
-        float x1 = 0.0f, y1 = 0.0f;
-        static constexpr float R = 0.995f;
-        
-        float process(float input) {
-            float output = input - x1 + R * y1;
-            x1 = input;
-            y1 = output;
-            return output;
-        }
-        
-        void reset() { x1 = y1 = 0.0f; }
-    };
-    
+    // Use DCBlocker from DspEngineUtilities
     std::array<DCBlocker, 2> m_dcBlockers;
     
     // Thermal modeling for analog warmth

@@ -159,23 +159,7 @@ public:
 // DSP Components (with fallbacks for non-SSE2)
 // ============================================================================
 
-class DCBlocker {
-    float x1 = 0.0f;
-    float y1 = 0.0f;
-    float r = 0.995f;
-    
-public:
-    void reset() noexcept { 
-        x1 = y1 = 0.0f; 
-    }
-    
-    ALWAYS_INLINE float process(float input) noexcept {
-        float output = input - x1 + r * y1;
-        x1 = input;
-        y1 = output;
-        return (std::abs(y1) < 1e-30f) ? 0.0f : y1;
-    }
-};
+// Use DCBlocker from DspEngineUtilities
 
 #if HAS_SSE2
 class alignas(16) DCBlockerSIMD {

@@ -60,24 +60,7 @@ private:
     float smoothing{0.995f};
 };
 
-// DC blocker with denormal protection
-class DCBlocker {
-public:
-    ALWAYS_INLINE float process(float input) noexcept {
-        const float output = input - x1 + R * y1;
-        x1 = input;
-        y1 = DSPUtils::flushDenorm(output);  // Critical denormal prevention
-        return output;
-    }
-    
-    void reset() noexcept {
-        x1 = y1 = 0.0f;
-    }
-    
-private:
-    static constexpr float R = 0.995f;
-    float x1{0.0f}, y1{0.0f};
-};
+// Use DCBlocker from DspEngineUtilities
 
 // Main implementation
 struct PitchShifter::Impl {

@@ -214,8 +214,8 @@ public:
     float lastSample{0.0f};
 };
 
-// DC Blocker with denormal protection
-class DCBlocker {
+// Exciter-specific DC Blocker with sample rate adjustment
+class ExciterDCBlocker {
 public:
     void setSampleRate(double fs) noexcept {
         R = std::exp(-2.0 * M_PI * 20.0 / fs);
@@ -267,7 +267,7 @@ struct HarmonicExciter_Platinum::Impl {
         int phaseIndex{0};
         
         // DC blockers
-        DCBlocker dcBlockerIn, dcBlockerOut;
+        ExciterDCBlocker dcBlockerIn, dcBlockerOut;
         
         // Thread-safe noise generator
         RealtimePRNG rng;

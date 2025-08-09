@@ -1,4 +1,6 @@
+#include "JuceHeader.h"
 #include "GranularCloud.h"
+#include "DspEngineUtilities.h"
 #include <algorithm>
 #include <cmath>
 #include <random>

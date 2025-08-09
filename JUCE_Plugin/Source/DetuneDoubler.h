@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../Source/EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <array>
 #include <memory>
 #include <cmath>

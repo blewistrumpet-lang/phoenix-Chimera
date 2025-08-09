@@ -23,25 +23,13 @@
     #define ALWAYS_INLINE inline
 #endif
 
-// Enable FTZ/DAZ globally
-namespace {
-    struct DenormalGuard {
-        DenormalGuard() {
-            #if HAS_SSE2
-            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-            #endif
-        }
-    } static denormalGuard;
-}
+// DenormalGuard is provided by DspEngineUtilities
 
-// Denormal prevention helpers
-ALWAYS_INLINE float flushDenorm(float x) noexcept {
-    return (std::abs(x) < 1e-30f) ? 0.0f : x;
-}
+// Use flushDenorm from DspEngineUtilities
+using DSPUtils::flushDenorm;
 
-// Lock-free atomic parameter
-class AtomicParam {
+// WaveFolder-specific parameter with smoothing
+class WaveFolderParam {
 public:
     void setTarget(float value) noexcept {
         target.store(value, std::memory_order_relaxed);
@@ -53,19 +41,23 @@ public:
     }
     
     void setSmoothingCoeff(float coeff) noexcept {
-        smoothing = coeff;
+        smoothingCoeff = coeff;
     }
     
-    ALWAYS_INLINE float tick() noexcept {
+    float tick() noexcept {
         const float t = target.load(std::memory_order_relaxed);
-        current += (t - current) * (1.0f - smoothing);
+        current += (t - current) * (1.0f - smoothingCoeff);
         return flushDenorm(current);
+    }
+    
+    float getValue() const noexcept {
+        return target.load(std::memory_order_relaxed);
     }
     
 private:
     std::atomic<float> target{0.0f};
     float current{0.0f};
-    float smoothing{0.995f};
+    float smoothingCoeff{0.995f};
 };
 
 // Fast tanh approximation for real-time use
@@ -186,24 +178,7 @@ private:
     int downDelayIndex{0};
 };
 
-// DC blocker with denormal prevention
-class DCBlocker {
-public:
-    ALWAYS_INLINE float process(float input) noexcept {
-        const float output = input - x1 + R * y1;
-        x1 = input;
-        y1 = flushDenorm(output);
-        return output;
-    }
-    
-    void reset() noexcept {
-        x1 = y1 = 0.0f;
-    }
-    
-private:
-    static constexpr float R = 0.995f;
-    float x1{0.0f}, y1{0.0f};
-};
+// Use DCBlocker from DspEngineUtilities
 
 // Harmonic emphasis filter bank
 class HarmonicFilter {
@@ -359,14 +334,14 @@ struct WaveFolder::Impl {
     static constexpr int MAX_BLOCK_SIZE = 2048;
     
     // Lock-free parameters
-    AtomicParam foldAmount;
-    AtomicParam asymmetry;
-    AtomicParam dcOffset;
-    AtomicParam preGain;
-    AtomicParam postGain;
-    AtomicParam smoothing;
-    AtomicParam harmonics;
-    AtomicParam mix;
+    WaveFolderParam foldAmount;
+    WaveFolderParam asymmetry;
+    WaveFolderParam dcOffset;
+    WaveFolderParam preGain;
+    WaveFolderParam postGain;
+    WaveFolderParam smoothing;
+    WaveFolderParam harmonics;
+    WaveFolderParam mix;
     
     // Per-channel state
     struct alignas(64) ChannelState {
@@ -472,6 +447,8 @@ struct WaveFolder::Impl {
         for (auto& ch : channels) {
             ch.allocateBuffers(samplesPerBlock);
             ch.harmonicFilter.setSampleRate(sr);
+            ch.inputDC.prepare(sr);
+            ch.outputDC.prepare(sr);
             ch.reset();
         }
         

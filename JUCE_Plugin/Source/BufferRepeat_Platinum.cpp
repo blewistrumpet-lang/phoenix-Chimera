@@ -41,15 +41,7 @@ constexpr double DENORM_THRESHOLD = 1e-30;
 constexpr float DENORM_THRESHOLD_F = 1e-30f;
 constexpr int DENORM_FLUSH_MASK = 0xFF; // Every 256 samples
 
-// Global denormal protection
-struct DenormalGuard {
-    DenormalGuard() {
-#if HAS_SSE2
-        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-#endif
-    }
-} static g_denormGuard;
+// DenormalGuard is provided by DspEngineUtilities
 
 // Branchless denormal flush with SSE
 inline float flushDenormSSE(float x) noexcept {

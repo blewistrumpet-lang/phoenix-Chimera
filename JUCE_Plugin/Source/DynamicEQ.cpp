@@ -151,6 +151,9 @@ void DynamicEQ::process(juce::AudioBuffer<float>& buffer) {
             channelData[sample] = drySignal * (1.0f - m_mix.current) + output * m_mix.current;
         }
     }
+    
+    // Apply final NaN/Inf cleanup
+    scrubBuffer(buffer);
 }
 
 float DynamicEQ::applyAnalogSaturation(float input) {
@@ -196,6 +199,4 @@ juce::String DynamicEQ::getParameterName(int index) const {
         case 7: return "Mode";
         default: return "";
     }
-    
-    scrubBuffer(buffer);
 }

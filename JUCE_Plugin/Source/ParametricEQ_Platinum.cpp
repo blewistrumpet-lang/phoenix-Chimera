@@ -52,7 +52,7 @@ struct DenormalDisabler {
 } g_denormalDisabler;
 
 // One-pole smoother with FULL denormal protection
-class OnePoleFilter {
+class EQOnePoleFilter {
 public:
     void setSampleRate(double sr) noexcept { 
         sampleRate = sr; 
@@ -78,7 +78,7 @@ public:
     
     inline double process() noexcept {
         z1 += a * (target - z1);
-        z1 = flushDenormal(z1);  // CRITICAL: Flush here!
+        z1 = DSPUtils::flushDenorm(z1);  // CRITICAL: Flush here!
         return z1;
     }
     
@@ -142,8 +142,8 @@ public:
         s2 = b2_cur * input - a2_cur * output;
         
         // CRITICAL: Flush state variables
-        s1 = flushDenormal(s1);
-        s2 = flushDenormal(s2);
+        s1 = DSPUtils::flushDenorm(s1);
+        s2 = DSPUtils::flushDenorm(s2);
         
         // Safety check
         if (!std::isfinite(output)) {
@@ -185,8 +185,8 @@ public:
         }
         
         // Flush denormals
-        s1 = flushDenormal(s1);
-        s2 = flushDenormal(s2);
+        s1 = DSPUtils::flushDenorm(s1);
+        s2 = DSPUtils::flushDenorm(s2);
         #else
         // Fallback to scalar processing
         for (int i = 0; i < 4; ++i) {
@@ -270,7 +270,7 @@ inline float fastTanhSafe(float x) noexcept {
     float x2 = x * x;
     float num = x * (27.0f + x2);
     float den = 27.0f + 9.0f * x2;
-    return flushDenormal(num / den);
+    return DSPUtils::flushDenorm(num / den);
 }
 
 } // anonymous namespace
@@ -287,10 +287,10 @@ struct ParametricEQ_Platinum::Impl {
     double coeffSmoothingMs = 1.0;
     
     // Smoothed parameters (with denormal protection)
-    OnePoleFilter lowGain, lowFreq;
-    OnePoleFilter midGain, midFreq, midQ;
-    OnePoleFilter highGain, highFreq;
-    OnePoleFilter outputGain, mix;
+    EQOnePoleFilter lowGain, lowFreq;
+    EQOnePoleFilter midGain, midFreq, midQ;
+    EQOnePoleFilter highGain, highFreq;
+    EQOnePoleFilter outputGain, mix;
     
     // Filter banks (support up to 8 channels)
     std::array<PlatinumBiquad, maxChannels> lowShelf;
@@ -548,7 +548,7 @@ void ParametricEQ_Platinum::process(juce::AudioBuffer<float>& buffer) {
             // Mix dry/wet with denormal protection
             double mixed = dryPtr[sample] * (1.0 - mixAmount) + 
                           processed * mixAmount;
-            mixed = flushDenormal(mixed);
+            mixed = DSPUtils::flushDenorm(mixed);
             
             // Soft limiting with denormal-safe tanh
             if (std::abs(mixed) > 0.95) {
