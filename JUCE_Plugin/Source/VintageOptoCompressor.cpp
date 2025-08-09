@@ -31,6 +31,11 @@ void VintageOptoCompressor::prepareToPlay(double sampleRate, int samplesPerBlock
     for (int i = 0; i < static_cast<int>(m_channelStates.size()); ++i) {
         m_channelStates[i].prepare();
     }
+    
+    // Prepare DC blockers
+    for (auto& dcBlocker : m_dcBlockers) {
+        dcBlocker.prepare(sampleRate);
+    }
 }
 
 void VintageOptoCompressor::reset() {
@@ -53,6 +58,8 @@ void VintageOptoCompressor::reset() {
 }
 
 void VintageOptoCompressor::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;  // Add denormal protection
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -216,6 +223,9 @@ void VintageOptoCompressor::process(juce::AudioBuffer<float>& buffer) {
             channelData[sample] = output;
         }
     }
+    
+    // Apply final NaN/Inf cleanup
+    scrubBuffer(buffer);
 }
 
 float VintageOptoCompressor::softKnee(float input, float threshold, float knee) {

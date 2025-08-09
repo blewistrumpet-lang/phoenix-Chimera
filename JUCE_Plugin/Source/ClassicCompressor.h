@@ -385,23 +385,7 @@ private:
         }
     };
     
-    // ============== DC BLOCKER ==============
-    class DCBlocker {
-        double m_x1 = 0.0;
-        double m_y1 = 0.0;
-        static constexpr double R = 0.995;
-        
-    public:
-        float process(float input) {
-            double in = static_cast<double>(input);
-            double out = in - m_x1 + R * m_y1;
-            m_x1 = in;
-            m_y1 = DSPUtils::flushDenorm(out);
-            return static_cast<float>(out);
-        }
-        
-        void reset() { m_x1 = m_y1 = 0.0; }
-    };
+    // Use DCBlocker from DspEngineUtilities
     
     // ============== MEMBER VARIABLES ==============
     double m_sampleRate = 44100.0;

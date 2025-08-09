@@ -44,7 +44,7 @@ void ClassicCompressor::prepareToPlay(double sampleRate, int samplesPerBlock) {
         m_envelopes[ch].reset();
         m_sidechains[ch].prepare(sampleRate);
         m_gainSmoothers[ch].reset();
-        m_dcBlockers[ch].reset();
+        m_dcBlockers[ch].prepare(sampleRate);  // Must prepare with sample rate
     }
     
     reset();
