@@ -1,407 +1,301 @@
-// PlatinumRingModulator.h - Ultimate professional ring modulator with YIN pitch tracking
+// PlatinumRingModulator.h — hardened, RT-safe rewrite (APVTS unchanged)
 #pragma once
 #include "EngineBase.h"
-#include <vector>
-#include <cmath>
-#include <memory>
-#include <complex>
+#include <JuceHeader.h>
 #include <array>
-#include <random>
-#include <thread>
-#include <functional>
-// Platform-specific SIMD includes
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-    #include <immintrin.h>
-    #define HAS_SIMD 1
+#include <atomic>
+#include <cmath>
+#include <complex>
+#include <memory>
+
+// Cross-platform ALWAYS_INLINE
+#if defined(_MSC_VER)
+  #define ALWAYS_INLINE __forceinline
 #else
-    #define HAS_SIMD 0
+  #define ALWAYS_INLINE inline __attribute__((always_inline))
 #endif
 
-// Check for availability of Bessel functions
-#ifndef HAS_BESSEL_FUNCTION
-    #if defined(__APPLE__) && __cplusplus >= 201703L
-        #define HAS_BESSEL_FUNCTION 1
-    #elif defined(__GNUC__) && __cplusplus >= 201703L && __GNUC__ >= 7
-        #define HAS_BESSEL_FUNCTION 1
-    #elif defined(_MSC_VER) && _MSC_VER >= 1914
-        #define HAS_BESSEL_FUNCTION 1
-    #else
-        #define HAS_BESSEL_FUNCTION 0
-    #endif
-#endif
-
-// Define ALWAYS_INLINE for cross-platform optimization
-#ifdef _MSC_VER
-    #define ALWAYS_INLINE __forceinline
-#else
-    #define ALWAYS_INLINE __attribute__((always_inline)) inline
-#endif
-
-class PlatinumRingModulator : public EngineBase {
+class PlatinumRingModulator final : public EngineBase {
 public:
     PlatinumRingModulator();
     ~PlatinumRingModulator() override = default;
-    
+
+    // EngineBase
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void process(juce::AudioBuffer<float>& buffer) override;
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
-    
+
     juce::String getName() const override { return "Platinum Ring Modulator"; }
     int getNumParameters() const override { return 12; }
     juce::String getParameterName(int index) const override;
-    
+
 private:
-    // Parameters with thread-safe smoothing
+    // ---------- Utilities ----------
+    template<typename T>
+    static ALWAYS_INLINE T clampFinite(T v, T lo, T hi) noexcept {
+        if (!std::isfinite(v)) return T{0};
+        return v < lo ? lo : (v > hi ? hi : v);
+    }
+    template<typename T>
+    static ALWAYS_INLINE T flushDenorm(T v) noexcept {
+       #if defined(__SSE2__)
+        // add 0 to flush denormals under FTZ/DAZ
+        return _mm_cvtss_f32(_mm_add_ss(_mm_set_ss(static_cast<float>(v)), _mm_set_ss(0.0f)));
+       #else
+        const T thr = static_cast<T>(1e-30);
+        return std::abs(v) < thr ? T(0) : v;
+       #endif
+    }
+
+    // ---------- Smoothed parameter (atomic target) ----------
     struct SmoothParam {
         std::atomic<float> target{0.0f};
-        float current = 0.0f;
-        float smoothing = 0.995f;
-        
-        void update() {
-            float t = target.load(std::memory_order_relaxed);
-            current = t + (current - t) * smoothing;
+        float current{0.0f};
+        float a{0.995f};
+        void setTimeMs(float ms, double sr) {
+            const double tc = std::max(1e-3, double(ms))*0.001;
+            a = std::exp(-1.0 / (tc*sr));
         }
-        
-        void setImmediate(float value) {
-            target.store(value, std::memory_order_relaxed);
-            current = value;
+        ALWAYS_INLINE float tick() noexcept {
+            const float t = target.load(std::memory_order_relaxed);
+            current = t + (current - t) * a;
+            return flushDenorm(current);
         }
-        
-        void setSmoothingRate(float timeMs, double sampleRate) {
-            smoothing = std::exp(-1.0f / (timeMs * 0.001f * sampleRate));
+        void snap(float v) noexcept { target.store(v, std::memory_order_relaxed); current = v; }
+    };
+
+    // ---------- Carrier osc (simple, band-limitedish via tanh soft clip) ----------
+    struct CarrierOsc {
+        double phase{0.0}, inc{0.0};
+        float pulseWidth{0.5f};
+        float subMix{0.0f};
+        float stretch{1.0f};
+        std::array<double,8> harmPhase{}; // 0..1 cycles
+
+        void setFreq(float hz, double sr) noexcept {
+            hz = clampFinite(hz, 0.0f, float(sr*0.45));
+            inc = double(hz) / sr; // [cycles per sample]
+        }
+        void reset() noexcept { phase = 0.0; harmPhase.fill(0.0); }
+
+        ALWAYS_INLINE float tick() noexcept {
+            // Additive + pulse + sub (cheap but stable)
+            float s = 0.0f;
+            for (int h=0; h<8; ++h) {
+                harmPhase[h] += inc * (double(h+1) * double(stretch));
+                if (harmPhase[h] >= 1.0) harmPhase[h] -= 1.0;
+                s += std::sin(float(harmPhase[h] * 2.0 * M_PI)) * (1.0f / float(h+1));
+            }
+            // crude pulse (pre-bandlimited by tanh at the end)
+            const float pulse = (float(phase) < pulseWidth) ? 1.0f : -1.0f;
+            s = s*0.7f + pulse*0.3f;
+
+            // sub osc (one octave down)
+            double subP = phase * 0.5;
+            if (subP >= 1.0) subP -= 1.0;
+            s = s*(1.0f - subMix) + std::sin(float(subP * 2.0 * M_PI))*subMix;
+
+            // advance
+            phase += inc;
+            if (phase >= 1.0) phase -= 1.0;
+
+            // tanh soft clip to tame harmonics
+            const float x = s * 0.8f;
+            return std::tanh(x);
         }
     };
-    
-    SmoothParam m_carrierFreq;
-    SmoothParam m_ringAmount;
-    SmoothParam m_shiftAmount;
-    SmoothParam m_feedbackAmount;
-    SmoothParam m_pulseWidth;
-    SmoothParam m_phaseModulation;
-    SmoothParam m_harmonicStretch;
-    SmoothParam m_spectralTilt;
-    SmoothParam m_resonance;
-    SmoothParam m_shimmer;
-    SmoothParam m_thermalDrift;
-    SmoothParam m_pitchTracking;
-    
-    // DSP State
-    double m_sampleRate = 44100.0;
-    int m_blockSize = 512;
-    
-    // Ultra-precise carrier oscillator with 64-bit phase accumulator
-    struct CarrierOscillator {
-        double phase = 0.0;
-        double phaseIncrement = 0.0;
-        double pulseWidth = 0.5;
-        double phaseModDepth = 0.0;
-        
-        // Sub-oscillator for thickness
-        double subPhase = 0.0;
-        double subMix = 0.0;
-        
-        // Harmonic stretch parameters
-        double stretch = 1.0;
-        std::array<double, 8> harmonicPhases = {0.0};
-        std::array<float, 8> harmonicAmps = {1.0f, 0.5f, 0.33f, 0.25f, 0.2f, 0.17f, 0.14f, 0.125f};
-        
-        ALWAYS_INLINE float tick() {
-            // Additive synthesis with stretched harmonics
-            float output = 0.0f;
-            
-            for (int h = 0; h < 8; ++h) {
-                double harmPhase = harmonicPhases[h];
-                float harmonic = std::sin(harmPhase * 2.0 * M_PI) * harmonicAmps[h];
-                output += harmonic;
-                
-                // Update harmonic phase with stretch
-                harmonicPhases[h] += phaseIncrement * (h + 1) * stretch;
-                while (harmonicPhases[h] >= 1.0) harmonicPhases[h] -= 1.0;
+
+    // ---------- Minimal Hilbert (odd-length FIR, windowed, stable) ----------
+    struct HilbertFIR {
+        static constexpr int N = 63; // odd
+        std::array<float,N> z{}; // delay
+        std::array<float,N> h{}; // coeffs (90°)
+        int w{0};
+
+        void prepare() {
+            // Ideal Hilbert impulse: h[n] = 2/(pi*n) for n odd, 0 otherwise, center=0
+            // Then window (Blackman) and normalize for safety.
+            const int C = N/2;
+            for (int i=0;i<N;++i) {
+                const int n = i - C;
+                float v = 0.0f;
+                if (n != 0 && (n & 1)) v = 2.0f / (float(M_PI) * float(n));
+                // Blackman
+                const float wBlack =
+                    0.42f - 0.5f*std::cos(2.0f*float(M_PI)*float(i)/(N-1))
+                          + 0.08f*std::cos(4.0f*float(M_PI)*float(i)/(N-1));
+                h[i] = v * wBlack;
             }
-            
-            // Add pulse wave component
-            float pulse = (phase < pulseWidth) ? 1.0f : -1.0f;
-            output = output * 0.7f + pulse * 0.3f;
-            
-            // Add sub-oscillator
-            float sub = std::sin(subPhase * 2.0 * M_PI);
-            output = output * (1.0f - subMix) + sub * subMix;
-            
-            // Update phases
-            phase += phaseIncrement;
-            while (phase >= 1.0) phase -= 1.0;
-            
-            subPhase += phaseIncrement * 0.5;  // One octave down
-            while (subPhase >= 1.0) subPhase -= 1.0;
-            
-            return output;
+            std::fill(z.begin(), z.end(), 0.0f);
+            w = 0;
         }
-        
-        void setFrequency(float freq, double sampleRate) {
-            phaseIncrement = freq / sampleRate;
+
+        // Returns analytic pair {real=delayed, imag=hilbert(real)}
+        ALWAYS_INLINE std::complex<float> process(float x) noexcept {
+            z[w] = x;
+            // FIR (imag)
+            float im = 0.0f;
+            int idx = w;
+            for (int i=0;i<N;++i) {
+                im += z[idx] * h[i];
+                if (--idx < 0) idx = N-1;
+            }
+            // real is delayed by (N-1)/2 to match group delay
+            int rd = w - (N-1)/2; if (rd < 0) rd += N;
+            const float re = z[rd];
+            if (++w == N) w = 0;
+            return { flushDenorm(re), flushDenorm(im) };
         }
-        
+
+        void reset() { std::fill(z.begin(), z.end(), 0.0f); w=0; }
+    };
+
+    // ---------- Lightweight YIN (bounded, decimated, safe) ----------
+    struct Yin {
+        static constexpr int BUF = 1024;
+        static constexpr int HALF = BUF/2;
+        static constexpr float THRESH = 0.15f;
+
+        std::array<float,BUF> x{}; int wp{0};
+        float lastHz{440.0f};
+        int filled{0};
+
+        void reset() { x.fill(0.0f); wp=0; lastHz=440.0f; filled=0; }
+
+        // run every k samples (decimation) not per sample
+        float detectPush(float s, double sr, int decimCounter) noexcept {
+            x[wp] = flushDenorm(s);
+            if (++wp == BUF) wp = 0;
+            if (filled < BUF) { ++filled; return lastHz; }
+            // do YIN only sporadically to bound CPU
+            if ((decimCounter & 31) != 0) return lastHz;
+
+            // difference
+            std::array<float,HALF> d{};
+            for (int tau=0; tau<HALF; ++tau) {
+                float sum=0.0f;
+                // cap inner loop, aligned to HALF
+                for (int i=0;i<HALF;++i) {
+                    int a = (wp - i); if (a<0) a+=BUF;
+                    int b = (wp - i - tau); if (b<0) b+=BUF;
+                    const float diff = x[a]-x[b];
+                    sum += diff*diff;
+                }
+                d[tau] = sum;
+            }
+            // cumulative mean normalize
+            float cum=0.0f;
+            std::array<float,HALF> yin{};
+            yin[0] = 1.0f;
+            for (int tau=1; tau<HALF; ++tau) {
+                cum += d[tau];
+                const float v = (cum <= 1e-20f ? 1.0f : d[tau] * (float)tau / cum);
+                yin[tau] = v;
+            }
+            // absolute threshold
+            int best=-1;
+            for (int tau=2; tau<HALF; ++tau) {
+                if (yin[tau] < THRESH) { best=tau; break; }
+            }
+            if (best < 0) return lastHz;
+
+            // parabolic refine
+            if (best <= 1 || best >= HALF-2) {
+                lastHz = clampFinite(float(sr / best), 20.0f, 20000.0f);
+                return lastHz;
+            }
+            const float s0 = yin[best-1], s1 = yin[best], s2 = yin[best+1];
+            const float denom = (s0 + s2 - 2.0f*s1);
+            const float shift = (std::abs(denom) > 1e-12f) ? 0.5f*(s0 - s2)/denom : 0.0f;
+            const float tauR = float(best) + clampFinite(shift, -1.0f, 1.0f);
+            const float hz = clampFinite(float(sr / std::max(1.0f, tauR)), 20.0f, 20000.0f);
+            lastHz = hz;
+            return lastHz;
+        }
+    };
+
+    // ---------- Simple state-variable bandpass (stable) ----------
+    struct SVF {
+        float g{0}, k{0.5f};
+        float s1{0}, s2{0};
+        void set(float hz, float q, double sr) {
+            hz = clampFinite(hz, 10.0f, float(sr*0.45));
+            q = std::max(0.2f, q);
+            g = std::tan(float(M_PI) * hz / float(sr));
+            k = 1.0f / q;
+        }
+        ALWAYS_INLINE float bp(float x) noexcept {
+            // Zavalishin style SVF
+            const float v1 = (x - k*s1 - s2) / (1.0f + g*(g + k));
+            const float v2 = g*v1 + s1;
+            const float v3 = g*v2 + s2;
+            s1 = v2 + g*v1;
+            s2 = v3 + g*v2;
+            return flushDenorm(v2);
+        }
+        void reset(){ s1=s2=0; }
+    };
+
+    // ---------- Per-channel state ----------
+    struct Channel {
+        HilbertFIR hilb;
+        Yin yin;
+        SVF svf;
+        std::array<float,8192> fbDelay{}; // feedback
+        int fbW{0};
+        std::array<float,8192> shim{}; // shimmer delay
+        int shW{0};
+        float dcX{0}, dcY{0};
+        int yinDecim{0};
+
+        void prepare(double /*sr*/) { hilb.prepare(); reset(); }
         void reset() {
-            phase = 0.0;
-            subPhase = 0.0;
-            harmonicPhases.fill(0.0);
+            hilb.reset(); yin.reset(); svf.reset();
+            std::fill(fbDelay.begin(), fbDelay.end(), 0.0f); fbW=0;
+            std::fill(shim.begin(), shim.end(), 0.0f); shW=0;
+            dcX=dcY=0; yinDecim=0;
         }
-    };
-    
-    CarrierOscillator m_carrier;
-    
-    // YIN pitch tracking algorithm
-    struct YINPitchTracker {
-        static constexpr int YIN_BUFFER_SIZE = 2048;
-        static constexpr int YIN_HALF_SIZE = YIN_BUFFER_SIZE / 2;
-        static constexpr float YIN_THRESHOLD = 0.15f;
-        
-        std::array<float, YIN_BUFFER_SIZE> buffer;
-        std::array<float, YIN_HALF_SIZE> yinBuffer;
-        int bufferPos = 0;
-        float detectedFrequency = 440.0f;
-        float confidence = 0.0f;
-        
-        float detect(float input, double sampleRate);
-        
-    private:
-        void difference();
-        void cumulativeMeanNormalize();
-        int absoluteThreshold();
-        float parabolicInterpolation(int bestTau);
-    };
-    
-    // Professional Hilbert transform for frequency shifting
-    struct HilbertTransform {
-        static constexpr int FILTER_LENGTH = 65;  // Higher order for better accuracy
-        std::array<float, FILTER_LENGTH> delayLine;
-        std::array<float, FILTER_LENGTH> coefficients;
-        int writePos = 0;
-        
-        void init();
-        std::complex<float> processAnalytic(float input);
-        
-    private:
-        void generateCoefficients();
-    };
-    
-    // 96dB/octave elliptic filter for anti-aliasing
-    struct EllipticFilter {
-        // 8th order (4 biquad sections)
-        struct Biquad {
-            double a0 = 1.0, a1 = 0.0, a2 = 0.0;
-            double b1 = 0.0, b2 = 0.0;
-            double x1 = 0.0, x2 = 0.0;
-            double y1 = 0.0, y2 = 0.0;
-            
-            ALWAYS_INLINE double process(double input) {
-                double output = a0 * input + a1 * x1 + a2 * x2 - b1 * y1 - b2 * y2;
-                x2 = x1; x1 = input;
-                y2 = y1; y1 = output;
-                return output;
-            }
-            
-            void reset() {
-                x1 = x2 = y1 = y2 = 0.0;
-            }
-        };
-        
-        std::array<Biquad, 4> sections;
-        
-        void designLowpass(double cutoff, double sampleRate);
-        
-        ALWAYS_INLINE float process(float input) {
-            double x = input;
-            for (auto& section : sections) {
-                x = section.process(x);
-            }
-            return static_cast<float>(x);
-        }
-        
-        void reset() {
-            for (auto& section : sections) {
-                section.reset();
-            }
-        }
-    };
-    
-    // 4x oversampling with polyphase FIR
-    struct Oversampler {
-        static constexpr int OVERSAMPLE_FACTOR = 4;
-        static constexpr int FIR_LENGTH = 64;
-        
-        // Polyphase FIR coefficients
-        std::array<std::array<float, FIR_LENGTH/OVERSAMPLE_FACTOR>, OVERSAMPLE_FACTOR> polyphaseUp;
-        std::array<std::array<float, FIR_LENGTH/OVERSAMPLE_FACTOR>, OVERSAMPLE_FACTOR> polyphaseDown;
-        
-        // Delay lines for each phase
-        std::array<std::array<float, FIR_LENGTH/OVERSAMPLE_FACTOR>, OVERSAMPLE_FACTOR> delayUp;
-        std::array<std::array<float, FIR_LENGTH/OVERSAMPLE_FACTOR>, OVERSAMPLE_FACTOR> delayDown;
-        
-        // Anti-aliasing filters
-        EllipticFilter upsampleFilter;
-        EllipticFilter downsampleFilter;
-        
-        // Buffers
-        std::vector<float> oversampledBuffer;
-        int bufferSize = 0;
-        
-        void init(double sampleRate, int blockSize);
-        void upsample(const float* input, float* output, int numSamples);
-        void downsample(const float* input, float* output, int numSamples);
-        
-    private:
-        void generatePolyphaseCoefficients();
-    };
-    
-    // Phase vocoder for advanced pitch shifting
-    struct PhaseVocoder {
-        static constexpr int FFT_SIZE = 2048;
-        static constexpr int HOP_SIZE = FFT_SIZE / 4;
-        
-        std::unique_ptr<juce::dsp::FFT> fft;
-        std::array<float, FFT_SIZE * 2> fftBuffer;
-        std::array<std::complex<float>, FFT_SIZE> spectrum;
-        std::array<float, FFT_SIZE> window;
-        std::array<float, FFT_SIZE> lastPhase;
-        std::array<float, FFT_SIZE> sumPhase;
-        
-        // Circular buffers
-        std::array<float, FFT_SIZE * 2> inputBuffer;
-        std::array<float, FFT_SIZE * 2> outputBuffer;
-        int inputPos = 0;
-        int outputPos = 0;
-        int hopCounter = 0;
-        
-        void init();
-        float process(float input, float pitchShift);
-        void reset();
-        
-    private:
-        void processFrame(float pitchShift);
-    };
-    
-    // Per-channel state with all processing components
-    struct ChannelState {
-        YINPitchTracker pitchTracker;
-        HilbertTransform hilbert;
-        PhaseVocoder vocoder;
-        
-        // Feedback delay network
-        static constexpr int MAX_DELAY = 4096;
-        std::array<float, MAX_DELAY> delayBuffer;
-        int delayWritePos = 0;
-        float feedbackGain = 0.0f;
-        
-        // State-variable filter for resonance
-        struct SVF {
-            float g = 0.0f, R = 1.0f;
-            float s1 = 0.0f, s2 = 0.0f;
-            
-            void setFrequency(float freq, double sampleRate) {
-                g = std::tan((M_PI * freq) / sampleRate);
-            }
-            
-            void setResonance(float q) {
-                R = 1.0f / (2.0f * q);
-            }
-            
-            float processBandpass(float input) {
-                float hp = (input - s1 * (1.0f + g) - s2) / (1.0f + g * (1.0f + g));
-                float bp = hp * g + s1;
-                float lp = bp * g + s2;
-                
-                s1 = hp * g + bp;
-                s2 = bp * g + lp;
-                
-                return bp;
-            }
-        };
-        
-        SVF resonanceFilter;
-        
-        // Shimmer effect (pitch-shifted delay)
-        std::array<float, 8192> shimmerBuffer;
-        int shimmerWritePos = 0;
-        float shimmerAmount = 0.0f;
-        
-        // DC blocker
-        float dcBlockerX1 = 0.0f;
-        float dcBlockerY1 = 0.0f;
-        
-        ALWAYS_INLINE float processDCBlocker(float input) {
+        ALWAYS_INLINE float dcBlock(float x) noexcept {
+            // y[n] = x[n] - x[n-1] + R*y[n-1]
             const float R = 0.995f;
-            float output = input - dcBlockerX1 + R * dcBlockerY1;
-            dcBlockerX1 = input;
-            dcBlockerY1 = output;
-            return output;
-        }
-        
-        void init();
-        void reset();
-    };
-    
-    std::array<ChannelState, 2> m_channels;
-    int m_activeChannels = 2;
-    
-    // Oversampling
-    Oversampler m_oversampler;
-    bool m_useOversampling = true;
-    
-    // Thermal modeling for analog warmth
-    struct ThermalModel {
-        float temperature = 25.0f;
-        float thermalNoise = 0.0f;
-        float componentAging = 0.0f;
-        std::mt19937 rng{std::random_device{}()};
-        std::normal_distribution<float> noiseDist{0.0f, 0.0001f};
-        
-        void update(float driftAmount) {
-            // Slow thermal drift
-            thermalNoise = thermalNoise * 0.9999f + noiseDist(rng) * driftAmount;
-            thermalNoise = std::max(-0.01f, std::min(0.01f, thermalNoise));
-            
-            // Component aging (very slow)
-            componentAging += 1e-8f;
-            componentAging = std::min(0.1f, componentAging);
-        }
-        
-        float getThermalFactor() const {
-            return 1.0f + thermalNoise - componentAging * 0.05f;
+            const float y = x - dcX + R*dcY;
+            dcX = x; dcY = flushDenorm(y);
+            return y;
         }
     };
-    
-    ThermalModel m_thermalModel;
-    
-    // SIMD-optimized soft clipper
-    ALWAYS_INLINE float softClip(float x) {
-        // Fast approximation of tanh
-        float x2 = x * x;
-        return x * (27.0f + x2) / (27.0f + 9.0f * x2);
+
+    // ---------- Engine state ----------
+    double sr_{44100.0};
+    int maxBlock_{512};
+    bool usePitchTrack_{true};
+
+    // Smoothed params (targets fed from APVTS upstream via updateParameters)
+    SmoothParam p_carrierHz;      // idx 0 (mapped 20..5k in cpp)
+    SmoothParam p_ringAmt;        // idx 1
+    SmoothParam p_freqShiftNorm;  // idx 2 (-1..+1)
+    SmoothParam p_feedback;       // idx 3
+    SmoothParam p_pulseWidth;     // idx 4
+    SmoothParam p_phaseMod;       // idx 5 (not used heavily; kept for compat)
+    SmoothParam p_stretch;        // idx 6 (harmonic stretch)
+    SmoothParam p_tilt;           // idx 7 (-1..+1)
+    SmoothParam p_resonance;      // idx 8
+    SmoothParam p_shimmer;        // idx 9
+    SmoothParam p_thermal;        // idx 10
+    SmoothParam p_pitchTrack;     // idx 11 [0..1] mix
+
+    CarrierOsc carrier_;
+    std::array<Channel,2> ch_;
+
+    // helpers
+    static ALWAYS_INLINE float softClip(float x) noexcept {
+        // fast tanh-ish
+        const float x2 = x*x;
+        return x * (27.0f + x2) / (27.0f + 9.0f*x2);
     }
-    
-    // Professional denormal prevention using bit manipulation
-    ALWAYS_INLINE float preventDenormal(float x) {
-        union { float f; uint32_t i; } u;
-        u.f = x;
-        // Check if exponent bits are zero (denormal)
-        if ((u.i & 0x7F800000) == 0) return 0.0f;
-        return x;
-    }
-    
-    ALWAYS_INLINE double preventDenormalDouble(double x) {
-        union { double d; uint64_t i; } u;
-        u.d = x;
-        // Check if exponent bits are zero (denormal)
-        if ((u.i & 0x7FF0000000000000ULL) == 0) return 0.0;
-        return x;
-    }
-    
-    // Processing functions
-    float processRingModulation(float input, float carrier, float amount);
-    float processFrequencyShifting(float input, float shiftAmount, ChannelState& state);
-    void processFeedback(float& sample, ChannelState& state);
-    void processResonance(float& sample, float frequency, ChannelState& state);
-    void processShimmer(float& sample, ChannelState& state);
+    float processRing(float in, float carrier, float amt) noexcept;
+    float processFreqShift(float in, float norm, Channel& c) noexcept;
+    void  processFeedback(float& x, float fbAmt, Channel& c) noexcept;
+    void  processResonance(float& x, float resAmt, float baseHz, Channel& c) noexcept;
+    void  processShimmer(float& x, float shimAmt, Channel& c) noexcept;
 };

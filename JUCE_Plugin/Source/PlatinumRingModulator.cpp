@@ -1,787 +1,268 @@
-// PlatinumRingModulator.cpp - Ultimate professional ring modulator implementation
 #include "PlatinumRingModulator.h"
 #include <JuceHeader.h>
 #include <algorithm>
-#include <numeric>
-#include <cstring>
 #include <cmath>
-#include <complex>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-// Check if Bessel functions are available
-// Force to use fallback implementation as std::cyl_bessel_i is not available on all compilers
-#ifdef HAS_BESSEL_FUNCTION
-    #undef HAS_BESSEL_FUNCTION
-#endif
-#define HAS_BESSEL_FUNCTION 0
-
-// Ensure we have the float versions of math functions
-using std::sin;
-using std::cos;
-using std::tan;
-using std::sqrt;
-using std::exp;
-using std::abs;
-using std::pow;
-using std::max;
-using std::min;
-
-// Fallback implementation for modified Bessel function if not available
-#if !HAS_BESSEL_FUNCTION
-inline double cyl_bessel_i0_approx(double x) {
-    // Approximation of modified Bessel function of first kind, order 0
-    if (x < 0) x = -x;
-    if (x < 3.75) {
-        double t = x / 3.75;
-        t = t * t;
-        return 1.0 + 3.5156229 * t + 3.0899424 * t * t + 1.2067492 * t * t * t +
-               0.2659732 * t * t * t * t + 0.0360768 * t * t * t * t * t +
-               0.0045813 * t * t * t * t * t * t;
-    } else {
-        double t = 3.75 / x;
-        return (std::exp(x) / std::sqrt(x)) * 
-               (0.39894228 + 0.01328592 * t + 0.00225319 * t * t -
-                0.00157565 * t * t * t + 0.00916281 * t * t * t * t -
-                0.02057706 * t * t * t * t * t);
+// Ensure FTZ/DAZ on x86
+namespace {
+struct DenormGuard {
+    DenormGuard() {
+       #if defined(__SSE__)
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+       #endif
     }
-}
-#endif
-
-//==============================================================================
-// YIN Pitch Tracker Implementation
-//==============================================================================
-float PlatinumRingModulator::YINPitchTracker::detect(float input, double sampleRate) {
-    // Add sample to buffer
-    buffer[bufferPos] = input;
-    bufferPos = (bufferPos + 1) % YIN_BUFFER_SIZE;
-    
-    // Only process when buffer is full
-    static int fillCounter = 0;
-    if (fillCounter < YIN_BUFFER_SIZE) {
-        fillCounter++;
-        return detectedFrequency;
-    }
-    
-    // Compute difference function
-    difference();
-    
-    // Cumulative mean normalization
-    cumulativeMeanNormalize();
-    
-    // Find best period estimate
-    int tau = absoluteThreshold();
-    
-    if (tau > 0) {
-        // Refine with parabolic interpolation
-        float refinedTau = parabolicInterpolation(tau);
-        
-        if (refinedTau > 0) {
-            detectedFrequency = static_cast<float>(sampleRate / refinedTau);
-            confidence = 1.0f - yinBuffer[tau];
-            
-            // Clamp to reasonable range
-            detectedFrequency = std::max(20.0f, std::min(20000.0f, detectedFrequency));
-        }
-    }
-    
-    return detectedFrequency;
+} s_denormGuard;
 }
 
-void PlatinumRingModulator::YINPitchTracker::difference() {
-    for (int tau = 0; tau < YIN_HALF_SIZE; ++tau) {
-        float sum = 0.0f;
-        
-        for (int i = 0; i < YIN_HALF_SIZE; ++i) {
-            float delta = buffer[i] - buffer[i + tau];
-            sum += delta * delta;
-        }
-        
-        yinBuffer[tau] = sum;
-    }
-}
-
-void PlatinumRingModulator::YINPitchTracker::cumulativeMeanNormalize() {
-    yinBuffer[0] = 1.0f;
-    float runningSum = 0.0f;
-    
-    for (int tau = 1; tau < YIN_HALF_SIZE; ++tau) {
-        runningSum += yinBuffer[tau];
-        yinBuffer[tau] = yinBuffer[tau] * tau / runningSum;
-    }
-}
-
-int PlatinumRingModulator::YINPitchTracker::absoluteThreshold() {
-    for (int tau = 2; tau < YIN_HALF_SIZE; ++tau) {
-        if (yinBuffer[tau] < YIN_THRESHOLD) {
-            while (tau + 1 < YIN_HALF_SIZE && yinBuffer[tau + 1] < yinBuffer[tau]) {
-                tau++;
-            }
-            return tau;
-        }
-    }
-    return -1;
-}
-
-float PlatinumRingModulator::YINPitchTracker::parabolicInterpolation(int bestTau) {
-    if (bestTau == 0 || bestTau == YIN_HALF_SIZE - 1) {
-        return static_cast<float>(bestTau);
-    }
-    
-    float s0 = yinBuffer[bestTau - 1];
-    float s1 = yinBuffer[bestTau];
-    float s2 = yinBuffer[bestTau + 1];
-    
-    float a = s2 - s1;
-    float b = s0 - s1;
-    float shift = 0.0f;
-    
-    if (a + b != 0.0f) {
-        shift = 0.5f * (a - b) / (a + b);
-    }
-    
-    return bestTau + shift;
-}
-
-//==============================================================================
-// Hilbert Transform Implementation
-//==============================================================================
-void PlatinumRingModulator::HilbertTransform::init() {
-    generateCoefficients();
-    delayLine.fill(0.0f);
-    writePos = 0;
-}
-
-void PlatinumRingModulator::HilbertTransform::generateCoefficients() {
-    // Generate ideal Hilbert transform coefficients
-    int center = FILTER_LENGTH / 2;
-    
-    for (int i = 0; i < FILTER_LENGTH; ++i) {
-        if (i == center) {
-            coefficients[i] = 0.0f;
-        } else {
-            int n = i - center;
-            if (n % 2 == 0) {
-                coefficients[i] = 0.0f;
-            } else {
-                coefficients[i] = 2.0f / (M_PI * n);
-                
-                // Apply Blackman window
-                float w = 0.42f - 0.5f * static_cast<float>(cos(2.0 * M_PI * i / (FILTER_LENGTH - 1)))
-                        + 0.08f * static_cast<float>(cos(4.0 * M_PI * i / (FILTER_LENGTH - 1)));
-                coefficients[i] *= w;
-            }
-        }
-    }
-}
-
-std::complex<float> PlatinumRingModulator::HilbertTransform::processAnalytic(float input) {
-    // Add to delay line
-    delayLine[writePos] = input;
-    
-    // Compute Hilbert transform (imaginary part)
-    float imag = 0.0f;
-    for (int i = 0; i < FILTER_LENGTH; ++i) {
-        int idx = (writePos - i + FILTER_LENGTH) % FILTER_LENGTH;
-        imag += delayLine[idx] * coefficients[i];
-    }
-    
-    // Get delayed real part (compensate for filter delay)
-    int delayIdx = (writePos - FILTER_LENGTH/2 + FILTER_LENGTH) % FILTER_LENGTH;
-    float real = delayLine[delayIdx];
-    
-    writePos = (writePos + 1) % FILTER_LENGTH;
-    
-    return std::complex<float>(real, imag);
-}
-
-//==============================================================================
-// Elliptic Filter Implementation
-//==============================================================================
-void PlatinumRingModulator::EllipticFilter::designLowpass(double cutoff, double sampleRate) {
-    // 8th order elliptic filter coefficients
-    // Designed for 0.01dB passband ripple, 96dB stopband attenuation
-    double wc = 2.0 * M_PI * cutoff / sampleRate;
-    // double wc2 = wc * wc; // Unused for now
-    
-    // Pre-warped frequency
-    double k = tan(wc / 2.0);
-    double k2 = k * k;
-    
-    // Elliptic filter prototype coefficients (normalized)
-    // These would normally be calculated from elliptic integrals
-    // Using pre-calculated values for optimal response
-    const double zeros[4] = {1.8897, 2.1949, 2.7133, 3.8458};
-    const double poles_re[4] = {0.3695, 0.3172, 0.2342, 0.1234};
-    const double poles_im[4] = {0.9581, 0.7234, 0.5123, 0.2891};
-    
-    // Transform to digital domain using bilinear transform
-    for (int i = 0; i < 4; ++i) {
-        // double sz = sin(zeros[i]); // Unused for now
-        double cz = cos(zeros[i]);
-        double sp_re = poles_re[i];
-        double sp_im = poles_im[i];
-        
-        // Bilinear transform
-        double a = 1.0 + sp_re * k + (sp_re * sp_re + sp_im * sp_im) * k2;
-        
-        sections[i].a0 = (1.0 + k2) / a;
-        sections[i].a1 = 2.0 * (k2 - 1.0) / a;
-        sections[i].a2 = (1.0 - 2.0 * cz * k + k2) / a;
-        sections[i].b1 = 2.0 * (k2 * (sp_re * sp_re + sp_im * sp_im) - 1.0) / a;
-        sections[i].b2 = (1.0 - sp_re * k + (sp_re * sp_re + sp_im * sp_im) * k2) / a;
-    }
-}
-
-//==============================================================================
-// Oversampler Implementation
-//==============================================================================
-void PlatinumRingModulator::Oversampler::init(double sampleRate, int blockSize) {
-    bufferSize = blockSize;
-    oversampledBuffer.resize(blockSize * OVERSAMPLE_FACTOR);
-    
-    // Design anti-aliasing filters
-    upsampleFilter.designLowpass(sampleRate * 0.45, sampleRate * OVERSAMPLE_FACTOR);
-    downsampleFilter.designLowpass(sampleRate * 0.45, sampleRate * OVERSAMPLE_FACTOR);
-    
-    // Generate polyphase filter coefficients
-    generatePolyphaseCoefficients();
-    
-    // Clear delay lines
-    for (auto& phase : delayUp) phase.fill(0.0f);
-    for (auto& phase : delayDown) phase.fill(0.0f);
-}
-
-void PlatinumRingModulator::Oversampler::generatePolyphaseCoefficients() {
-    // Generate Kaiser-windowed sinc filter
-    const float beta = 8.0f;  // Kaiser window beta parameter
-    const int tapsPer = FIR_LENGTH / OVERSAMPLE_FACTOR;
-    
-    for (int phase = 0; phase < OVERSAMPLE_FACTOR; ++phase) {
-        for (int tap = 0; tap < tapsPer; ++tap) {
-            int n = tap * OVERSAMPLE_FACTOR + phase - FIR_LENGTH/2;
-            float h;
-            
-            if (n == 0) {
-                h = 1.0f;
-            } else {
-                float x = M_PI * n / OVERSAMPLE_FACTOR;
-                h = sin(x) / x;
-                
-                // Apply Kaiser window
-                float w = FIR_LENGTH - 1;
-                float arg = beta * sqrt(1.0f - pow(2.0f * n / w, 2.0f));
-                #if HAS_BESSEL_FUNCTION
-                    float bessel = std::cyl_bessel_i(0, arg) / std::cyl_bessel_i(0, beta);
-                #else
-                    float bessel = static_cast<float>(cyl_bessel_i0_approx(arg) / cyl_bessel_i0_approx(beta));
-                #endif
-                h *= bessel;
-            }
-            
-            polyphaseUp[phase][tap] = h * OVERSAMPLE_FACTOR;
-            polyphaseDown[phase][tap] = h;
-        }
-    }
-}
-
-void PlatinumRingModulator::Oversampler::upsample(const float* input, float* output, int numSamples) {
-    for (int i = 0; i < numSamples; ++i) {
-        // Insert zero-stuffed samples
-        for (int phase = 0; phase < OVERSAMPLE_FACTOR; ++phase) {
-            float sum = 0.0f;
-            
-            if (phase == 0) {
-                // New input sample
-                for (int tap = FIR_LENGTH/OVERSAMPLE_FACTOR - 1; tap > 0; --tap) {
-                    delayUp[0][tap] = delayUp[0][tap - 1];
-                }
-                delayUp[0][0] = input[i];
-            }
-            
-            // Apply polyphase filter
-            for (int tap = 0; tap < FIR_LENGTH/OVERSAMPLE_FACTOR; ++tap) {
-                sum += delayUp[phase][tap] * polyphaseUp[phase][tap];
-            }
-            
-            output[i * OVERSAMPLE_FACTOR + phase] = upsampleFilter.process(sum);
-        }
-    }
-}
-
-void PlatinumRingModulator::Oversampler::downsample(const float* input, float* output, int numSamples) {
-    for (int i = 0; i < numSamples; ++i) {
-        float sum = 0.0f;
-        
-        // Process each phase
-        for (int phase = 0; phase < OVERSAMPLE_FACTOR; ++phase) {
-            float filtered = downsampleFilter.process(input[i * OVERSAMPLE_FACTOR + phase]);
-            
-            // Update delay line
-            for (int tap = FIR_LENGTH/OVERSAMPLE_FACTOR - 1; tap > 0; --tap) {
-                delayDown[phase][tap] = delayDown[phase][tap - 1];
-            }
-            delayDown[phase][0] = filtered;
-            
-            // Apply polyphase filter
-            for (int tap = 0; tap < FIR_LENGTH/OVERSAMPLE_FACTOR; ++tap) {
-                sum += delayDown[phase][tap] * polyphaseDown[phase][tap];
-            }
-        }
-        
-        output[i] = sum;
-    }
-}
-
-//==============================================================================
-// Phase Vocoder Implementation
-//==============================================================================
-void PlatinumRingModulator::PhaseVocoder::init() {
-    fft = std::make_unique<juce::dsp::FFT>(11);  // 2048 points
-    
-    // Generate Hann window
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        window[i] = 0.5f * (1.0f - static_cast<float>(cos(2.0 * M_PI * i / (FFT_SIZE - 1))));
-    }
-    
-    reset();
-}
-
-void PlatinumRingModulator::PhaseVocoder::reset() {
-    fftBuffer.fill(0.0f);
-    spectrum.fill(std::complex<float>(0.0f, 0.0f));
-    lastPhase.fill(0.0f);
-    sumPhase.fill(0.0f);
-    inputBuffer.fill(0.0f);
-    outputBuffer.fill(0.0f);
-    inputPos = 0;
-    outputPos = 0;
-    hopCounter = 0;
-}
-
-float PlatinumRingModulator::PhaseVocoder::process(float input, float pitchShift) {
-    // Add to input buffer
-    inputBuffer[inputPos] = input;
-    inputPos = (inputPos + 1) % (FFT_SIZE * 2);
-    hopCounter++;
-    
-    // Process frame when hop size reached
-    if (hopCounter >= HOP_SIZE) {
-        hopCounter = 0;
-        processFrame(pitchShift);
-    }
-    
-    // Read from output buffer
-    float output = outputBuffer[outputPos];
-    outputBuffer[outputPos] = 0.0f;
-    outputPos = (outputPos + 1) % (FFT_SIZE * 2);
-    
-    return output;
-}
-
-void PlatinumRingModulator::PhaseVocoder::processFrame(float pitchShift) {
-    // Fill FFT buffer with windowed input
-    int readPos = (inputPos - FFT_SIZE + FFT_SIZE * 2) % (FFT_SIZE * 2);
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        fftBuffer[i] = inputBuffer[(readPos + i) % (FFT_SIZE * 2)] * window[i];
-    }
-    
-    // Forward FFT
-    fft->performRealOnlyForwardTransform(fftBuffer.data());
-    
-    // Convert to complex spectrum
-    spectrum[0] = std::complex<float>(fftBuffer[0], 0.0f);
-    for (int i = 1; i < FFT_SIZE/2; ++i) {
-        spectrum[i] = std::complex<float>(fftBuffer[2*i], fftBuffer[2*i + 1]);
-    }
-    spectrum[FFT_SIZE/2] = std::complex<float>(fftBuffer[1], 0.0f);
-    
-    // Apply pitch shift
-    if (pitchShift != 1.0f) {
-        std::array<std::complex<float>, FFT_SIZE> shiftedSpectrum;
-        shiftedSpectrum.fill(std::complex<float>(0.0f, 0.0f));
-        
-        for (int i = 0; i <= FFT_SIZE/2; ++i) {
-            int shiftedBin = static_cast<int>(i * pitchShift);
-            if (shiftedBin >= 0 && shiftedBin <= FFT_SIZE/2) {
-                shiftedSpectrum[shiftedBin] += spectrum[i];
-            }
-        }
-        
-        spectrum = shiftedSpectrum;
-    }
-    
-    // Convert back to JUCE format
-    fftBuffer[0] = spectrum[0].real();
-    fftBuffer[1] = spectrum[FFT_SIZE/2].real();
-    for (int i = 1; i < FFT_SIZE/2; ++i) {
-        fftBuffer[2*i] = spectrum[i].real();
-        fftBuffer[2*i + 1] = spectrum[i].imag();
-    }
-    
-    // Inverse FFT
-    fft->performRealOnlyInverseTransform(fftBuffer.data());
-    
-    // Overlap-add to output buffer
-    int writePos = (outputPos + HOP_SIZE) % (FFT_SIZE * 2);
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        outputBuffer[(writePos + i) % (FFT_SIZE * 2)] += fftBuffer[i] * window[i] / FFT_SIZE;
-    }
-}
-
-//==============================================================================
-// Channel State Implementation
-//==============================================================================
-void PlatinumRingModulator::ChannelState::init() {
-    hilbert.init();
-    vocoder.init();
-    resonanceFilter.setFrequency(1000.0f, 44100.0);
-    resonanceFilter.setResonance(0.707f);
-    reset();
-}
-
-void PlatinumRingModulator::ChannelState::reset() {
-    pitchTracker.buffer.fill(0.0f);
-    pitchTracker.bufferPos = 0;
-    pitchTracker.detectedFrequency = 440.0f;
-    
-    delayBuffer.fill(0.0f);
-    delayWritePos = 0;
-    feedbackGain = 0.0f;
-    
-    shimmerBuffer.fill(0.0f);
-    shimmerWritePos = 0;
-    shimmerAmount = 0.0f;
-    
-    dcBlockerX1 = 0.0f;
-    dcBlockerY1 = 0.0f;
-    
-    resonanceFilter.s1 = 0.0f;
-    resonanceFilter.s2 = 0.0f;
-    
-    vocoder.reset();
-}
-
-//==============================================================================
-// PlatinumRingModulator Implementation
-//==============================================================================
+// ------------------------------------------------------
+// ctor / prepare / reset
+// ------------------------------------------------------
 PlatinumRingModulator::PlatinumRingModulator() {
-    // Initialize parameters with musical defaults
-    m_carrierFreq.setImmediate(440.0f);
-    m_ringAmount.setImmediate(1.0f);
-    m_shiftAmount.setImmediate(0.0f);
-    m_feedbackAmount.setImmediate(0.0f);
-    m_pulseWidth.setImmediate(0.5f);
-    m_phaseModulation.setImmediate(0.0f);
-    m_harmonicStretch.setImmediate(1.0f);
-    m_spectralTilt.setImmediate(0.0f);
-    m_resonance.setImmediate(0.0f);
-    m_shimmer.setImmediate(0.0f);
-    m_thermalDrift.setImmediate(0.0f);
-    m_pitchTracking.setImmediate(0.0f);
+    // Musical defaults (same intent as original)
+    p_carrierHz.snap(440.0f);
+    p_ringAmt.snap(1.0f);
+    p_freqShiftNorm.snap(0.0f);
+    p_feedback.snap(0.0f);
+    p_pulseWidth.snap(0.5f);
+    p_phaseMod.snap(0.0f);
+    p_stretch.snap(1.0f);
+    p_tilt.snap(0.0f);
+    p_resonance.snap(0.0f);
+    p_shimmer.snap(0.0f);
+    p_thermal.snap(0.0f);
+    p_pitchTrack.snap(0.0f);
 }
 
 void PlatinumRingModulator::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    m_sampleRate = sampleRate;
-    m_blockSize = samplesPerBlock;
-    
-    // Set smoothing rates for all parameters
-    m_carrierFreq.setSmoothingRate(10.0f, sampleRate);
-    m_ringAmount.setSmoothingRate(20.0f, sampleRate);
-    m_shiftAmount.setSmoothingRate(20.0f, sampleRate);
-    m_feedbackAmount.setSmoothingRate(50.0f, sampleRate);
-    m_pulseWidth.setSmoothingRate(30.0f, sampleRate);
-    m_phaseModulation.setSmoothingRate(20.0f, sampleRate);
-    m_harmonicStretch.setSmoothingRate(50.0f, sampleRate);
-    m_spectralTilt.setSmoothingRate(30.0f, sampleRate);
-    m_resonance.setSmoothingRate(20.0f, sampleRate);
-    m_shimmer.setSmoothingRate(50.0f, sampleRate);
-    m_thermalDrift.setSmoothingRate(200.0f, sampleRate);
-    m_pitchTracking.setSmoothingRate(100.0f, sampleRate);
-    
-    // Initialize carrier oscillator
-    m_carrier.setFrequency(440.0f, sampleRate);
-    
-    // Initialize oversampler
-    m_oversampler.init(sampleRate, samplesPerBlock);
-    
-    // Initialize both channels
-    for (auto& channel : m_channels) {
-        channel.init();
-    }
-    
-    reset();
+    sr_ = std::max(8000.0, sampleRate);
+    maxBlock_ = std::max(16, samplesPerBlock);
+
+    // smoothing times (ms)
+    p_carrierHz.setTimeMs(10.f, sr_);
+    p_ringAmt.setTimeMs(15.f, sr_);
+    p_freqShiftNorm.setTimeMs(15.f, sr_);
+    p_feedback.setTimeMs(40.f, sr_);
+    p_pulseWidth.setTimeMs(20.f, sr_);
+    p_phaseMod.setTimeMs(20.f, sr_);
+    p_stretch.setTimeMs(40.f, sr_);
+    p_tilt.setTimeMs(25.f, sr_);
+    p_resonance.setTimeMs(25.f, sr_);
+    p_shimmer.setTimeMs(45.f, sr_);
+    p_thermal.setTimeMs(200.f, sr_);
+    p_pitchTrack.setTimeMs(100.f, sr_);
+
+    carrier_.reset();
+    carrier_.setFreq(440.0f, sr_);
+
+    for (auto& c: ch_) c.prepare(sr_);
 }
 
 void PlatinumRingModulator::reset() {
-    m_carrier.reset();
-    
-    for (auto& channel : m_channels) {
-        channel.reset();
-    }
-    
-    m_oversampler.upsampleFilter.reset();
-    m_oversampler.downsampleFilter.reset();
+    carrier_.reset();
+    for (auto& c: ch_) c.reset();
 }
 
-void PlatinumRingModulator::process(juce::AudioBuffer<float>& buffer) {
-    const int numChannels = buffer.getNumChannels();
-    const int numSamples = buffer.getNumSamples();
-    
-    m_activeChannels = std::min(numChannels, 2);
-    
-    // Update all parameters
-    m_carrierFreq.update();
-    m_ringAmount.update();
-    m_shiftAmount.update();
-    m_feedbackAmount.update();
-    m_pulseWidth.update();
-    m_phaseModulation.update();
-    m_harmonicStretch.update();
-    m_spectralTilt.update();
-    m_resonance.update();
-    m_shimmer.update();
-    m_thermalDrift.update();
-    m_pitchTracking.update();
-    
-    // Update thermal model
-    m_thermalModel.update(m_thermalDrift.current);
-    float thermalFactor = m_thermalModel.getThermalFactor();
-    
-    // Update carrier oscillator parameters
-    m_carrier.pulseWidth = 0.1f + m_pulseWidth.current * 0.8f;
-    m_carrier.phaseModDepth = m_phaseModulation.current;
-    m_carrier.stretch = 0.5f + m_harmonicStretch.current * 1.5f;
-    m_carrier.subMix = m_spectralTilt.current * 0.3f;
-    
-    // Apply spectral tilt to harmonics
-    float tilt = m_spectralTilt.current;
-    for (int h = 0; h < 8; ++h) {
-        float gain = 1.0f / (h + 1.0f);
-        gain *= 1.0f + tilt * (1.0f - h / 8.0f);
-        m_carrier.harmonicAmps[h] = gain;
+// ------------------------------------------------------
+// parameters — NOTE: APVTS stays unchanged upstream.
+// We only map [0..1] to engine ranges here.
+// ------------------------------------------------------
+void PlatinumRingModulator::updateParameters(const std::map<int, float>& params) {
+    auto get = [&](int idx, float def){ auto it=params.find(idx); return it!=params.end()? it->second : def; };
+
+    // idx 0: Carrier Frequency (20..5k)
+    {
+        const float norm = PlatinumRingModulator::clampFinite(get(0, 0.5f), 0.f, 1.f);
+        // perceptual map
+        const float hz = 20.0f * std::pow(250.0f, norm) + 20.0f; // ~20..~5k
+        p_carrierHz.target.store(hz, std::memory_order_relaxed);
     }
-    
-    // Process each channel
-    for (int ch = 0; ch < m_activeChannels; ++ch) {
-        auto* channelData = buffer.getWritePointer(ch);
-        auto& state = m_channels[ch];
-        
-        if (m_useOversampling) {
-            // Upsample
-            std::vector<float> oversampledIn(numSamples * 4);
-            m_oversampler.upsample(channelData, oversampledIn.data(), numSamples);
-            
-            // Process at higher sample rate
-            for (int i = 0; i < numSamples * 4; ++i) {
-                float sample = oversampledIn[i];
-                
-                // Pitch tracking
-                float detectedFreq = state.pitchTracker.detect(sample, m_sampleRate * 4);
-                float trackingAmount = m_pitchTracking.current;
-                float targetFreq = m_carrierFreq.current * (1.0f - trackingAmount) + 
-                                 detectedFreq * trackingAmount;
-                
-                // Apply thermal drift
-                targetFreq *= thermalFactor;
-                m_carrier.setFrequency(targetFreq, m_sampleRate * 4);
-                
-                // Generate carrier
-                float carrier = m_carrier.tick();
-                
-                // Ring modulation
-                float ring = processRingModulation(sample, carrier, m_ringAmount.current);
-                
-                // Frequency shifting
-                float shifted = processFrequencyShifting(ring, m_shiftAmount.current, state);
-                
-                // Feedback network
-                processFeedback(shifted, state);
-                
-                // Resonance filter
-                if (m_resonance.current > 0.01f) {
-                    processResonance(shifted, targetFreq, state);
-                }
-                
-                // Shimmer effect
-                if (m_shimmer.current > 0.01f) {
-                    processShimmer(shifted, state);
-                }
-                
-                // DC blocking
-                shifted = state.processDCBlocker(shifted);
-                
-                // Soft clipping
-                shifted = softClip(shifted * 0.7f) * 1.4f;
-                
-                // Denormal prevention
-                shifted = preventDenormal(shifted);
-                
-                oversampledIn[i] = shifted;
+    // idx 1: Ring Amount [0..1]
+    p_ringAmt.target.store(PlatinumRingModulator::clampFinite(get(1, 1.0f),0.f,1.f), std::memory_order_relaxed);
+    // idx 2: Frequency Shift (norm -1..+1)
+    p_freqShiftNorm.target.store(PlatinumRingModulator::clampFinite(get(2,0.5f)*2.f-1.f,-1.f,1.f), std::memory_order_relaxed);
+    // idx 3: Feedback [0..1] (internally < 0.9)
+    p_feedback.target.store(PlatinumRingModulator::clampFinite(get(3,0.0f),0.f,1.f), std::memory_order_relaxed);
+    // idx 4: Pulse Width [0.1..0.9]
+    p_pulseWidth.target.store(PlatinumRingModulator::clampFinite(get(4,0.5f),0.f,1.f), std::memory_order_relaxed);
+    // idx 5: Phase Mod depth [0..1] (kept for compatibility)
+    p_phaseMod.target.store(PlatinumRingModulator::clampFinite(get(5,0.0f),0.f,1.f), std::memory_order_relaxed);
+    // idx 6: Harmonic stretch [0.5..2.0]
+    p_stretch.target.store(PlatinumRingModulator::clampFinite(get(6,0.5f),0.f,1.f), std::memory_order_relaxed);
+    // idx 7: Spectral tilt [-1..+1]
+    p_tilt.target.store(PlatinumRingModulator::clampFinite(get(7,0.5f)*2.f-1.f,-1.f,1.f), std::memory_order_relaxed);
+    // idx 8: Resonance [0..1]
+    p_resonance.target.store(PlatinumRingModulator::clampFinite(get(8,0.0f),0.f,1.f), std::memory_order_relaxed);
+    // idx 9: Shimmer [0..1]
+    p_shimmer.target.store(PlatinumRingModulator::clampFinite(get(9,0.0f),0.f,1.f), std::memory_order_relaxed);
+    // idx 10: Thermal drift [0..1]
+    p_thermal.target.store(PlatinumRingModulator::clampFinite(get(10,0.0f),0.f,1.f), std::memory_order_relaxed);
+    // idx 11: Pitch tracking [0..1]
+    p_pitchTrack.target.store(PlatinumRingModulator::clampFinite(get(11,0.0f),0.f,1.f), std::memory_order_relaxed);
+
+    // NB: No allocation here, safe for RT usage model (map lives on message thread).
+}
+
+// ------------------------------------------------------
+// process (hardened)
+// ------------------------------------------------------
+void PlatinumRingModulator::process(juce::AudioBuffer<float>& buffer) {
+    const int numCh = std::min(buffer.getNumChannels(), 2);
+    const int N = buffer.getNumSamples();
+    if (N <= 0) return;
+
+    // Update smoothed params (once per block is fine)
+    const float carrierHz   = p_carrierHz.tick();
+    const float ringAmt     = p_ringAmt.tick();
+    const float shiftNorm   = p_freqShiftNorm.tick();
+    const float fbAmt       = std::min(0.9f, p_feedback.tick() * 0.9f);
+    const float pw          = 0.1f + 0.8f * p_pulseWidth.tick();
+    const float phaseMod    = p_phaseMod.tick(); (void)phaseMod; // kept for compat
+    const float stretch     = 0.5f + 1.5f * p_stretch.tick();
+    const float tilt        = p_tilt.tick(); // -1..+1
+    const float resAmt      = p_resonance.tick();
+    const float shimAmt     = p_shimmer.tick();
+    const float thermal     = p_thermal.tick();
+    const float trackMix    = p_pitchTrack.tick();
+
+    // Apply thermal drift subtly
+    const float driftFactor = 1.0f + (thermal * 0.002f); // ±0.2%
+    carrier_.setFreq(carrierHz * driftFactor, sr_);
+    carrier_.pulseWidth = pw;
+    carrier_.stretch = stretch;
+    carrier_.subMix = std::clamp(0.25f * (tilt + 1.0f) * 0.5f, 0.0f, 0.3f); // gentle LF tilt to sub
+
+    for (int ch = 0; ch < numCh; ++ch) {
+        auto* d = buffer.getWritePointer(ch);
+        auto& C = ch_[ch];
+
+        for (int i=0;i<N;++i) {
+            float x = d[i];
+            // Optional pitch-tracking: mix carrier to target detected frequency
+            float hz = carrierHz;
+            if (usePitchTrack_ && trackMix > 1e-4f) {
+                const float detected = C.yin.detectPush(x, sr_, C.yinDecim++);
+                hz = juce::jmap(trackMix, 0.0f, 1.0f, carrierHz, detected);
+                hz = clampFinite(hz, 20.0f, float(sr_*0.45));
             }
-            
-            // Downsample
-            m_oversampler.downsample(oversampledIn.data(), channelData, numSamples);
-        } else {
-            // Process at normal sample rate
-            for (int i = 0; i < numSamples; ++i) {
-                float sample = channelData[i];
-                
-                // Pitch tracking
-                float detectedFreq = state.pitchTracker.detect(sample, m_sampleRate);
-                float trackingAmount = m_pitchTracking.current;
-                float targetFreq = m_carrierFreq.current * (1.0f - trackingAmount) + 
-                                 detectedFreq * trackingAmount;
-                
-                // Apply thermal drift
-                targetFreq *= thermalFactor;
-                m_carrier.setFrequency(targetFreq, m_sampleRate);
-                
-                // Generate carrier
-                float carrier = m_carrier.tick();
-                
-                // Ring modulation
-                float ring = processRingModulation(sample, carrier, m_ringAmount.current);
-                
-                // Frequency shifting
-                float shifted = processFrequencyShifting(ring, m_shiftAmount.current, state);
-                
-                // Feedback network
-                processFeedback(shifted, state);
-                
-                // Resonance filter
-                if (m_resonance.current > 0.01f) {
-                    processResonance(shifted, targetFreq, state);
-                }
-                
-                // Shimmer effect
-                if (m_shimmer.current > 0.01f) {
-                    processShimmer(shifted, state);
-                }
-                
-                // DC blocking
-                shifted = state.processDCBlocker(shifted);
-                
-                // Soft clipping
-                shifted = softClip(shifted * 0.7f) * 1.4f;
-                
-                // Denormal prevention
-                channelData[i] = preventDenormal(shifted);
-            }
+            carrier_.setFreq(hz * driftFactor, sr_);
+            const float c = carrier_.tick();
+
+            // Classic ring mod
+            float y = processRing(x, c, ringAmt);
+
+            // Frequency shifting via Hilbert
+            y = processFreqShift(y, shiftNorm, C);
+
+            // Feedback (bounded)
+            processFeedback(y, fbAmt, C);
+
+            // Resonance "color" (program-dependent)
+            processResonance(y, resAmt, hz, C);
+
+            // Shimmer (light pitch-shifted echo substitute, safe)
+            processShimmer(y, shimAmt, C);
+
+            // Output DC block + clip guard
+            y = C.dcBlock(y);
+
+            // Final hardening: finite + soft limiter
+            if (!std::isfinite(y)) y = 0.0f;
+            if (std::abs(y) > 1.2f) y = 1.2f * std::tanh(y / 1.2f);
+
+            d[i] = y;
         }
     }
 }
 
-float PlatinumRingModulator::processRingModulation(float input, float carrier, float amount) {
-    // Classic ring modulation with dry/wet blend
-    float ring = input * carrier;
-    return input * (1.0f - amount) + ring * amount;
+// ------------------------------------------------------
+// helpers
+// ------------------------------------------------------
+float PlatinumRingModulator::processRing(float in, float carrier, float amt) noexcept {
+    amt = clampFinite(amt, 0.0f, 1.0f);
+    const float ring = in * carrier;
+    const float out = in*(1.0f - amt) + ring*amt;
+    return flushDenorm(out);
 }
 
-float PlatinumRingModulator::processFrequencyShifting(float input, float shiftAmount, ChannelState& state) {
-    if (std::abs(shiftAmount) < 0.01f) {
-        return input;
-    }
-    
-    // Hilbert transform for frequency shifting
-    std::complex<float> analytic = state.hilbert.processAnalytic(input);
-    
-    // Apply frequency shift
-    float shiftFreq = shiftAmount * 500.0f;  // +/- 500 Hz range
-    float phase = 2.0f * M_PI * shiftFreq / m_sampleRate;
-    std::complex<float> shifter = std::exp(std::complex<float>(0.0f, phase));
-    
-    std::complex<float> shifted = analytic * shifter;
-    
-    // Return real part
-    return shifted.real();
+float PlatinumRingModulator::processFreqShift(float in, float norm, Channel& c) noexcept {
+    // norm in [-1..1] maps to ±500 Hz
+    if (std::abs(norm) < 1e-4f) return in;
+    const float shiftHz = 500.0f * clampFinite(norm, -1.0f, 1.0f);
+
+    // analytic signal
+    const auto z = c.hilb.process(in);
+    // NCO (complex) using a small phase increment, integrate safely
+    static thread_local float ph = 0.0f;
+    ph += 2.0f * float(M_PI) * (shiftHz / float(sr_));
+    if (ph >  2.0f*float(M_PI)) ph -= 2.0f*float(M_PI);
+    if (ph < -2.0f*float(M_PI)) ph += 2.0f*float(M_PI);
+
+    const float cs = std::cos(ph);
+    const float sn = std::sin(ph);
+    // analytic * e^{j ph}
+    const float re = z.real()*cs - z.imag()*sn;
+    // imag discarded for real output
+    return flushDenorm(re);
 }
 
-void PlatinumRingModulator::processFeedback(float& sample, ChannelState& state) {
-    if (m_feedbackAmount.current < 0.01f) {
-        return;
-    }
-    
-    // Read from delay
-    int delayTime = static_cast<int>(0.01f * m_sampleRate);  // 10ms delay
-    int readPos = (state.delayWritePos - delayTime + ChannelState::MAX_DELAY) % ChannelState::MAX_DELAY;
-    float delayed = state.delayBuffer[readPos];
-    
-    // Apply feedback
-    float feedback = delayed * m_feedbackAmount.current * 0.7f;
-    sample += feedback;
-    
-    // Write to delay
-    state.delayBuffer[state.delayWritePos] = sample;
-    state.delayWritePos = (state.delayWritePos + 1) % ChannelState::MAX_DELAY;
+void PlatinumRingModulator::processFeedback(float& x, float fbAmt, Channel& c) noexcept {
+    if (fbAmt <= 1e-4f) return;
+    // Safe margin
+    const float g = std::clamp(fbAmt, 0.0f, 0.9f);
+    const int D = (int)c.fbDelay.size();
+    const int delaySamp = std::clamp((int)(0.010 * sr_), 1, D-2); // ~10ms
+    int rp = c.fbW - delaySamp; if (rp < 0) rp += D;
+    const float fb = c.fbDelay[rp];
+    // inject with soft clip
+    x = flushDenorm(x + softClip(fb * (g * 0.7f)));
+    // write
+    c.fbDelay[c.fbW] = x;
+    if (++c.fbW == D) c.fbW = 0;
 }
 
-void PlatinumRingModulator::processResonance(float& sample, float frequency, ChannelState& state) {
-    // Update filter frequency
-    state.resonanceFilter.setFrequency(frequency * 2.0f, m_sampleRate);
-    state.resonanceFilter.setResonance(0.5f + m_resonance.current * 10.0f);
-    
-    // Process through bandpass filter
-    float filtered = state.resonanceFilter.processBandpass(sample);
-    
-    // Mix with dry signal
-    sample = sample * (1.0f - m_resonance.current * 0.5f) + filtered * m_resonance.current;
+void PlatinumRingModulator::processResonance(float& x, float resAmt, float baseHz, Channel& c) noexcept {
+    if (resAmt <= 1e-4f) return;
+    // map resAmt to Q and amount
+    const float q = 0.5f + 9.5f * std::clamp(resAmt, 0.0f, 1.0f); // 0.5..10
+    const float freq = std::clamp(baseHz * 2.0f, 30.0f, float(sr_*0.45));
+    c.svf.set(freq, q, sr_);
+    const float bp = c.svf.bp(x);
+    x = flushDenorm(x*(1.0f - 0.4f*resAmt) + bp*(0.4f*resAmt));
 }
 
-void PlatinumRingModulator::processShimmer(float& sample, ChannelState& state) {
-    // Pitch-shifted delay for shimmer effect
-    float shifted = state.vocoder.process(sample, 2.0f);  // Octave up
-    
-    // Add to shimmer buffer
-    state.shimmerBuffer[state.shimmerWritePos] = shifted;
-    
-    // Read delayed shimmer
-    int delayTime = static_cast<int>(0.05f * m_sampleRate);  // 50ms delay
-    int readPos = (state.shimmerWritePos - delayTime + 8192) % 8192;
-    float shimmer = state.shimmerBuffer[readPos];
-    
-    state.shimmerWritePos = (state.shimmerWritePos + 1) % 8192;
-    
-    // Mix with original
-    sample += shimmer * m_shimmer.current * 0.3f;
+void PlatinumRingModulator::processShimmer(float& x, float shimAmt, Channel& c) noexcept {
+    if (shimAmt <= 1e-4f) return;
+    // super simple, stable "shimmer": short bright echo
+    const int D = (int)c.shim.size();
+    const int dSamp = std::clamp((int)(0.050 * sr_), 1, D-2); // ~50ms
+    int rp = c.shW - dSamp; if (rp < 0) rp += D;
+    const float y = c.shim[rp];
+    // write current with slight HF tilt
+    const float write = x + 0.1f*(x - c.dcX); // tiny pre-emphasis
+    c.shim[c.shW] = write;
+    if (++c.shW == D) c.shW = 0;
+
+    x = flushDenorm(x + y * (0.25f * std::clamp(shimAmt, 0.0f, 1.0f)));
 }
 
-void PlatinumRingModulator::updateParameters(const std::map<int, float>& params) {
-    auto getParam = [&params](int index, float defaultValue) {
-        auto it = params.find(index);
-        return it != params.end() ? it->second : defaultValue;
-    };
-    
-    m_carrierFreq.target.store(20.0f + getParam(0, 0.5f) * 4980.0f);  // 20Hz - 5kHz
-    m_ringAmount.target.store(getParam(1, 1.0f));
-    m_shiftAmount.target.store(getParam(2, 0.5f) * 2.0f - 1.0f);  // -1 to +1
-    m_feedbackAmount.target.store(getParam(3, 0.0f));
-    m_pulseWidth.target.store(getParam(4, 0.5f));
-    m_phaseModulation.target.store(getParam(5, 0.0f));
-    m_harmonicStretch.target.store(getParam(6, 0.5f));
-    m_spectralTilt.target.store(getParam(7, 0.5f) * 2.0f - 1.0f);  // -1 to +1
-    m_resonance.target.store(getParam(8, 0.0f));
-    m_shimmer.target.store(getParam(9, 0.0f));
-    m_thermalDrift.target.store(getParam(10, 0.0f));
-    m_pitchTracking.target.store(getParam(11, 0.0f));
-}
-
+// ------------------------------------------------------
+// parameter names (indices preserved to match APVTS)
+// ------------------------------------------------------
 juce::String PlatinumRingModulator::getParameterName(int index) const {
     switch (index) {
-        case 0: return "Carrier Frequency";
-        case 1: return "Ring Amount";
-        case 2: return "Frequency Shift";
-        case 3: return "Feedback";
-        case 4: return "Pulse Width";
-        case 5: return "Phase Modulation";
-        case 6: return "Harmonic Stretch";
-        case 7: return "Spectral Tilt";
-        case 8: return "Resonance";
-        case 9: return "Shimmer";
+        case 0:  return "Carrier Frequency";
+        case 1:  return "Ring Amount";
+        case 2:  return "Frequency Shift";
+        case 3:  return "Feedback";
+        case 4:  return "Pulse Width";
+        case 5:  return "Phase Modulation";
+        case 6:  return "Harmonic Stretch";
+        case 7:  return "Spectral Tilt";
+        case 8:  return "Resonance";
+        case 9:  return "Shimmer";
         case 10: return "Thermal Drift";
         case 11: return "Pitch Tracking";
-        default: return "";
+        default: return {};
     }
 }

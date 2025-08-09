@@ -1,30 +1,12 @@
-// MasteringLimiter_Platinum.h - Professional Minimal Header
-// Copyright (c) 2024 - Platinum DSP Series
-// Broadcast-compliant, studio-grade mastering limiter
+// ===============================================================
+// MasteringLimiter_Platinum.h - Rewritten (API-compatible)
+// ===============================================================
 #pragma once
 
 #include "EngineBase.h"
 #include <memory>
 #include <atomic>
 
-/**
- * @brief Professional mastering limiter with true peak detection
- * 
- * Features:
- * - ITU-R BS.1770-4 compliant true peak detection
- * - 16x linear-phase oversampling
- * - Predictive lookahead with 3rd-order analysis
- * - Adaptive program-dependent release
- * - AVX2/SSE2 optimized processing
- * - Lock-free parameter updates
- * - Zero allocations in audio thread
- * 
- * Performance targets:
- * - Latency: < 3ms @ 64 samples
- * - CPU: < 35% single core (Apple M2/Intel i7)
- * - THD+N: < 0.001%
- * - Dynamic Range: > 144dB
- */
 class MasteringLimiter_Platinum : public EngineBase {
 public:
     MasteringLimiter_Platinum();

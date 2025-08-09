@@ -1,580 +1,304 @@
 #include "SpectralGate_Platinum.h"
-#include <cmath>
 #include <algorithm>
-#include <atomic>
-#include <cstring>
-#include <vector>
-#include <array>
-
-// Platform-specific includes
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-    #include <immintrin.h>
-    #define HAS_SSE2 1
-#else
-    #define HAS_SSE2 0
-#endif
-
-// Platform-specific denormal prevention
-#if HAS_SSE2
-static struct DenormGuard {
-    DenormGuard() {
-        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-    }
-} s_denormGuard;
-#endif
+#include <cmath>
 
 namespace {
-    // Constants for professional quality
-    constexpr int kFFTSize = 2048;
-    constexpr int kFFTBins = kFFTSize / 2 + 1;
-    constexpr int kOverlap = 4;  // 75% overlap
-    constexpr int kHopSize = kFFTSize / kOverlap;
-    constexpr float kSilenceThreshold = 1e-6f;
-    constexpr double kPI = 3.14159265358979323846;
-    
-    // Inline denormal flushing
-    template<typename T>
-    inline T flushDenorm(T v) noexcept {
-        #if HAS_SSE2
-            if constexpr (std::is_same_v<T, float>) {
-                return _mm_cvtss_f32(_mm_add_ss(_mm_set_ss(v), _mm_set_ss(0.0f)));
-            }
-        #endif
-        constexpr T tiny = static_cast<T>(1.0e-38);
-        return std::fabs(v) < tiny ? static_cast<T>(0) : v;
+struct FTZGuard {
+    FTZGuard() {
+       #if defined(__SSE__)
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+       #endif
     }
-    
-    // Fast approximation for envelope detection
-    inline float fastExp(float x) noexcept {
-        x = 1.0f + x / 256.0f;
-        x *= x; x *= x; x *= x; x *= x;
-        x *= x; x *= x; x *= x; x *= x;
-        return x;
-    }
+} s_ftzGuard;
 }
 
-// Parameter smoother for click-free automation
-class ParamSmoother {
-public:
-    void setSampleRate(double sr) noexcept {
-        m_sampleRate = sr;
-        updateCoeff();
-    }
-    
-    void setTime(float ms) noexcept {
-        m_timeMs = std::max(0.001f, ms);
-        updateCoeff();
-    }
-    
-    void setValue(float v) noexcept {
-        m_target.store(v, std::memory_order_relaxed);
-    }
-    
-    void snap(float v) noexcept {
-        m_current = m_target = v;
-    }
-    
-    inline float tick() noexcept {
-        float t = m_target.load(std::memory_order_relaxed);
-        m_current += m_coeff * (t - m_current);
-        return flushDenorm(m_current);
-    }
-    
-    float getCurrent() const noexcept { return m_current; }
-    
-private:
-    void updateCoeff() noexcept {
-        if (m_sampleRate > 0 && m_timeMs > 0) {
-            m_coeff = 1.0f - std::exp(-1000.0f / (m_timeMs * m_sampleRate));
-            m_coeff = std::min(1.0f, std::max(0.0f, m_coeff));
-        }
-    }
-    
-    std::atomic<float> m_target{0.0f};
-    float m_current{0.0f};
-    float m_coeff{0.01f};
-    float m_timeMs{5.0f};
-    double m_sampleRate{44100.0};
-};
-
-// Spectral bin processor with per-frequency gating (double precision state)
-class SpectralBinProcessor {
-public:
-    void prepare(double sampleRate) noexcept {
-        m_sampleRate = sampleRate;
-        m_binFreqHz = sampleRate / kFFTSize;
-        
-        // Calculate gate smoothing coefficient (5ms default)
-        m_gateTimeMs = 5.0f;
-        m_gateCoeff = std::exp(-1.0f / (m_gateTimeMs * sampleRate * 0.001f));
-        
-        reset();
-    }
-    
-    void setGateSmoothTime(float ms) noexcept {
-        m_gateTimeMs = std::max(0.1f, ms);
-        m_gateCoeff = std::exp(-1.0f / (m_gateTimeMs * m_sampleRate * 0.001f));
-    }
-    
-    void reset() noexcept {
-        std::fill(m_binEnvelopes.begin(), m_binEnvelopes.end(), 0.0);
-        std::fill(m_binGates.begin(), m_binGates.end(), 0.0f);
-    }
-    
-    void processSpectrum(float* real, float* imag, 
-                        float threshold, float ratio,
-                        float attack, float release,
-                        float freqLow, float freqHigh) noexcept {
-        
-        // Convert freq range to bin indices
-        int binLow = std::max(1, static_cast<int>(freqLow / m_binFreqHz));
-        int binHigh = std::min(kFFTBins - 1, static_cast<int>(freqHigh / m_binFreqHz));
-        
-        // Calculate attack/release coefficients
-        double attackCoeff = std::exp(-1.0 / (attack * m_sampleRate * 0.001));
-        double releaseCoeff = std::exp(-1.0 / (release * m_sampleRate * 0.001));
-        
-        // Process each bin with double precision envelopes
-        for (int bin = 0; bin < kFFTBins; ++bin) {
-            double mag = std::sqrt(real[bin] * real[bin] + imag[bin] * imag[bin]);
-            mag = flushDenorm(mag);
-            
-            // Envelope follower with asymmetric attack/release (double precision)
-            double& env = m_binEnvelopes[bin];
-            double coeff = (mag > env) ? attackCoeff : releaseCoeff;
-            env = mag + coeff * (env - mag);
-            env = flushDenorm(env);
-            
-            // Gate calculation
-            float gate = 1.0f;
-            if (bin >= binLow && bin <= binHigh) {
-                if (env < threshold) {
-                    gate = 0.0f;
-                } else {
-                    float excess = static_cast<float>(env - threshold);
-                    gate = threshold + excess / ratio;
-                    gate = std::min(1.0f, gate / static_cast<float>(env));
-                }
-            }
-            
-            // Sample-rate aware gate smoothing
-            float& prevGate = m_binGates[bin];
-            prevGate = prevGate * m_gateCoeff + gate * (1.0f - m_gateCoeff);
-            prevGate = flushDenorm(prevGate);
-            
-            // Apply gating
-            real[bin] *= prevGate;
-            imag[bin] *= prevGate;
-        }
-    }
-    
-private:
-    double m_sampleRate{44100.0};
-    double m_binFreqHz{21.53};
-    float m_gateTimeMs{5.0f};
-    float m_gateCoeff{0.99f};
-    std::array<double, kFFTBins> m_binEnvelopes;  // Double precision for stability
-    std::array<float, kFFTBins> m_binGates;
-};
-
-// Implementation structure with all DSP components
-struct SpectralGate_Platinum::Impl {
-    // Core DSP state
-    double sampleRate{44100.0};
-    int blockSize{512};
-    
-    // FFT components (using JUCE's FFT for compatibility)
-    juce::dsp::FFT fft{static_cast<int>(std::log2(kFFTSize))};
-    
-    // Buffers aligned for SIMD
-    alignas(32) std::array<float, kFFTSize> fftBuffer;
-    alignas(32) std::array<float, kFFTSize> window;
-    alignas(32) std::array<float, kFFTSize> inputBuffer;
-    alignas(32) std::array<float, kFFTSize> outputBuffer;
-    
-    // Overlap-add state per channel
-    struct ChannelState {
-        alignas(32) std::array<float, kFFTSize> overlapBuffer;
-        int writePos{0};
-        int readPos{0};
-        float inputGain{1.0f};
-        float outputGain{1.0f};
-    };
-    std::vector<ChannelState> channels;
-    
-    // Lookahead delay line
-    struct DelayLine {
-        std::vector<float> buffer;
-        int writePos{0};
-        int size{0};
-        
-        void prepare(int samples) {
-            size = samples;
-            buffer.resize(size, 0.0f);
-            writePos = 0;
-        }
-        
-        void reset() {
-            std::fill(buffer.begin(), buffer.end(), 0.0f);
-            writePos = 0;
-        }
-        
-        float processSample(float in) noexcept {
-            if (size == 0) return in;
-            float out = buffer[writePos];
-            buffer[writePos] = in;
-            writePos = (writePos + 1) % size;
-            return out;
-        }
-    };
-    std::vector<DelayLine> lookaheadDelays;
-    
-    // Spectral processor
-    SpectralBinProcessor spectralProcessor;
-    
-    // Window normalization factor for perfect reconstruction
-    float windowNormFactor{1.0f};
-    
-    // Parameter smoothers (using double precision for accumulation)
-    ParamSmoother thresholdSmooth;
-    ParamSmoother ratioSmooth;
-    ParamSmoother attackSmooth;
-    ParamSmoother releaseSmooth;
-    ParamSmoother freqLowSmooth;
-    ParamSmoother freqHighSmooth;
-    ParamSmoother lookaheadSmooth;
-    ParamSmoother mixSmooth;
-    ParamSmoother gateSmooth;  // For per-bin gate smoothing
-    
-    // Silence detection
-    float silenceCounter{0};
-    bool isSilent{false};
-    
-    // Constructor
-    Impl() {
-        initWindow();
-        setupSmoothers();
-    }
-    
-    void initWindow() {
-        // Hann window for smooth overlap-add
-        for (int i = 0; i < kFFTSize; ++i) {
-            window[i] = 0.5f * (1.0f - std::cos(2.0f * kPI * i / (kFFTSize - 1)));
-        }
-        
-        // Calculate exact normalization factor for perfect reconstruction
-        double sum = 0.0;
-        for (int i = 0; i < kFFTSize; i += kHopSize) {
-            sum += window[i];
-        }
-        windowNormFactor = static_cast<float>(1.0 / sum);
-    }
-    
-    void setupSmoothers() {
-        thresholdSmooth.setTime(5.0f);
-        ratioSmooth.setTime(5.0f);
-        attackSmooth.setTime(5.0f);
-        releaseSmooth.setTime(5.0f);
-        freqLowSmooth.setTime(10.0f);
-        freqHighSmooth.setTime(10.0f);
-        lookaheadSmooth.setTime(20.0f);
-        mixSmooth.setTime(10.0f);
-        gateSmooth.setTime(5.0f);  // 5ms gate smoothing
-    }
-    
-    void prepare(double sr, int bs) {
-        sampleRate = sr;
-        blockSize = bs;
-        
-        // Update smoothers
-        thresholdSmooth.setSampleRate(sr);
-        ratioSmooth.setSampleRate(sr);
-        attackSmooth.setSampleRate(sr);
-        releaseSmooth.setSampleRate(sr);
-        freqLowSmooth.setSampleRate(sr);
-        freqHighSmooth.setSampleRate(sr);
-        lookaheadSmooth.setSampleRate(sr);
-        mixSmooth.setSampleRate(sr);
-        
-        // Prepare spectral processor
-        spectralProcessor.prepare(sr);
-        
-        // Clear buffers
-        reset();
-    }
-    
-    void reset() {
-        std::fill(fftBuffer.begin(), fftBuffer.end(), 0.0f);
-        std::fill(inputBuffer.begin(), inputBuffer.end(), 0.0f);
-        std::fill(outputBuffer.begin(), outputBuffer.end(), 0.0f);
-        
-        for (auto& ch : channels) {
-            std::fill(ch.overlapBuffer.begin(), ch.overlapBuffer.end(), 0.0f);
-            ch.writePos = 0;
-            ch.readPos = 0;
-        }
-        
-        for (auto& delay : lookaheadDelays) {
-            delay.reset();
-        }
-        
-        spectralProcessor.reset();
-        silenceCounter = 0;
-        isSilent = false;
-    }
-    
-    void processChannel(float* data, int numSamples, int chIdx) {
-        auto& ch = channels[chIdx];
-        auto& delay = lookaheadDelays[chIdx];
-        
-        for (int s = 0; s < numSamples; ++s) {
-            float input = data[s];
-            
-            // Apply lookahead delay
-            float delayed = delay.processSample(input);
-            
-            // Fill input buffer
-            inputBuffer[ch.writePos] = delayed * ch.inputGain;
-            ch.writePos = (ch.writePos + 1) % kFFTSize;
-            
-            // Process when we have enough samples
-            if (ch.writePos % kHopSize == 0) {
-                processFrame(chIdx);
-            }
-            
-            // Read from output buffer
-            float output = outputBuffer[ch.readPos] * ch.outputGain;
-            ch.readPos = (ch.readPos + 1) % kFFTSize;
-            
-            // Mix dry/wet
-            float mix = mixSmooth.tick();
-            data[s] = input * (1.0f - mix) + output * mix;
-            data[s] = flushDenorm(data[s]);
-        }
-    }
-    
-    void processFrame(int chIdx) {
-        auto& ch = channels[chIdx];
-        
-        // Prefetch next cache line for better memory access
-        #if HAS_SSE2
-        _mm_prefetch(reinterpret_cast<const char*>(&inputBuffer[(ch.writePos + 64) % kFFTSize]), _MM_HINT_T0);
-        #endif
-        
-        // Copy input to FFT buffer with windowing
-        int readStart = (ch.writePos - kFFTSize + kFFTSize) % kFFTSize;
-        for (int i = 0; i < kFFTSize; ++i) {
-            int idx = (readStart + i) % kFFTSize;
-            fftBuffer[i] = inputBuffer[idx] * window[i];
-        }
-        
-        // Forward FFT
-        fft.performRealOnlyForwardTransform(fftBuffer.data());
-        
-        // Extract real and imaginary parts
-        alignas(32) float real[kFFTBins];
-        alignas(32) float imag[kFFTBins];
-        
-        for (int i = 0; i < kFFTBins; ++i) {
-            real[i] = fftBuffer[i * 2];
-            imag[i] = (i > 0 && i < kFFTBins - 1) ? fftBuffer[i * 2 + 1] : 0.0f;
-        }
-        
-        // Apply spectral gating
-        float threshold = thresholdSmooth.tick();
-        float ratio = ratioSmooth.tick();
-        float attack = attackSmooth.tick();
-        float release = releaseSmooth.tick();
-        float freqLow = freqLowSmooth.tick();
-        float freqHigh = freqHighSmooth.tick();
-        
-        // Update gate smoothing time if needed
-        float gateSmoothMs = gateSmooth.tick();
-        spectralProcessor.setGateSmoothTime(gateSmoothMs);
-        
-        spectralProcessor.processSpectrum(real, imag, 
-                                         threshold, ratio,
-                                         attack, release,
-                                         freqLow, freqHigh);
-        
-        // Pack back for inverse FFT
-        for (int i = 0; i < kFFTBins; ++i) {
-            fftBuffer[i * 2] = real[i];
-            if (i > 0 && i < kFFTBins - 1) {
-                fftBuffer[i * 2 + 1] = imag[i];
-            }
-        }
-        
-        // Inverse FFT
-        fft.performRealOnlyInverseTransform(fftBuffer.data());
-        
-        // Overlap-add with exact windowing normalization
-        for (int i = 0; i < kFFTSize; ++i) {
-            int outIdx = (ch.readPos + i) % kFFTSize;
-            float windowed = fftBuffer[i] * window[i] * windowNormFactor / kFFTSize;
-            
-            if (i < kFFTSize - kHopSize) {
-                ch.overlapBuffer[i] += windowed;
-                outputBuffer[outIdx] = ch.overlapBuffer[i];
-                ch.overlapBuffer[i] = ch.overlapBuffer[i + kHopSize];
-            } else {
-                ch.overlapBuffer[i - kFFTSize + kHopSize] = windowed;
-            }
-        }
-    }
-    
-    bool detectSilence(const juce::AudioBuffer<float>& buffer) {
-        float rms = 0.0f;
-        int numChannels = buffer.getNumChannels();
-        int numSamples = buffer.getNumSamples();
-        
-        for (int ch = 0; ch < numChannels; ++ch) {
-            const float* data = buffer.getReadPointer(ch);
-            for (int s = 0; s < numSamples; ++s) {
-                rms += data[s] * data[s];
-            }
-        }
-        
-        rms = std::sqrt(rms / (numChannels * numSamples));
-        
-        if (rms < kSilenceThreshold) {
-            silenceCounter += numSamples;
-            if (silenceCounter > sampleRate * 0.1) { // 100ms of silence
-                return true;
-            }
-        } else {
-            silenceCounter = 0;
-        }
-        
-        return false;
-    }
-};
-
-// Public interface implementation
-SpectralGate_Platinum::SpectralGate_Platinum() : pImpl(std::make_unique<Impl>()) {}
-
-SpectralGate_Platinum::~SpectralGate_Platinum() = default;
+// -------------------------------------------------------
+SpectralGate_Platinum::SpectralGate_Platinum() {
+    // reasonable defaults
+    pThreshold.snap(-30.0f);   // dB
+    pRatio.snap(4.0f);         // 4:1
+    pAttack.snap(5.0f);        // ms
+    pRelease.snap(50.0f);      // ms
+    pFreqLow.snap(20.0f);      // Hz
+    pFreqHigh.snap(20000.0f);  // Hz
+    pLookahead.snap(0.0f);     // ms
+    pMix.snap(1.0f);           // 100% wet
+}
 
 void SpectralGate_Platinum::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    pImpl->prepare(sampleRate, samplesPerBlock);
-    
-    // Prepare channel states
-    int numChannels = 2; // Assume stereo, adjust as needed
-    pImpl->channels.resize(numChannels);
-    pImpl->lookaheadDelays.resize(numChannels);
-    
-    // Setup lookahead delays (5ms default)
-    int lookaheadSamples = static_cast<int>(0.005 * sampleRate);
-    for (auto& delay : pImpl->lookaheadDelays) {
-        delay.prepare(lookaheadSamples);
-    }
-    
-    // Initialize default parameters (converted to dB/Hz values)
-    pImpl->thresholdSmooth.snap(0.01f);    // Linear threshold
-    pImpl->ratioSmooth.snap(4.0f);         // 4:1
-    pImpl->attackSmooth.snap(10.0f);       // ms
-    pImpl->releaseSmooth.snap(100.0f);     // ms
-    pImpl->freqLowSmooth.snap(20.0f);      // Hz
-    pImpl->freqHighSmooth.snap(20000.0f);  // Hz
-    pImpl->lookaheadSmooth.snap(5.0f);     // ms
-    pImpl->mixSmooth.snap(1.0f);           // 100% wet
-}
+    sr_ = std::max(8000.0, sampleRate);
+    maxBlock_ = std::max(16, samplesPerBlock);
 
-void SpectralGate_Platinum::process(juce::AudioBuffer<float>& buffer) {
-    int numChannels = buffer.getNumChannels();
-    int numSamples = buffer.getNumSamples();
-    
-    // Ensure we have the right number of channels
-    if (numChannels != static_cast<int>(pImpl->channels.size())) {
-        pImpl->channels.resize(numChannels);
-        pImpl->lookaheadDelays.resize(numChannels);
-        for (int i = 0; i < numChannels; ++i) {
-            int lookaheadSamples = static_cast<int>(
-                pImpl->lookaheadSmooth.getCurrent() * 0.001 * pImpl->sampleRate
-            );
-            pImpl->lookaheadDelays[i].prepare(lookaheadSamples);
-        }
-    }
-    
-    // Fast path for silence
-    pImpl->isSilent = pImpl->detectSilence(buffer);
-    if (pImpl->isSilent) {
-        buffer.clear();
-        return;
-    }
-    
-    // Process each channel
-    for (int ch = 0; ch < numChannels; ++ch) {
-        float* data = buffer.getWritePointer(ch);
-        pImpl->processChannel(data, numSamples, ch);
-    }
+    // Set parameter smoothing times
+    pThreshold.setTimeMs(10.f, sr_);
+    pRatio.setTimeMs(10.f, sr_);
+    pAttack.setTimeMs(10.f, sr_);
+    pRelease.setTimeMs(10.f, sr_);
+    pFreqLow.setTimeMs(20.f, sr_);
+    pFreqHigh.setTimeMs(20.f, sr_);
+    pLookahead.setTimeMs(20.f, sr_);
+    pMix.setTimeMs(10.f, sr_);
+
+    // Bounded iteration limit (prevent infinite loops)
+    maxProcessingIterations_ = std::min(1000, maxBlock_ * 10);
+
+    reset();
 }
 
 void SpectralGate_Platinum::reset() {
-    pImpl->reset();
+    for (auto& ch : channels_)
+        ch.reset();
 }
 
+// -------------------------------------------------------
 void SpectralGate_Platinum::updateParameters(const std::map<int, float>& params) {
-    for (const auto& [id, value] : params) {
-        switch (id) {
-            case kThreshold:
-                // Convert from 0-1 to linear threshold
-                {
-                    float db = -80.0f + value * 80.0f;  // -80 to 0 dB
-                    float linear = std::pow(10.0f, db / 20.0f);
-                    pImpl->thresholdSmooth.setValue(linear);
-                }
-                break;
-            case kRatio:
-                // Convert from 0-1 to 1:1 to 100:1
-                pImpl->ratioSmooth.setValue(1.0f + value * 99.0f);
-                break;
-            case kAttack:
-                // Convert from 0-1 to 0.1-100 ms (log scale)
-                pImpl->attackSmooth.setValue(0.1f * std::pow(1000.0f, value));
-                break;
-            case kRelease:
-                // Convert from 0-1 to 1-1000 ms (log scale)
-                pImpl->releaseSmooth.setValue(1.0f * std::pow(1000.0f, value));
-                break;
-            case kFreqLow:
-                // Convert from 0-1 to 20-2000 Hz (log scale)
-                pImpl->freqLowSmooth.setValue(20.0f * std::pow(100.0f, value));
-                break;
-            case kFreqHigh:
-                // Convert from 0-1 to 200-20000 Hz (log scale)
-                pImpl->freqHighSmooth.setValue(200.0f * std::pow(100.0f, value));
-                break;
-            case kLookahead:
-                // Convert from 0-1 to 0-10 ms
-                {
-                    float ms = value * 10.0f;
-                    pImpl->lookaheadSmooth.setValue(ms);
-                    int samples = static_cast<int>(ms * 0.001 * pImpl->sampleRate);
-                    for (auto& delay : pImpl->lookaheadDelays) {
-                        delay.prepare(samples);
-                    }
-                }
-                break;
-            case kMix:
-                // Direct 0-1 for dry/wet mix
-                pImpl->mixSmooth.setValue(value);
-                break;
+    auto get = [&](int idx, float def){ auto it=params.find(idx); return it!=params.end()? it->second : def; };
+
+    // Map 0..1 to meaningful ranges
+    float thresh01 = clamp01(get((int)ParamID::Threshold, 0.25f));  // 0..1
+    float ratio01  = clamp01(get((int)ParamID::Ratio, 0.3f));       // 0..1
+    float att01    = clamp01(get((int)ParamID::Attack, 0.3f));      // 0..1
+    float rel01    = clamp01(get((int)ParamID::Release, 0.3f));     // 0..1
+    float fLo01    = clamp01(get((int)ParamID::FreqLow, 0.0f));     // 0..1
+    float fHi01    = clamp01(get((int)ParamID::FreqHigh, 1.0f));    // 0..1
+    float look01   = clamp01(get((int)ParamID::Lookahead, 0.0f));   // 0..1
+    float mix01    = clamp01(get((int)ParamID::Mix, 1.0f));         // 0..1
+
+    // Convert to actual values
+    float threshDb = -60.0f + 60.0f * thresh01;       // -60..0 dB
+    float ratio    = 1.0f + 19.0f * ratio01;          // 1:1 to 20:1
+    float attackMs = 0.1f + 49.9f * att01;            // 0.1..50 ms
+    float releaseMs= 1.0f + 499.0f * rel01;           // 1..500 ms
+    float freqLow  = 20.0f * std::pow(10.0f, 3.0f * fLo01);  // 20Hz..20kHz
+    float freqHigh = 20.0f * std::pow(10.0f, 3.0f * fHi01);  // 20Hz..20kHz
+    float lookMs   = 10.0f * look01;                  // 0..10 ms
+
+    pThreshold.target.store(threshDb, std::memory_order_relaxed);
+    pRatio.target.store(ratio, std::memory_order_relaxed);
+    pAttack.target.store(attackMs, std::memory_order_relaxed);
+    pRelease.target.store(releaseMs, std::memory_order_relaxed);
+    pFreqLow.target.store(std::min(freqLow, freqHigh - 10.0f), std::memory_order_relaxed);
+    pFreqHigh.target.store(std::max(freqHigh, freqLow + 10.0f), std::memory_order_relaxed);
+    pLookahead.target.store(lookMs, std::memory_order_relaxed);
+    pMix.target.store(mix01, std::memory_order_relaxed);
+}
+
+// -------------------------------------------------------
+void SpectralGate_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    const int numCh = buffer.getNumChannels();
+    const int N = buffer.getNumSamples();
+    if (N <= 0) return;
+
+    // Ensure we have enough channels
+    if ((int)channels_.size() < numCh) {
+        channels_.resize(numCh);
+        for (auto& ch : channels_) {
+            ch.fftProc.prepareWindow();
+            ch.delayBuf.resize(size_t(sr_ * 0.011), 0.0f); // up to 11ms
+            ch.reset();
+        }
+    }
+
+    // Pull smoothed params (block-rate)
+    const float threshDb = pThreshold.tick();
+    const float ratio    = pRatio.tick();
+    const float attackMs = pAttack.tick();
+    const float releaseMs= pRelease.tick();
+    const float freqLow  = pFreqLow.tick();
+    const float freqHigh = pFreqHigh.tick();
+    const float lookMs   = pLookahead.tick();
+    const float mix01    = pMix.tick();
+
+    // Convert to linear threshold
+    const float threshLin = std::pow(10.0f, threshDb / 20.0f);
+
+    // Convert to bin indices
+    const int binLow  = freqToBin(freqLow, sr_);
+    const int binHigh = freqToBin(freqHigh, sr_);
+
+    // Update lookahead samples
+    const int lookSamples = std::min((int)(lookMs * 0.001 * sr_), (int)channels_[0].delayBuf.size() - 1);
+    for (auto& ch : channels_)
+        ch.delaySamples = lookSamples;
+
+    // Process each channel with bounded iterations
+    for (int c = 0; c < numCh; ++c) {
+        processChannel(channels_[c], buffer.getWritePointer(c), N);
+    }
+
+    // Apply mix
+    if (mix01 < 0.999f) {
+        // Store dry signal first
+        juce::AudioBuffer<float> dry(buffer);
+        
+        // After processing, blend
+        for (int c = 0; c < numCh; ++c) {
+            float* wet = buffer.getWritePointer(c);
+            const float* dryPtr = dry.getReadPointer(c);
+            for (int n = 0; n < N; ++n) {
+                wet[n] = dryPtr[n] * (1.0f - mix01) + wet[n] * mix01;
+                // Safety
+                if (!std::isfinite(wet[n])) wet[n] = 0.0f;
+                wet[n] = clamp(wet[n], -2.0f, 2.0f);
+            }
         }
     }
 }
 
+void SpectralGate_Platinum::processChannel(Channel& ch, float* data, int numSamples) {
+    // Get current parameters
+    const float threshDb = pThreshold.current;
+    const float ratio    = pRatio.current;
+    const float attackMs = pAttack.current;
+    const float releaseMs= pRelease.current;
+    const float freqLow  = pFreqLow.current;
+    const float freqHigh = pFreqHigh.current;
+
+    const float threshLin = std::pow(10.0f, threshDb / 20.0f);
+    const int binLow  = freqToBin(freqLow, sr_);
+    const int binHigh = freqToBin(freqHigh, sr_);
+
+    // Envelope coefficients
+    const float attackCoeff = std::exp(-1000.0f / (attackMs * sr_));
+    const float releaseCoeff = std::exp(-1000.0f / (releaseMs * sr_));
+
+    // Bounded processing loop
+    int iterations = 0;
+    for (int n = 0; n < numSamples; ++n) {
+        // Safety: prevent infinite loops
+        if (++iterations > maxProcessingIterations_) break;
+
+        float input = data[n];
+
+        // Apply lookahead delay
+        float delayed = input;
+        if (ch.delaySamples > 0) {
+            delayed = ch.delayBuf[ch.delayWrite];
+            ch.delayBuf[ch.delayWrite] = input;
+            ch.delayWrite = (ch.delayWrite + 1) % (int)ch.delayBuf.size();
+        }
+
+        // Write to input buffer
+        ch.inputBuf[ch.writePos] = delayed;
+        ch.writePos = (ch.writePos + 1) % kFFTSize;
+
+        // Process FFT frame when ready
+        if (++ch.hopCounter >= kHopSize) {
+            ch.hopCounter = 0;
+
+            // Prepare frame (bounded copy)
+            float frame[kFFTSize];
+            for (int i = 0; i < kFFTSize && i < maxProcessingIterations_; ++i) {
+                int idx = (ch.writePos - kFFTSize + i + kFFTSize) % kFFTSize;
+                frame[i] = ch.inputBuf[idx];
+            }
+
+            // Process with spectral gate (internally bounded)
+            float output[kFFTSize];
+            ch.fftProc.processFrame(frame, output, threshLin, ratio, binLow, binHigh);
+
+            // Write to output buffer with overlap-add
+            for (int i = 0; i < kFFTSize && i < maxProcessingIterations_; ++i) {
+                int idx = (ch.readPos + i) % kFFTSize;
+                ch.outputBuf[idx] += output[i];
+            }
+        }
+
+        // Read output
+        float output = ch.outputBuf[ch.readPos];
+        ch.outputBuf[ch.readPos] = 0.0f; // Clear after reading
+        ch.readPos = (ch.readPos + 1) % kFFTSize;
+
+        // Update per-bin envelopes (simplified, bounded)
+        if (n % 64 == 0) { // Decimate for efficiency
+            for (int b = 0; b < kFFTBins && b < 100; ++b) { // Limit bins
+                float target = (b >= binLow && b <= binHigh) ? 1.0f : 0.0f;
+                float coeff = target > ch.binEnv[b] ? attackCoeff : releaseCoeff;
+                ch.binEnv[b] += (1.0f - coeff) * (target - ch.binEnv[b]);
+                ch.binEnv[b] = flushDenorm(ch.binEnv[b]);
+            }
+        }
+
+        // Safety and denormal protection
+        output = flushDenorm(output);
+        if (!std::isfinite(output)) output = 0.0f;
+        output = clamp(output, -2.0f, 2.0f);
+
+        data[n] = output;
+    }
+}
+
+// -------------------------------------------------------
+void SpectralGate_Platinum::FFTProcessor::prepareWindow() {
+    // Hann window for smooth overlap
+    for (int i = 0; i < kFFTSize; ++i) {
+        window[i] = 0.5f * (1.0f - std::cos(2.0f * M_PI * i / (kFFTSize - 1.0f)));
+    }
+}
+
+void SpectralGate_Platinum::FFTProcessor::processFrame(const float* input, float* output,
+                                                       float threshold, float ratio,
+                                                       int binLow, int binHigh) {
+    // Copy and window input (bounded)
+    for (int i = 0; i < kFFTSize; ++i) {
+        fftData[i] = input[i] * window[i];
+    }
+
+    // Forward FFT
+    fft.performFrequencyOnlyForwardTransform(fftData.data());
+
+    // Apply spectral gating (bounded iteration)
+    for (int bin = 0; bin < kFFTBins && bin < 512; ++bin) { // Limit to 512 bins
+        float mag = std::abs(fftData[bin]);
+        
+        float gain = 1.0f;
+        if (bin >= binLow && bin <= binHigh) {
+            if (mag < threshold) {
+                gain = 0.0f;
+            } else if (ratio > 1.0f) {
+                float excess = mag - threshold;
+                float gated = threshold + excess / ratio;
+                gain = gated / std::max(mag, 1e-10f);
+                gain = clamp(gain, 0.0f, 1.0f);
+            }
+        }
+
+        fftData[bin] *= gain;
+    }
+
+    // Inverse FFT
+    fft.performRealOnlyInverseTransform(fftData.data());
+
+    // Overlap-add with windowing (bounded)
+    for (int i = 0; i < kFFTSize; ++i) {
+        float windowed = fftData[i] * window[i] / (kFFTSize * kOverlap / 2);
+        
+        // Simple overlap-add
+        int pos = (overlapPos + i) % kFFTSize;
+        if (i < kHopSize) {
+            output[i] = overlapBuf[pos] + windowed;
+            overlapBuf[pos] = 0.0f;
+        } else {
+            overlapBuf[pos] += windowed;
+            output[i] = 0.0f;
+        }
+    }
+    
+    overlapPos = (overlapPos + kHopSize) % kFFTSize;
+}
+
+// -------------------------------------------------------
 juce::String SpectralGate_Platinum::getParameterName(int index) const {
-    switch (index) {
-        case kThreshold: return "Threshold";
-        case kRatio:     return "Ratio";
-        case kAttack:    return "Attack";
-        case kRelease:   return "Release";
-        case kFreqLow:   return "Freq Low";
-        case kFreqHigh:  return "Freq High";
-        case kLookahead: return "Lookahead";
-        case kMix:       return "Mix";
-        default: return "Unknown";
+    switch (static_cast<ParamID>(index)) {
+        case ParamID::Threshold:  return "Threshold";
+        case ParamID::Ratio:      return "Ratio";
+        case ParamID::Attack:     return "Attack";
+        case ParamID::Release:    return "Release";
+        case ParamID::FreqLow:    return "Freq Low";
+        case ParamID::FreqHigh:   return "Freq High";
+        case ParamID::Lookahead:  return "Lookahead";
+        case ParamID::Mix:        return "Mix";
+        default:                  return {};
     }
 }

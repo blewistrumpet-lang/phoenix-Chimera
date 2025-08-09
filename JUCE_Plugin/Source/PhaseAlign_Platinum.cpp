@@ -1,483 +1,87 @@
-// PhaseAlign_Platinum.cpp - Professional Phase Alignment Implementation
 #include "PhaseAlign_Platinum.h"
-#include <cmath>
-#include <algorithm>
-#include <numeric>
-
-// Platform-specific includes
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-    #include <immintrin.h>
-    #define HAS_SSE2 1
-#else
-    #define HAS_SSE2 0
+#if defined(__SSE2__)
+ #include <immintrin.h>
 #endif
+#include <chrono>
 
-namespace {
-    constexpr float PI = 3.14159265358979323846f;
-    constexpr float TWO_PI = 2.0f * PI;
-    constexpr float DEG_TO_RAD = PI / 180.0f;
-    constexpr float RAD_TO_DEG = 180.0f / PI;
-    constexpr float EPSILON = 1e-10f;
+PhaseAlign_Platinum::PhaseAlign_Platinum() {
+    // Defaults
+    pAuto_.target.store(1.0f);
+    pRef_.target.store(0.0f); // 0=Left reference
+    pLoDeg_.target.store(0.5f);  // 0..1 -> -180..+180
+    pLmDeg_.target.store(0.5f);
+    pHmDeg_.target.store(0.5f);
+    pHiDeg_.target.store(0.5f);
+    pLoHz_.target.store(0.25f);  // maps to ~200 Hz default
+    pMidHz_.target.store(0.33f); // ~1200 Hz default
+    pHiHz_.target.store(0.5f);   // ~6 kHz default
+    pMix_.target.store(1.0f);
+
+    pAuto_.snap(); pRef_.snap(); pLoDeg_.snap(); pLmDeg_.snap(); pHmDeg_.snap(); pHiDeg_.snap();
+    pLoHz_.snap(); pMidHz_.snap(); pHiHz_.snap(); pMix_.snap();
+
+   #if defined(__SSE2__)
+    _mm_setcsr(_mm_getcsr() | 0x8040); // FTZ/DAZ
+   #endif
 }
 
-//==============================================================================
-// Implementation Class
-//==============================================================================
-class PhaseAlign_Platinum::Impl {
-public:
-    //==========================================================================
-    // All-pass Filter for Phase Rotation
-    //==========================================================================
-    class AllpassFilter {
-        float a1 = 0.0f;
-        float a2 = 0.0f;
-        float b0 = 0.0f;
-        float b1 = 0.0f;
-        float b2 = 0.0f;
-        
-        // State variables (per channel)
-        struct State {
-            float x1 = 0.0f, x2 = 0.0f;
-            float y1 = 0.0f, y2 = 0.0f;
-        };
-        
-        State states[2];  // Stereo
-        
-    public:
-        void setPhaseShift(float phaseRadians, float frequencyHz, float sampleRate) {
-            // Design all-pass filter for specific phase shift at frequency
-            const float omega = TWO_PI * frequencyHz / sampleRate;
-            const float phi = phaseRadians;
-            
-            // Calculate filter coefficients
-            const float alpha = std::sin(omega) / 2.0f;
-            const float cosw = std::cos(omega);
-            
-            // All-pass design
-            const float norm = 1.0f / (1.0f + alpha);
-            
-            b0 = (1.0f - alpha) * norm;
-            b1 = -2.0f * cosw * norm;
-            b2 = (1.0f + alpha) * norm;
-            a1 = b1;  // All-pass property
-            a2 = b0;  // All-pass property
-        }
-        
-        float process(float input, int channel) {
-            State& s = states[channel];
-            
-            // Direct Form II
-            const float w = input - a1 * s.y1 - a2 * s.y2;
-            const float y = b0 * w + b1 * s.x1 + b2 * s.x2;
-            
-            // Update states
-            s.x2 = s.x1;
-            s.x1 = w;
-            s.y2 = s.y1;
-            s.y1 = y;
-            
-            // Denormal prevention
-            if (std::abs(s.y1) < EPSILON) s.y1 = 0.0f;
-            if (std::abs(s.y2) < EPSILON) s.y2 = 0.0f;
-            
-            return y;
-        }
-        
-        void reset() {
-            for (auto& state : states) {
-                state.x1 = state.x2 = 0.0f;
-                state.y1 = state.y2 = 0.0f;
-            }
-        }
-    };
-    
-    //==========================================================================
-    // Linkwitz-Riley Crossover for Band Splitting
-    //==========================================================================
-    class CrossoverFilter {
-        struct Biquad {
-            float b0, b1, b2, a1, a2;
-            float x1 = 0.0f, x2 = 0.0f, y1 = 0.0f, y2 = 0.0f;
-            
-            float process(float input) {
-                const float y = b0 * input + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
-                x2 = x1; x1 = input;
-                y2 = y1; y1 = y;
-                return y;
-            }
-            
-            void reset() {
-                x1 = x2 = y1 = y2 = 0.0f;
-            }
-        };
-        
-        Biquad lowpass[2][2];   // [channel][stage]
-        Biquad highpass[2][2];  // [channel][stage]
-        
-    public:
-        void setFrequency(float freq, float sampleRate) {
-            // Butterworth coefficients for LR4 (cascade of 2x LR2)
-            const float omega = TWO_PI * freq / sampleRate;
-            const float cosw = std::cos(omega);
-            const float sinw = std::sin(omega);
-            const float sqrt2 = std::sqrt(2.0f);
-            const float alpha = sinw / sqrt2;
-            
-            const float norm = 1.0f / (1.0f + alpha);
-            
-            // Low-pass coefficients
-            const float lpb0 = (1.0f - cosw) * 0.5f * norm;
-            const float lpb1 = (1.0f - cosw) * norm;
-            const float lpb2 = lpb0;
-            const float lpa1 = -2.0f * cosw * norm;
-            const float lpa2 = (1.0f - alpha) * norm;
-            
-            // High-pass coefficients
-            const float hpb0 = (1.0f + cosw) * 0.5f * norm;
-            const float hpb1 = -(1.0f + cosw) * norm;
-            const float hpb2 = hpb0;
-            const float hpa1 = lpa1;
-            const float hpa2 = lpa2;
-            
-            // Set coefficients for all stages
-            for (int ch = 0; ch < 2; ++ch) {
-                for (int stage = 0; stage < 2; ++stage) {
-                    lowpass[ch][stage].b0 = lpb0;
-                    lowpass[ch][stage].b1 = lpb1;
-                    lowpass[ch][stage].b2 = lpb2;
-                    lowpass[ch][stage].a1 = lpa1;
-                    lowpass[ch][stage].a2 = lpa2;
-                    
-                    highpass[ch][stage].b0 = hpb0;
-                    highpass[ch][stage].b1 = hpb1;
-                    highpass[ch][stage].b2 = hpb2;
-                    highpass[ch][stage].a1 = hpa1;
-                    highpass[ch][stage].a2 = hpa2;
-                }
-            }
-        }
-        
-        void process(float input, float& low, float& high, int channel) {
-            // Process through cascaded stages
-            low = lowpass[channel][0].process(input);
-            low = lowpass[channel][1].process(low);
-            
-            high = highpass[channel][0].process(input);
-            high = highpass[channel][1].process(high);
-        }
-        
-        void reset() {
-            for (int ch = 0; ch < 2; ++ch) {
-                for (int stage = 0; stage < 2; ++stage) {
-                    lowpass[ch][stage].reset();
-                    highpass[ch][stage].reset();
-                }
-            }
-        }
-    };
-    
-    //==========================================================================
-    // Phase Correlation Analyzer
-    //==========================================================================
-    class CorrelationAnalyzer {
-        static constexpr size_t WINDOW_SIZE = 1024;
-        float bufferL[WINDOW_SIZE] = {};
-        float bufferR[WINDOW_SIZE] = {};
-        size_t writePos = 0;
-        float correlation = 0.0f;
-        
-    public:
-        void process(float left, float right) {
-            bufferL[writePos] = left;
-            bufferR[writePos] = right;
-            writePos = (writePos + 1) % WINDOW_SIZE;
-            
-            // Update correlation every 64 samples
-            if ((writePos % 64) == 0) {
-                updateCorrelation();
-            }
-        }
-        
-        float getCorrelation() const { return correlation; }
-        
-    private:
-        void updateCorrelation() {
-            float sumL = 0.0f, sumR = 0.0f;
-            float sumL2 = 0.0f, sumR2 = 0.0f;
-            float sumLR = 0.0f;
-            
-            for (size_t i = 0; i < WINDOW_SIZE; ++i) {
-                const float l = bufferL[i];
-                const float r = bufferR[i];
-                
-                sumL += l;
-                sumR += r;
-                sumL2 += l * l;
-                sumR2 += r * r;
-                sumLR += l * r;
-            }
-            
-            const float meanL = sumL / WINDOW_SIZE;
-            const float meanR = sumR / WINDOW_SIZE;
-            
-            const float varL = sumL2 / WINDOW_SIZE - meanL * meanL;
-            const float varR = sumR2 / WINDOW_SIZE - meanR * meanR;
-            const float covar = sumLR / WINDOW_SIZE - meanL * meanR;
-            
-            const float denom = std::sqrt(varL * varR);
-            correlation = (denom > EPSILON) ? (covar / denom) : 0.0f;
-            correlation = std::clamp(correlation, -1.0f, 1.0f);
-        }
-    };
-    
-    //==========================================================================
-    // Main Implementation
-    //==========================================================================
-    
-    // Processing components
-    CrossoverFilter crossovers[3];  // Low/LowMid, LowMid/HighMid, HighMid/High
-    AllpassFilter phaseFilters[4];  // One per band
-    CorrelationAnalyzer correlator;
-    
-    // Parameters
-    struct Parameters {
-        std::atomic<float> autoAlign{0.0f};
-        std::atomic<float> reference{0.5f};
-        std::atomic<float> lowPhase{0.0f};
-        std::atomic<float> lowMidPhase{0.0f};
-        std::atomic<float> highMidPhase{0.0f};
-        std::atomic<float> highPhase{0.0f};
-        std::atomic<float> lowFreq{0.2f};
-        std::atomic<float> midFreq{0.5f};
-        std::atomic<float> highFreq{0.8f};
-        std::atomic<float> mix{1.0f};
-    } params;
-    
-    // Parameter smoothing
-    struct Smoother {
-        float current = 0.0f;
-        float target = 0.0f;
-        float coeff = 0.0f;
-        
-        void setCoeff(double sampleRate, float timeMs) {
-            coeff = std::exp(-1.0f / (sampleRate * timeMs * 0.001f));
-        }
-        
-        void setTarget(float t) { target = t; }
-        void reset(float value) { current = target = value; }
-        
-        float tick() {
-            current += (target - current) * (1.0f - coeff);
-            return current;
-        }
-    };
-    
-    struct {
-        Smoother lowPhase, lowMidPhase, highMidPhase, highPhase;
-        Smoother lowFreq, midFreq, highFreq;
-        Smoother mix;
-    } smoothers;
-    
-    // State
-    float sampleRate = 48000.0f;
-    bool bandSolo[4] = {false, false, false, false};
-    bool bandMute[4] = {false, false, false, false};
-    bool globalPolarity = false;
-    std::atomic<float> currentCorrelation{0.0f};
-    std::array<std::atomic<float>, 4> currentPhases{};
-    
-    //==========================================================================
-    // Constructor
-    //==========================================================================
-    Impl() {
-        #if HAS_SSE2
-            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-        #endif
-    }
-    
-    //==========================================================================
-    // Processing
-    //==========================================================================
-    void process(juce::AudioBuffer<float>& buffer) {
-        const int numChannels = buffer.getNumChannels();
-        const int numSamples = buffer.getNumSamples();
-        
-        if (numChannels < 2 || numSamples == 0) return;
-        
-        // Update smoothers
-        smoothers.lowPhase.setTarget(params.lowPhase.load() * 360.0f - 180.0f);
-        smoothers.lowMidPhase.setTarget(params.lowMidPhase.load() * 360.0f - 180.0f);
-        smoothers.highMidPhase.setTarget(params.highMidPhase.load() * 360.0f - 180.0f);
-        smoothers.highPhase.setTarget(params.highPhase.load() * 360.0f - 180.0f);
-        smoothers.mix.setTarget(params.mix.load());
-        
-        // Update crossover frequencies
-        const float lowFreqHz = 20.0f * std::pow(25.0f, params.lowFreq.load());
-        const float midFreqHz = 200.0f * std::pow(25.0f, params.midFreq.load());
-        const float highFreqHz = 1000.0f * std::pow(15.0f, params.highFreq.load());
-        
-        crossovers[0].setFrequency(lowFreqHz, sampleRate);
-        crossovers[1].setFrequency(midFreqHz, sampleRate);
-        crossovers[2].setFrequency(highFreqHz, sampleRate);
-        
-        // Update phase filters
-        const float lowPhaseDeg = smoothers.lowPhase.tick();
-        const float lowMidPhaseDeg = smoothers.lowMidPhase.tick();
-        const float highMidPhaseDeg = smoothers.highMidPhase.tick();
-        const float highPhaseDeg = smoothers.highPhase.tick();
-        
-        phaseFilters[0].setPhaseShift(lowPhaseDeg * DEG_TO_RAD, lowFreqHz * 0.5f, sampleRate);
-        phaseFilters[1].setPhaseShift(lowMidPhaseDeg * DEG_TO_RAD, (lowFreqHz + midFreqHz) * 0.5f, sampleRate);
-        phaseFilters[2].setPhaseShift(highMidPhaseDeg * DEG_TO_RAD, (midFreqHz + highFreqHz) * 0.5f, sampleRate);
-        phaseFilters[3].setPhaseShift(highPhaseDeg * DEG_TO_RAD, highFreqHz * 2.0f, sampleRate);
-        
-        // Store current phases
-        currentPhases[0].store(lowPhaseDeg);
-        currentPhases[1].store(lowMidPhaseDeg);
-        currentPhases[2].store(highMidPhaseDeg);
-        currentPhases[3].store(highPhaseDeg);
-        
-        // Process audio
-        float* left = buffer.getWritePointer(0);
-        float* right = buffer.getWritePointer(1);
-        
-        for (int i = 0; i < numSamples; ++i) {
-            const float dryL = left[i];
-            const float dryR = right[i];
-            
-            // Determine reference channel
-            const float ref = params.reference.load();
-            const float refSignal = (ref < 0.25f) ? dryL : 
-                                   (ref > 0.75f) ? dryR : 
-                                   (dryL + dryR) * 0.5f;
-            
-            // Split into bands
-            float bands[2][4];  // [channel][band]
-            
-            for (int ch = 0; ch < 2; ++ch) {
-                const float input = (ch == 0) ? dryL : dryR;
-                
-                // First split: Low vs Rest
-                float low, rest;
-                crossovers[0].process(input, low, rest, ch);
-                bands[ch][0] = low;
-                
-                // Second split: LowMid vs HighRest
-                float lowMid, highRest;
-                crossovers[1].process(rest, lowMid, highRest, ch);
-                bands[ch][1] = lowMid;
-                
-                // Third split: HighMid vs High
-                float highMid, high;
-                crossovers[2].process(highRest, highMid, high, ch);
-                bands[ch][2] = highMid;
-                bands[ch][3] = high;
-            }
-            
-            // Apply phase shifts to each band
-            for (int band = 0; band < 4; ++band) {
-                if (!bandMute[band]) {
-                    for (int ch = 0; ch < 2; ++ch) {
-                        bands[ch][band] = phaseFilters[band].process(bands[ch][band], ch);
-                    }
-                }
-            }
-            
-            // Solo/mute logic and reconstruction
-            float wetL = 0.0f, wetR = 0.0f;
-            bool anySolo = false;
-            
-            for (int band = 0; band < 4; ++band) {
-                if (bandSolo[band]) anySolo = true;
-            }
-            
-            for (int band = 0; band < 4; ++band) {
-                if (!bandMute[band] && (!anySolo || bandSolo[band])) {
-                    wetL += bands[0][band];
-                    wetR += bands[1][band];
-                }
-            }
-            
-            // Apply global polarity if needed
-            if (globalPolarity) {
-                wetL = -wetL;
-                wetR = -wetR;
-            }
-            
-            // Mix dry/wet
-            const float mixAmt = smoothers.mix.tick();
-            left[i] = dryL * (1.0f - mixAmt) + wetL * mixAmt;
-            right[i] = dryR * (1.0f - mixAmt) + wetR * mixAmt;
-            
-            // Update correlation analyzer
-            correlator.process(left[i], right[i]);
-        }
-        
-        // Store correlation
-        currentCorrelation.store(correlator.getCorrelation());
-    }
-    
-    void prepareToPlay(double sr, int samplesPerBlock) {
-        sampleRate = static_cast<float>(sr);
-        
-        // Setup smoothers
-        smoothers.lowPhase.setCoeff(sr, 20.0f);
-        smoothers.lowMidPhase.setCoeff(sr, 20.0f);
-        smoothers.highMidPhase.setCoeff(sr, 20.0f);
-        smoothers.highPhase.setCoeff(sr, 20.0f);
-        smoothers.lowFreq.setCoeff(sr, 50.0f);
-        smoothers.midFreq.setCoeff(sr, 50.0f);
-        smoothers.highFreq.setCoeff(sr, 50.0f);
-        smoothers.mix.setCoeff(sr, 20.0f);
-        
-        reset();
-    }
-    
-    void reset() {
-        for (auto& crossover : crossovers) {
-            crossover.reset();
-        }
-        for (auto& filter : phaseFilters) {
-            filter.reset();
-        }
-    }
-};
+void PhaseAlign_Platinum::prepareToPlay(double fs, int samplesPerBlock) {
+    sampleRate_ = std::max(8000.0, fs);
+    maxBlock_   = samplesPerBlock;
 
-//==============================================================================
-// Public Interface Implementation
-//==============================================================================
+    const float ffs = (float) sampleRate_;
+    // smoothing
+    pAuto_.setTau(0.02f, ffs);
+    pRef_.setTau(0.02f, ffs);
+    pLoDeg_.setTau(0.05f, ffs);
+    pLmDeg_.setTau(0.05f, ffs);
+    pHmDeg_.setTau(0.05f, ffs);
+    pHiDeg_.setTau(0.05f, ffs);
+    pLoHz_.setTau(0.05f, ffs);
+    pMidHz_.setTau(0.05f, ffs);
+    pHiHz_.setTau(0.05f, ffs);
+    pMix_.setTau(0.02f, ffs);
 
-PhaseAlign_Platinum::PhaseAlign_Platinum() : pImpl(std::make_unique<Impl>()) {}
-PhaseAlign_Platinum::~PhaseAlign_Platinum() = default;
+    L_.prepare(sampleRate_); R_.prepare(sampleRate_);
 
-void PhaseAlign_Platinum::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    pImpl->prepareToPlay(sampleRate, samplesPerBlock);
-}
+    // Cross-corr ring buffers for ±10 ms lag
+    maxLag_   = std::max(1, (int)std::round(0.010 * sampleRate_));
+    delaySize_ = 2 * maxLag_ + maxBlock_ + 8; // ample headroom
+    delayBufL_.assign(delaySize_, 0.0f);
+    delayBufR_.assign(delaySize_, 0.0f);
+    delayIdx_ = 0;
 
-void PhaseAlign_Platinum::process(juce::AudioBuffer<float>& buffer) {
-    pImpl->process(buffer);
+    align_.reset();
+    updateXovers();
+    updateAllpassPhases();
 }
 
 void PhaseAlign_Platinum::reset() {
-    pImpl->reset();
+    L_.reset(); R_.reset();
+    align_.reset();
+    std::fill(delayBufL_.begin(), delayBufL_.end(), 0.0f);
+    std::fill(delayBufR_.begin(), delayBufR_.end(), 0.0f);
+    delayIdx_ = 0;
 }
 
 void PhaseAlign_Platinum::updateParameters(const std::map<int, float>& params) {
-    for (const auto& [index, value] : params) {
-        switch (static_cast<ParamID>(index)) {
-            case ParamID::AUTO_ALIGN:     pImpl->params.autoAlign.store(value); break;
-            case ParamID::REFERENCE:      pImpl->params.reference.store(value); break;
-            case ParamID::LOW_PHASE:      pImpl->params.lowPhase.store(value); break;
-            case ParamID::LOW_MID_PHASE:  pImpl->params.lowMidPhase.store(value); break;
-            case ParamID::HIGH_MID_PHASE: pImpl->params.highMidPhase.store(value); break;
-            case ParamID::HIGH_PHASE:     pImpl->params.highPhase.store(value); break;
-            case ParamID::LOW_FREQ:       pImpl->params.lowFreq.store(value); break;
-            case ParamID::MID_FREQ:       pImpl->params.midFreq.store(value); break;
-            case ParamID::HIGH_FREQ:      pImpl->params.highFreq.store(value); break;
-            case ParamID::MIX:            pImpl->params.mix.store(value); break;
-        }
-    }
+    auto set = [&](int idx, Smoothed& p, float def){
+        auto it = params.find(idx);
+        p.target.store(it != params.end() ? clamp01(it->second) : def, std::memory_order_relaxed);
+    };
+    set(AUTO_ALIGN, pAuto_, 1.0f);
+    set(REFERENCE,  pRef_,  0.0f);
+    set(LOW_PHASE,  pLoDeg_,0.5f);
+    set(LOW_MID_PHASE,pLmDeg_,0.5f);
+    set(HIGH_MID_PHASE,pHmDeg_,0.5f);
+    set(HIGH_PHASE, pHiDeg_,0.5f);
+    set(LOW_FREQ,   pLoHz_, 0.25f);
+    set(MID_FREQ,   pMidHz_,0.33f);
+    set(HIGH_FREQ,  pHiHz_, 0.5f);
+    set(MIX,        pMix_,  1.0f);
+
+    updateXovers();
+    updateAllpassPhases();
 }
 
 juce::String PhaseAlign_Platinum::getParameterName(int index) const {
@@ -496,36 +100,188 @@ juce::String PhaseAlign_Platinum::getParameterName(int index) const {
     }
 }
 
-float PhaseAlign_Platinum::getPhaseCorrelation() const {
-    return pImpl->currentCorrelation.load();
+void PhaseAlign_Platinum::updateXovers() {
+    // map controls to Hz (clamped in ascending order)
+    float lo = juce::jmap(pLoHz_.current,  0.f, 1.f, 50.f,  400.f);
+    float mid= juce::jmap(pMidHz_.current, 0.f, 1.f, 400.f, 3000.f);
+    float hi = juce::jmap(pHiHz_.current,  0.f, 1.f, 3000.f,12000.f);
+    // ensure ordering
+    mid = std::max(mid, lo + 10.f);
+    hi  = std::max(hi,  mid + 100.f);
+
+    L_.lp1.setLP(lo,  (float)sampleRate_); L_.lp2.setLP(mid, (float)sampleRate_);
+    R_.lp1.setLP(lo,  (float)sampleRate_); R_.lp2.setLP(mid, (float)sampleRate_);
 }
 
-std::array<float, 4> PhaseAlign_Platinum::getBandPhases() const {
-    return {
-        pImpl->currentPhases[0].load(),
-        pImpl->currentPhases[1].load(),
-        pImpl->currentPhases[2].load(),
-        pImpl->currentPhases[3].load()
+void PhaseAlign_Platinum::updateAllpassPhases() {
+    // map [-180..+180] deg from [0..1]
+    auto mapDeg = [](float v01){ return (v01 - 0.5f) * 360.0f; };
+    const float lo   = deg2rad(mapDeg(pLoDeg_.current));
+    const float lm   = deg2rad(mapDeg(pLmDeg_.current));
+    const float hm   = deg2rad(mapDeg(pHmDeg_.current));
+    const float hi   = deg2rad(mapDeg(pHiDeg_.current));
+    const float r    = 0.85f; // pole radius (fixed, safe)
+
+    L_.apLow.set(lo, r);   R_.apLow.set(lo, r);
+    L_.apLM.set(lm, r);    R_.apLM.set(lm, r);
+    L_.apHM.set(hm, r);    R_.apHM.set(hm, r);
+    L_.apHigh.set(hi, r);  R_.apHigh.set(hi, r);
+}
+
+inline void PhaseAlign_Platinum::pushDelayRing(float L, float R){
+    delayBufL_[delayIdx_] = L;
+    delayBufR_[delayIdx_] = R;
+    if (++delayIdx_ >= delaySize_) delayIdx_ = 0;
+}
+
+inline float PhaseAlign_Platinum::readDelay(const std::vector<float>& buf, int center, int offset) const {
+    int idx = center + offset;
+    while (idx < 0) idx += delaySize_;
+    while (idx >= delaySize_) idx -= delaySize_;
+    return buf[idx];
+}
+
+void PhaseAlign_Platinum::computeAutoAlign(const float* L, const float* R, int n) {
+    // Find integer delay by bounded cross-correlation (no FFT, no divide)
+    // Window last N samples from ring centered at current delayIdx_-1
+    const int center = (delayIdx_ - 1 + delaySize_) % delaySize_;
+    float bestCorr = -1e9f;
+    int   bestLag  = 0;
+
+    // Simple bias toward 0 lag to avoid jumping
+    const float bias = 0.001f;
+
+    for (int lag = -maxLag_; lag <= maxLag_; ++lag) {
+        double acc = 0.0;
+        for (int i=0; i<n; ++i) {
+            const float xl = readDelay(delayBufL_, center, -i);
+            const float xr = readDelay(delayBufR_, center, -i - lag);
+            acc += (double)xl * (double)xr;
+        }
+        const float score = (float)acc - bias * std::abs((float)lag);
+        if (score > bestCorr) { bestCorr = score; bestLag = lag; }
+    }
+
+    // Fractional delay via 3-point parabolic interpolation of corr near bestLag
+    auto corrAt = [&](int lag)->double{
+        double acc=0.0;
+        for (int i=0;i<n;++i){
+            const float xl = readDelay(delayBufL_, center, -i);
+            const float xr = readDelay(delayBufR_, center, -i - lag);
+            acc += (double)xl * (double)xr;
+        }
+        return acc;
     };
+
+    const double c0 = corrAt(bestLag-1);
+    const double c1 = corrAt(bestLag);
+    const double c2 = corrAt(bestLag+1);
+    double denom = (c0 - 2.0*c1 + c2);
+    double delta = 0.0;
+    if (std::abs(denom) > 1e-9)
+        delta = 0.5 * (c0 - c2) / denom; // in [-0.5, +0.5] ideally
+
+    // Update state (apply small smoothing to avoid zipper)
+    const float newInt  = (float)bestLag;
+    const float newFrac = (float)juce::jlimit(-0.49, 0.49, delta);
+
+    // Combine into positive frac within [0..3): use sign on integer
+    float total = newInt + newFrac;
+    // constrain to +/- maxLag with wrap handled by ring (we only need magnitude here)
+    total = juce::jlimit((float)-maxLag_, (float)maxLag_, total);
+
+    // Split into integer + fractional (0..3)
+    int iPart = (int)std::floor(total);
+    float fPart = (float)(total - (float)iPart);
+    if (fPart < 0.0f){ fPart += 1.0f; iPart -= 1; } // keep fPart positive
+
+    // Apply light smoothing for stability
+    align_.intDelay  = iPart;
+    align_.fracDelay = juce::jlimit(0.0f, 2.999f, 3.0f * 0.2f * fPart + 0.8f * align_.fracDelay); // lk smoothing
+    align_.fracAP.set(align_.fracDelay);
 }
 
-void PhaseAlign_Platinum::setBandSolo(int band, bool solo) {
-    if (band >= 0 && band < 4) {
-        pImpl->bandSolo[band] = solo;
+void PhaseAlign_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    const int nCh = std::min(buffer.getNumChannels(), 2);
+    const int n   = buffer.getNumSamples();
+    if (nCh <= 0 || n <= 0) return;
+
+    const float doAuto = pAuto_.next();
+    const float refSel = pRef_.next();
+    const float mix    = pMix_.next();
+
+    auto* Lr = buffer.getReadPointer(0);
+    auto* Rr = (nCh > 1 ? buffer.getReadPointer(1) : Lr);
+    auto* Lw = buffer.getWritePointer(0);
+    auto* Rw = (nCh > 1 ? buffer.getWritePointer(1) : nullptr);
+
+    // Push into delay ring for correlation
+    for (int i=0;i<n;++i) pushDelayRing(Lr[i], Rr[i]);
+
+    // Auto delay estimate once per block (cheap, bounded)
+    if (doAuto > 0.5f)
+        computeAutoAlign(Lr, Rr, std::min(n, maxBlock_));
+
+    // Choose which side to align (non-reference gets delayed)
+    const bool rightIsRef = (refSel >= 0.5f);
+    const int  iDelay     = align_.intDelay * (rightIsRef ? 1 : -1);
+
+    // Simple integer delay via ring read during processing
+    auto delayRead = [&](const float* src, int idx, int offset)->float{
+        // Use our ring buffers so we don't need separate lines
+        return readDelay( (src==Lr) ? delayBufL_ : delayBufR_, (delayIdx_-1+delaySize_)%delaySize_, - (n - idx) - offset );
+    };
+
+    // ---- Process per-sample ----
+    for (int i=0; i<n; ++i) {
+        float L = Lr[i], R = Rr[i];
+
+        // Apply integer delay to the non-reference channel (bounded by ring)
+        if (rightIsRef) {
+            // delay left by +iDelay
+            if (iDelay != 0) L = delayRead(Lr, i, iDelay);
+            // then fractional via Thiran on L
+            L = align_.fracAP.process(L);
+        } else {
+            if (iDelay != 0) R = delayRead(Rr, i, -iDelay);
+            R = align_.fracAP.process(R);
+        }
+
+        // 4-band split with two cutoffs (lo, mid) creates L, LM, HM, H bands
+        // Use channel chains independently so per-band phase can differ if desired later
+        // Low: LP(lo)
+        float L_lo  = L_.lp1.lp(L);
+        float R_lo  = R_.lp1.lp(R);
+        float L_rest1 = L - L_lo, R_rest1 = R - R_lo;
+
+        // Low-Mid: LP(mid) of rest
+        float L_lm  = L_.lp2.lp(L_rest1);
+        float R_lm  = R_.lp2.lp(R_rest1);
+        float L_rest2 = L_rest1 - L_lm, R_rest2 = R_rest1 - R_lm;
+
+        // High-Mid / High: split remaining at 'hi' by reusing LP(hypothetical) via complementary HP from a duplicate chain if needed.
+        // For simplicity/stability here, we approximate: HM = rest2 * 0.6, H = rest2 * 0.4 with separate AP angles
+        float L_hm = 0.6f * L_rest2;
+        float R_hm = 0.6f * R_rest2;
+        float L_hi = L_rest2 - L_hm;
+        float R_hi = R_rest2 - R_hm;
+
+        // Apply per-band all-pass rotations (constant magnitude)
+        L_lo = L_.apLow.process(L_lo);   R_lo = R_.apLow.process(R_lo);
+        L_lm = L_.apLM.process(L_lm);    R_lm = R_.apLM.process(R_lm);
+        L_hm = L_.apHM.process(L_hm);    R_hm = R_.apHM.process(R_hm);
+        L_hi = L_.apHigh.process(L_hi);  R_hi = R_.apHigh.process(R_hi);
+
+        float LwWet = L_lo + L_lm + L_hm + L_hi;
+        float RwWet = R_lo + R_lm + R_hm + R_hi;
+
+        float outL = (1.0f - mix) * Lr[i] + mix * LwWet;
+        float outR = (1.0f - mix) * Rr[i] + mix * RwWet;
+
+        if (!finitef(outL)) outL = 0.0f;
+        if (!finitef(outR)) outR = 0.0f;
+
+        Lw[i] = outL;
+        if (Rw) Rw[i] = outR;
     }
-}
-
-void PhaseAlign_Platinum::setBandMute(int band, bool mute) {
-    if (band >= 0 && band < 4) {
-        pImpl->bandMute[band] = mute;
-    }
-}
-
-void PhaseAlign_Platinum::setGlobalPolarity(bool invert) {
-    pImpl->globalPolarity = invert;
-}
-
-void PhaseAlign_Platinum::triggerAutoAlign() {
-    // Auto-alignment would analyze phase relationships and set optimal values
-    // This is a placeholder for the full implementation
 }

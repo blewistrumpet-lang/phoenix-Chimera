@@ -4,37 +4,35 @@
 #include <juce_core/juce_core.h>
 
 // Forward declarations
-namespace juce { 
-    template<typename T> class AudioBuffer; 
+namespace juce {
+    template<typename T> class AudioBuffer;
 }
 
 /**
- * Platinum-spec analog phaser with thermal modeling
- * 
- * Features:
- * - 2/4/6/8 all-pass stages
- * - Real-time safe with zero allocations
- * - Lock-free parameter updates
- * - Comprehensive denormal prevention
- * - < 1ms latency @ 48kHz
- * - Thermal drift modeling
+ * Analog Phaser (RT-safe, stable)
+ *
+ * - TPT one-pole all-pass ladder (2/4/6/8 stages)
+ * - No per-sample dynamic allocation, no locks, FTZ/DAZ
+ * - Coefficients clamped to keep all-pass stable
+ * - Feedback hard-capped and soft-limited
+ * - Parameter smoothing throughout
  */
 class AnalogPhaser final : public EngineBase {
 public:
     AnalogPhaser();
     ~AnalogPhaser() override;
-    
-    // EngineBase interface
+
+    // EngineBase
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void process(juce::AudioBuffer<float>& buffer) override;
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
-    
+
     int getNumParameters() const override { return 8; }
     juce::String getParameterName(int index) const override;
     juce::String getName() const override { return "Analog Phaser"; }
-    
-    // Parameter indices
+
+    // Parameter indices (unchanged)
     enum ParamIndex {
         kRate = 0,
         kDepth = 1,
@@ -45,12 +43,12 @@ public:
         kResonance = 6,
         kMix = 7
     };
-    
-    // Quality metrics access (thread-safe)
+
+    // Optional quality metrics (if your project provides them)
     float getCPUUsage() const;
     float getDynamicRangeDB() const;
     std::string getQualityReport() const;
-    
+
 private:
     struct Impl;
     std::unique_ptr<Impl> pimpl;

@@ -3,7 +3,7 @@
 #include "EngineFactory.h"
 #include "DefaultParameterValues.h"
 #include "EngineTypes.h"
-#include "EngineTestRunner.h"
+// #include "EngineTestRunner.h"  // Commented out for plugin build
 #include "QuickEngineDiagnostic.h"
 
 // Engine ID to Choice Index mapping table - NEW SIMPLIFIED SYSTEM
@@ -756,6 +756,10 @@ void ChimeraAudioProcessor::stopAIServer() {
 }
 
 void ChimeraAudioProcessor::runEngineTests() {
+    // Test runner disabled for plugin build
+    DBG("Engine test runner is disabled in plugin build");
+    
+    /* Commented out for plugin build - use standalone test harness instead
     DBG("Starting engine tests...");
     
     // Run the tests
@@ -773,6 +777,7 @@ void ChimeraAudioProcessor::runEngineTests() {
     
     // Open the report in browser
     reportFile.startAsProcess();
+    */
 }
 
 int ChimeraAudioProcessor::engineIDToChoiceIndex(int engineID) {

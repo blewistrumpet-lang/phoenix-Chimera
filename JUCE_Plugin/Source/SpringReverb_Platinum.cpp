@@ -1,670 +1,88 @@
-// SpringReverb_Platinum.cpp - Professional Physical Spring Reverb Implementation
-// Ultra-realistic spring modeling with chirp, boing, and saturation
-
 #include "SpringReverb_Platinum.h"
-#include <JuceHeader.h>
-#include <cmath>
-#include <algorithm>
-#include <numeric>
-#include <chrono>
-#include <atomic>
-#include <memory>
-#include <map>
-#include <cstdlib>
-#include <sstream>
-#include <iomanip>
-
-// Platform-specific SIMD headers with detection
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-    #include <immintrin.h>
-    #define HAS_SSE2 1
-    #if defined(__AVX2__)
-        #define HAS_AVX2 1
-    #else
-        #define HAS_AVX2 0
-    #endif
-#else
-    #define HAS_SSE2 0
-    #define HAS_AVX2 0
+#if defined(__SSE2__)
+ #include <immintrin.h>
 #endif
+#include <chrono>
 
-// Constants
-constexpr float PI = 3.14159265358979323846f;
-constexpr float TWO_PI = 2.0f * PI;
-constexpr size_t MAX_SPRING_DELAY = 8192;
-constexpr size_t DISPERSION_STAGES = 4;
-constexpr float EPSILON = 1e-10f;
+SpringReverb_Platinum::SpringReverb_Platinum() {
+    // Musical defaults
+    pTension_.target.store(0.45f);
+    pDamp_.target.store(0.35f);
+    pDecay_.target.store(0.55f);
+    pMod_.target.store(0.25f);
+    pChirp_.target.store(0.15f);
+    pDrive_.target.store(0.2f);
+    pWidth_.target.store(0.75f);
+    pMix_.target.store(0.35f);
 
-//==============================================================================
-// Helper Functions
-//==============================================================================
+    pTension_.snap(); pDamp_.snap(); pDecay_.snap(); pMod_.snap();
+    pChirp_.snap();   pDrive_.snap(); pWidth_.snap(); pMix_.snap();
 
-// Fast approximation of exp(-x) for x >= 0
-inline float fastExp(float x) noexcept {
-    // Padé approximation
-    x = 1.0f + x * (-0.9998684f + x * (0.4982926f + x * (-0.1595332f + x * 0.0293641f)));
-    x *= x; x *= x; x *= x; x *= x;
-    return 1.0f / x;
+   #if defined(__SSE2__)
+    _mm_setcsr(_mm_getcsr() | 0x8040); // FTZ/DAZ
+   #endif
 }
 
-// Soft clipping function
-inline float softClip(float x) noexcept {
-    const float ax = std::abs(x);
-    if (ax < 0.5f) return x;
-    if (ax > 2.0f) return x > 0.0f ? 1.0f : -1.0f;
-    const float x2 = x * x;
-    return x * (1.5f - 0.25f * x2);
-}
+void SpringReverb_Platinum::prepareToPlay(double fs, int samplesPerBlock) {
+    sampleRate_ = std::max(8000.0, fs);
+    maxBlock_   = samplesPerBlock;
 
-//==============================================================================
-// Implementation Class
-//==============================================================================
+    // Smoothing
+    const float ffs = (float) sampleRate_;
+    pTension_.setTau(0.05f, ffs);
+    pDamp_.setTau(0.05f, ffs);
+    pDecay_.setTau(0.05f, ffs);
+    pMod_.setTau(0.1f, ffs);
+    pChirp_.setTau(0.2f, ffs);
+    pDrive_.setTau(0.05f, ffs);
+    pWidth_.setTau(0.05f, ffs);
+    pMix_.setTau(0.02f, ffs);
 
-class SpringReverb_Platinum::Impl {
-public:
-    //==========================================================================
-    // Spring Model - Physical simulation of spring behavior
-    //==========================================================================
-    class SpringModel {
-        static constexpr size_t NUM_MODES = 50;  // Number of resonant modes
-        
-        struct Mode {
-            float frequency = 0.0f;
-            float decay = 0.0f;
-            float amplitude = 0.0f;
-            float phase = 0.0f;
-            float y1 = 0.0f, y2 = 0.0f;  // State variables
-        };
-        
-        alignas(32) Mode modes[NUM_MODES];
-        float sampleRate = 48000.0f;
-        float tension = 0.5f;
-        float damping = 0.01f;
-        float baseFreq = 10.0f;
-        
-    public:
-        void prepare(double sr) {
-            sampleRate = static_cast<float>(sr);
-            updateModes();
-        }
-        
-        void reset() {
-            for (auto& mode : modes) {
-                mode.y1 = mode.y2 = 0.0f;
-            }
-        }
-        
-        void setParameters(float tens, float damp) {
-            tension = tens;
-            damping = damp;
-            updateModes();
-        }
-        
-        float process(float input) noexcept {
-            float output = 0.0f;
-            
-            // Excite all modes with input
-            for (auto& mode : modes) {
-                // 2nd order resonator
-                const float w = mode.frequency * TWO_PI / sampleRate;
-                const float cosw = std::cos(w);
-                const float sinw = std::sin(w);
-                const float r = fastExp(mode.decay / sampleRate);
-                
-                const float a1 = -2.0f * r * cosw;
-                const float a2 = r * r;
-                
-                const float y0 = input * mode.amplitude * sinw + 
-                                a1 * mode.y1 + a2 * mode.y2;
-                
-                output += y0;
-                mode.y2 = mode.y1;
-                mode.y1 = y0;
-            }
-            
-            return output * 0.1f;  // Scale down
-        }
-        
-    private:
-        void updateModes() {
-            // Physical modeling of spring modes
-            const float tensionFactor = 0.2f + tension * 1.8f;
-            baseFreq = 5.0f * tensionFactor;
-            
-            for (size_t i = 0; i < NUM_MODES; ++i) {
-                const float n = static_cast<float>(i + 1);
-                
-                // Frequency with slight inharmonicity
-                const float inharmonicity = 1.0f + 0.001f * n * n;
-                modes[i].frequency = baseFreq * n * inharmonicity;
-                
-                // Decay time decreases with frequency
-                modes[i].decay = damping * (1.0f + 0.1f * n);
-                
-                // Amplitude decreases with mode number
-                modes[i].amplitude = 1.0f / (n * std::sqrt(n));
-                
-                // Random phase for natural sound
-                modes[i].phase = static_cast<float>(rand()) / RAND_MAX * TWO_PI;
-            }
-        }
-    };
-    
-    //==========================================================================
-    // Dispersion Network - Models frequency-dependent delay
-    //==========================================================================
-    class DispersionNetwork {
-        struct AllpassStage {
-            float buffer[512] = {};
-            size_t writePos = 0;
-            float feedback = 0.7f;
-            size_t delay = 100;
-            
-            float process(float input) noexcept {
-                const float delayed = buffer[writePos];
-                const float output = -input + delayed;
-                buffer[writePos] = input + delayed * feedback;
-                writePos = (writePos + 1) % delay;
-                return output;
-            }
-            
-            void reset() {
-                std::fill(std::begin(buffer), std::end(buffer), 0.0f);
-                writePos = 0;
-            }
-        };
-        
-        AllpassStage stages[DISPERSION_STAGES];
-        
-    public:
-        void prepare(double sampleRate) {
-            // Set up cascade of allpass filters for dispersion
-            const size_t delays[] = {113, 137, 151, 173};
-            const float feedbacks[] = {0.7f, 0.65f, 0.6f, 0.55f};
-            
-            for (size_t i = 0; i < DISPERSION_STAGES; ++i) {
-                stages[i].delay = delays[i];
-                stages[i].feedback = feedbacks[i];
-                stages[i].reset();
-            }
-        }
-        
-        void reset() {
-            for (auto& stage : stages) {
-                stage.reset();
-            }
-        }
-        
-        float process(float input) noexcept {
-            float signal = input;
-            for (auto& stage : stages) {
-                signal = stage.process(signal);
-            }
-            return signal;
-        }
-    };
-    
-    //==========================================================================
-    // Chirp Generator - Transient "boing" effect
-    //==========================================================================
-    class ChirpGenerator {
-        float phase = 0.0f;
-        float frequency = 0.0f;
-        float targetFreq = 0.0f;
-        float envelope = 0.0f;
-        float sampleRate = 48000.0f;
-        float chirpAmount = 0.5f;
-        
-    public:
-        void prepare(double sr) {
-            sampleRate = static_cast<float>(sr);
-        }
-        
-        void reset() {
-            phase = 0.0f;
-            frequency = 0.0f;
-            envelope = 0.0f;
-        }
-        
-        void setAmount(float amount) {
-            chirpAmount = amount;
-        }
-        
-        void trigger(float velocity) {
-            if (chirpAmount > 0.01f) {
-                envelope = velocity * chirpAmount;
-                frequency = 2000.0f;  // Start high
-                targetFreq = 100.0f;  // Sweep down
-            }
-        }
-        
-        float process() noexcept {
-            if (envelope < 0.001f) return 0.0f;
-            
-            // Generate chirp
-            const float output = std::sin(phase) * envelope;
-            phase += frequency * TWO_PI / sampleRate;
-            if (phase > TWO_PI) phase -= TWO_PI;
-            
-            // Update frequency (exponential sweep)
-            frequency += (targetFreq - frequency) * 0.05f;
-            
-            // Update envelope
-            envelope *= 0.995f;
-            
-            return output;
-        }
-    };
-    
-    //==========================================================================
-    // Modulation LFO - Spring wobble
-    //==========================================================================
-    class ModulationLFO {
-        float phase = 0.0f;
-        float rate = 0.3f;
-        float depth = 0.0f;
-        float sampleRate = 48000.0f;
-        
-    public:
-        void prepare(double sr) {
-            sampleRate = static_cast<float>(sr);
-        }
-        
-        void reset() {
-            phase = 0.0f;
-        }
-        
-        void setParameters(float r, float d) {
-            rate = r;
-            depth = d;
-        }
-        
-        float process() noexcept {
-            const float mod = std::sin(phase) * depth;
-            phase += rate * TWO_PI / sampleRate;
-            if (phase > TWO_PI) phase -= TWO_PI;
-            return 1.0f + mod * 0.002f;  // Slight pitch modulation
-        }
-    };
-    
-    //==========================================================================
-    // Main Implementation
-    //==========================================================================
-    
-    // Processing components
-    struct Channel {
-        SpringModel springs[3];              // Multiple springs
-        DispersionNetwork dispersion;        // Frequency dispersion
-        ChirpGenerator chirp;               // Transient effect
-        float delayBuffer[MAX_SPRING_DELAY] = {};
-        size_t writePos = 0;
-        float lowpass = 0.0f;               // Damping filter state
-        float highpass = 0.0f;              // DC blocker state
-        
-        void prepare(double sampleRate) {
-            for (auto& spring : springs) {
-                spring.prepare(sampleRate);
-            }
-            dispersion.prepare(sampleRate);
-            chirp.prepare(sampleRate);
-            reset();
-        }
-        
-        void reset() {
-            for (auto& spring : springs) {
-                spring.reset();
-            }
-            dispersion.reset();
-            chirp.reset();
-            std::fill(std::begin(delayBuffer), std::end(delayBuffer), 0.0f);
-            writePos = 0;
-            lowpass = highpass = 0.0f;
-        }
-    };
-    
-    // State
-    Channel channels[2];
-    ModulationLFO modLFO;
-    
-    // Parameters (atomic for thread safety)
-    struct Parameters {
-        std::atomic<float> tension{0.5f};
-        std::atomic<float> damping{0.5f};
-        std::atomic<float> decay{0.5f};
-        std::atomic<float> modulation{0.3f};
-        std::atomic<float> chirp{0.5f};
-        std::atomic<float> drive{0.3f};
-        std::atomic<float> width{0.8f};
-        std::atomic<float> mix{0.5f};
-    } params;
-    
-    // Parameter smoothing
-    struct Smoothers {
-        struct OnePoleSmoother {
-            float current = 0.0f;
-            float target = 0.0f;
-            float coeff = 0.0f;
-            
-            void setCoeff(double sampleRate, float timeMs) {
-                coeff = std::exp(-1.0f / (sampleRate * timeMs * 0.001f));
-            }
-            
-            void setTarget(float t) { target = t; }
-            float getCurrentValue() const { return current; }
-            void reset(float value) { current = target = value; }
-            
-            float tick() {
-                current += (target - current) * (1.0f - coeff);
-                return current;
-            }
-        };
-        
-        OnePoleSmoother tension, damping, decay, modulation;
-        OnePoleSmoother chirp, drive, width, mix;
-    } smoothers;
-    
-    // Configuration
-    Config config;
-    SpringType springType = SpringType::VINTAGE_LONG;
-    
-    // Processing state
-    float sampleRate = 48000.0f;
-    float invSampleRate = 1.0f / 48000.0f;
-    
-    // Metering
-    std::atomic<float> inputLevel{0.0f};
-    std::atomic<float> outputLevel{0.0f};
-    std::atomic<float> springExcursion{0.0f};
-    
-    // Performance measurement
-    std::atomic<uint32_t> denormalCount{0};
-    
-    //==========================================================================
-    // Constructor
-    //==========================================================================
-    Impl() {
-        #if HAS_SSE2
-            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-        #endif
-    }
-    
-    //==========================================================================
-    // Core Processing
-    //==========================================================================
-    void process(juce::AudioBuffer<float>& buffer) {
-        const int numChannels = buffer.getNumChannels();
-        const int numSamples = buffer.getNumSamples();
-        
-        if (numSamples == 0) return;
-        
-        // Update smoothers
-        smoothers.tension.setTarget(params.tension.load());
-        smoothers.damping.setTarget(params.damping.load());
-        smoothers.decay.setTarget(params.decay.load());
-        smoothers.modulation.setTarget(params.modulation.load());
-        smoothers.chirp.setTarget(params.chirp.load());
-        smoothers.drive.setTarget(params.drive.load());
-        smoothers.width.setTarget(params.width.load());
-        smoothers.mix.setTarget(params.mix.load());
-        
-        // Get smoothed parameters
-        const float tension = smoothers.tension.tick();
-        const float damping = smoothers.damping.tick();
-        const float modDepth = smoothers.modulation.tick();
-        const float chirpAmount = smoothers.chirp.tick();
-        const float drive = smoothers.drive.tick();
-        
-        // Update components
-        modLFO.setParameters(0.3f + modDepth * 2.0f, modDepth);
-        for (int ch = 0; ch < 2; ++ch) {
-            channels[ch].chirp.setAmount(chirpAmount);
-            for (auto& spring : channels[ch].springs) {
-                spring.setParameters(tension, damping * 0.1f);
-            }
-        }
-        
-        // Process audio
-        if (numChannels == 1) {
-            // Mono processing
-            processMono(buffer.getWritePointer(0), numSamples, drive);
-        } else if (numChannels >= 2) {
-            // Stereo processing
-            processStereo(buffer.getWritePointer(0), buffer.getWritePointer(1), 
-                         numSamples, drive);
-        }
-        
-        // Update metering
-        float peakIn = 0.0f, peakOut = 0.0f;
-        for (int ch = 0; ch < numChannels; ++ch) {
-            const float* data = buffer.getReadPointer(ch);
-            for (int i = 0; i < numSamples; ++i) {
-                peakIn = std::max(peakIn, std::abs(data[i]));
-                peakOut = std::max(peakOut, std::abs(data[i]));
-            }
-        }
-        
-        inputLevel.store(20.0f * std::log10(peakIn + EPSILON));
-        outputLevel.store(20.0f * std::log10(peakOut + EPSILON));
-    }
-    
-private:
-    void processMono(float* data, int numSamples, float drive) {
-        const float mix = smoothers.mix.tick();
-        const float decay = smoothers.decay.tick();
-        const float damping = smoothers.damping.tick();
-        
-        for (int i = 0; i < numSamples; ++i) {
-            const float dry = data[i];
-            
-            // Input saturation
-            float wet = softClip(dry * (1.0f + drive * 3.0f));
-            
-            // Detect transients for chirp
-            static float prevInput = 0.0f;
-            const float transient = std::abs(wet - prevInput);
-            if (transient > 0.5f) {
-                channels[0].chirp.trigger(transient);
-            }
-            prevInput = wet;
-            
-            // Add chirp
-            wet += channels[0].chirp.process() * 0.3f;
-            
-            // Process through springs with modulation
-            const float modFactor = modLFO.process();
-            float springOut = 0.0f;
-            
-            for (auto& spring : channels[0].springs) {
-                springOut += spring.process(wet) * modFactor;
-            }
-            
-            // Dispersion
-            springOut = channels[0].dispersion.process(springOut);
-            
-            // Decay control via feedback delay
-            const size_t delayTime = static_cast<size_t>(1000.0f + decay * 7000.0f);
-            const size_t readPos = (channels[0].writePos + MAX_SPRING_DELAY - delayTime) % MAX_SPRING_DELAY;
-            
-            const float delayed = channels[0].delayBuffer[readPos];
-            springOut += delayed * decay * 0.7f;
-            
-            // High frequency damping
-            const float dampingCoeff = 0.9f - damping * 0.3f;
-            channels[0].lowpass = springOut + (channels[0].lowpass - springOut) * dampingCoeff;
-            springOut = channels[0].lowpass;
-            
-            // Write to delay buffer
-            channels[0].delayBuffer[channels[0].writePos] = springOut;
-            channels[0].writePos = (channels[0].writePos + 1) % MAX_SPRING_DELAY;
-            
-            // DC blocking
-            channels[0].highpass = springOut - prevInput + channels[0].highpass * 0.995f;
-            springOut = channels[0].highpass;
-            
-            // Mix
-            data[i] = dry * (1.0f - mix) + springOut * mix;
-            
-            // Update spring excursion metering
-            springExcursion.store(std::abs(springOut));
+    // Prepare delays (max 300 ms per line)
+    const float maxMs = 300.0f;
+    for (auto& l : L_) { l.delay.prepare(sampleRate_, maxMs); l.reset(); }
+    for (auto& r : R_) { r.delay.prepare(sampleRate_, maxMs); r.reset(); }
+
+    // Base APF setup
+    for (auto* bank : { &L_, &R_ }) {
+        for (auto& line : *bank) {
+            line.apf1.set(0.5f);
+            line.apf2.set(0.8f);
         }
     }
-    
-    void processStereo(float* left, float* right, int numSamples, float drive) {
-        const float mix = smoothers.mix.tick();
-        const float width = smoothers.width.tick();
-        const float decay = smoothers.decay.tick();
-        const float damping = smoothers.damping.tick();
-        
-        for (int i = 0; i < numSamples; ++i) {
-            const float dryL = left[i];
-            const float dryR = right[i];
-            
-            // Convert to M/S for width control
-            const float mid = (dryL + dryR) * 0.5f;
-            const float side = (dryL - dryR) * 0.5f;
-            
-            // Process mid through channel 0
-            float wetMid = softClip(mid * (1.0f + drive * 3.0f));
-            
-            // Detect transients
-            static float prevMid = 0.0f;
-            const float transient = std::abs(wetMid - prevMid);
-            if (transient > 0.5f) {
-                channels[0].chirp.trigger(transient);
-                channels[1].chirp.trigger(transient * 0.7f);  // Slightly different
-            }
-            prevMid = wetMid;
-            
-            // Add chirp
-            wetMid += channels[0].chirp.process() * 0.3f;
-            
-            // Process through springs
-            const float modFactor = modLFO.process();
-            float springMid = 0.0f;
-            
-            for (auto& spring : channels[0].springs) {
-                springMid += spring.process(wetMid) * modFactor;
-            }
-            
-            // Process side through channel 1 for stereo effect
-            float wetSide = side * (1.0f + drive);
-            wetSide += channels[1].chirp.process() * 0.2f;
-            
-            float springSide = 0.0f;
-            for (auto& spring : channels[1].springs) {
-                springSide += spring.process(wetSide) * modFactor * 1.1f;  // Slightly different
-            }
-            
-            // Dispersion
-            springMid = channels[0].dispersion.process(springMid);
-            springSide = channels[1].dispersion.process(springSide);
-            
-            // Delay and feedback for both channels
-            for (int ch = 0; ch < 2; ++ch) {
-                float* signal = (ch == 0) ? &springMid : &springSide;
-                const size_t delayTime = static_cast<size_t>(1000.0f + decay * 7000.0f + ch * 37);
-                const size_t readPos = (channels[ch].writePos + MAX_SPRING_DELAY - delayTime) % MAX_SPRING_DELAY;
-                
-                const float delayed = channels[ch].delayBuffer[readPos];
-                *signal += delayed * decay * 0.7f;
-                
-                // Damping
-                const float dampingCoeff = 0.9f - damping * 0.3f;
-                channels[ch].lowpass = *signal + (channels[ch].lowpass - *signal) * dampingCoeff;
-                *signal = channels[ch].lowpass;
-                
-                // Write to delay
-                channels[ch].delayBuffer[channels[ch].writePos] = *signal;
-                channels[ch].writePos = (channels[ch].writePos + 1) % MAX_SPRING_DELAY;
-                
-                // DC block
-                static float prev[2] = {0.0f, 0.0f};
-                channels[ch].highpass = *signal - prev[ch] + channels[ch].highpass * 0.995f;
-                *signal = channels[ch].highpass;
-                prev[ch] = *signal;
-            }
-            
-            // Convert back from M/S with width control
-            const float wetL = springMid + springSide * width;
-            const float wetR = springMid - springSide * width;
-            
-            // Final mix
-            left[i] = dryL * (1.0f - mix) + wetL * mix;
-            right[i] = dryR * (1.0f - mix) + wetR * mix;
-            
-            // Update metering
-            springExcursion.store(std::max(std::abs(springMid), std::abs(springSide)));
-        }
-    }
-};
 
-//==============================================================================
-// Public Interface Implementation
-//==============================================================================
+    // LFO for gentle dispersion modulation
+    lfoPhase_ = 0.0f;
+    lfoIncr_  = 2.0f * juce::MathConstants<float>::pi * (0.32f / (float)sampleRate_);
 
-SpringReverb_Platinum::SpringReverb_Platinum() : pImpl(std::make_unique<Impl>()) {}
-SpringReverb_Platinum::~SpringReverb_Platinum() = default;
+    // chirp
+    chirpPhase_ = 0.0f;
+    chirpGain_  = 0.0f;
 
-void SpringReverb_Platinum::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    pImpl->sampleRate = static_cast<float>(sampleRate);
-    pImpl->invSampleRate = 1.0f / pImpl->sampleRate;
-    
-    // Prepare channels
-    for (auto& channel : pImpl->channels) {
-        channel.prepare(sampleRate);
-    }
-    
-    // Prepare modulation
-    pImpl->modLFO.prepare(sampleRate);
-    
-    // Setup smoothers
-    pImpl->smoothers.tension.setCoeff(sampleRate, 20.0f);
-    pImpl->smoothers.damping.setCoeff(sampleRate, 20.0f);
-    pImpl->smoothers.decay.setCoeff(sampleRate, 50.0f);
-    pImpl->smoothers.modulation.setCoeff(sampleRate, 30.0f);
-    pImpl->smoothers.chirp.setCoeff(sampleRate, 10.0f);
-    pImpl->smoothers.drive.setCoeff(sampleRate, 10.0f);
-    pImpl->smoothers.width.setCoeff(sampleRate, 30.0f);
-    pImpl->smoothers.mix.setCoeff(sampleRate, 20.0f);
-    
-    // Initialize smoothers
-    pImpl->smoothers.tension.reset(pImpl->params.tension);
-    pImpl->smoothers.damping.reset(pImpl->params.damping);
-    pImpl->smoothers.decay.reset(pImpl->params.decay);
-    pImpl->smoothers.modulation.reset(pImpl->params.modulation);
-    pImpl->smoothers.chirp.reset(pImpl->params.chirp);
-    pImpl->smoothers.drive.reset(pImpl->params.drive);
-    pImpl->smoothers.width.reset(pImpl->params.width);
-    pImpl->smoothers.mix.reset(pImpl->params.mix);
-    
-    reset();
-}
-
-void SpringReverb_Platinum::process(juce::AudioBuffer<float>& buffer) {
-    pImpl->process(buffer);
+    updateTankCoeffs();
 }
 
 void SpringReverb_Platinum::reset() {
-    for (auto& channel : pImpl->channels) {
-        channel.reset();
-    }
-    pImpl->modLFO.reset();
+    for (auto& l : L_) l.reset();
+    for (auto& r : R_) r.reset();
+    lfoPhase_ = 0.0f;
+    chirpPhase_ = 0.0f;
+    chirpGain_ = 0.0f;
 }
 
 void SpringReverb_Platinum::updateParameters(const std::map<int, float>& params) {
-    for (const auto& [index, value] : params) {
-        switch (index) {
-            case 0: pImpl->params.tension.store(value); break;
-            case 1: pImpl->params.damping.store(value); break;
-            case 2: pImpl->params.decay.store(value); break;
-            case 3: pImpl->params.modulation.store(value); break;
-            case 4: pImpl->params.chirp.store(value); break;
-            case 5: pImpl->params.drive.store(value); break;
-            case 6: pImpl->params.width.store(value); break;
-            case 7: pImpl->params.mix.store(value); break;
-        }
-    }
+    auto set = [&](int idx, Smoothed& p, float def){
+        auto it = params.find(idx);
+        p.target.store(it != params.end() ? clamp01(it->second) : def, std::memory_order_relaxed);
+    };
+    set(kTension, pTension_, 0.45f);
+    set(kDamping, pDamp_,    0.35f);
+    set(kDecay,   pDecay_,   0.55f);
+    set(kMod,     pMod_,     0.25f);
+    set(kChirp,   pChirp_,   0.15f);
+    set(kDrive,   pDrive_,   0.2f);
+    set(kWidth,   pWidth_,   0.75f);
+    set(kMix,     pMix_,     0.35f);
 }
 
 juce::String SpringReverb_Platinum::getParameterName(int index) const {
@@ -681,135 +99,137 @@ juce::String SpringReverb_Platinum::getParameterName(int index) const {
     }
 }
 
-float SpringReverb_Platinum::getParameterValue(int index) const {
-    switch (index) {
-        case 0: return pImpl->params.tension.load();
-        case 1: return pImpl->params.damping.load();
-        case 2: return pImpl->params.decay.load();
-        case 3: return pImpl->params.modulation.load();
-        case 4: return pImpl->params.chirp.load();
-        case 5: return pImpl->params.drive.load();
-        case 6: return pImpl->params.width.load();
-        case 7: return pImpl->params.mix.load();
-        default: return 0.0f;
+void SpringReverb_Platinum::updateTankCoeffs() {
+    const float ffs = (float) sampleRate_;
+
+    // Map damping [0..1] to LP cutoff ~ [2k .. 14k]
+    const float dampHz = juce::jmap(pDamp_.current, 0.0f, 1.0f, 2000.0f, 14000.0f);
+
+    for (auto* bank : { &L_, &R_ }) {
+        for (auto& line : *bank) {
+            line.dampLP.setLowpass(dampHz, ffs);
+        }
     }
 }
 
-void SpringReverb_Platinum::setParameterValue(int index, float value) {
-    value = std::clamp(value, 0.0f, 1.0f);
-    switch (index) {
-        case 0: pImpl->params.tension.store(value); break;
-        case 1: pImpl->params.damping.store(value); break;
-        case 2: pImpl->params.decay.store(value); break;
-        case 3: pImpl->params.modulation.store(value); break;
-        case 4: pImpl->params.chirp.store(value); break;
-        case 5: pImpl->params.drive.store(value); break;
-        case 6: pImpl->params.width.store(value); break;
-        case 7: pImpl->params.mix.store(value); break;
+float SpringReverb_Platinum::lineProcess(TankLine& line, float in, float baseDelaySamp, float modDepthSamp, float tensionDisp) {
+    // APF scattering first
+    float s = line.apf1.process(in);
+    s = line.apf2.process(s);
+
+    // Damping (HF loss)
+    s = line.dampLP.processLP(s);
+
+    // Delay with modulation: base +/- modDepth * sin
+    // small dispersion "tension": add tiny phase-advance by nudging delay
+    const float disp = tensionDisp; // already small
+    double delayNow = juce::jlimit(1.0, (double)line.delay.capacity()-4.0,
+                                   (double)baseDelaySamp + modDepthSamp * std::sin(lfoPhase_ + disp));
+    float d = line.delay.readInterp(delayNow);
+
+    // Push current damped sample (pre-feedback) into delay line
+    line.delay.push(s);
+
+    line.lastOut = d;
+    return d;
+}
+
+void SpringReverb_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    const int nCh = std::min(buffer.getNumChannels(), 2);
+    const int n   = buffer.getNumSamples();
+    if (nCh <= 0 || n <= 0) return;
+
+    // read smoothed params once/block
+    const float tension   = pTension_.next(); // affects dispersion hint + delay set
+    const float damping   = pDamp_.next();
+    const float decay     = pDecay_.next();
+    const float modAmt    = pMod_.next();
+    const float chirpAmt  = pChirp_.next();
+    const float drive     = pDrive_.next();
+    const float width     = pWidth_.next();
+    const float mix       = pMix_.next();
+
+    // Update damping LP coeffs on change
+    updateTankCoeffs();
+
+    // Loop gain mapping: keep < 1.0 always
+    const float loopGain = juce::jlimit(0.0f, 0.98f, juce::jmap(decay, 0.0f, 1.0f, 0.55f, 0.98f));
+
+    // Base delays per line (ms) – staggered for density; tension shifts slightly
+    const float baseMsL[kLines] = { 42.0f, 63.0f, 85.0f };
+    const float baseMsR[kLines] = { 47.0f, 70.0f, 92.0f };
+    const float tensShift = juce::jmap(tension, 0.0f, 1.0f, -3.0f, +3.0f);
+
+    // Convert to samples
+    float baseSampL[kLines], baseSampR[kLines];
+    for (int i=0;i<kLines;++i) {
+        baseSampL[i] = (float)((baseMsL[i] + tensShift) * 0.001 * sampleRate_);
+        baseSampR[i] = (float)((baseMsR[i] - tensShift) * 0.001 * sampleRate_);
     }
-}
 
-float SpringReverb_Platinum::getParameterDefaultValue(int index) const {
-    switch (index) {
-        case 0: return 0.5f;  // Tension
-        case 1: return 0.5f;  // Damping
-        case 2: return 0.5f;  // Decay
-        case 3: return 0.3f;  // Modulation
-        case 4: return 0.5f;  // Chirp
-        case 5: return 0.3f;  // Drive
-        case 6: return 0.8f;  // Width
-        case 7: return 0.5f;  // Mix
-        default: return 0.0f;
+    // Mod depth (samples)
+    const float modDepth = juce::jmap(modAmt, 0.0f, 1.0f, 0.05f, 1.5f); // small, safe
+
+    // Tension → small dispersion offset per line
+    const float disp = juce::jmap(tension, 0.0f, 1.0f, 0.0f, 0.4f);
+
+    // Drive and chirp
+    const float preDrive = fromdB(juce::jmap(drive, 0.0f, 1.0f, 0.0f, 12.0f));
+    const float chirpInc = 2.0f * juce::MathConstants<float>::pi * juce::jmap(chirpAmt, 0.0f, 1.0f, 0.0f, 3.0f) / (float)sampleRate_;
+    chirpGain_ = juce::jlimit(0.0f, 1.0f, chirpGain_ * 0.995f + chirpAmt * 0.001f);
+
+    auto* Lr = buffer.getReadPointer(0);
+    auto* Rr = (nCh > 1) ? buffer.getReadPointer(1) : Lr;
+    auto* Lw = buffer.getWritePointer(0);
+    auto* Rw = (nCh > 1) ? buffer.getWritePointer(1) : nullptr;
+
+    for (int i = 0; i < n; ++i) {
+        // LFO advance
+        lfoPhase_ += lfoIncr_;
+        if (lfoPhase_ > 2.0f * juce::MathConstants<float>::pi) lfoPhase_ -= 2.0f * juce::MathConstants<float>::pi;
+
+        // Input with soft drive and tiny chirp burst
+        float chirp = chirpGain_ * std::sin(chirpPhase_);
+        chirpPhase_ += chirpInc;
+        if (chirpPhase_ > 2.0f * juce::MathConstants<float>::pi) chirpPhase_ -= 2.0f * juce::MathConstants<float>::pi;
+
+        float inL = sat((Lr[i] + chirp) * preDrive);
+        float inR = sat((Rr[i] + chirp) * preDrive);
+
+        // Feed tank lines with cross feedback for diffusion
+        float accL = 0.0f, accR = 0.0f;
+        for (int k=0;k<kLines;++k) {
+            float fbinL = inL + loopGain * (0.6f * L_[(k+0)%kLines].lastOut + 0.4f * R_[(k+1)%kLines].lastOut);
+            float fbinR = inR + loopGain * (0.6f * R_[(k+0)%kLines].lastOut + 0.4f * L_[(k+1)%kLines].lastOut);
+
+            accL += lineProcess(L_[k], fbinL, baseSampL[k], modDepth, disp * (k+1));
+            accR += lineProcess(R_[k], fbinR, baseSampR[k], modDepth, disp * (k+1));
+        }
+
+        // Average lines
+        float wetL = (accL / (float)kLines);
+        float wetR = (accR / (float)kLines);
+
+        // Gentle internal limiter to keep loop sane
+        wetL = 0.98f * sat(wetL * 1.2f);
+        wetR = 0.98f * sat(wetR * 1.2f);
+
+        // Stereo width via safe M/S (no divides)
+        float M = 0.5f * (wetL + wetR);
+        float S = 0.5f * (wetL - wetR);
+        S *= juce::jlimit(0.0f, 1.0f, width);
+        wetL = M + S;
+        wetR = M - S;
+
+        // Mix
+        float outL = (1.0f - mix) * Lr[i] + mix * wetL;
+        float outR = (1.0f - mix) * Rr[i] + mix * wetR;
+
+        // Final sanity
+        if (!finitef(outL)) outL = 0.0f;
+        if (!finitef(outR)) outR = 0.0f;
+
+        Lw[i] = outL;
+        if (Rw) Rw[i] = outR;
     }
-}
-
-juce::String SpringReverb_Platinum::getParameterText(int index) const {
-    const float value = getParameterValue(index);
-    std::ostringstream oss;
-    
-    switch (index) {
-        case 0: 
-            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
-            return juce::String(oss.str().c_str());
-        case 1: 
-            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
-            return juce::String(oss.str().c_str());
-        case 2: 
-            oss << std::fixed << std::setprecision(2) << (0.1f + value * 4.9f) << "s";
-            return juce::String(oss.str().c_str());
-        case 3: 
-            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
-            return juce::String(oss.str().c_str());
-        case 4: 
-            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
-            return juce::String(oss.str().c_str());
-        case 5: 
-            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
-            return juce::String(oss.str().c_str());
-        case 6: 
-            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
-            return juce::String(oss.str().c_str());
-        case 7: 
-            oss << std::fixed << std::setprecision(1) << (value * 100.0f) << "%";
-            return juce::String(oss.str().c_str());
-        default: return juce::String("");
-    }
-}
-
-void SpringReverb_Platinum::setSpringType(SpringType type) {
-    pImpl->springType = type;
-    
-    // Configure based on type
-    switch (type) {
-        case SpringType::VINTAGE_LONG:
-            pImpl->config.springLength = 0.4f;
-            pImpl->config.numSprings = 3;
-            break;
-            
-        case SpringType::VINTAGE_SHORT:
-            pImpl->config.springLength = 0.2f;
-            pImpl->config.numSprings = 2;
-            break;
-            
-        case SpringType::MODERN_BRIGHT:
-            pImpl->config.springLength = 0.3f;
-            pImpl->config.numSprings = 4;
-            break;
-            
-        case SpringType::WARM_DARK:
-            pImpl->config.springLength = 0.5f;
-            pImpl->config.numSprings = 2;
-            break;
-            
-        case SpringType::EXPERIMENTAL:
-            pImpl->config.springLength = 0.6f;
-            pImpl->config.numSprings = 4;
-            pImpl->config.enableChirp = true;
-            pImpl->config.enableModulation = true;
-            break;
-    }
-}
-
-SpringReverb_Platinum::SpringType SpringReverb_Platinum::getSpringType() const {
-    return pImpl->springType;
-}
-
-void SpringReverb_Platinum::setConfig(const Config& config) {
-    pImpl->config = config;
-}
-
-SpringReverb_Platinum::Config SpringReverb_Platinum::getConfig() const {
-    return pImpl->config;
-}
-
-float SpringReverb_Platinum::getInputLevel() const {
-    return pImpl->inputLevel.load();
-}
-
-float SpringReverb_Platinum::getOutputLevel() const {
-    return pImpl->outputLevel.load();
-}
-
-float SpringReverb_Platinum::getSpringExcursion() const {
-    return pImpl->springExcursion.load();
 }
