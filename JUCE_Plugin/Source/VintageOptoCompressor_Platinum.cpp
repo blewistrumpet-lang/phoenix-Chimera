@@ -129,6 +129,7 @@ inline float VintageOptoCompressor_Platinum::gainReductionDB(float envLin, float
 }
 
 void VintageOptoCompressor_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     const auto t0 = std::chrono::high_resolution_clock::now();
 
     const int nCh = std::min(buffer.getNumChannels(), 2);
@@ -212,4 +213,6 @@ void VintageOptoCompressor_Platinum::process(juce::AudioBuffer<float>& buffer) {
     metrics_.cpu.store(cpu);
     float pk = metrics_.peak.load();
     if (cpu > pk) metrics_.peak.store(cpu);
+    
+    scrubBuffer(buffer);
 }

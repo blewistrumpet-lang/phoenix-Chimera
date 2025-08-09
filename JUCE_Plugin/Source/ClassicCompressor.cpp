@@ -77,6 +77,7 @@ void ClassicCompressor::enableDenormalPrevention() {
 }
 
 void ClassicCompressor::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -104,6 +105,8 @@ void ClassicCompressor::process(juce::AudioBuffer<float>& buffer) {
         currentSample += subBlockSize;
         samplesRemaining -= subBlockSize;
     }
+    
+    scrubBuffer(buffer);
 }
 
 void ClassicCompressor::processSubBlock(float* left, float* right, int startSample, int numSamples) {
@@ -207,11 +210,11 @@ void ClassicCompressor::processSubBlock(float* left, float* right, int startSamp
         // Update metering (relaxed atomic operations)
         float currentGR = m_currentGainReduction.load(std::memory_order_relaxed);
         currentGR = currentGR * 0.95f + static_cast<float>(gainReductionDb) * 0.05f;
-        m_currentGainReduction.store(preventDenormal(currentGR), std::memory_order_relaxed);
+        m_currentGainReduction.store(DSPUtils::flushDenorm(currentGR), std::memory_order_relaxed);
         
         float peakGR = m_peakGainReduction.load(std::memory_order_relaxed);
         peakGR = std::max(peakGR * 0.9999f, static_cast<float>(gainReductionDb));
-        m_peakGainReduction.store(preventDenormal(peakGR), std::memory_order_relaxed);
+        m_peakGainReduction.store(DSPUtils::flushDenorm(peakGR), std::memory_order_relaxed);
     }
 }
 

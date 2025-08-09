@@ -22,31 +22,7 @@
     #define ALWAYS_INLINE __attribute__((always_inline)) inline
 #endif
 
-// Global denormal protection
-static struct DenormGuard {
-    DenormGuard() {
-#if HAS_SSE2
-        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-#endif
-    }
-} static g_denormGuard;
-
 namespace {
-    // Denormal flushers
-    ALWAYS_INLINE float flushDenormF(float v) noexcept {
-#if HAS_SSE2
-        return _mm_cvtss_f32(_mm_add_ss(_mm_set_ss(v), _mm_set_ss(0.0f)));
-#else
-        constexpr float tiny = 1.0e-38f;
-        return std::fabs(v) < tiny ? 0.0f : v;
-#endif
-    }
-    
-    ALWAYS_INLINE double flushDenormD(double v) noexcept {
-        constexpr double tiny = 1.0e-308;
-        return std::fabs(v) < tiny ? 0.0 : v;
-    }
     
     // Fast modulo using bit masking (requires power-of-2 sizes)
     ALWAYS_INLINE int fastMod(int value, int size) noexcept {
@@ -88,7 +64,7 @@ struct GatedReverb::Impl {
         ALWAYS_INLINE float tick() noexcept {
             float t = target.load(std::memory_order_relaxed);
             current += (t - current) * (1.0f - coeff);
-            return flushDenormF(current);
+            return DSPUtils::flushDenorm(current);
         }
         
         void reset(float value) {
@@ -126,7 +102,7 @@ struct GatedReverb::Impl {
         ALWAYS_INLINE float process(float input, float fb, float damp) noexcept {
             float delayed = buffer[index];
             filterState = delayed * (1.0f - damp) + filterState * damp;
-            filterState = flushDenormF(filterState);
+            filterState = DSPUtils::flushDenorm(filterState);
             
             buffer[index] = input + filterState * fb;
             index = fastMod(index + 1, size);
@@ -226,14 +202,14 @@ struct GatedReverb::Impl {
             _mm_store_ps(newFS4567, vNewFS4567);
             
             // Write back flushed states
-            filterStates[0] = flushDenormF(newFS0123[0]);
-            filterStates[1] = flushDenormF(newFS0123[1]);
-            filterStates[2] = flushDenormF(newFS0123[2]);
-            filterStates[3] = flushDenormF(newFS0123[3]);
-            filterStates[4] = flushDenormF(newFS4567[0]);
-            filterStates[5] = flushDenormF(newFS4567[1]);
-            filterStates[6] = flushDenormF(newFS4567[2]);
-            filterStates[7] = flushDenormF(newFS4567[3]);
+            filterStates[0] = DSPUtils::flushDenorm(newFS0123[0]);
+            filterStates[1] = DSPUtils::flushDenorm(newFS0123[1]);
+            filterStates[2] = DSPUtils::flushDenorm(newFS0123[2]);
+            filterStates[3] = DSPUtils::flushDenorm(newFS0123[3]);
+            filterStates[4] = DSPUtils::flushDenorm(newFS4567[0]);
+            filterStates[5] = DSPUtils::flushDenorm(newFS4567[1]);
+            filterStates[6] = DSPUtils::flushDenorm(newFS4567[2]);
+            filterStates[7] = DSPUtils::flushDenorm(newFS4567[3]);
             
             // 3) Update buffers with feedback (manually unrolled)
             __m128 vInput = _mm_set1_ps(input);
@@ -282,7 +258,7 @@ struct GatedReverb::Impl {
             for (int i = 0; i < NUM_COMBS; ++i) {
                 float delayed = buffers[i][indices[i]];
                 filterStates[i] = delayed * oneMinusD + filterStates[i] * damping;
-                filterStates[i] = flushDenormF(filterStates[i]);
+                filterStates[i] = DSPUtils::flushDenorm(filterStates[i]);
                 buffers[i][indices[i]] = input + filterStates[i] * feedback;
                 indices[i] = (indices[i] + 1) & masks[i];
                 sum += delayed;
@@ -405,7 +381,7 @@ struct GatedReverb::Impl {
             }
             
             level += (targetLevel - level) * speed;
-            level = flushDenormF(level);
+            level = DSPUtils::flushDenorm(level);
             
             return level;
         }
@@ -462,7 +438,7 @@ struct GatedReverb::Impl {
             double x0 = input;
             double y0 = x0 - dcX1 + dcR * dcY1;
             dcX1 = x0;
-            dcY1 = flushDenormD(y0);
+            dcY1 = DSPUtils::flushDenorm(y0);
             return static_cast<float>(y0);
         }
         
@@ -473,7 +449,7 @@ struct GatedReverb::Impl {
             } else {
                 envelopeFollower = env + (envelopeFollower - env) * 0.99f;
             }
-            envelopeFollower = flushDenormF(envelopeFollower);
+            envelopeFollower = DSPUtils::flushDenorm(envelopeFollower);
         }
         
         void reset() {
@@ -524,7 +500,7 @@ struct GatedReverb::Impl {
         float a = (gain - 1.0f) * 0.5f;
         
         float hp = input - state;
-        state = flushDenormF(state + hp * w);
+        state = DSPUtils::flushDenorm(state + hp * w);
         
         return input + hp * a;
     }
@@ -601,6 +577,7 @@ void GatedReverb::reset() {
 }
 
 void GatedReverb::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -684,7 +661,7 @@ void GatedReverb::process(juce::AudioBuffer<float>& buffer) {
             // Apply brightness (branchless)
             if (useBrightness) {
                 float hp = diffused - state.shelfState;
-                state.shelfState = flushDenormF(state.shelfState + hp * state.shelfCoeff);
+                state.shelfState = DSPUtils::flushDenorm(state.shelfState + hp * state.shelfCoeff);
                 diffused += hp * (shelfGain - 1.0f) * 0.5f;
             }
             
@@ -752,6 +729,8 @@ void GatedReverb::process(juce::AudioBuffer<float>& buffer) {
         }
 #endif
     }
+    
+    scrubBuffer(buffer);
 }
 
 void GatedReverb::updateParameters(const std::map<int, float>& params) {

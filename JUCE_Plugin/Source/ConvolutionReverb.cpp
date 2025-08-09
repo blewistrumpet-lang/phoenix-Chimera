@@ -42,8 +42,9 @@ void ConvolutionReverb::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_preDelayProcessor.prepare(spec);
     m_filterSystem.prepare(spec);
     
-    // Reset DC blockers
+    // Prepare and reset DC blockers
     for (auto& blocker : m_dcBlockers) {
+        blocker.prepare(sampleRate);
         blocker.reset();
     }
 }
@@ -65,6 +66,8 @@ void ConvolutionReverb::reset() {
 }
 
 void ConvolutionReverb::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     updateIRIfNeeded();
     
     // Update thermal modeling and aging
@@ -160,6 +163,9 @@ void ConvolutionReverb::process(juce::AudioBuffer<float>& buffer) {
                              wetData[sample] * m_mixAmount.current;
         }
     }
+    
+    // Scrub NaN/Inf values from output buffer
+    scrubBuffer(buffer);
 }
 
 void ConvolutionReverb::generateEnhancedImpulseResponse() {
@@ -329,7 +335,7 @@ float ConvolutionReverb::applyAnalogCharacter(float input, float amount) {
     
     // Soft saturation curve
     float driven = input * drive;
-    return std::tanh(driven * 0.9f) / (0.9f * drive);
+    return DSPUtils::flushDenorm(std::tanh(driven * 0.9f) / (0.9f * drive));
 }
 
 float ConvolutionReverb::applyVintageNoise(float input) {
@@ -343,5 +349,5 @@ float ConvolutionReverb::applyVintageNoise(float input) {
     // Add thermal noise
     noise += m_thermalModel.thermalNoise;
     
-    return input + noise;
+    return DSPUtils::flushDenorm(input + noise);
 }

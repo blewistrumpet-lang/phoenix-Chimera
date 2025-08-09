@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 #include <array>
 #include <atomic>
@@ -24,20 +25,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// Professional denormal prevention using bit manipulation
-inline float preventDenormal(float x) {
-    union { float f; uint32_t i; } u;
-    u.f = x;
-    if ((u.i & 0x7F800000) == 0) return 0.0f;
-    return x;
-}
-
-inline double preventDenormalDouble(double x) {
-    union { double d; uint64_t i; } u;
-    u.d = x;
-    if ((u.i & 0x7FF0000000000000ULL) == 0) return 0.0;
-    return x;
-}
 
 class ClassicCompressor : public EngineBase {
 public:
@@ -97,7 +84,7 @@ private:
         double process() {
             double target = static_cast<double>(m_target.load(std::memory_order_relaxed));
             m_current = target + (m_current - target) * m_smoothingCoeff;
-            return preventDenormalDouble(m_current);
+            return DSPUtils::flushDenorm(m_current);
         }
         
         double processSubBlock(int numSamples) {
@@ -153,7 +140,7 @@ private:
                 m_envelope += (rectified - m_envelope) * m_releaseCoeff;
             }
             
-            return preventDenormalDouble(m_envelope);
+            return DSPUtils::flushDenorm(m_envelope);
         }
         
         double processRMS(float input) {
@@ -180,7 +167,7 @@ private:
                 m_envelope += (rms - m_envelope) * m_releaseCoeff;
             }
             
-            return preventDenormalDouble(m_envelope);
+            return DSPUtils::flushDenorm(m_envelope);
         }
         
         // SIMD-optimized batch processing
@@ -256,8 +243,8 @@ private:
             double bp = m_g * hp + m_s1;
             double lp = m_g * bp + m_s2;
             
-            m_s1 = preventDenormalDouble(2.0 * bp - m_s1);
-            m_s2 = preventDenormalDouble(2.0 * lp - m_s2);
+            m_s1 = DSPUtils::flushDenorm(2.0 * bp - m_s1);
+            m_s2 = DSPUtils::flushDenorm(2.0 * lp - m_s2);
             
             return hp;
         }
@@ -373,7 +360,7 @@ private:
                 if (levelDb > m_peakMemory) {
                     m_peakMemory = levelDb;
                 } else {
-                    m_peakMemory = preventDenormalDouble(levelDb + (m_peakMemory - levelDb) * m_peakDecayCoeff);
+                    m_peakMemory = DSPUtils::flushDenorm(levelDb + (m_peakMemory - levelDb) * m_peakDecayCoeff);
                 }
                 
                 // Adjust release based on peak memory
@@ -389,7 +376,7 @@ private:
                 m_currentGain += (targetGain - m_currentGain) * releaseCoeff;
             }
             
-            return preventDenormalDouble(m_currentGain);
+            return DSPUtils::flushDenorm(m_currentGain);
         }
         
         void reset() { 
@@ -409,7 +396,7 @@ private:
             double in = static_cast<double>(input);
             double out = in - m_x1 + R * m_y1;
             m_x1 = in;
-            m_y1 = preventDenormalDouble(out);
+            m_y1 = DSPUtils::flushDenorm(out);
             return static_cast<float>(out);
         }
         

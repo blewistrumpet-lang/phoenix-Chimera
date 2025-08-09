@@ -1,4 +1,5 @@
 #include "PitchShifter.h"
+#include "DspEngineUtilities.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
 #include <atomic>
@@ -14,8 +15,6 @@
     #define HAS_SIMD 0
 #endif
 
-#include "Denorm.hpp"  // Unified denormal prevention
-
 // Define ALWAYS_INLINE
 #ifndef ALWAYS_INLINE
   #if defined(__GNUC__) || defined(__clang__)
@@ -27,17 +26,7 @@
   #endif
 #endif
 
-// Enable FTZ/DAZ globally for denormal prevention
-namespace {
-    struct DenormalGuard {
-        DenormalGuard() {
-            #if defined(__SSE__)
-            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-            #endif
-        }
-    } static denormalGuard;
-}
+// Use DspEngineUtilities for denormal protection
 
 // Lock-free parameter with smoothing
 class AtomicSmoothParam {
@@ -58,7 +47,7 @@ public:
     ALWAYS_INLINE float tick() noexcept {
         const float t = target.load(std::memory_order_relaxed);
         current += (t - current) * (1.0f - smoothing);
-        return flushDenorm(current);
+        return DSPUtils::flushDenorm(current);
     }
     
     float getValue() const noexcept {
@@ -77,7 +66,7 @@ public:
     ALWAYS_INLINE float process(float input) noexcept {
         const float output = input - x1 + R * y1;
         x1 = input;
-        y1 = flushDenorm(output);  // Critical denormal prevention
+        y1 = DSPUtils::flushDenorm(output);  // Critical denormal prevention
         return output;
     }
     
@@ -292,7 +281,7 @@ struct PitchShifter::Impl {
             
             // Add feedback with denormal prevention
             if (fbAmount > 1e-6f) {
-                input += flushDenorm(ch.feedbackBuffer[ch.feedbackPos] * fbAmount);
+                input += DSPUtils::flushDenorm(ch.feedbackBuffer[ch.feedbackPos] * fbAmount);
                 ch.feedbackPos = (ch.feedbackPos + 1) % ch.feedbackBuffer.size();
             }
             
@@ -315,7 +304,7 @@ struct PitchShifter::Impl {
             }
             
             // DC block output with denormal flush
-            output = flushDenorm(ch.outputDC.process(output));
+            output = DSPUtils::flushDenorm(ch.outputDC.process(output));
             
             // Soft saturation for overloads
             if (std::abs(output) > 0.95f) {
@@ -323,7 +312,7 @@ struct PitchShifter::Impl {
             }
             
             // Mix with dry (per-sample for smooth automation)
-            data[i] = flushDenorm(input * (1.0f - mix) + output * mix);
+            data[i] = DSPUtils::flushDenorm(input * (1.0f - mix) + output * mix);
         }
     }
     
@@ -334,7 +323,7 @@ struct PitchShifter::Impl {
         // Window input with denormal prevention
         alignas(32) std::array<float, FFT_SIZE> windowed;
         for (int i = 0; i < FFT_SIZE; ++i) {
-            windowed[i] = flushDenorm(ch.frameBuffer[i] * ch.analysisWindow[i]);
+            windowed[i] = DSPUtils::flushDenorm(ch.frameBuffer[i] * ch.analysisWindow[i]);
         }
         
         // Copy to complex array
@@ -352,7 +341,9 @@ struct PitchShifter::Impl {
         if (gate > 1e-6f) {
             const float threshold = gate * gate * 0.1f;
             // Vectorized denormal prevention for magnitude array
-            flushDenormArray(ch.magnitude.data(), ch.magnitude.size());
+            for (auto& mag : ch.magnitude) {
+                mag = DSPUtils::flushDenorm(mag);
+            }
             
             for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
                 if (ch.magnitude[bin] < threshold) {
@@ -374,11 +365,13 @@ struct PitchShifter::Impl {
         if (++denormalFlushCounter >= 256) {
             denormalFlushCounter = 0;
             for (int i = 0; i <= FFT_SIZE/2; ++i) {
-                ch.phaseSum[i] = flushDenorm(ch.phaseSum[i]);
-                ch.phaseLast[i] = flushDenorm(ch.phaseLast[i]);
+                ch.phaseSum[i] = DSPUtils::flushDenorm(ch.phaseSum[i]);
+                ch.phaseLast[i] = DSPUtils::flushDenorm(ch.phaseLast[i]);
             }
             // Also flush output ring buffer to prevent accumulation
-            flushDenormArray(ch.outputRing.data(), ch.outputRing.size());
+            for (auto& sample : ch.outputRing) {
+                sample = DSPUtils::flushDenorm(sample);
+            }
         }
     }
     
@@ -389,7 +382,7 @@ struct PitchShifter::Impl {
             const float imag = c.imag();
             
             // Magnitude with denormal prevention
-            ch.magnitude[bin] = flushDenorm(std::sqrt(real * real + imag * imag + 1e-20f));
+            ch.magnitude[bin] = DSPUtils::flushDenorm(std::sqrt(real * real + imag * imag + 1e-20f));
             
             // Phase in double precision
             const double phase = std::atan2(static_cast<double>(imag), 
@@ -409,7 +402,7 @@ struct PitchShifter::Impl {
             const double trueFreq = binFrequency * bin + 
                                    deviation * sampleRate / (2.0 * M_PI * HOP_SIZE);
             
-            ch.frequency[bin] = flushDenorm(static_cast<float>(trueFreq));
+            ch.frequency[bin] = DSPUtils::flushDenorm(static_cast<float>(trueFreq));
         }
     }
     
@@ -458,8 +451,8 @@ struct PitchShifter::Impl {
             const float width = stereoWidth.tick() * 2.0f;
             const float mid = (left[i] + right[i]) * 0.5f;
             const float side = (left[i] - right[i]) * 0.5f * width;
-            left[i] = flushDenorm(mid + side);
-            right[i] = flushDenorm(mid - side);
+            left[i] = DSPUtils::flushDenorm(mid + side);
+            right[i] = DSPUtils::flushDenorm(mid - side);
         }
     }
 };
@@ -479,6 +472,8 @@ void PitchShifter::reset() {
 }
 
 void PitchShifter::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = std::min(buffer.getNumChannels(), Impl::MAX_CHANNELS);
     const int numSamples = buffer.getNumSamples();
     
@@ -495,6 +490,9 @@ void PitchShifter::process(juce::AudioBuffer<float>& buffer) {
                                  buffer.getWritePointer(1), 
                                  numSamples);
     }
+    
+    // Scrub buffer for NaN/Inf protection
+    scrubBuffer(buffer);
 }
 
 void PitchShifter::updateParameters(const std::map<int, float>& params) {

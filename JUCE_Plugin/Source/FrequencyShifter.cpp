@@ -1,4 +1,5 @@
 #include "FrequencyShifter.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 
 FrequencyShifter::FrequencyShifter() : m_rng(std::random_device{}()) {
@@ -172,6 +173,8 @@ void FrequencyShifter::reset() {
 }
 
 void FrequencyShifter::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -244,6 +247,8 @@ void FrequencyShifter::process(juce::AudioBuffer<float>& buffer) {
             channelData[sample] = m_outputDCBlockers[channel].process(channelData[sample]);
         }
     }
+    
+    scrubBuffer(buffer);
 }
 
 std::complex<float> FrequencyShifter::processFrequencyShift(std::complex<float> analytic,

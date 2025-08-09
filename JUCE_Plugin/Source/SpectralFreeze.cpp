@@ -18,7 +18,7 @@
 //==============================================================================
 void SpectralFreeze::SmoothParam::update() {
     float t = target.load(std::memory_order_relaxed);
-    current += (t - current) * (1.0f - smoothing);
+    current = DSPUtils::flushDenorm(current + (t - current) * (1.0f - smoothing));
 }
 
 void SpectralFreeze::SmoothParam::setImmediate(float value) {
@@ -30,23 +30,7 @@ void SpectralFreeze::SmoothParam::setSmoothingRate(float timeMs, double sampleRa
     smoothing = expf(-1.0f / (timeMs * 0.001f * sampleRate));
 }
 
-//==============================================================================
-// DenormalDisabler Implementation
-//==============================================================================
-SpectralFreeze::DenormalDisabler::DenormalDisabler() {
-#if HAS_SIMD
-    oldMXCSR = _mm_getcsr();
-    _mm_setcsr(oldMXCSR | 0x8040);  // Set flush-to-zero and denormals-are-zero
-#else
-    oldMXCSR = 0;  // Not used on non-x86 platforms
-#endif
-}
-
-SpectralFreeze::DenormalDisabler::~DenormalDisabler() {
-#if HAS_SIMD
-    _mm_setcsr(oldMXCSR);
-#endif
-}
+// Custom DenormalDisabler replaced with DspEngineUtilities DenormalGuard
 
 //==============================================================================
 // FFTProcessor Implementation
@@ -198,7 +182,7 @@ void SpectralFreeze::reset() {
 
 void SpectralFreeze::process(juce::AudioBuffer<float>& buffer) {
     // Enable flush-to-zero for entire process block
-    DenormalDisabler denormalDisabler;
+    DenormalGuard guard;
     
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
@@ -323,14 +307,17 @@ void SpectralFreeze::process(juce::AudioBuffer<float>& buffer) {
             float output = state.outputBuffer[outReadPos];
             state.outputBuffer[outReadPos] = 0.0f; // Clear after reading
             
-            // Prevent denormals in output using bit manipulation
-            output = preventDenormal(output);
+            // Prevent denormals in output using DspEngineUtilities
+            output = DSPUtils::flushDenorm(output);
             
             // Mix with dry signal based on freeze amount
             float wetAmount = m_freezeAmount.current;
             channelData[sample] = channelData[sample] * (1.0f - wetAmount) + output * wetAmount;
         }
     }
+    
+    // Scrub NaN/Inf values from output buffer
+    scrubBuffer(buffer);
 }
 
 void SpectralFreeze::processSpectrum(ChannelState& state) {

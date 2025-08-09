@@ -1,4 +1,5 @@
 #include "ClassicTremolo.h"
+#include "DspEngineUtilities.h"
 #include <algorithm>
 
 ClassicTremolo::ClassicTremolo() {
@@ -95,6 +96,8 @@ void ClassicTremolo::reset() {
 }
 
 void ClassicTremolo::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -137,6 +140,8 @@ void ClassicTremolo::process(juce::AudioBuffer<float>& buffer) {
         processChannelOptimized(buffer.getWritePointer(ch), numSamples, ch, 
                                params, needsOversampling);
     }
+    
+    scrubBuffer(buffer);
 }
 
 void ClassicTremolo::processChannelOptimized(float* data, int numSamples, int channel,

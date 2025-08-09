@@ -30,15 +30,6 @@
     #define ALIGNED(x) __attribute__((aligned(x)))
 #endif
 
-// Enable FTZ/DAZ globally for denormal prevention
-#if HAS_SSE2
-static struct DenormalDisabler {
-    DenormalDisabler() {
-        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-    }
-} g_denormalDisabler;
-#endif
 
 // ============================================================================
 // Constants and Utilities
@@ -1059,6 +1050,7 @@ void NoiseGate_Platinum::reset() {
 }
 
 void NoiseGate_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     const auto startTime = std::chrono::high_resolution_clock::now();
     
     const int numChannels = buffer.getNumChannels();
@@ -1135,6 +1127,8 @@ void NoiseGate_Platinum::process(juce::AudioBuffer<float>& buffer) {
     const double theoretical = numSamples / pimpl->sampleRate;
     const float load = static_cast<float>(elapsed / theoretical) * 100.0f;
     pimpl->cpuLoad.store(load, std::memory_order_relaxed);
+    
+    scrubBuffer(buffer);
 }
 
 void NoiseGate_Platinum::updateParameters(const std::map<int, float>& params) {

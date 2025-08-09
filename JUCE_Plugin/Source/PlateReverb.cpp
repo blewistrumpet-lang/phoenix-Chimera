@@ -619,6 +619,7 @@ void PlateReverb::initializeFilters() {
 }
 
 void PlateReverb::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     if (!m_isInitialized.load()) return;
     
     const int numChannels = buffer.getNumChannels();
@@ -712,6 +713,8 @@ void PlateReverb::process(juce::AudioBuffer<float>& buffer) {
             }
         }
     }
+    
+    scrubBuffer(buffer);
 }
 
 std::pair<double, double> PlateReverb::processReverbSample(double inputL, double inputR) {

@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <memory>
 #include <juce_core/juce_core.h>
 

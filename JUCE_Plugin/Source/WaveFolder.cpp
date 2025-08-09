@@ -651,6 +651,7 @@ void WaveFolder::reset() {
 }
 
 void WaveFolder::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     const int numChannels = std::min(buffer.getNumChannels(), Impl::MAX_CHANNELS);
     const int numSamples = buffer.getNumSamples();
     
@@ -666,6 +667,8 @@ void WaveFolder::process(juce::AudioBuffer<float>& buffer) {
     
     // End performance measurement
     pimpl->metrics.endBlock(numSamples, numChannels);
+    
+    scrubBuffer(buffer);
 }
 
 void WaveFolder::updateParameters(const std::map<int, float>& params) {

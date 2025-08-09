@@ -1,4 +1,5 @@
 #include "VintageTubePreamp.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 #include <algorithm>
 
@@ -76,9 +77,13 @@ void VintageTubePreamp::prepareToPlay(double sampleRate, int samplesPerBlock) {
 }
 
 void VintageTubePreamp::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     processStereo(buffer.getWritePointer(0), 
                   buffer.getNumChannels() > 1 ? buffer.getWritePointer(1) : nullptr,
                   buffer.getNumSamples());
+    
+    scrubBuffer(buffer);
 }
 
 void VintageTubePreamp::reset() {

@@ -1,5 +1,5 @@
 #include "AnalogPhaser.h"
-#include "Denorm.hpp"
+#include "DspEngineUtilities.h"
 #include "QualityMetrics.hpp" // keep if you have it; otherwise stub out
 #include <JuceHeader.h>
 #include <atomic>
@@ -264,6 +264,8 @@ juce::String AnalogPhaser::getParameterName(int i) const {
 
 void AnalogPhaser::process(juce::AudioBuffer<float>& buffer)
 {
+    DenormalGuard guard;
+    
     const int nCh = std::min(buffer.getNumChannels(), 2);
     const int nSm = buffer.getNumSamples();
     if (nCh <= 0 || nSm <= 0) return;
@@ -326,6 +328,8 @@ void AnalogPhaser::process(juce::AudioBuffer<float>& buffer)
     pimpl->metrics.updatePeakRMS(buffer.getReadPointer(0), nSm);
     if (nCh > 1) pimpl->metrics.updatePeakRMS(buffer.getReadPointer(1), nSm);
     pimpl->metrics.endBlock(nSm, nCh);
+    
+    scrubBuffer(buffer);
 }
 
 float AnalogPhaser::getCPUUsage() const          { return pimpl->metrics.getCPUUsage(); }

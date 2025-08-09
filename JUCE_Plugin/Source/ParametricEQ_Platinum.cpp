@@ -40,12 +40,6 @@ void alignedFree(T* ptr) {
     #endif
 }
 
-// CRITICAL: Denormal protection everywhere
-template<typename T>
-inline T flushDenormal(T v) noexcept {
-    constexpr T tiny = static_cast<T>(1.0e-30);
-    return (v * v) < (tiny * tiny) ? static_cast<T>(0) : v;
-}
 
 // CPU denormal mode - set once at startup
 struct DenormalDisabler {
@@ -494,6 +488,7 @@ void ParametricEQ_Platinum::reset() {
 }
 
 void ParametricEQ_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     const int numChannels = std::min(buffer.getNumChannels(), pimpl->maxChannels);
     const int numSamples = buffer.getNumSamples();
     
@@ -561,9 +556,11 @@ void ParametricEQ_Platinum::process(juce::AudioBuffer<float>& buffer) {
             }
             
             // Final denormal flush before output
-            channelData[sample] = static_cast<float>(flushDenormal(mixed));
+            channelData[sample] = static_cast<float>(DSPUtils::flushDenorm(mixed));
         }
     }
+    
+    scrubBuffer(buffer);
 }
 
 void ParametricEQ_Platinum::updateParameters(const std::map<int, float>& params) {

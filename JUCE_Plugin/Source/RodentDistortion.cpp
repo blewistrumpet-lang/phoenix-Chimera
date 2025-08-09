@@ -1,4 +1,5 @@
 #include "RodentDistortion.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 #include <algorithm>
 
@@ -198,6 +199,8 @@ void RodentDistortion::reset() {
 }
 
 void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -347,6 +350,8 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
     // Update thermal model
     double avgPower = 0.1; // Simplified - in reality, calculate from circuit current/voltage
     m_thermalModel.update(avgPower, numSamples / m_sampleRate);
+    
+    scrubBuffer(buffer);
 }
 
 // ==================== CIRCUIT MODELS ====================

@@ -1,4 +1,5 @@
 #include "VocalFormantFilter.h"
+#include "DspEngineUtilities.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 #include <atomic>
@@ -313,6 +314,8 @@ void VocalFormantFilter::reset() {
 }
 
 void VocalFormantFilter::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -431,6 +434,8 @@ void VocalFormantFilter::process(juce::AudioBuffer<float>& buffer) {
             wet[i] = wet[i] * mixAmt + dry[i] * (1.0f - mixAmt);
         }
     }
+    
+    scrubBuffer(buffer);
 }
 
 void VocalFormantFilter::updateParameters(const std::map<int, float>& params) {

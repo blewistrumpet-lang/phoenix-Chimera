@@ -1,4 +1,5 @@
 #include "BitCrusher.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 
 BitCrusher::BitCrusher() : m_rng(std::random_device{}()) {
@@ -113,6 +114,8 @@ void BitCrusher::reset() {
 }
 
 void BitCrusher::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -285,6 +288,8 @@ void BitCrusher::process(juce::AudioBuffer<float>& buffer) {
             channelData[sample] = m_outputDCBlockers[channel].process(channelData[sample]);
         }
     }
+    
+    scrubBuffer(buffer);
 }
 
 float BitCrusher::quantize(float input, float bits) {

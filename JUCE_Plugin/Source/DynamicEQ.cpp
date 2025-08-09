@@ -49,6 +49,7 @@ void DynamicEQ::reset() {
 }
 
 void DynamicEQ::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -195,4 +196,6 @@ juce::String DynamicEQ::getParameterName(int index) const {
         case 7: return "Mode";
         default: return "";
     }
+    
+    scrubBuffer(buffer);
 }

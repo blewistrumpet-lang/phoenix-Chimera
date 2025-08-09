@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <vector>
 #include <memory>
 #include <array>
@@ -27,7 +28,7 @@ private:
         float smoothing = 0.995f;
         
         void update() {
-            current = target + (current - target) * smoothing;
+            current = DSPUtils::flushDenorm(target + (current - target) * smoothing);
         }
         
         void reset(float value) {
@@ -195,21 +196,7 @@ private:
     
     FilterSystem m_filterSystem;
     
-    // DC Blocking
-    struct DCBlocker {
-        float x1 = 0.0f, y1 = 0.0f;
-        static constexpr float R = 0.995f;
-        
-        float process(float input) {
-            float output = input - x1 + R * y1;
-            x1 = input;
-            y1 = output;
-            return output;
-        }
-        
-        void reset() { x1 = y1 = 0.0f; }
-    };
-    
+    // DC Blocking using DspEngineUtilities
     std::array<DCBlocker, 2> m_dcBlockers;
     
     // Thermal modeling for analog warmth

@@ -108,7 +108,7 @@ void DimensionExpander::updateFilters() {
     clarityHP_.setLowpass(clarHz, ffs); // use HP topology at process time
 }
 
-void DimensionExpander::process(juce::AudioBuffer<float>& buffer) {
+void DimensionExpander::process(juce::AudioBuffer<float>& buffer) { DenormalGuard guard;
     const int nCh = std::min(buffer.getNumChannels(), 2);
     const int n   = buffer.getNumSamples();
     if (nCh <= 0 || n <= 0) return;
@@ -204,4 +204,6 @@ void DimensionExpander::process(juce::AudioBuffer<float>& buffer) {
         Lw[i] = outL;
         if (Rw) Rw[i] = outR;
     }
+    
+    scrubBuffer(buffer);
 }

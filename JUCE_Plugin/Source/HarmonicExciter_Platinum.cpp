@@ -645,7 +645,9 @@ void HarmonicExciter_Platinum::prepareToPlay(double sampleRate, int samplesPerBl
 }
 
 void HarmonicExciter_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     pimpl->processBlock(buffer);
+    scrubBuffer(buffer);
 }
 
 void HarmonicExciter_Platinum::reset() {

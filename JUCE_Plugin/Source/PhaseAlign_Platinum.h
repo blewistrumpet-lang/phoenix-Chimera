@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <JuceHeader.h>
 #include <array>
 #include <atomic>
@@ -37,7 +38,6 @@ private:
 
     // ----------------- utils -----------------
     static inline float clamp01(float v) noexcept { return juce::jlimit(0.0f, 1.0f, v); }
-    static inline bool  finitef(float x) noexcept { return std::isfinite(x); }
     static inline float deg2rad(float d) noexcept { return d * (juce::MathConstants<float>::pi / 180.0f); }
 
     struct Smoothed {
@@ -47,7 +47,7 @@ private:
             sec = std::max(1.0e-4f, sec);
             coeff = std::exp(-1.0f / (sec * fs));
         }
-        float next() { float t = target.load(std::memory_order_relaxed); current = t + (current - t) * coeff; return current; }
+        float next() { float t = target.load(std::memory_order_relaxed); current = DSPUtils::flushDenorm(t + (current - t) * coeff); return current; }
         void snap()  { current = target.load(std::memory_order_relaxed); }
     };
 
@@ -59,8 +59,8 @@ private:
             g = std::tan(juce::MathConstants<float>::pi * (fc / fs));
             z = 0.f;
         }
-        float lp(float x){ const float v=(x - z)/(1.f+g); const float y=v+z; z=y + g*v; return y; }
-        float hp(float x){ const float v=(x - z)/(1.f+g); const float y=v+z; z=y + g*v; return x - y; }
+        float lp(float x){ const float v=(x - z)/(1.f+g); const float y=v+z; z=DSPUtils::flushDenorm(y + g*v); return y; }
+        float hp(float x){ const float v=(x - z)/(1.f+g); const float y=v+z; z=DSPUtils::flushDenorm(y + g*v); return x - y; }
         void reset(){ z=0.f; }
     };
 
@@ -80,7 +80,7 @@ private:
         }
         float process(float x){
             const float y = b0*x + b1*x1 + b2*x2 - a1*y1 - a2*y2;
-            x2=x1; x1=x; y2=y1; y1=y;
+            x2=x1; x1=x; y2=y1; y1=DSPUtils::flushDenorm(y);
             return y;
         }
         void reset(){ x1=x2=y1=y2=0.f; }
@@ -108,7 +108,7 @@ private:
         }
         float process(float x){
             const float y = b0*x + b1*x1 + b2*x2 + b3*x3 - a1*y1 - a2*y2 - a3*y3;
-            x3=x2; x2=x1; x1=x; y3=y2; y2=y1; y1=y;
+            x3=x2; x2=x1; x1=x; y3=y2; y2=y1; y1=DSPUtils::flushDenorm(y);
             return y;
         }
         void reset(){ x1=x2=x3=y1=y2=y3=0.f; }

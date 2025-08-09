@@ -1,5 +1,6 @@
 // EnvelopeFilter.cpp - Complete Platinum-spec implementation with all refinements
 #include "EnvelopeFilter.h"
+#include "DspEngineUtilities.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
 #include <atomic>
@@ -776,6 +777,8 @@ void EnvelopeFilter::reset() {
 }
 
 void EnvelopeFilter::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = std::min(buffer.getNumChannels(), 2);
     const int numSamples = buffer.getNumSamples();
     
@@ -802,6 +805,8 @@ void EnvelopeFilter::process(juce::AudioBuffer<float>& buffer) {
             pimpl->oversamplers[ch]->processSamplesDown(channelBlock);
         }
     }
+    
+    scrubBuffer(buffer);
 }
 
 void EnvelopeFilter::updateParameters(const std::map<int, float>& params) {

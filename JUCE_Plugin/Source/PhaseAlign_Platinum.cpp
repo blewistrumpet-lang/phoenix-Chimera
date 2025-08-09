@@ -1,7 +1,4 @@
 #include "PhaseAlign_Platinum.h"
-#if defined(__SSE2__)
- #include <immintrin.h>
-#endif
 #include <chrono>
 
 PhaseAlign_Platinum::PhaseAlign_Platinum() {
@@ -19,10 +16,6 @@ PhaseAlign_Platinum::PhaseAlign_Platinum() {
 
     pAuto_.snap(); pRef_.snap(); pLoDeg_.snap(); pLmDeg_.snap(); pHmDeg_.snap(); pHiDeg_.snap();
     pLoHz_.snap(); pMidHz_.snap(); pHiHz_.snap(); pMix_.snap();
-
-   #if defined(__SSE2__)
-    _mm_setcsr(_mm_getcsr() | 0x8040); // FTZ/DAZ
-   #endif
 }
 
 void PhaseAlign_Platinum::prepareToPlay(double fs, int samplesPerBlock) {
@@ -202,6 +195,8 @@ void PhaseAlign_Platinum::computeAutoAlign(const float* L, const float* R, int n
 }
 
 void PhaseAlign_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int nCh = std::min(buffer.getNumChannels(), 2);
     const int n   = buffer.getNumSamples();
     if (nCh <= 0 || n <= 0) return;
@@ -278,10 +273,10 @@ void PhaseAlign_Platinum::process(juce::AudioBuffer<float>& buffer) {
         float outL = (1.0f - mix) * Lr[i] + mix * LwWet;
         float outR = (1.0f - mix) * Rr[i] + mix * RwWet;
 
-        if (!finitef(outL)) outL = 0.0f;
-        if (!finitef(outR)) outR = 0.0f;
-
         Lw[i] = outL;
         if (Rw) Rw[i] = outR;
     }
+    
+    // Scrub NaN/Inf values from output buffer
+    scrubBuffer(buffer);
 }

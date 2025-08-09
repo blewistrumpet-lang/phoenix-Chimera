@@ -1,4 +1,5 @@
 #include "HarmonicTremolo.h"
+#include "DspEngineUtilities.h"
 #include <cstring>
 #include <cstdint>  // For uint32_t in denormal handling
 #include <functional>  // For std::function
@@ -77,6 +78,8 @@ void HarmonicTremolo::reset() {
 }
 
 void HarmonicTremolo::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = std::min(buffer.getNumChannels(), 2);
     const int numSamples = buffer.getNumSamples();
     
@@ -95,6 +98,8 @@ void HarmonicTremolo::process(juce::AudioBuffer<float>& buffer) {
             #endif
         }
     }
+    
+    scrubBuffer(buffer);
 }
 
 void HarmonicTremolo::processBlock(float* channelData, int numSamples, int channel) {

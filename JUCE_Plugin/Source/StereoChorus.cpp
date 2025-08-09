@@ -54,6 +54,7 @@ void StereoChorus::reset() {
 }
 
 void StereoChorus::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -193,6 +194,8 @@ void StereoChorus::process(juce::AudioBuffer<float>& buffer) {
             m_writePos[0] = (m_writePos[0] + 1) % m_delayLines[0].size();
         }
     }
+    
+    scrubBuffer(buffer);
 }
 
 void StereoChorus::updateParameters(const std::map<int, float>& params) {

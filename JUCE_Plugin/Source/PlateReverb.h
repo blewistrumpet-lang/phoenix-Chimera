@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Source/EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <vector>
 #include <array>
 #include <memory>

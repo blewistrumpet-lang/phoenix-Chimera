@@ -1,6 +1,7 @@
 // SpectralFreeze_Ultimate.h
 #pragma once
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <vector>
 #include <complex>
 #include <cmath>
@@ -135,13 +136,7 @@ private:
     static constexpr int SMOOTH_INTERVAL = 32;  // Samples between smoothing updates
     int m_smoothCounter = 0;
     
-    // CPU denormal handling
-    class DenormalDisabler {
-        unsigned int oldMXCSR;
-    public:
-        DenormalDisabler();
-        ~DenormalDisabler();
-    };
+    // Using DspEngineUtilities DenormalGuard instead of custom implementation
     
     // Window generation with exact overlap compensation
     void generateWindowWithCompensation();
@@ -158,18 +153,5 @@ private:
     void applyDensity(std::complex<float>* spectrum, float density);
     void applyShimmer(std::complex<float>* spectrum, float shimmer, ChannelState& state);
     
-    // Professional denormal prevention using bit manipulation
-    inline float preventDenormal(float x) {
-        union { float f; uint32_t i; } u;
-        u.f = x;
-        if ((u.i & 0x7F800000) == 0) return 0.0f;
-        return x;
-    }
-    
-    inline double preventDenormalDouble(double x) {
-        union { double d; uint64_t i; } u;
-        u.d = x;
-        if ((u.i & 0x7FF0000000000000ULL) == 0) return 0.0;
-        return x;
-    }
+    // Using DspEngineUtilities DSPUtils::flushDenorm instead of custom denormal prevention
 };

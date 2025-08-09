@@ -1,5 +1,6 @@
 // StateVariableFilter.cpp - Simplified Working Implementation
 #include "StateVariableFilter.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 #include <algorithm>
 
@@ -57,6 +58,8 @@ void StateVariableFilter::reset() {
 }
 
 void StateVariableFilter::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -70,6 +73,8 @@ void StateVariableFilter::process(juce::AudioBuffer<float>& buffer) {
         float* right = numChannels > 1 ? buffer.getWritePointer(1) : left;
         processStereo(left, right, numSamples);
     }
+    
+    scrubBuffer(buffer);
 }
 
 void StateVariableFilter::processStereo(float* left, float* right, int numSamples) {

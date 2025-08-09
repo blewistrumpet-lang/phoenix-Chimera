@@ -1,5 +1,6 @@
 // FormantFilter.cpp
 #include "FormantFilter.h"
+#include "DspEngineUtilities.h"
 #include <algorithm>
 
 // Professional vowel formant data with realistic Q ranges (2-20)
@@ -85,6 +86,8 @@ void FormantFilter::reset() {
 }
 
 void FormantFilter::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -129,6 +132,8 @@ void FormantFilter::process(juce::AudioBuffer<float>& buffer) {
             }
         }
     }
+    
+    scrubBuffer(buffer);
 }
 
 double FormantFilter::processSample(double input, int channel) {

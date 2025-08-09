@@ -1,4 +1,5 @@
 #include "MuffFuzz.h"
+#include "DspEngineUtilities.h"
 #include <algorithm>
 #include <cstring>
 
@@ -48,6 +49,8 @@ void MuffFuzz::prepareToPlay(double sampleRate, int samplesPerBlock) {
 }
 
 void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numSamples = buffer.getNumSamples();
     const int numChannels = std::min(buffer.getNumChannels(), 2);
     
@@ -125,6 +128,8 @@ void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
     // Update thermal model (once per block)
     double avgPower = 0.1;  // Simplified power calculation
     m_thermalModel.update(avgPower, numSamples / m_sampleRate);
+    
+    scrubBuffer(buffer);
 }
 
 void MuffFuzz::reset() {

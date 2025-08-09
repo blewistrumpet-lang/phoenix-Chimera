@@ -1,5 +1,6 @@
 // PhasedVocoder.cpp - Platinum-spec implementation with all refinements
 #include "PhasedVocoder.h"
+#include "DspEngineUtilities.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
@@ -31,26 +32,10 @@ namespace {
     constexpr double PI_D = 3.1415926535897932384626433832795;
     constexpr float TWO_PI = static_cast<float>(TWO_PI_D);
     
-    // Denormal prevention
-    struct DenormGuard {
-        DenormGuard() {
-#ifdef __SSE2__
-            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-#endif
-        }
-    } static g_denormGuard;
-    
-    // Inline helpers
+    // Use DSPUtils for denormal handling
     template<typename T>
     ALWAYS_INLINE T flushDenorm(T v) noexcept {
-#ifdef __SSE2__
-        return _mm_cvtss_f32(_mm_add_ss(_mm_set_ss(static_cast<float>(v)), 
-                                       _mm_set_ss(0.0f)));
-#else
-        constexpr T tiny = static_cast<T>(1.0e-30);
-        return std::fabs(v) < tiny ? static_cast<T>(0) : v;
-#endif
+        return DSPUtils::flushDenorm(v);
     }
     
     // Optimized circular buffer indexing (no modulo)
@@ -357,6 +342,8 @@ void PhasedVocoder::reset() {
 }
 
 void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -418,6 +405,9 @@ void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {
                                          output * smoothMix);
         }
     }
+    
+    // Scrub buffer for NaN/Inf protection
+    scrubBuffer(buffer);
 }
 
 // Implementation methods

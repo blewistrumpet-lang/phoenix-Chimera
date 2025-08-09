@@ -608,7 +608,7 @@ public:
         }
     }
     
-    void process(juce::AudioBuffer<float>& buffer) {
+    void process(juce::AudioBuffer<float>& buffer) { DenormalGuard guard;
         const int numChannels = buffer.getNumChannels();
         const int numSamples = buffer.getNumSamples();
         
@@ -825,7 +825,9 @@ void BufferRepeat_Platinum::prepareToPlay(double sampleRate, int samplesPerBlock
 }
 
 void BufferRepeat_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
     pImpl->process(buffer);
+    scrubBuffer(buffer);
 }
 
 void BufferRepeat_Platinum::reset() {
