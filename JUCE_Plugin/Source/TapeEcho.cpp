@@ -11,8 +11,9 @@ TapeEcho::TapeEcho()
     pWowFlutter_.target.store(0.25f);
     pSaturation_.target.store(0.3f);
     pMix_.target.store(0.35f);
+    pSync_.target.store(0.0f);         // sync off by default
 
-    pTime_.snap(); pFeedback_.snap(); pWowFlutter_.snap(); pSaturation_.snap(); pMix_.snap();
+    pTime_.snap(); pFeedback_.snap(); pWowFlutter_.snap(); pSaturation_.snap(); pMix_.snap(); pSync_.snap();
 }
 
 //==============================================================================
@@ -28,8 +29,9 @@ void TapeEcho::prepareToPlay(double sr, int /*blockSize*/)
     pWowFlutter_.setTimeConst(0.05f, fs);
     pSaturation_.setTimeConst(0.025f, fs);
     pMix_.setTimeConst(0.015f, fs);
+    pSync_.setTimeConst(0.01f, fs);  // Fast switching for sync
 
-    pTime_.snap(); pFeedback_.snap(); pWowFlutter_.snap(); pSaturation_.snap(); pMix_.snap();
+    pTime_.snap(); pFeedback_.snap(); pWowFlutter_.snap(); pSaturation_.snap(); pMix_.snap(); pSync_.snap();
 
     for (auto& c : ch_) c.prepare(sampleRate_);
 }
@@ -56,6 +58,7 @@ void TapeEcho::updateParameters(const std::map<int, float>& params)
     set(2, pWowFlutter_, 0.25f,  0.0f, 1.0f);
     set(3, pSaturation_, 0.30f,  0.0f, 1.0f);
     set(4, pMix_,        0.35f,  0.0f, 1.0f);
+    set(5, pSync_,       0.0f,   0.0f, 1.0f);
 }
 
 juce::String TapeEcho::getParameterName(int index) const
@@ -66,6 +69,7 @@ juce::String TapeEcho::getParameterName(int index) const
         case 2: return "Wow & Flutter";
         case 3: return "Saturation";
         case 4: return "Mix";
+        case 5: return "Sync";
         default: return {};
     }
 }
@@ -175,6 +179,7 @@ void TapeEcho::process(juce::AudioBuffer<float>& buffer)
     const float modAmt = pWowFlutter_.next();
     const float satAmt = pSaturation_.next();
     const float mix    = pMix_.next();
+    const float syncParam = pSync_.next();
 
     // one random target per block (cheap)
     for (int ch = 0; ch < nCh; ++ch) ch_[ch].mod.updateRandomOncePerBlock();
@@ -187,8 +192,8 @@ void TapeEcho::process(juce::AudioBuffer<float>& buffer)
 
         auto& cs = ch_[ch];
 
-        // Map time [0..1] to 10..2000ms outside the loop
-        const float baseDelayMs = kMinDelayMs + t * (kMaxDelayMs - kMinDelayMs);
+        // Map time [0..1] to 10..2000ms outside the loop, or calculate synced time
+        const float baseDelayMs = calculateSyncedDelayTime(t, syncParam);
 
         // dynamic LP cutoff for feedback based on fbAmt, precompute alpha
         const float lpHz = 6000.0f * (1.0f - 0.3f * fbAmt);
@@ -249,6 +254,54 @@ void TapeEcho::process(juce::AudioBuffer<float>& buffer)
     }
 
     // mono safety: if host gave 1 channel, nothing else to do; if >2, we ignore extras
+}
+
+//==============================================================================
+// Transport sync implementation
+void TapeEcho::setTransportInfo(const TransportInfo& info)
+{
+    transportInfo_ = info;
+}
+
+bool TapeEcho::supportsFeature(Feature f) const noexcept
+{
+    switch (f) {
+        case Feature::TempoSync: return true;
+        default: return false;
+    }
+}
+
+float TapeEcho::calculateSyncedDelayTime(float timeParam, float syncParam) const
+{
+    // Sync is off if syncParam < 0.5, use manual time
+    if (syncParam < 0.5f) {
+        return kMinDelayMs + timeParam * (kMaxDelayMs - kMinDelayMs);
+    }
+    
+    // Sync is on, map timeParam to beat divisions
+    const int divisionIndex = static_cast<int>(timeParam * 8.999f); // 0-8 range
+    const BeatDivision division = static_cast<BeatDivision>(divisionIndex);
+    
+    return getBeatDivisionMs(division);
+}
+
+float TapeEcho::getBeatDivisionMs(BeatDivision division) const
+{
+    const double bpm = std::max(20.0, std::min(999.0, transportInfo_.bpm));
+    const double quarterNoteMs = (60.0 / bpm) * 1000.0; // ms per quarter note
+    
+    switch (division) {
+        case BeatDivision::DIV_1_64: return static_cast<float>(quarterNoteMs / 16.0);
+        case BeatDivision::DIV_1_32: return static_cast<float>(quarterNoteMs / 8.0);
+        case BeatDivision::DIV_1_16: return static_cast<float>(quarterNoteMs / 4.0);
+        case BeatDivision::DIV_1_8:  return static_cast<float>(quarterNoteMs / 2.0);
+        case BeatDivision::DIV_1_4:  return static_cast<float>(quarterNoteMs);
+        case BeatDivision::DIV_1_2:  return static_cast<float>(quarterNoteMs * 2.0);
+        case BeatDivision::DIV_1_1:  return static_cast<float>(quarterNoteMs * 4.0);
+        case BeatDivision::DIV_2_1:  return static_cast<float>(quarterNoteMs * 8.0);
+        case BeatDivision::DIV_4_1:  return static_cast<float>(quarterNoteMs * 16.0);
+        default: return static_cast<float>(quarterNoteMs);
+    }
 }
 
 //==============================================================================

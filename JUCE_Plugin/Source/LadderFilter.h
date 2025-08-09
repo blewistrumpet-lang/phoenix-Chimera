@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Source/EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <array>
 #include <vector>
 #include <atomic>
@@ -295,12 +296,9 @@ private:
     // Filter response calculation
     float calculateFilterResponse(const ChannelState& state, float input, float filterType);
     
-    // Helper functions
+    // Helper functions - now using DspEngineUtilities
     static inline float flushDenormal(float value) {
-        union { float f; uint32_t i; } u;
-        u.f = value;
-        if ((u.i & 0x7F800000) == 0) return 0.0f;
-        return value;
+        return DSPUtils::flushDenorm(value);
     }
     
     static inline float fastTanh(float x) {

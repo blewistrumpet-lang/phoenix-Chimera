@@ -85,6 +85,8 @@ void LadderFilter::reset() {
 }
 
 void LadderFilter::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;  // RAII denormal protection for entire process block
+    
     const int numChannels = std::min(buffer.getNumChannels(), 2);
     const int numSamples = buffer.getNumSamples();
     
@@ -106,6 +108,9 @@ void LadderFilter::process(juce::AudioBuffer<float>& buffer) {
             #endif
         }
     }
+    
+    // Scrub buffer for NaN/Inf protection at end of processing
+    scrubBuffer(buffer);
 }
 
 void LadderFilter::processBlock(float* channelData, int numSamples, int channel) {
@@ -199,7 +204,7 @@ float LadderFilter::processLadderCore(float input, int channel) {
     // Final soft limiting
     output = fastTanh(output * 0.8f) / 0.8f;
     
-    return flushDenormal(output);
+    return DSPUtils::flushDenorm(output);
 }
 
 float LadderFilter::solveZeroDelayFeedback(float input, ChannelState& state, float g, float k) {
@@ -225,7 +230,7 @@ float LadderFilter::solveZeroDelayFeedback(float input, ChannelState& state, flo
             // Process stage with saturation
             stageInput = state.stages[s].process(stageInput, effectiveG, 
                                                 m_coeffs.stageSaturation[s]);
-            stageInput = flushDenormal(stageInput);
+            stageInput = DSPUtils::flushDenorm(stageInput);
         }
         
         // Update estimate
@@ -335,7 +340,9 @@ void LadderFilter::FilterCoefficients::update(float cutoffNorm, float resonance,
     // Calculate feedback amount with compensation
     if (vintageMode) {
         // Vintage mode - musical self-oscillation
-        k = resonance * resonance * 4.1f;
+        // Clamp resonance to safe range to prevent instability
+        float safeResonance = clampSafe(resonance, 0.0f, 0.95f);
+        k = safeResonance * safeResonance * 4.1f;
         
         // Gain compensation for vintage mode
         gCompensation = 1.0f + k * 0.1f;
@@ -347,7 +354,9 @@ void LadderFilter::FilterCoefficients::update(float cutoffNorm, float resonance,
         stageSaturation[3] = 1.0f;
     } else {
         // Modern mode - controlled resonance
-        k = resonance * 4.0f;
+        // Clamp resonance to safe range to prevent instability
+        float safeResonance = clampSafe(resonance, 0.0f, 0.95f);
+        k = safeResonance * 4.0f;
         
         // Better gain compensation for modern mode
         gCompensation = std::sqrt(1.0f + k * k * 0.05f);
@@ -365,14 +374,17 @@ void LadderFilter::FilterCoefficients::update(float cutoffNorm, float resonance,
 
 void LadderFilter::FilterCoefficients::ensureStability() {
     // Limit g to prevent numerical instability
-    g = std::clamp(g, 0.0f, 0.98f);
+    g = clampSafe(g, 0.0f, 0.98f);
     
     // Dynamic k limiting based on g (Nyquist stability criterion)
     float maxK = 4.0f * (1.0f - g) / (1.0f + g);
-    k = std::min(k, maxK * 0.95f); // 5% safety margin
+    k = clampSafe(k, 0.0f, maxK * 0.95f); // 5% safety margin, clamped to safe range
+    
+    // Clamp feedback parameter k to absolute safe range (-0.95 to 0.95)
+    k = clampSafe(k, -0.95f, 0.95f);
     
     // Adjust input saturation based on resonance
-    inputSaturation = 1.0f + k * 0.2f;
+    inputSaturation = clampSafe(1.0f + k * 0.2f, 0.1f, 10.0f);
 }
 
 // SaturationModel implementation

@@ -12,6 +12,7 @@ MagneticDrumEcho::MagneticDrumEcho() {
     m_saturation = std::make_unique<ParameterSmoother>();
     m_wowFlutter = std::make_unique<ParameterSmoother>();
     m_mix = std::make_unique<ParameterSmoother>();
+    m_sync = std::make_unique<ParameterSmoother>();
     
     // Set default values (classic Echorec settings)
     m_drumSpeed->reset(0.5);    // Medium speed
@@ -22,6 +23,7 @@ MagneticDrumEcho::MagneticDrumEcho() {
     m_saturation->reset(0.3);   // Gentle tube warmth
     m_wowFlutter->reset(0.3);   // Vintage amount
     m_mix->reset(0.4);          // 40% wet
+    m_sync->reset(0.0);         // Sync off by default
     
     // Create oversamplers
     for (int ch = 0; ch < NUM_CHANNELS; ++ch) {
@@ -46,6 +48,7 @@ void MagneticDrumEcho::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_saturation->setSampleRate(sampleRate, 30.0);
     m_wowFlutter->setSampleRate(sampleRate, 100.0);  // Slow changes
     m_mix->setSampleRate(sampleRate, 30.0);
+    m_sync->setSampleRate(sampleRate, 10.0);  // Fast switching for sync
     
     // Initialize processing components
     m_motor.setSampleRate(sampleRate);
@@ -114,7 +117,9 @@ void MagneticDrumEcho::process(juce::AudioBuffer<float>& buffer) {
     
     // Update parameters once per block
     CachedParams params;
-    params.drumSpeed = m_drumSpeed->process();
+    double drumSpeedParam = m_drumSpeed->process();
+    double syncParam = m_sync->process();
+    params.drumSpeed = calculateSyncedDrumSpeed(drumSpeedParam, syncParam);
     params.head1Level = m_head1Level->process();
     params.head2Level = m_head2Level->process();
     params.head3Level = m_head3Level->process();
@@ -122,6 +127,7 @@ void MagneticDrumEcho::process(juce::AudioBuffer<float>& buffer) {
     params.saturation = m_saturation->process();
     params.wowFlutter = m_wowFlutter->process();
     params.mix = m_mix->process();
+    params.sync = syncParam;
     
     // Update motor speed
     m_motor.setSpeed(0.2 + params.drumSpeed * 1.8);  // 0.2x to 2.0x speed range
@@ -259,6 +265,7 @@ void MagneticDrumEcho::updateParameters(const std::map<int, float>& params) {
     m_saturation->setTarget(static_cast<double>(getParam(5, 0.3f)));
     m_wowFlutter->setTarget(static_cast<double>(getParam(6, 0.3f)));
     m_mix->setTarget(static_cast<double>(getParam(7, 0.4f)));
+    m_sync->setTarget(static_cast<double>(getParam(8, 0.0f)));
 }
 
 juce::String MagneticDrumEcho::getParameterName(int index) const {
@@ -271,6 +278,7 @@ juce::String MagneticDrumEcho::getParameterName(int index) const {
         case 5: return "Saturation";
         case 6: return "Wow/Flutter";
         case 7: return "Mix";
+        case 8: return "Sync";
         default: return "";
     }
 }
@@ -647,4 +655,52 @@ void MagneticDrumEcho::Oversampler2x::reset() {
         stage.reset();
     }
     z1 = 0;
+}
+
+// ==================== Transport Sync Implementation ====================
+
+void MagneticDrumEcho::setTransportInfo(const TransportInfo& info) {
+    m_transportInfo = info;
+}
+
+bool MagneticDrumEcho::supportsFeature(Feature f) const noexcept {
+    switch (f) {
+        case Feature::TempoSync: return true;
+        default: return false;
+    }
+}
+
+double MagneticDrumEcho::calculateSyncedDrumSpeed(double speedParam, double syncParam) const {
+    // Sync is off if syncParam < 0.5, use manual speed
+    if (syncParam < 0.5) {
+        return speedParam;
+    }
+    
+    // Sync is on, map speedParam to beat divisions and calculate drum speed multiplier
+    const int divisionIndex = static_cast<int>(speedParam * 8.999); // 0-8 range
+    const BeatDivision division = static_cast<BeatDivision>(divisionIndex);
+    
+    return getBeatDivisionSpeedMultiplier(division);
+}
+
+double MagneticDrumEcho::getBeatDivisionSpeedMultiplier(BeatDivision division) const {
+    const double bpm = std::max(20.0, std::min(999.0, m_transportInfo.bpm));
+    
+    // Base drum speed calibrated for 120 BPM = 0.5 speed parameter
+    // This creates a natural mapping between BPM and drum rotation speed
+    const double baseDrumSpeed = 0.5;
+    const double bpmRatio = bpm / 120.0;
+    
+    switch (division) {
+        case BeatDivision::DIV_1_64: return baseDrumSpeed * bpmRatio * 16.0;  // Very fast
+        case BeatDivision::DIV_1_32: return baseDrumSpeed * bpmRatio * 8.0;   // Fast
+        case BeatDivision::DIV_1_16: return baseDrumSpeed * bpmRatio * 4.0;   // Medium-fast
+        case BeatDivision::DIV_1_8:  return baseDrumSpeed * bpmRatio * 2.0;   // Medium
+        case BeatDivision::DIV_1_4:  return baseDrumSpeed * bpmRatio;         // Quarter note sync
+        case BeatDivision::DIV_1_2:  return baseDrumSpeed * bpmRatio * 0.5;   // Half note
+        case BeatDivision::DIV_1_1:  return baseDrumSpeed * bpmRatio * 0.25;  // Whole note
+        case BeatDivision::DIV_2_1:  return baseDrumSpeed * bpmRatio * 0.125; // Two bars
+        case BeatDivision::DIV_4_1:  return baseDrumSpeed * bpmRatio * 0.0625;// Four bars
+        default: return baseDrumSpeed * bpmRatio;
+    }
 }

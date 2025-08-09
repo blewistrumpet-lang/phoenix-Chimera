@@ -25,8 +25,8 @@ void FeedbackNetwork::updateParameters(const std::map<int, float>& params) {
     };
 
     delayTimeSec    = std::max(0.001f, get(kDelayTime, 0.25f));
-    feedback        = std::clamp(get(kFeedback, 0.5f), -0.99f, 0.99f);
-    crossFeed       = std::clamp(get(kCrossFeed, 0.0f), -1.0f, 1.0f);
+    feedback        = clampSafe(get(kFeedback, 0.5f), -0.95f, 0.95f);  // Safer feedback range
+    crossFeed       = clampSafe(get(kCrossFeed, 0.0f), -0.95f, 0.95f); // Safer crossfeed range
     diffusion       = std::clamp(get(kDiffusion, 0.0f), 0.0f, 1.0f);
     modulationDepth = std::clamp(get(kModulation, 0.0f), 0.0f, 0.05f);
     freeze          = std::clamp(get(kFreeze, 0.0f), 0.0f, 1.0f);
@@ -35,6 +35,8 @@ void FeedbackNetwork::updateParameters(const std::map<int, float>& params) {
 }
 
 void FeedbackNetwork::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;  // RAII denormal protection for entire process block
+    
     auto* left  = buffer.getWritePointer(0);
     auto* right = buffer.getNumChannels() > 1 ? buffer.getWritePointer(1) : nullptr;
 
@@ -67,10 +69,13 @@ void FeedbackNetwork::process(juce::AudioBuffer<float>& buffer) {
             delayL.write(sanitize(inL + dl * feedback));
             delayR.write(sanitize(inR + dr * feedback));
 
-            left[n]  = (1.0f - mix) * left[n]  + mix * dl;
-            if (right) right[n] = (1.0f - mix) * right[n] + mix * dr;
+            left[n]  = DSPUtils::flushDenorm((1.0f - mix) * left[n]  + mix * dl);
+            if (right) right[n] = DSPUtils::flushDenorm((1.0f - mix) * right[n] + mix * dr);
         }
     }
+    
+    // Scrub buffer for NaN/Inf protection at end of processing
+    scrubBuffer(buffer);
 }
 
 juce::String FeedbackNetwork::getParameterName(int index) const {

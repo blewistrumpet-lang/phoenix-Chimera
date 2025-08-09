@@ -2,6 +2,7 @@
 #pragma once
 
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <array>
 #include <memory>
 // Platform-specific SIMD includes
@@ -35,8 +36,12 @@ public:
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     juce::String getName() const override { return "Digital Delay Pro"; }
-    int getNumParameters() const override { return 4; }
+    int getNumParameters() const override { return 5; }
     juce::String getParameterName(int index) const override;
+    
+    // Extended EngineBase API
+    void setTransportInfo(const TransportInfo& info) override;
+    bool supportsFeature(Feature f) const noexcept override;
     
 private:
     // Core DSP components
@@ -51,10 +56,24 @@ private:
     std::unique_ptr<DigitalDelayImpl::ParameterSmoother> m_feedback;
     std::unique_ptr<DigitalDelayImpl::ParameterSmoother> m_mix;
     std::unique_ptr<DigitalDelayImpl::ParameterSmoother> m_highCut;
+    std::unique_ptr<DigitalDelayImpl::ParameterSmoother> m_sync;
     
     // State
     double m_sampleRate = 44100.0;
     bool m_sampleRateChanged = false;
+    
+    // Transport sync
+    TransportInfo m_transportInfo;
+    
+    // Beat division mapping
+    enum class BeatDivision {
+        DIV_1_64, DIV_1_32, DIV_1_16, DIV_1_8, DIV_1_4, 
+        DIV_1_2, DIV_1_1, DIV_2_1, DIV_4_1
+    };
+    
+    // Helper methods
+    float calculateSyncedDelayTime(float timeParam, float syncParam) const;
+    float getBeatDivisionSamples(BeatDivision division) const;
     
     // Crossfeed state for ping-pong
     struct CrossfeedState {

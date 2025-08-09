@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <JuceHeader.h>
 #include <array>
 #include <atomic>
@@ -29,10 +30,14 @@ public:
     void updateParameters(const std::map<int, float>& params) override;
 
     juce::String getName() const override      { return "Tape Echo"; }
-    int          getNumParameters() const override { return 5; }
+    int          getNumParameters() const override { return 6; }
     juce::String getParameterName(int index) const override;
 
-    // Param order: 0 Time, 1 Feedback, 2 WowFlutter, 3 Saturation, 4 Mix
+    // Extended EngineBase API
+    void setTransportInfo(const TransportInfo& info) override;
+    bool supportsFeature(Feature f) const noexcept override;
+
+    // Param order: 0 Time, 1 Feedback, 2 WowFlutter, 3 Saturation, 4 Mix, 5 Sync
 
 private:
     // --------------------------------- constants
@@ -245,10 +250,31 @@ private:
     SmoothParam pWowFlutter_; // [0..1]
     SmoothParam pSaturation_; // [0..1]
     SmoothParam pMix_;        // [0..1]
+    SmoothParam pSync_;       // [0..1] -> sync on/off
 
     // --------------------------------- runtime
     double sampleRate_ = 44100.0;
     std::array<ChannelState, kMaxChannels> ch_{};
+    
+    // --------------------------------- transport sync
+    TransportInfo transportInfo_;
+    
+    // Beat division mapping (same as BufferRepeat_Platinum)
+    enum class BeatDivision {
+        DIV_1_64,    // 1/64 note
+        DIV_1_32,    // 1/32 note  
+        DIV_1_16,    // 1/16 note
+        DIV_1_8,     // 1/8 note
+        DIV_1_4,     // 1/4 note (quarter)
+        DIV_1_2,     // 1/2 note (half)
+        DIV_1_1,     // 1 bar
+        DIV_2_1,     // 2 bars
+        DIV_4_1      // 4 bars
+    };
+    
+    // Helper methods
+    float calculateSyncedDelayTime(float timeParam, float syncParam) const;
+    float getBeatDivisionMs(BeatDivision division) const;
 
     // --------------------------------- helpers
     inline float softSaturate(float x) noexcept {

@@ -1,6 +1,7 @@
 // ==================== BucketBrigadeDelay.h ====================
 #pragma once
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <array>
 #include <memory>
 #include <atomic>
@@ -20,8 +21,12 @@ public:
     void updateParameters(const std::map<int, float>& params) override;
     
     juce::String getName() const override { return "Bucket Brigade Delay"; }
-    int getNumParameters() const override { return 6; }
+    int getNumParameters() const override { return 7; }
     juce::String getParameterName(int index) const override;
+    
+    // Extended EngineBase API
+    void setTransportInfo(const TransportInfo& info) override;
+    bool supportsFeature(Feature f) const noexcept override;
     
 private:
     // Professional constants
@@ -257,6 +262,7 @@ private:
     std::unique_ptr<ParameterSmoother> m_tone;
     std::unique_ptr<ParameterSmoother> m_age;
     std::unique_ptr<ParameterSmoother> m_mix;
+    std::unique_ptr<ParameterSmoother> m_sync;
     
     // Processing components
     std::array<BBDChain, NUM_CHANNELS> m_bbdChains;
@@ -264,6 +270,15 @@ private:
     std::array<BBDFilters, NUM_CHANNELS> m_filters;
     std::array<FeedbackProcessor, NUM_CHANNELS> m_feedbackProcessors;
     std::array<DCServo, NUM_CHANNELS> m_dcServos;
+    
+    // Transport sync
+    TransportInfo m_transportInfo;
+    
+    // Beat division mapping
+    enum class BeatDivision {
+        DIV_1_64, DIV_1_32, DIV_1_16, DIV_1_8, DIV_1_4, 
+        DIV_1_2, DIV_1_1, DIV_2_1, DIV_4_1
+    };
     
     // Shared components
     ClockGenerator m_clockGenerator;
@@ -280,6 +295,7 @@ private:
         double tone;
         double age;
         double mix;
+        double sync;
         double clockRate;
     };
     
@@ -295,4 +311,8 @@ private:
     double calculateClockRate(double delayMs) const;
     ChipType getCurrentChipType() const { return static_cast<ChipType>(m_chipTypeAtomic.load()); }
     void updateChipType(ChipType newType);
+    
+    // Transport sync methods
+    double calculateSyncedDelayTime(double timeParam, double syncParam) const;
+    double getBeatDivisionMs(BeatDivision division) const;
 };

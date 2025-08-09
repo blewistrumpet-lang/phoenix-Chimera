@@ -17,7 +17,7 @@ public:
     juce::String getName() const override { return "Intelligent Harmonizer"; }
     
     // Get total processing latency in samples
-    int getLatencySamples() const;
+    int getLatencySamples() const noexcept override;
     
     // Parameter indices
     enum ParamID {

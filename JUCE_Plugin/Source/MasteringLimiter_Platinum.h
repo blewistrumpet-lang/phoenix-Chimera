@@ -4,6 +4,8 @@
 #pragma once
 
 #include "EngineBase.h"
+#include <JuceHeader.h>
+#include "DspEngineUtilities.h"
 #include <memory>
 #include <atomic>
 
@@ -22,6 +24,9 @@ public:
     int getNumParameters() const override { return 10; }
     juce::String getParameterName(int index) const override;
     juce::String getName() const override { return "Mastering Limiter Platinum"; }
+    
+    // Extended API - latency reporting
+    int getLatencySamples() const noexcept override;
     
     // Parameter indices
     enum ParamID {

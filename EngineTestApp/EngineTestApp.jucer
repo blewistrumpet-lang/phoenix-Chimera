@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="xK8mNp" name="EngineTestApp" projectType="consoleapp" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Chimera"
+              version="1.0.0">
+  <MAINGROUP id="G8xKmN" name="EngineTestApp">
+    <GROUP id="{8F4A8B12-3C5E-9A7F-2D1E-8C3F5A9B7E4D}" name="Source">
+      <FILE id="qR8mNp" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+    <GROUP id="{7B3E2F41-8C9A-5D6E-1A3F-9B8C7E5A4D2F}" name="Engine Sources">
+      <FILE id="eng001" name="EngineBase.h" compile="0" resource="0" file="../JUCE_Plugin/Source/EngineBase.h"/>
+      <FILE id="eng002" name="EngineFactory.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/EngineFactory.cpp"/>
+      <FILE id="eng003" name="EngineFactory.h" compile="0" resource="0" file="../JUCE_Plugin/Source/EngineFactory.h"/>
+      <FILE id="eng004" name="EngineTypes.h" compile="0" resource="0" file="../JUCE_Plugin/Source/EngineTypes.h"/>
+      <FILE id="eng005" name="ParameterSmoother.h" compile="0" resource="0" file="../JUCE_Plugin/Source/ParameterSmoother.h"/>
+      <FILE id="eng006" name="ParameterSmoother.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/ParameterSmoother.cpp"/>
+      <FILE id="eng007" name="Bypass.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/Bypass.cpp"/>
+      <FILE id="eng008" name="Bypass.h" compile="0" resource="0" file="../JUCE_Plugin/Source/Bypass.h"/>
+      <FILE id="eng009" name="VintageCompressor.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/VintageCompressor.cpp"/>
+      <FILE id="eng010" name="VintageCompressor.h" compile="0" resource="0" file="../JUCE_Plugin/Source/VintageCompressor.h"/>
+      <FILE id="eng011" name="VintageOptoCompressor_Platinum.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/VintageOptoCompressor_Platinum.cpp"/>
+      <FILE id="eng012" name="VintageOptoCompressor_Platinum.h" compile="0" resource="0" file="../JUCE_Plugin/Source/VintageOptoCompressor_Platinum.h"/>
+      <FILE id="eng013" name="VCA_Compressor.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/VCA_Compressor.cpp"/>
+      <FILE id="eng014" name="VCA_Compressor.h" compile="0" resource="0" file="../JUCE_Plugin/Source/VCA_Compressor.h"/>
+      <FILE id="eng015" name="FET1176.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/FET1176.cpp"/>
+      <FILE id="eng016" name="FET1176.h" compile="0" resource="0" file="../JUCE_Plugin/Source/FET1176.h"/>
+      <FILE id="eng017" name="Brickwall_Limiter.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/Brickwall_Limiter.cpp"/>
+      <FILE id="eng018" name="Brickwall_Limiter.h" compile="0" resource="0" file="../JUCE_Plugin/Source/Brickwall_Limiter.h"/>
+      <FILE id="eng019" name="TransientShaper.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/TransientShaper.cpp"/>
+      <FILE id="eng020" name="TransientShaper.h" compile="0" resource="0" file="../JUCE_Plugin/Source/TransientShaper.h"/>
+      <FILE id="eng021" name="LadderFilter.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/LadderFilter.cpp"/>
+      <FILE id="eng022" name="LadderFilter.h" compile="0" resource="0" file="../JUCE_Plugin/Source/LadderFilter.h"/>
+      <FILE id="eng023" name="StateVariableFilter.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/StateVariableFilter.cpp"/>
+      <FILE id="eng024" name="StateVariableFilter.h" compile="0" resource="0" file="../JUCE_Plugin/Source/StateVariableFilter.h"/>
+      <FILE id="eng025" name="CombFilter.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/CombFilter.cpp"/>
+      <FILE id="eng026" name="CombFilter.h" compile="0" resource="0" file="../JUCE_Plugin/Source/CombFilter.h"/>
+      <FILE id="eng027" name="FormantFilter.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/FormantFilter.cpp"/>
+      <FILE id="eng028" name="FormantFilter.h" compile="0" resource="0" file="../JUCE_Plugin/Source/FormantFilter.h"/>
+      <FILE id="eng029" name="VintageEQ.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/VintageEQ.cpp"/>
+      <FILE id="eng030" name="VintageEQ.h" compile="0" resource="0" file="../JUCE_Plugin/Source/VintageEQ.h"/>
+      <FILE id="eng031" name="GraphicEQ.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/GraphicEQ.cpp"/>
+      <FILE id="eng032" name="GraphicEQ.h" compile="0" resource="0" file="../JUCE_Plugin/Source/GraphicEQ.h"/>
+      <FILE id="eng033" name="DynamicEQ.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/DynamicEQ.cpp"/>
+      <FILE id="eng034" name="DynamicEQ.h" compile="0" resource="0" file="../JUCE_Plugin/Source/DynamicEQ.h"/>
+      <FILE id="eng035" name="TiltEQ.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/TiltEQ.cpp"/>
+      <FILE id="eng036" name="TiltEQ.h" compile="0" resource="0" file="../JUCE_Plugin/Source/TiltEQ.h"/>
+      <FILE id="eng037" name="KStyleOverdrive.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/KStyleOverdrive.cpp"/>
+      <FILE id="eng038" name="KStyleOverdrive.h" compile="0" resource="0" file="../JUCE_Plugin/Source/KStyleOverdrive.h"/>
+      <FILE id="eng039" name="TubeDistortion.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/TubeDistortion.cpp"/>
+      <FILE id="eng040" name="TubeDistortion.h" compile="0" resource="0" file="../JUCE_Plugin/Source/TubeDistortion.h"/>
+      <FILE id="eng041" name="TapeEmulation.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/TapeEmulation.cpp"/>
+      <FILE id="eng042" name="TapeEmulation.h" compile="0" resource="0" file="../JUCE_Plugin/Source/TapeEmulation.h"/>
+      <FILE id="eng043" name="MuffFuzz.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/MuffFuzz.cpp"/>
+      <FILE id="eng044" name="MuffFuzz.h" compile="0" resource="0" file="../JUCE_Plugin/Source/MuffFuzz.h"/>
+      <FILE id="eng045" name="BitCrusher.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/BitCrusher.cpp"/>
+      <FILE id="eng046" name="BitCrusher.h" compile="0" resource="0" file="../JUCE_Plugin/Source/BitCrusher.h"/>
+      <FILE id="eng047" name="WaveFolder.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/WaveFolder.cpp"/>
+      <FILE id="eng048" name="WaveFolder.h" compile="0" resource="0" file="../JUCE_Plugin/Source/WaveFolder.h"/>
+      <FILE id="eng049" name="TransistorLadder.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/TransistorLadder.cpp"/>
+      <FILE id="eng050" name="TransistorLadder.h" compile="0" resource="0" file="../JUCE_Plugin/Source/TransistorLadder.h"/>
+      <FILE id="eng051" name="AnalogDrive.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/AnalogDrive.cpp"/>
+      <FILE id="eng052" name="AnalogDrive.h" compile="0" resource="0" file="../JUCE_Plugin/Source/AnalogDrive.h"/>
+      <FILE id="eng053" name="Chorus_Analog.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/Chorus_Analog.cpp"/>
+      <FILE id="eng054" name="Chorus_Analog.h" compile="0" resource="0" file="../JUCE_Plugin/Source/Chorus_Analog.h"/>
+      <FILE id="eng055" name="Phaser_Vintage.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/Phaser_Vintage.cpp"/>
+      <FILE id="eng056" name="Phaser_Vintage.h" compile="0" resource="0" file="../JUCE_Plugin/Source/Phaser_Vintage.h"/>
+      <FILE id="eng057" name="Flanger_Classic.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/Flanger_Classic.cpp"/>
+      <FILE id="eng058" name="Flanger_Classic.h" compile="0" resource="0" file="../JUCE_Plugin/Source/Flanger_Classic.h"/>
+      <FILE id="eng059" name="Tremolo.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/Tremolo.cpp"/>
+      <FILE id="eng060" name="Tremolo.h" compile="0" resource="0" file="../JUCE_Plugin/Source/Tremolo.h"/>
+      <FILE id="eng061" name="Vibrato.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/Vibrato.cpp"/>
+      <FILE id="eng062" name="Vibrato.h" compile="0" resource="0" file="../JUCE_Plugin/Source/Vibrato.h"/>
+      <FILE id="eng063" name="AutoPan.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/AutoPan.cpp"/>
+      <FILE id="eng064" name="AutoPan.h" compile="0" resource="0" file="../JUCE_Plugin/Source/AutoPan.h"/>
+      <FILE id="eng065" name="RotarySpeaker.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/RotarySpeaker.cpp"/>
+      <FILE id="eng066" name="RotarySpeaker.h" compile="0" resource="0" file="../JUCE_Plugin/Source/RotarySpeaker.h"/>
+      <FILE id="eng067" name="RingModulator.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/RingModulator.cpp"/>
+      <FILE id="eng068" name="RingModulator.h" compile="0" resource="0" file="../JUCE_Plugin/Source/RingModulator.h"/>
+      <FILE id="eng069" name="FrequencyShifter.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/FrequencyShifter.cpp"/>
+      <FILE id="eng070" name="FrequencyShifter.h" compile="0" resource="0" file="../JUCE_Plugin/Source/FrequencyShifter.h"/>
+      <FILE id="eng071" name="AutoFilter.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/AutoFilter.cpp"/>
+      <FILE id="eng072" name="AutoFilter.h" compile="0" resource="0" file="../JUCE_Plugin/Source/AutoFilter.h"/>
+      <FILE id="eng073" name="PitchShifter.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/PitchShifter.cpp"/>
+      <FILE id="eng074" name="PitchShifter.h" compile="0" resource="0" file="../JUCE_Plugin/Source/PitchShifter.h"/>
+      <FILE id="eng075" name="PlateReverb.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/PlateReverb.cpp"/>
+      <FILE id="eng076" name="PlateReverb.h" compile="0" resource="0" file="../JUCE_Plugin/Source/PlateReverb.h"/>
+      <FILE id="eng077" name="HallReverb.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/HallReverb.cpp"/>
+      <FILE id="eng078" name="HallReverb.h" compile="0" resource="0" file="../JUCE_Plugin/Source/HallReverb.h"/>
+      <FILE id="eng079" name="SpringReverb.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/SpringReverb.cpp"/>
+      <FILE id="eng080" name="SpringReverb.h" compile="0" resource="0" file="../JUCE_Plugin/Source/SpringReverb.h"/>
+      <FILE id="eng081" name="ShimmerReverb.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/ShimmerReverb.cpp"/>
+      <FILE id="eng082" name="ShimmerReverb.h" compile="0" resource="0" file="../JUCE_Plugin/Source/ShimmerReverb.h"/>
+      <FILE id="eng083" name="AnalogDelay.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/AnalogDelay.cpp"/>
+      <FILE id="eng084" name="AnalogDelay.h" compile="0" resource="0" file="../JUCE_Plugin/Source/AnalogDelay.h"/>
+      <FILE id="eng085" name="TapeDelay.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/TapeDelay.cpp"/>
+      <FILE id="eng086" name="TapeDelay.h" compile="0" resource="0" file="../JUCE_Plugin/Source/TapeDelay.h"/>
+      <FILE id="eng087" name="PingPongDelay.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/PingPongDelay.cpp"/>
+      <FILE id="eng088" name="PingPongDelay.h" compile="0" resource="0" file="../JUCE_Plugin/Source/PingPongDelay.h"/>
+      <FILE id="eng089" name="MultiTapDelay.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/MultiTapDelay.cpp"/>
+      <FILE id="eng090" name="MultiTapDelay.h" compile="0" resource="0" file="../JUCE_Plugin/Source/MultiTapDelay.h"/>
+      <FILE id="eng091" name="ReverseDelay.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/ReverseDelay.cpp"/>
+      <FILE id="eng092" name="ReverseDelay.h" compile="0" resource="0" file="../JUCE_Plugin/Source/ReverseDelay.h"/>
+      <FILE id="eng093" name="GranularDelay.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/GranularDelay.cpp"/>
+      <FILE id="eng094" name="GranularDelay.h" compile="0" resource="0" file="../JUCE_Plugin/Source/GranularDelay.h"/>
+      <FILE id="eng095" name="StereoWidener.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/StereoWidener.cpp"/>
+      <FILE id="eng096" name="StereoWidener.h" compile="0" resource="0" file="../JUCE_Plugin/Source/StereoWidener.h"/>
+      <FILE id="eng097" name="MidSideProcessor.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/MidSideProcessor.cpp"/>
+      <FILE id="eng098" name="MidSideProcessor.h" compile="0" resource="0" file="../JUCE_Plugin/Source/MidSideProcessor.h"/>
+      <FILE id="eng099" name="HaasEffect.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/HaasEffect.cpp"/>
+      <FILE id="eng100" name="HaasEffect.h" compile="0" resource="0" file="../JUCE_Plugin/Source/HaasEffect.h"/>
+      <FILE id="eng101" name="CrossfeedProcessor.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/CrossfeedProcessor.cpp"/>
+      <FILE id="eng102" name="CrossfeedProcessor.h" compile="0" resource="0" file="../JUCE_Plugin/Source/CrossfeedProcessor.h"/>
+      <FILE id="eng103" name="Spatializer.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/Spatializer.cpp"/>
+      <FILE id="eng104" name="Spatializer.h" compile="0" resource="0" file="../JUCE_Plugin/Source/Spatializer.h"/>
+      <FILE id="eng105" name="GlitchEffect.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/GlitchEffect.cpp"/>
+      <FILE id="eng106" name="GlitchEffect.h" compile="0" resource="0" file="../JUCE_Plugin/Source/GlitchEffect.h"/>
+      <FILE id="eng107" name="StutterEffect.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/StutterEffect.cpp"/>
+      <FILE id="eng108" name="StutterEffect.h" compile="0" resource="0" file="../JUCE_Plugin/Source/StutterEffect.h"/>
+      <FILE id="eng109" name="FilterBank.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/FilterBank.cpp"/>
+      <FILE id="eng110" name="FilterBank.h" compile="0" resource="0" file="../JUCE_Plugin/Source/FilterBank.h"/>
+      <FILE id="eng111" name="Vocoder.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/Vocoder.cpp"/>
+      <FILE id="eng112" name="Vocoder.h" compile="0" resource="0" file="../JUCE_Plugin/Source/Vocoder.h"/>
+      <FILE id="eng113" name="PhaseMangler.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/PhaseMangler.cpp"/>
+      <FILE id="eng114" name="PhaseMangler.h" compile="0" resource="0" file="../JUCE_Plugin/Source/PhaseMangler.h"/>
+      <FILE id="eng115" name="InvertPhase.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/InvertPhase.cpp"/>
+      <FILE id="eng116" name="InvertPhase.h" compile="0" resource="0" file="../JUCE_Plugin/Source/InvertPhase.h"/>
+      <FILE id="eng117" name="GainStaging.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/GainStaging.cpp"/>
+      <FILE id="eng118" name="GainStaging.h" compile="0" resource="0" file="../JUCE_Plugin/Source/GainStaging.h"/>
+      <FILE id="eng119" name="TrimUtility.cpp" compile="1" resource="0" file="../JUCE_Plugin/Source/TrimUtility.cpp"/>
+      <FILE id="eng120" name="TrimUtility.h" compile="0" resource="0" file="../JUCE_Plugin/Source/TrimUtility.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_USE_CURL="0"/>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="EngineTestApp" 
+                       osxCompatibility="10.13" osxArchitecture="Native"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="EngineTestApp" 
+                       osxCompatibility="10.13" osxArchitecture="Native"
+                       optimisation="3" linkTimeOptimisation="1"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+  </MODULES>
+</JUCERPROJECT>

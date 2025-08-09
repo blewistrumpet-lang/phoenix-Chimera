@@ -23,12 +23,14 @@ DigitalDelay::DigitalDelay() {
     m_feedback = std::make_unique<DigitalDelayImpl::ParameterSmoother>();
     m_mix = std::make_unique<DigitalDelayImpl::ParameterSmoother>();
     m_highCut = std::make_unique<DigitalDelayImpl::ParameterSmoother>();
+    m_sync = std::make_unique<DigitalDelayImpl::ParameterSmoother>();
     
     // Set default values
     m_delayTime->reset(0.4f);
     m_feedback->reset(0.3f);
     m_mix->reset(0.3f);
     m_highCut->reset(0.8f);
+    m_sync->reset(0.0f); // sync off by default
 }
 
 DigitalDelay::~DigitalDelay() = default;
@@ -49,6 +51,9 @@ void DigitalDelay::prepareToPlay(double sampleRate, int samplesPerBlock) {
     
     m_highCut->setSampleRate(sampleRate);
     m_highCut->setSmoothingTime(20.0f);
+    
+    m_sync->setSampleRate(sampleRate);
+    m_sync->setSmoothingTime(10.0f); // Fast switching for sync
     
     // Configure DSP components
     m_modulator->setSampleRate(sampleRate);
@@ -141,10 +146,10 @@ float DigitalDelay::processSample(float input, int channel) {
     float feedback = m_feedback->getNextValue() * MAX_FEEDBACK;
     float mix = m_mix->getNextValue();
     float highCut = m_highCut->getNextValue();
+    float syncParam = m_sync->getNextValue();
     
-    // Calculate delay in samples (1ms to 2000ms range)
-    double delayMs = 1.0 + delayTime * 1999.0;
-    double delaySamples = (delayMs * m_sampleRate) / 1000.0;
+    // Calculate delay in samples - use sync if enabled
+    double delaySamples = calculateSyncedDelayTime(delayTime, syncParam);
     
     // Add subtle modulation for organic feel
     float modulation = m_modulator->process(0.3f, 0.002f);
@@ -183,6 +188,7 @@ void DigitalDelay::updateParameters(const std::map<int, float>& params) {
     m_feedback->setTargetValue(getParam(1, 0.3f));
     m_mix->setTargetValue(getParam(2, 0.3f));
     m_highCut->setTargetValue(getParam(3, 0.8f));
+    m_sync->setTargetValue(getParam(4, 0.0f));
 }
 
 juce::String DigitalDelay::getParameterName(int index) const {
@@ -191,6 +197,7 @@ juce::String DigitalDelay::getParameterName(int index) const {
         case 1: return "Feedback";
         case 2: return "Mix";
         case 3: return "High Cut";
+        case 4: return "Sync";
         default: return "";
     }
 }
@@ -554,6 +561,51 @@ float DigitalDelayImpl::ModulationProcessor::process(float rate, float depth) no
     lfo = m_smoothingFilter->processSample(lfo);
     
     return lfo * depth;
+}
+
+// ==================== Transport Sync Implementation ====================
+
+void DigitalDelay::setTransportInfo(const TransportInfo& info) {
+    m_transportInfo = info;
+}
+
+bool DigitalDelay::supportsFeature(Feature f) const noexcept {
+    switch (f) {
+        case Feature::TempoSync: return true;
+        default: return false;
+    }
+}
+
+float DigitalDelay::calculateSyncedDelayTime(float timeParam, float syncParam) const {
+    // Sync is off if syncParam < 0.5, use manual time in samples
+    if (syncParam < 0.5f) {
+        double delayMs = 1.0 + timeParam * 1999.0; // 1ms to 2000ms range
+        return static_cast<float>((delayMs * m_sampleRate) / 1000.0);
+    }
+    
+    // Sync is on, map timeParam to beat divisions
+    const int divisionIndex = static_cast<int>(timeParam * 8.999f); // 0-8 range
+    const BeatDivision division = static_cast<BeatDivision>(divisionIndex);
+    
+    return getBeatDivisionSamples(division);
+}
+
+float DigitalDelay::getBeatDivisionSamples(BeatDivision division) const {
+    const double bpm = std::max(20.0, std::min(999.0, m_transportInfo.bpm));
+    const double quarterNoteSamples = (60.0 / bpm) * m_sampleRate; // samples per quarter note
+    
+    switch (division) {
+        case BeatDivision::DIV_1_64: return static_cast<float>(quarterNoteSamples / 16.0);
+        case BeatDivision::DIV_1_32: return static_cast<float>(quarterNoteSamples / 8.0);
+        case BeatDivision::DIV_1_16: return static_cast<float>(quarterNoteSamples / 4.0);
+        case BeatDivision::DIV_1_8:  return static_cast<float>(quarterNoteSamples / 2.0);
+        case BeatDivision::DIV_1_4:  return static_cast<float>(quarterNoteSamples);
+        case BeatDivision::DIV_1_2:  return static_cast<float>(quarterNoteSamples * 2.0);
+        case BeatDivision::DIV_1_1:  return static_cast<float>(quarterNoteSamples * 4.0);
+        case BeatDivision::DIV_2_1:  return static_cast<float>(quarterNoteSamples * 8.0);
+        case BeatDivision::DIV_4_1:  return static_cast<float>(quarterNoteSamples * 16.0);
+        default: return static_cast<float>(quarterNoteSamples);
+    }
 }
 
 } // namespace AudioDSP

@@ -1,6 +1,6 @@
 #pragma once
 #include "EngineBase.h"
-#include "Denorm.hpp"
+#include "DspEngineUtilities.h"
 #include <vector>
 #include <array>
 #include <memory>
@@ -48,7 +48,7 @@ private:
         ProfessionalCombFilter();
         void init(int maxDelay);
         void setDelay(float samples);
-        void setFeedback(float fb) { feedback = std::clamp(fb, -0.99f, 0.99f); }
+        void setFeedback(float fb) { feedback = clampSafe(fb, -0.95f, 0.95f); }
         void setFeedforward(float ff) { feedforward = std::clamp(ff, -1.0f, 1.0f); }
         void setDamping(float damp) { damping = std::clamp(damp, 0.0f, 1.0f); }
         float process(float input) noexcept;
@@ -84,13 +84,13 @@ private:
             
             // First stage
             float stage1 = input - x1 + R * y1;
-            x1 = flushDenorm(input);
-            y1 = flushDenorm(stage1);
+            x1 = DSPUtils::flushDenorm(input);
+            y1 = DSPUtils::flushDenorm(stage1);
             
             // Second stage  
             float output = stage1 - x2 + R * y2;
-            x2 = flushDenorm(stage1);
-            y2 = flushDenorm(output);
+            x2 = DSPUtils::flushDenorm(stage1);
+            y2 = DSPUtils::flushDenorm(output);
             
             return output;
         }
@@ -185,7 +185,7 @@ private:
         
         // Add subtle warmth via state variable
         state = state * 0.995f + x * 0.005f;
-        state = flushDenorm(state);
+        state = DSPUtils::flushDenorm(state);
         
         return x + state * 0.02f;
     }

@@ -11,10 +11,12 @@
 #endif
 
 // Force inline macro
-#ifdef _MSC_VER
-    #define ALWAYS_INLINE __forceinline
-#else
-    #define ALWAYS_INLINE __attribute__((always_inline)) inline
+#ifndef ALWAYS_INLINE
+    #ifdef _MSC_VER
+        #define ALWAYS_INLINE __forceinline
+    #else
+        #define ALWAYS_INLINE __attribute__((always_inline)) inline
+    #endif
 #endif
 
 // Denormal prevention utilities

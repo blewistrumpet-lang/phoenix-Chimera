@@ -10,6 +10,7 @@ BucketBrigadeDelay::BucketBrigadeDelay() {
     m_tone = std::make_unique<ParameterSmoother>();
     m_age = std::make_unique<ParameterSmoother>();
     m_mix = std::make_unique<ParameterSmoother>();
+    m_sync = std::make_unique<ParameterSmoother>();
     
     // Set default values
     m_delayTime->reset(0.3);
@@ -18,6 +19,7 @@ BucketBrigadeDelay::BucketBrigadeDelay() {
     m_tone->reset(0.5);
     m_age->reset(0.0);
     m_mix->reset(0.5);
+    m_sync->reset(0.0); // sync off by default
 }
 
 void BucketBrigadeDelay::prepareToPlay(double sampleRate, int samplesPerBlock) {
@@ -30,6 +32,7 @@ void BucketBrigadeDelay::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_tone->setSampleRate(sampleRate, 50.0);
     m_age->setSampleRate(sampleRate, 1000.0);
     m_mix->setSampleRate(sampleRate, 30.0);
+    m_sync->setSampleRate(sampleRate, 10.0); // Fast switching for sync
     
     // Get current chip type
     ChipType currentType = getCurrentChipType();
@@ -98,17 +101,18 @@ void BucketBrigadeDelay::process(juce::AudioBuffer<float>& buffer) {
     
     // Update parameters once per block
     CachedParams params;
-    params.delayTime = m_delayTime->process();
+    double delayTimeParam = m_delayTime->process();
+    double syncParam = m_sync->process();
+    params.delayTime = delayTimeParam; // Store original for other uses
     params.feedback = m_feedback->process();
     params.modulation = m_modulation->process();
     params.tone = m_tone->process();
     params.age = m_age->process();
     params.mix = m_mix->process();
+    params.sync = syncParam;
     
-    // Calculate base clock rate from delay time
-    double minDelay = 2.5;
-    double maxDelay = 300.0;
-    double delayMs = minDelay + params.delayTime * (maxDelay - minDelay);
+    // Calculate delay time (synced or manual)
+    double delayMs = calculateSyncedDelayTime(delayTimeParam, syncParam);
     params.clockRate = calculateClockRate(delayMs);
     
     // Update analog circuit modeling
@@ -225,6 +229,7 @@ void BucketBrigadeDelay::updateParameters(const std::map<int, float>& params) {
     m_tone->setTarget(static_cast<double>(getParam(3, 0.5f)));
     m_age->setTarget(static_cast<double>(getParam(4, 0.0f)));
     m_mix->setTarget(static_cast<double>(getParam(5, 0.5f)));
+    m_sync->setTarget(static_cast<double>(getParam(6, 0.0f)));
 }
 
 juce::String BucketBrigadeDelay::getParameterName(int index) const {
@@ -235,6 +240,7 @@ juce::String BucketBrigadeDelay::getParameterName(int index) const {
         case 3: return "Tone";
         case 4: return "Age";
         case 5: return "Mix";
+        case 6: return "Sync";
         default: return "";
     }
 }
@@ -580,5 +586,51 @@ double BucketBrigadeDelay::FeedbackProcessor::softClip(double input) {
     } else {
         double sign = input > 0 ? 1.0 : -1.0;
         return sign * (threshold + knee * 0.75 + std::tanh((absInput - threshold - knee) * 2.0) * 0.1);
+    }
+}
+
+// ==================== Transport Sync Implementation ====================
+
+void BucketBrigadeDelay::setTransportInfo(const TransportInfo& info) {
+    m_transportInfo = info;
+}
+
+bool BucketBrigadeDelay::supportsFeature(Feature f) const noexcept {
+    switch (f) {
+        case Feature::TempoSync: return true;
+        default: return false;
+    }
+}
+
+double BucketBrigadeDelay::calculateSyncedDelayTime(double timeParam, double syncParam) const {
+    // Sync is off if syncParam < 0.5, use manual time
+    if (syncParam < 0.5) {
+        double minDelay = 2.5;  // 2.5ms min
+        double maxDelay = 300.0; // 300ms max
+        return minDelay + timeParam * (maxDelay - minDelay);
+    }
+    
+    // Sync is on, map timeParam to beat divisions
+    const int divisionIndex = static_cast<int>(timeParam * 8.999); // 0-8 range
+    const BeatDivision division = static_cast<BeatDivision>(divisionIndex);
+    
+    return getBeatDivisionMs(division);
+}
+
+double BucketBrigadeDelay::getBeatDivisionMs(BeatDivision division) const {
+    const double bpm = std::max(20.0, std::min(999.0, m_transportInfo.bpm));
+    const double quarterNoteMs = (60.0 / bpm) * 1000.0; // ms per quarter note
+    
+    switch (division) {
+        case BeatDivision::DIV_1_64: return quarterNoteMs / 16.0;
+        case BeatDivision::DIV_1_32: return quarterNoteMs / 8.0;
+        case BeatDivision::DIV_1_16: return quarterNoteMs / 4.0;
+        case BeatDivision::DIV_1_8:  return quarterNoteMs / 2.0;
+        case BeatDivision::DIV_1_4:  return quarterNoteMs;
+        case BeatDivision::DIV_1_2:  return quarterNoteMs * 2.0;
+        case BeatDivision::DIV_1_1:  return quarterNoteMs * 4.0;
+        case BeatDivision::DIV_2_1:  return quarterNoteMs * 8.0;
+        case BeatDivision::DIV_4_1:  return quarterNoteMs * 16.0;
+        default: return quarterNoteMs;
     }
 }

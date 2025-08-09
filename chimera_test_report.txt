@@ -1,0 +1,187 @@
+Chimera Phoenix Engine Test Report
+===================================
+Generated: 1754628833807135
+
+Summary Statistics:
+-------------------
+Total Engines: 57
+Passing: 57
+Failing: 0
+Critical Issues: 0
+Success Rate: 100.0%
+
+
+Detailed Results:
+-----------------
+Engine #0 (Bypass): ✅ PASS
+  WARNING: Parameter values not retained correctly
+  Performance Score: 100.0/100
+
+Engine #1 (Opto Compressor): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #2 (VCA Compressor): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #3 (Transient Shaper): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #4 (Noise Gate): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #5 (Mastering Limiter): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #6 (Dynamic EQ): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #7 (Parametric EQ): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #8 (Vintage Console EQ): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #9 (Ladder Filter): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #10 (State Variable Filter): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #11 (Formant Filter): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #12 (Envelope Filter): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #13 (Comb Resonator): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #14 (Vocal Formant): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #15 (Vintage Tube): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #16 (Wave Folder): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #17 (Harmonic Exciter): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #18 (Bit Crusher): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #19 (Multiband Saturator): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #20 (Muff Fuzz): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #21 (Rodent Distortion): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #22 (K-Style Overdrive): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #23 (Digital Chorus): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #24 (Resonant Chorus): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #25 (Analog Phaser): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #26 (Ring Modulator): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #27 (Frequency Shifter): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #28 (Harmonic Tremolo): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #29 (Classic Tremolo): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #30 (Rotary Speaker): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #31 (Pitch Shifter): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #32 (Detune Doubler): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #33 (Intelligent Harmonizer): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #34 (Tape Echo): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #35 (Digital Delay): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #36 (Magnetic Drum Echo): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #37 (Bucket Brigade Delay): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #38 (Buffer Repeat): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #39 (Plate Reverb): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #40 (Spring Reverb): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #41 (Convolution Reverb): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #42 (Shimmer Reverb): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #43 (Gated Reverb): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #44 (Stereo Widener): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #45 (Stereo Imager): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #46 (Dimension Expander): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #47 (Spectral Freeze): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #48 (Spectral Gate): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #49 (Phased Vocoder): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #50 (Granular Cloud): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #51 (Chaos Generator): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #52 (Feedback Network): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #53 (Mid-Side Processor): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #54 (Gain Utility): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #55 (Mono Maker): ✅ PASS
+  Performance Score: 100.0/100
+
+Engine #56 (Phase Align): ✅ PASS
+  Performance Score: 100.0/100
+

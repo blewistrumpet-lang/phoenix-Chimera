@@ -1,0 +1,309 @@
+================================================
+   Chimera Phoenix v3.0 Test Report            
+================================================
+
+SUMMARY
+-------
+Total Engines: 57
+Passed: 57
+Failed: 0
+Success Rate: 100.0%
+
+CATEGORY RESULTS
+----------------
+Dynamics & Compression (1-6): 6/6 passed
+Filters & EQ (7-14): 8/8 passed
+Distortion & Saturation (15-22): 8/8 passed
+Modulation Effects (23-33): 11/11 passed
+Reverb & Delay (34-43): 10/10 passed
+Spatial & Special Effects (44-52): 9/9 passed
+Utility (53-56): 4/4 passed
+
+DETAILED RESULTS
+================
+
+Engine # 0 - Bypass
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine # 1 - Vintage Opto Compressor
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine # 2 - Classic Compressor
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.02 ms / 0.00% CPU
+
+Engine # 3 - Transient Shaper
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine # 4 - Noise Gate
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine # 5 - Mastering Limiter
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine # 6 - Dynamic EQ
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine # 7 - Parametric EQ
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine # 8 - Vintage Console EQ
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine # 9 - Ladder Filter
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine #10 - State Variable Filter
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine #11 - Formant Filter
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine #12 - Envelope Filter
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine #13 - Comb Resonator
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine #14 - Vocal Formant Filter
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine #15 - Vintage Tube Preamp
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.30 ms / 0.03% CPU
+
+Engine #16 - Wave Folder
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.30 ms / 0.03% CPU
+
+Engine #17 - Harmonic Exciter
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.18 ms / 0.02% CPU
+
+Engine #18 - Bit Crusher
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.18 ms / 0.02% CPU
+
+Engine #19 - Multiband Saturator
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.18 ms / 0.02% CPU
+
+Engine #20 - Muff Fuzz
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.18 ms / 0.02% CPU
+
+Engine #21 - Rodent Distortion
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.18 ms / 0.02% CPU
+
+Engine #22 - K-Style Overdrive
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.18 ms / 0.02% CPU
+
+Engine #23 - Stereo Chorus
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.01 ms / 0.00% CPU
+
+Engine #24 - Resonant Chorus
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #25 - Analog Phaser
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #26 - Ring Modulator
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #27 - Frequency Shifter
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #28 - Harmonic Tremolo
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #29 - Classic Tremolo
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #30 - Rotary Speaker
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #31 - Pitch Shifter
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #32 - Detune Doubler
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #33 - Intelligent Harmonizer
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #34 - Tape Echo
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.08 ms / 0.01% CPU
+
+Engine #35 - Digital Delay
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.07 ms / 0.01% CPU
+
+Engine #36 - Magnetic Drum Echo
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.07 ms / 0.01% CPU
+
+Engine #37 - Bucket Brigade Delay
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.07 ms / 0.01% CPU
+
+Engine #38 - Buffer Repeat
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.07 ms / 0.01% CPU
+
+Engine #39 - Plate Reverb
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.07 ms / 0.01% CPU
+
+Engine #40 - Spring Reverb
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.07 ms / 0.01% CPU
+
+Engine #41 - Convolution Reverb
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.07 ms / 0.01% CPU
+
+Engine #42 - Shimmer Reverb
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.07 ms / 0.01% CPU
+
+Engine #43 - Gated Reverb
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.07 ms / 0.01% CPU
+
+Engine #44 - Stereo Widener
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #45 - Stereo Imager
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #46 - Dimension Expander
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #47 - Spectral Freeze
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #48 - Spectral Gate
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #49 - Phased Vocoder
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #50 - Granular Cloud
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #51 - Chaos Generator
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #52 - Feedback Network
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #53 - Mid-Side Processor
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #54 - Gain Utility
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #55 - Mono Maker
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+
+Engine #56 - Phase Align
+  Score: 100/100
+  Tests: ✓ Create | ✓ Init | ✓ Process | ✓ Params | ✓ NaN/Inf | ✓ Perf | ✓ Memory
+  Performance: 0.00 ms / 0.00% CPU
+

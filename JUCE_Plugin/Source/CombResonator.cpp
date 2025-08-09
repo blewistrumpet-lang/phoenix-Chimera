@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cstring>
 
-// Denormal handling is done per-sample using flushDenorm from Denorm.hpp
+// Denormal handling is done per-sample using DSPUtils::flushDenorm from DspEngineUtilities.h
 
 //==============================================================================
 // ProfessionalCombFilter Implementation
@@ -47,13 +47,13 @@ float CombResonator::ProfessionalCombFilter::process(float input) noexcept {
     
     // Apply damping filter (one-pole lowpass)
     dampingState = delayed * (1.0f - damping) + dampingState * damping;
-    dampingState = flushDenorm(dampingState);
+    dampingState = DSPUtils::flushDenorm(dampingState);
     
     // Comb filter with feedforward and feedback
     float output = input * feedforward + dampingState * feedback;
     
     // Prevent denormals in delay line
-    delayLine[writePos] = flushDenorm(output);
+    delayLine[writePos] = DSPUtils::flushDenorm(output);
     
     // Update write position
     writePos = (writePos + 1) % MAX_DELAY_SAMPLES;
@@ -155,6 +155,8 @@ void CombResonator::reset() {
 }
 
 void CombResonator::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;  // RAII denormal protection for entire process block
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -215,9 +217,10 @@ void CombResonator::process(juce::AudioBuffer<float>& buffer) {
                 float delaySamples = frequencyToDelay(freq, m_sampleRate);
                 state.combs[i].setDelay(delaySamples);
                 
-                // Calculate feedback from decay time
+                // Calculate feedback from decay time - clamped to safe range
                 float feedback = decayTimeToFeedback(decayTime, delaySamples, m_sampleRate);
-                state.combs[i].setFeedback(feedback * resonance);
+                float safeFeedback = clampSafe(feedback * resonance, -0.95f, 0.95f);
+                state.combs[i].setFeedback(safeFeedback);
                 state.combs[i].setDamping(damping);
                 
                 // Process and accumulate
@@ -236,11 +239,14 @@ void CombResonator::process(juce::AudioBuffer<float>& buffer) {
             output = std::tanh(output * 0.8f) * 1.25f;
             
             // Mix with dry signal
-            channelData[sample] = flushDenorm(
+            channelData[sample] = DSPUtils::flushDenorm(
                 channelData[sample] * (1.0f - mixAmount) + output * mixAmount
             );
         }
     }
+    
+    // Scrub buffer for NaN/Inf protection at end of processing
+    scrubBuffer(buffer);
 }
 
 float CombResonator::decayTimeToFeedback(float decaySeconds, float delaySamples, double sampleRate) noexcept {
@@ -253,8 +259,8 @@ float CombResonator::decayTimeToFeedback(float decaySeconds, float delaySamples,
     float exponent = -3.0f * delayTime / decaySeconds;
     float feedback = std::pow(10.0f, exponent);
     
-    // Ensure stability
-    return std::clamp(feedback, 0.0f, 0.999f);
+    // Ensure stability with safer range
+    return clampSafe(feedback, 0.0f, 0.95f);
 }
 
 void CombResonator::updateParameters(const std::map<int, float>& params) {
@@ -279,7 +285,7 @@ void CombResonator::updateParameters(const std::map<int, float>& params) {
     
     // Update all parameters
     updateParam(0, m_rootFrequency, 20.0f, 2000.0f, true);    // Root Freq (exponential)
-    updateParam(1, m_resonance, 0.0f, 0.99f, false);          // Resonance
+    updateParam(1, m_resonance, 0.0f, 0.95f, false);          // Resonance (safer range)
     updateParam(2, m_harmonicSpread, 0.5f, 2.0f, false);      // Harmonic Spread
     updateParam(3, m_decayTime, 0.1f, 10.0f, true);           // Decay Time (exponential)
     updateParam(4, m_damping, 0.0f, 0.9f, false);             // Damping

@@ -1,6 +1,7 @@
 // ==================== MagneticDrumEcho.h ====================
 #pragma once
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <array>
 #include <memory>
 #include <atomic>
@@ -19,8 +20,12 @@ public:
     void updateParameters(const std::map<int, float>& params) override;
     
     juce::String getName() const override { return "Magnetic Drum Echo"; }
-    int getNumParameters() const override { return 8; }
+    int getNumParameters() const override { return 9; }
     juce::String getParameterName(int index) const override;
+    
+    // Extended EngineBase API
+    void setTransportInfo(const TransportInfo& info) override;
+    bool supportsFeature(Feature f) const noexcept override;
     
     // Optional: Configure max delay time before prepareToPlay()
     void setMaxDelayTime(double seconds) { 
@@ -299,6 +304,7 @@ private:
     std::unique_ptr<ParameterSmoother> m_saturation;
     std::unique_ptr<ParameterSmoother> m_wowFlutter;
     std::unique_ptr<ParameterSmoother> m_mix;
+    std::unique_ptr<ParameterSmoother> m_sync;
     
     // Shared drum buffers (one per channel)
     std::array<CircularDrumBuffer, NUM_CHANNELS> m_drumBuffers;
@@ -330,10 +336,22 @@ private:
         double saturation;
         double wowFlutter;
         double mix;
+        double sync;
+    };
+    
+    // Transport sync
+    TransportInfo m_transportInfo;
+    
+    // Beat division mapping
+    enum class BeatDivision {
+        DIV_1_64, DIV_1_32, DIV_1_16, DIV_1_8, DIV_1_4, 
+        DIV_1_2, DIV_1_1, DIV_2_1, DIV_4_1
     };
     
     // Processing methods
     void processChannel(float* data, int numSamples, int channel, const CachedParams& params);
     double calculateHeadDelay(int headIndex, double drumSpeed, double wowFlutter);
+    double calculateSyncedDrumSpeed(double speedParam, double syncParam) const;
+    double getBeatDivisionSpeedMultiplier(BeatDivision division) const;
     double mixPlaybackHeads(int channel, const CachedParams& params);
 };

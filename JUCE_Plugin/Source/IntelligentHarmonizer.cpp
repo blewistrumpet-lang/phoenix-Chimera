@@ -809,6 +809,6 @@ juce::String IntelligentHarmonizer::getParameterName(int index) const {
     }
 }
 
-int IntelligentHarmonizer::getLatencySamples() const {
+int IntelligentHarmonizer::getLatencySamples() const noexcept {
     return pimpl->latencySamples;
 }

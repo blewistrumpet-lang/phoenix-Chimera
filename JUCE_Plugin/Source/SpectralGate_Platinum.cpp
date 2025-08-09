@@ -1,17 +1,7 @@
 #include "SpectralGate_Platinum.h"
+#include "DspEngineUtilities.h"
 #include <algorithm>
 #include <cmath>
-
-namespace {
-struct FTZGuard {
-    FTZGuard() {
-       #if defined(__SSE__)
-        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-       #endif
-    }
-} s_ftzGuard;
-}
 
 // -------------------------------------------------------
 SpectralGate_Platinum::SpectralGate_Platinum() {
@@ -86,6 +76,9 @@ void SpectralGate_Platinum::updateParameters(const std::map<int, float>& params)
 
 // -------------------------------------------------------
 void SpectralGate_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    // RAII denormal protection for entire block
+    DenormalGuard guard;
+    
     const int numCh = buffer.getNumChannels();
     const int N = buffer.getNumSamples();
     if (N <= 0) return;
@@ -144,6 +137,9 @@ void SpectralGate_Platinum::process(juce::AudioBuffer<float>& buffer) {
             }
         }
     }
+    
+    // Final safety scrub (catches any NaN/Inf that slipped through)
+    scrubBuffer(buffer);
 }
 
 void SpectralGate_Platinum::processChannel(Channel& ch, float* data, int numSamples) {
@@ -301,4 +297,15 @@ juce::String SpectralGate_Platinum::getParameterName(int index) const {
         case ParamID::Mix:        return "Mix";
         default:                  return {};
     }
+}
+
+int SpectralGate_Platinum::getLatencySamples() const noexcept {
+    // FFT processing latency is the hop size plus any lookahead delay
+    int fftLatency = kHopSize;
+    
+    // Add lookahead delay if enabled
+    float lookaheadMs = pLookahead.current;
+    int lookaheadSamples = static_cast<int>(lookaheadMs * 0.001 * sr_);
+    
+    return fftLatency + lookaheadSamples;
 }

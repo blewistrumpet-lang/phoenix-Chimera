@@ -2,42 +2,30 @@
 // MasteringLimiter_Platinum.cpp - Safe Implementation
 // ===============================================================
 #include "MasteringLimiter_Platinum.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 #include <algorithm>
 #include <vector>
 #include <cstring>
 #include <memory>
 
-// Platform-specific includes for denormal handling
-#if defined(__SSE2__)
-    #include <immintrin.h>
-#endif
-
 namespace {
     // Constants
-    constexpr float kTinyF = 1e-30f;
     constexpr float kSilenceThresh = 1e-6f;
     constexpr float kMaxGain = 24.0f;
     constexpr int kMaxLookaheadMs = 10;
     
-    // Global denormal protection
-    struct DenormalGuard {
-        DenormalGuard() {
-#if defined(__SSE2__)
-            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-#endif
-        }
-    } static g_denormGuard;
+    // Use utilities from DspEngineUtilities.h
+    using ::clampSafe;
     
-    // Safe denormal flushing
-    inline float flushDenorm(float x) noexcept {
-        return (std::fabs(x) < kTinyF) ? 0.0f : x;
+    // Alias for consistency with existing code
+    inline float clamp(float x, float lo, float hi) noexcept {
+        return clampSafe(x, lo, hi);
     }
     
-    // Safe clamp
-    inline float clamp(float x, float lo, float hi) noexcept {
-        return std::max(lo, std::min(hi, x));
+    // Local flushDenorm to avoid conflicts
+    inline float flushDenorm(float x) noexcept {
+        return DSPUtils::flushDenorm(x);
     }
     
     // Safe dB conversions
@@ -184,6 +172,9 @@ struct MasteringLimiter_Platinum::Impl {
     }
     
     void processBlock(juce::AudioBuffer<float>& buffer) {
+        // RAII denormal protection for entire block
+        DenormalGuard guard;
+        
         const int numChannels = std::min(buffer.getNumChannels(), (int)envelopes.size());
         const int numSamples = buffer.getNumSamples();
         
@@ -311,6 +302,9 @@ struct MasteringLimiter_Platinum::Impl {
                 }
             }
         }
+        
+        // Final safety scrub (catches any NaN/Inf that slipped through)
+        scrubBuffer(buffer);
     }
     
     // Meter pointers
@@ -392,4 +386,9 @@ float MasteringLimiter_Platinum::getOutputLevel() const noexcept {
 
 float MasteringLimiter_Platinum::getTruePeakLevel() const noexcept {
     return m_truePeakMeter.load(std::memory_order_relaxed);
+}
+
+int MasteringLimiter_Platinum::getLatencySamples() const noexcept {
+    // Report the current lookahead delay in samples
+    return static_cast<int>(pimpl->lookahead * 0.001 * pimpl->sampleRate);
 }

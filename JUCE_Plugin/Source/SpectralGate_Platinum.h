@@ -2,6 +2,7 @@
 #pragma once
 #include "EngineBase.h"
 #include <JuceHeader.h>
+#include "DspEngineUtilities.h"
 #include <array>
 #include <atomic>
 #include <memory>
@@ -20,6 +21,9 @@ public:
     int getNumParameters() const override { return 8; }
     juce::String getParameterName(int index) const override;
     juce::String getName() const override { return "Spectral Gate Platinum"; }
+    
+    // Extended API - latency reporting
+    int getLatencySamples() const noexcept override;
 
     // Must match APVTS parameter order
     enum class ParamID : int {

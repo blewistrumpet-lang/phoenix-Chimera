@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineBase.h"
+#include "DspEngineUtilities.h"
 #include <memory>
 #include <vector>
 #include <map>
@@ -19,7 +20,7 @@ public:
     int getNumParameters() const override { return 8; }
     juce::String getParameterName(int index) const override;
     juce::String getName() const override { return "Feedback Network"; }
-    int getLatencySamples() const { return latencySamples; }
+    int getLatencySamples() const noexcept override { return latencySamples; }
 
     enum ParamID {
         kDelayTime = 0,
@@ -69,6 +70,6 @@ private:
     double modRate = 0.1; // Hz
 
     inline float sanitize(float x) {
-        return std::isfinite(x) ? x : 0.0f;
+        return DSPUtils::flushDenorm(std::isfinite(x) ? x : 0.0f);
     }
 };
