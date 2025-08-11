@@ -40,16 +40,16 @@
 #include "HarmonicExciter_Platinum.h"
 #include "FeedbackNetwork.h"
 #include "IntelligentHarmonizer.h"
-#include "ParametricEQ_Platinum.h"
+#include "ParametricEQ_Studio.h"
 #include "MasteringLimiter_Platinum.h"
 #include "NoiseGate_Platinum.h"
 #include "VintageOptoCompressor_Platinum.h"
 #include "SpectralGate_Platinum.h"
 #include "ChaosGenerator_Platinum.h"
 #include "BufferRepeat_Platinum.h"
-#include "VintageConsoleEQ_Platinum.h"
+#include "VintageConsoleEQ_Studio.h"
 #include "MidSideProcessor_Platinum.h"
-#include "VintageTubePreamp.h"
+#include "VintageTubePreamp_Studio.h"
 #include "SpringReverb_Platinum.h"
 #include "ResonantChorus_Platinum.h"
 #include "GainUtility_Platinum.h"
@@ -88,10 +88,10 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
             
         // FILTERS & EQ (7-14)
         case 7: // ENGINE_PARAMETRIC_EQ
-            return std::make_unique<ParametricEQ_Platinum>();
+            return std::make_unique<ParametricEQ_Studio>();
             
         case 8: // ENGINE_VINTAGE_CONSOLE_EQ
-            return std::make_unique<VintageConsoleEQ_Platinum>();
+            return std::make_unique<VintageConsoleEQ_Studio>();
             
         case 9: // ENGINE_LADDER_FILTER
             return std::make_unique<LadderFilter>();
@@ -113,7 +113,7 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
             
         // DISTORTION & SATURATION (15-22)
         case 15: // ENGINE_VINTAGE_TUBE
-            return std::make_unique<VintageTubePreamp>();
+            return std::make_unique<VintageTubePreamp_Studio>();
             
         case 16: // ENGINE_WAVE_FOLDER
             return std::make_unique<WaveFolder>();
