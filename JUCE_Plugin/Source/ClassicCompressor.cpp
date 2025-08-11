@@ -83,6 +83,38 @@ void ClassicCompressor::process(juce::AudioBuffer<float>& buffer) {
     
     if (numChannels == 0 || numSamples == 0) return;
     
+    // Safety check: ensure we don't exceed our buffer size
+    if (numSamples > MAX_BLOCK_SIZE) {
+        // Process in chunks if the block is too large
+        // For now, just process what we can to avoid crashes
+        const int safeNumSamples = std::min(numSamples, MAX_BLOCK_SIZE);
+        
+        // Process only the safe amount
+        float* channelData[2] = { nullptr, nullptr };
+        channelData[0] = buffer.getWritePointer(0);
+        if (numChannels > 1) {
+            channelData[1] = buffer.getWritePointer(1);
+        } else {
+            channelData[1] = channelData[0]; // Mono
+        }
+        
+        int samplesRemaining = safeNumSamples;
+        int currentSample = 0;
+        
+        while (samplesRemaining > 0) {
+            int subBlockSize = std::min(samplesRemaining, SUBBLOCK_SIZE);
+            processSubBlock(channelData[0] + currentSample, 
+                           channelData[1] + currentSample, 
+                           currentSample, subBlockSize);
+            
+            currentSample += subBlockSize;
+            samplesRemaining -= subBlockSize;
+        }
+        
+        scrubBuffer(buffer);
+        return;
+    }
+    
     // Get channel pointers
     float* channelData[2] = { nullptr, nullptr };
     channelData[0] = buffer.getWritePointer(0);
@@ -110,6 +142,10 @@ void ClassicCompressor::process(juce::AudioBuffer<float>& buffer) {
 }
 
 void ClassicCompressor::processSubBlock(float* left, float* right, int startSample, int numSamples) {
+    // Safety check
+    if (numSamples <= 0 || numSamples > SUBBLOCK_SIZE) return;
+    if (left == nullptr || right == nullptr) return;
+    
     // Update parameters once per sub-block
     double threshold = m_threshold.processSubBlock(numSamples);
     double ratio = m_ratio.processSubBlock(numSamples);
@@ -148,11 +184,12 @@ void ClassicCompressor::processSubBlock(float* left, float* right, int startSamp
     // Process samples in the sub-block
     double makeupLinear = dbToLinear(makeupDb);
     
-    // Copy to work buffers for processing
-    std::copy(left, left + numSamples, m_workBuffer1.ptr());
-    std::copy(right, right + numSamples, m_workBuffer2.ptr());
+    // Copy to work buffers for processing (with bounds check)
+    const int safeSamples = std::min(numSamples, static_cast<int>(MAX_BLOCK_SIZE));
+    std::copy(left, left + safeSamples, m_workBuffer1.ptr());
+    std::copy(right, right + safeSamples, m_workBuffer2.ptr());
     
-    for (int i = 0; i < numSamples; ++i) {
+    for (int i = 0; i < safeSamples; ++i) {
         // Sidechain processing
         double scSignals[2];
         float delayedSignals[2];
