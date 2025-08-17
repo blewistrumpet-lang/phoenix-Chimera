@@ -34,7 +34,7 @@ private:
         std::atomic<double> targetValue{0.0};
         double currentValue = 0.0;
         double smoothingCoeff = 0.0;
-        double sampleRate = 44100.0;
+        double sampleRate = 0.0;
         
     public:
         void setSampleRate(double sr) {
@@ -180,6 +180,9 @@ private:
         double transistorMatching = 1.0;
         double diodeMatching = 1.0;
         
+        // Store sample rate for tone stack
+        double circuitSampleRate = 0.0;
+        
     public:
         void prepare(double sampleRate);
         double process(double input, double sustain, double tone, double volume);
@@ -228,7 +231,7 @@ private:
     };
     
     // DSP members
-    double m_sampleRate = 44100.0;
+    double m_sampleRate = 0.0;
     
     // Parameters
     std::unique_ptr<ParameterSmoother> m_sustain;

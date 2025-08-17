@@ -371,8 +371,9 @@ private:
                 // Apply aging effects to pitch stability
                 float adjustedPitch = pitchFactor;
                 if (aging > 0.03f) {
+                    static thread_local juce::Random random;
                     static float pitchWobble = 0.0f;
-                    pitchWobble += ((rand() % 1000) / 1000.0f - 0.5f) * aging * 0.0005f;
+                    pitchWobble += (random.nextFloat() - 0.5f) * aging * 0.0005f;
                     pitchWobble *= 0.9995f;  // Slow decay
                     adjustedPitch *= (1.0f + pitchWobble);
                 }

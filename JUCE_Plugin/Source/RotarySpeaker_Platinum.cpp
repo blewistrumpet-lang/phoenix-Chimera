@@ -1,4 +1,5 @@
 #include "RotarySpeaker_Platinum.h"
+#include "DspEngineUtilities.h"
 #include <JuceHeader.h>
 #include <algorithm>
 #include <cmath>
@@ -94,6 +95,8 @@ void RotarySpeaker_Platinum::reset() noexcept {
 //==============================================================================
 
 void RotarySpeaker_Platinum::process(juce::AudioBuffer<float>& buffer) noexcept {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     

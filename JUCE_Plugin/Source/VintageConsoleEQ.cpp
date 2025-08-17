@@ -1,4 +1,5 @@
 #include "VintageConsoleEQ.h"
+#include "DspEngineUtilities.h"
 #include <algorithm>
 
 VintageConsoleEQ::VintageConsoleEQ() {
@@ -66,6 +67,8 @@ void VintageConsoleEQ::reset() {
 }
 
 void VintageConsoleEQ::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     

@@ -217,7 +217,8 @@ private:
             
             // Thermal noise increases with temperature
             float noiseLevel = (temperature - 20.0f) * 0.000004f;
-            thermalNoise = ((rand() % 1000) / 1000.0f - 0.5f) * noiseLevel;
+            thread_local juce::Random random;
+            thermalNoise = (random.nextFloat() - 0.5f) * noiseLevel;
             
             // Thermal drift affects timing and gain
             thermalDrift = (temperature - 25.0f) * 0.0007f;

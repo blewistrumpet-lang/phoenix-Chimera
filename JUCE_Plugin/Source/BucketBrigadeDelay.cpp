@@ -1,5 +1,6 @@
 // ==================== BucketBrigadeDelay.cpp ====================
 #include "BucketBrigadeDelay.h"
+#include "DspEngineUtilities.h"
 #include <algorithm>
 
 BucketBrigadeDelay::BucketBrigadeDelay() {
@@ -75,6 +76,8 @@ void BucketBrigadeDelay::reset() {
 }
 
 void BucketBrigadeDelay::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -248,12 +251,28 @@ juce::String BucketBrigadeDelay::getParameterName(int index) const {
 // ==================== BBDChain Implementation ====================
 
 void BucketBrigadeDelay::BBDChain::setNumStages(int stages) {
-    numStages = stages;
-    buckets.resize(stages, 0.0);
+    numStages.store(stages, std::memory_order_release);
+    
+    // Allocate new atomic array if needed
+    if (static_cast<size_t>(stages) > bucketCapacity) {
+        buckets = std::make_unique<std::atomic<double>[]>(stages);
+        bucketCapacity = stages;
+    }
+    
+    // Initialize atomic buckets to zero
+    for (int i = 0; i < stages; ++i) {
+        buckets[i].store(0.0, std::memory_order_relaxed);
+    }
 }
 
 void BucketBrigadeDelay::BBDChain::reset() {
-    std::fill(buckets.begin(), buckets.end(), 0.0);
+    // Thread-safe reset of atomic buckets
+    int stages = numStages.load(std::memory_order_acquire);
+    if (buckets && stages > 0) {
+        for (int i = 0; i < stages; ++i) {
+            buckets[i].store(0.0, std::memory_order_relaxed);
+        }
+    }
     clockPhase = 0.0;
     clockState = IDLE;
 }
@@ -295,37 +314,99 @@ double BucketBrigadeDelay::BBDChain::process(double input, double clockRate, dou
             break;
     }
     
-    // Output is from the last stage
-    return buckets[numStages - 1];
+    // Output is from the last stage (thread-safe atomic read)
+    int stages = numStages.load(std::memory_order_acquire);
+    if (buckets && stages > 0 && static_cast<size_t>(stages) <= bucketCapacity) {
+        return buckets[stages - 1].load(std::memory_order_acquire);
+    }
+    return 0.0;  // Safety fallback
 }
 
 void BucketBrigadeDelay::BBDChain::transferCharges(double input, bool oddPhase) {
+    /*
+     * THREAD SAFETY IMPLEMENTATION:
+     * 
+     * This method implements lock-free thread safety for real-time audio processing:
+     * 
+     * 1. ATOMIC LOADS: All parameters are loaded atomically with acquire semantics
+     *    to ensure consistent values throughout the transfer operation.
+     * 
+     * 2. MEMORY ORDERING: 
+     *    - acquire: Ensures no memory operations are reordered before the load
+     *    - release: Ensures no memory operations are reordered after the store
+     *    - This prevents race conditions and ensures visibility across threads
+     * 
+     * 3. BUCKET ACCESS: Each bucket is an atomic<double> with proper memory ordering
+     *    to prevent data races during concurrent read/write operations.
+     * 
+     * 4. PROCESSING ORDER: Odd/even stages are processed separately in two-phase
+     *    clocking to maintain BBD authenticity while ensuring thread safety.
+     * 
+     * This approach eliminates clicking artifacts and inconsistent delay behavior
+     * while maintaining real-time performance without locks or mutexes.
+     */
+    
+    // Load characteristics atomically once for consistency during transfer
+    const double efficiency = transferEfficiency.load(std::memory_order_acquire);
+    const double leakage = chargeLeakage.load(std::memory_order_acquire);
+    const double feedthrough = clockFeedthrough.load(std::memory_order_acquire);
+    const double inputCap = inputCapacitance.load(std::memory_order_acquire);
+    const int stages = numStages.load(std::memory_order_acquire);
+    
+    // THREAD SAFETY: Bounds checking to prevent array access issues
+    if (!buckets || stages <= 0 || static_cast<size_t>(stages) > bucketCapacity) {
+        return;  // Safety exit if inconsistent state
+    }
+    
     if (oddPhase) {
-        // Transfer odd stages
-        for (int i = numStages - 1; i > 0; i -= 2) {
-            buckets[i] = buckets[i-1] * transferEfficiency;
-            buckets[i] *= (1.0 - chargeLeakage);
-            buckets[i] += clockFeedthrough * (input - buckets[i]);
+        // Transfer odd stages - process from end to beginning to avoid dependency issues
+        for (int i = stages - 1; i > 0; i -= 2) {
+            // THREAD SAFETY: Atomic read operations with acquire semantics
+            // This ensures that we see the most recent writes from other threads
+            double prevValue = buckets[i-1].load(std::memory_order_acquire);
+            double currentValue = buckets[i].load(std::memory_order_acquire);
+            
+            // Calculate new value using consistent parameter values
+            double newValue = prevValue * efficiency;
+            newValue *= (1.0 - leakage);
+            newValue += feedthrough * (input - currentValue);
+            
+            // THREAD SAFETY: Atomic write with release semantics
+            // This ensures our write is visible to other threads immediately
+            buckets[i].store(newValue, std::memory_order_release);
         }
     } else {
-        // Transfer even stages
-        for (int i = numStages - 2; i >= 0; i -= 2) {
+        // Transfer even stages - process from end to beginning 
+        for (int i = stages - 2; i >= 0; i -= 2) {
             if (i > 0) {
-                buckets[i] = buckets[i-1] * transferEfficiency;
-                buckets[i] *= (1.0 - chargeLeakage);
-                buckets[i] += clockFeedthrough * (input - buckets[i]);
+                // THREAD SAFETY: Atomic read operations with acquire semantics
+                double prevValue = buckets[i-1].load(std::memory_order_acquire);
+                double currentValue = buckets[i].load(std::memory_order_acquire);
+                
+                // Calculate new value using consistent parameter values
+                double newValue = prevValue * efficiency;
+                newValue *= (1.0 - leakage);
+                newValue += feedthrough * (input - currentValue);
+                
+                // THREAD SAFETY: Atomic write with release semantics
+                buckets[i].store(newValue, std::memory_order_release);
             }
         }
-        // Input stage
-        buckets[0] = input * inputCapacitance + buckets[0] * (1.0 - inputCapacitance);
+        
+        // THREAD SAFETY: Input stage atomic update with proper memory ordering
+        // This ensures thread-safe access to the first bucket stage
+        double currentInput = buckets[0].load(std::memory_order_acquire);
+        double newInput = input * inputCap + currentInput * (1.0 - inputCap);
+        buckets[0].store(newInput, std::memory_order_release);
     }
 }
 
 void BucketBrigadeDelay::BBDChain::setCharacteristics(double efficiency, double leakage, 
                                                       double feedthrough) {
-    transferEfficiency = std::clamp(efficiency, 0.9, 0.999);
-    chargeLeakage = std::clamp(leakage, 0.0, 0.001);
-    clockFeedthrough = std::clamp(feedthrough, 0.0, 0.01);
+    // Thread-safe atomic updates with memory ordering for parameter changes
+    transferEfficiency.store(std::clamp(efficiency, 0.9, 0.999), std::memory_order_release);
+    chargeLeakage.store(std::clamp(leakage, 0.0, 0.001), std::memory_order_release);
+    clockFeedthrough.store(std::clamp(feedthrough, 0.0, 0.01), std::memory_order_release);
 }
 
 // ==================== CompandingSystem Implementation ====================

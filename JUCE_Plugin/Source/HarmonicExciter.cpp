@@ -132,7 +132,7 @@ void HarmonicExciter::process(juce::AudioBuffer<float>& buffer) {
                 processedLow = processWarmthFilterWithAging(processedLow, state.warmthState, m_componentAge, thermalFactor);
                 
                 // Add thermal noise to low frequencies
-                processedLow += state.thermalNoise * ((rand() % 1000) / 1000.0f - 0.5f) * 0.3f;
+                processedLow += state.thermalNoise * m_thermalModel.dist(m_thermalModel.rng) * 0.3f;
             }
             
             // Mid band - main harmonic generation with aging and thermal effects
@@ -185,7 +185,7 @@ void HarmonicExciter::process(juce::AudioBuffer<float>& buffer) {
             float excited = processedLow + processedMid + processedHigh;
             
             // Add overall component noise
-            excited += state.noiseLevel * ((rand() % 1000) / 1000.0f - 0.5f) * 2.0f;
+            excited += state.noiseLevel * m_thermalModel.dist(m_thermalModel.rng) * 2.0f;
             
             // DC blocker
             excited = processDCBlocker(excited, state.dcBlockerState);
@@ -230,7 +230,7 @@ float HarmonicExciter::processPresenceFilterWithAging(float input, float& state,
         basic *= (1.0f + freqShift);
         
         // Add component tolerances
-        basic += aging * 0.02f * ((rand() % 1000) / 1000.0f - 0.5f) * basic;
+        basic += aging * 0.02f * m_thermalModel.dist(m_thermalModel.rng) * basic;
     }
     
     return basic;
@@ -260,7 +260,7 @@ float HarmonicExciter::processWarmthFilterWithAging(float input, float& state, f
         basic *= (1.0f - freqShift); // Warmth decreases slightly with age
         
         // Add component drift
-        basic += aging * 0.015f * ((rand() % 1000) / 1000.0f - 0.5f) * basic;
+        basic += aging * 0.015f * m_thermalModel.dist(m_thermalModel.rng) * basic;
     }
     
     return basic;

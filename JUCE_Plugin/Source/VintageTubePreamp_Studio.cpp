@@ -29,21 +29,49 @@ void VintageTubePreamp_Studio::prepareToPlay(double sampleRate,int samplesPerBlo
 void VintageTubePreamp_Studio::reset(){ prepareToPlay(fs_, blockSize_); }
 
 void VintageTubePreamp_Studio::updateParameters(const std::map<int,float>& p){
-    using namespace Dsp;
-    bypass_   = ParamAccess::get(p,kBypass,0.f) >= 0.5f;
-    voicing_  = (Voicing) std::clamp((int)std::round(ParamAccess::get(p,kVoicing,(float)FENDER_DLUX)), 0, 2);
-    inTrim_   = std::clamp(ParamAccess::get(p,kInputTrim_dB,0.f), -24.f, 24.f);
-    outTrim_  = std::clamp(ParamAccess::get(p,kOutputTrim_dB,0.f), -24.f, 24.f);
-    drive_    = std::clamp(ParamAccess::get(p,kDrive,0.4f), 0.f, 1.f);
-    bright_   = std::clamp(ParamAccess::get(p,kBright,0.f), 0.f, 1.f);
-    bass_     = std::clamp(ParamAccess::get(p,kBass,0.5f), 0.f, 1.f);
-    mid_      = std::clamp(ParamAccess::get(p,kMid,0.5f), 0.f, 1.f);
-    treble_   = std::clamp(ParamAccess::get(p,kTreble,0.5f), 0.f, 1.f);
-    presence_ = std::clamp(ParamAccess::get(p,kPresence,0.3f), 0.f, 1.f);
-    micMech_  = std::clamp(ParamAccess::get(p,kMicMech,0.f), 0.f, 1.f);
-    ghost_    = std::clamp(ParamAccess::get(p,kGhost,0.f), 0.f, 1.f);
-    noise_    = std::clamp(ParamAccess::get(p,kNoise,0.f), 0.f, 1.f);
-    osMode_   = (int)std::round(std::clamp(ParamAccess::get(p,kOSMode,0.f), 0.f, 2.f));
+    // Helper to get parameter value with default
+    auto getParam = [&p](int id, float defaultVal) -> float {
+        auto it = p.find(id);
+        return (it != p.end()) ? it->second : defaultVal;
+    };
+    
+    // Map slot parameters (0-14) to Tube Preamp:
+    // 0: Drive
+    // 1: Bass
+    // 2: Mid
+    // 3: Treble
+    // 4: Presence
+    // 5: Bright
+    // 6: Voicing (0-0.33=Fender, 0.33-0.66=Marshall, 0.66-1=Vox)
+    // 7: Microphonics/mechanical
+    // 8: Ghost notes
+    // 9: Noise amount
+    // 10: Input trim
+    // 11: Output trim
+    // 12: Not used
+    // 13: Mix
+    // 14: Not used
+    
+    bypass_   = false; // Bypass handled by plugin framework
+    drive_    = getParam(0, 0.4f);
+    bass_     = getParam(1, 0.5f);
+    mid_      = getParam(2, 0.5f);
+    treble_   = getParam(3, 0.5f);
+    presence_ = getParam(4, 0.3f);
+    bright_   = getParam(5, 0.f);
+    
+    // Map voicing from normalized value
+    float voiceNorm = getParam(6, 0.0f);
+    if (voiceNorm < 0.33f) voicing_ = FENDER_DLUX;
+    else if (voiceNorm < 0.66f) voicing_ = MARSHALL_PLEXI;
+    else voicing_ = VOX_AC30;
+    
+    micMech_  = getParam(7, 0.f);
+    ghost_    = getParam(8, 0.f);
+    noise_    = getParam(9, 0.f);
+    inTrim_   = (getParam(10, 0.5f) - 0.5f) * 48.f; // Map 0-1 to -24 to +24 dB
+    outTrim_  = (getParam(11, 0.5f) - 0.5f) * 48.f; // Map 0-1 to -24 to +24 dB
+    osMode_   = 0; // Auto mode
 
     tone_.update(voicing_, bass_, mid_, treble_, (float)fs_);
     ot_.setPresence(presence_);

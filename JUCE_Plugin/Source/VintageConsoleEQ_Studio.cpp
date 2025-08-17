@@ -205,7 +205,6 @@ void VintageConsoleEQ_Studio::reset() {
 }
 
 void VintageConsoleEQ_Studio::updateParameters(const std::map<int, float>& params) {
-    using namespace Dsp;
     
     // Extract parameters
     auto getParam = [&params](int id, float defaultVal) -> float {
@@ -213,30 +212,44 @@ void VintageConsoleEQ_Studio::updateParameters(const std::map<int, float>& param
         return (it != params.end()) ? it->second : defaultVal;
     };
     
-    bypass_ = getParam(kBypass, 0.0f) > 0.5f;
-    outputTrim_ = getParam(kOutputTrim_dB, 0.0f);
-    drive_ = getParam(kDrive, 0.0f);
-    osMode_ = (int)getParam(kOSOn, 0.0f);
-    noiseOn_ = getParam(kNoiseOn, 0.0f) > 0.5f;
+    // Map slot parameters (0-12) to Console EQ:
+    // 0-1: Low shelf (Freq index, Gain)
+    // 2-3: Low-mid bell (Freq index, Gain)
+    // 4-5: High-mid bell (Freq index, Gain)
+    // 6-7: High shelf (Freq index, Gain)
+    // 8: Drive
+    // 9: Console type (0=Neve, 0.33=SSL, 0.66=API, 1=Custom)
+    // 10: Q character
+    // 11: Vintage noise
+    // 12: Output trim
     
-    // Console type
-    int consoleType = (int)getParam(kConsoleType, 0.0f);
-    console_ = (ConsoleType)std::clamp(consoleType, 0, 3);
+    bypass_ = false; // Bypass handled by plugin framework
+    outputTrim_ = (getParam(12, 0.5f) - 0.5f) * 48.0f; // Map 0-1 to -24 to +24 dB
+    drive_ = getParam(8, 0.0f);
+    osMode_ = 0; // Auto mode
+    noiseOn_ = getParam(11, 0.0f) > 0.5f;
     
-    // Band indices
-    bands_[LOW].idx = (int)getParam(kLow_Index, 0.0f);
-    bands_[LM].idx = (int)getParam(kLM_Index, 0.0f);
-    bands_[HM].idx = (int)getParam(kHM_Index, 0.0f);
-    bands_[HIGH].idx = (int)getParam(kHigh_Index, 0.0f);
+    // Console type from normalized value
+    float consoleNorm = getParam(9, 0.0f);
+    if (consoleNorm < 0.25f) console_ = ConsoleType::NEVE_1073;
+    else if (consoleNorm < 0.5f) console_ = ConsoleType::SSL_4000E;
+    else if (consoleNorm < 0.75f) console_ = ConsoleType::API_550A;
+    else console_ = ConsoleType::CUSTOM;
     
-    // Band gains
-    bands_[LOW].gainDB = getParam(kLow_Gain_dB, 0.0f);
-    bands_[LM].gainDB = getParam(kLM_Gain_dB, 0.0f);
-    bands_[HM].gainDB = getParam(kHM_Gain_dB, 0.0f);
-    bands_[HIGH].gainDB = getParam(kHigh_Gain_dB, 0.0f);
+    // Map frequency indices (0-1 to stepped index)
+    bands_[LOW].idx = (int)(getParam(0, 0.2f) * (lowCount_ - 1));
+    bands_[LM].idx = (int)(getParam(2, 0.3f) * (lmCount_ - 1));
+    bands_[HM].idx = (int)(getParam(4, 0.5f) * (hmCount_ - 1));
+    bands_[HIGH].idx = (int)(getParam(6, 0.7f) * (highCount_ - 1));
     
-    // Q bias
-    float qBias = getParam(kQBias, 0.5f);
+    // Map gains (0-1 to -15 to +15 dB)
+    bands_[LOW].gainDB = (getParam(1, 0.5f) - 0.5f) * 30.0f;
+    bands_[LM].gainDB = (getParam(3, 0.5f) - 0.5f) * 30.0f;
+    bands_[HM].gainDB = (getParam(5, 0.5f) - 0.5f) * 30.0f;
+    bands_[HIGH].gainDB = (getParam(7, 0.5f) - 0.5f) * 30.0f;
+    
+    // Q bias/character
+    float qBias = getParam(10, 0.5f);
     for (int b = 0; b < NBANDS; ++b) {
         bands_[b].Qbias = qBias;
     }
@@ -244,21 +257,19 @@ void VintageConsoleEQ_Studio::updateParameters(const std::map<int, float>& param
 
 juce::String VintageConsoleEQ_Studio::getParameterName(int index) const {
     switch (index) {
-        case kBypass: return "Bypass";
-        case kOutputTrim_dB: return "Output Trim";
-        case kDrive: return "Drive";
-        case kOSOn: return "Oversampling";
-        case kNoiseOn: return "Vintage Noise";
-        case kConsoleType: return "Console Type";
         case kLow_Index: return "Low Freq";
-        case kLM_Index: return "Low Mid Freq";
-        case kHM_Index: return "High Mid Freq";
-        case kHigh_Index: return "High Freq";
         case kLow_Gain_dB: return "Low Gain";
+        case kLM_Index: return "Low Mid Freq";
         case kLM_Gain_dB: return "Low Mid Gain";
+        case kHM_Index: return "High Mid Freq";
         case kHM_Gain_dB: return "High Mid Gain";
+        case kHigh_Index: return "High Freq";
         case kHigh_Gain_dB: return "High Gain";
+        case kDrive: return "Drive";
+        case kConsoleType: return "Console Type";
         case kQBias: return "Q Character";
+        case kNoiseOn: return "Vintage Noise";
+        case kOutputTrim_dB: return "Output Trim";
         default: return "Param " + juce::String(index);
     }
 }

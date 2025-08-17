@@ -386,6 +386,7 @@ void MuffFuzz::Oversampler::reset() {
 
 // BigMuffCircuit implementation
 void MuffFuzz::BigMuffCircuit::prepare(double sampleRate) {
+    circuitSampleRate = sampleRate;
     inputBuffer.setSampleRate(sampleRate);
     clippingStage1.setSampleRate(sampleRate);
     clippingStage2.setSampleRate(sampleRate);
@@ -412,8 +413,8 @@ double MuffFuzz::BigMuffCircuit::process(double input, double sustain, double to
     // Second diode clipping  
     signal = diodeClipper2.process(signal * 0.3) * 3.33;
     
-    // Tone stack
-    toneStack.updateCoefficients(tone, 48000.0);  // Assumes base rate
+    // Tone stack - use current circuit sample rate
+    toneStack.updateCoefficients(tone, circuitSampleRate);
     signal = toneStack.process(signal);
     
     // Output buffer with volume control

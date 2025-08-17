@@ -69,7 +69,7 @@ namespace {
         }
         
     private:
-        double sampleRate = 44100.0;
+        double sampleRate = 0.0;
         float envelope = 0.0f;
     };
     
@@ -118,7 +118,7 @@ namespace {
 // ===================== PIMPL Implementation =====================
 struct MasteringLimiter_Platinum::Impl {
     // Core parameters
-    double sampleRate = 44100.0;
+    double sampleRate = 0.0;
     int blockSize = 512;
     
     // Parameter values (smoothed)

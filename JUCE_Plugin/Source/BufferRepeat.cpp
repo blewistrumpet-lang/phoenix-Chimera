@@ -1,4 +1,5 @@
 #include "BufferRepeat.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 #include <algorithm>
 
@@ -66,6 +67,8 @@ void BufferRepeat::reset() {
 }
 
 void BufferRepeat::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -187,7 +190,7 @@ void BufferRepeat::process(juce::AudioBuffer<float>& buffer) {
             
             // Add subtle noise floor for realism
             float noiseLevel = std::pow(10.0f, state.noiseFloor / 20.0f);
-            sliceOutput += noiseLevel * ((rand() % 1000) / 1000.0f - 0.5f) * 0.001f;
+            sliceOutput += noiseLevel * (state.dist(state.rng) - 0.5f) * 0.001f;
             
             // Mix with dry signal using smooth parameter
             channelData[sample] = dry * (1.0f - m_mix.current) + sliceOutput * m_mix.current;

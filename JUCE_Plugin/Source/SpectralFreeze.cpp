@@ -398,7 +398,9 @@ void SpectralFreeze::applyResonance(std::complex<float>* spectrum, float resonan
     // Simple peak enhancement
     float enhancement = 1.0f + resonance * 3.0f;
     
-    for (int i = 1; i < HALF_FFT_SIZE; ++i) {
+    // Fix: Loop bounds changed from i < HALF_FFT_SIZE to i < HALF_FFT_SIZE - 1
+    // to prevent buffer overflow when accessing spectrum[i+1]
+    for (int i = 1; i < HALF_FFT_SIZE - 1; ++i) {
         float mag_prev = std::abs(spectrum[i-1]);
         float mag_curr = std::abs(spectrum[i]);
         float mag_next = std::abs(spectrum[i+1]);

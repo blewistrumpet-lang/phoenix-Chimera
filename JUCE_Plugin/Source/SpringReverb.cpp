@@ -1,4 +1,5 @@
 #include "SpringReverb.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 #include <algorithm>
 
@@ -60,6 +61,8 @@ void SpringReverb::reset() {
 }
 
 void SpringReverb::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard; // CRITICAL FIX: Prevent denormal numbers from killing reverb tails
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
@@ -180,7 +183,9 @@ void SpringReverb::process(juce::AudioBuffer<float>& buffer) {
             
             // Add thermal noise to spring output
             if (m_componentAge > 0.01f) {
-                toned += m_componentAge * 0.001f * ((rand() % 1000) / 1000.0f - 0.5f) * 0.5f;
+                // CRITICAL FIX: Use thread-safe random instead of rand()
+                thread_local juce::Random tlsRandom;
+                toned += m_componentAge * 0.001f * (tlsRandom.nextFloat() - 0.5f) * 0.5f;
             }
             
             // Final soft limiting

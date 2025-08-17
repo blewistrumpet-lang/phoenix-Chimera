@@ -35,7 +35,49 @@ void AnalogRingModulator::prepareToPlay(double sampleRate, int samplesPerBlock) 
 
 void AnalogRingModulator::reset() {
     // Reset all internal state
-    // TODO: Implement specific reset logic for AnalogRingModulator
+    
+    // Reset carrier oscillator
+    m_carrier.reset();
+    
+    // Reset channel states
+    for (auto& channel : m_channels) {
+        channel.reset();
+    }
+    
+    // Reset DC blockers
+    for (auto& dcBlocker : m_inputDCBlockers) {
+        dcBlocker.x1 = 0.0f;
+        dcBlocker.y1 = 0.0f;
+    }
+    for (auto& dcBlocker : m_outputDCBlockers) {
+        dcBlocker.x1 = 0.0f;
+        dcBlocker.y1 = 0.0f;
+    }
+    
+    // Reset thermal model state
+    m_thermalModel.thermalNoise = 0.0f;
+    
+    // Reset component aging
+    m_componentAge = 0.0f;
+    m_sampleCount = 0;
+    
+    // Reset parameter smoothers to current values (no reset to immediate as that would cause jumps)
+    m_carrierFreq.current = m_carrierFreq.target;
+    m_ringShiftBlend.current = m_ringShiftBlend.target;
+    m_carrierDrift.current = m_carrierDrift.target;
+    m_tracking.current = m_tracking.target;
+    
+    // Reset oversampler if needed
+    if (m_useOversampling) {
+        std::fill(m_oversampler.upsampleBuffer.begin(), m_oversampler.upsampleBuffer.end(), 0.0f);
+        std::fill(m_oversampler.downsampleBuffer.begin(), m_oversampler.downsampleBuffer.end(), 0.0f);
+        
+        // Reset anti-aliasing filters
+        m_oversampler.upsampleFilter.x.fill(0.0f);
+        m_oversampler.upsampleFilter.y.fill(0.0f);
+        m_oversampler.downsampleFilter.x.fill(0.0f);
+        m_oversampler.downsampleFilter.y.fill(0.0f);
+    }
 }
 
 void AnalogRingModulator::process(juce::AudioBuffer<float>& buffer) {

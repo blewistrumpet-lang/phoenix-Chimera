@@ -154,7 +154,7 @@ private:
     std::unique_ptr<ParameterSmoother> m_fdnDampingSmooth;
     
     // DSP state
-    double m_sampleRate = 44100.0;
+    double m_sampleRate = 0.0;
     std::atomic<bool> m_isInitialized{false};
     
     // Performance configuration

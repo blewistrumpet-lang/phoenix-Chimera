@@ -1,4 +1,5 @@
 #include "ParametricEQ.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 
 ParametricEQ::ParametricEQ() {
@@ -49,6 +50,8 @@ void ParametricEQ::reset() {
 }
 
 void ParametricEQ::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     

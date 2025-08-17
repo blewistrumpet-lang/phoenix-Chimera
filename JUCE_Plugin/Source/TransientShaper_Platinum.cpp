@@ -706,8 +706,8 @@ struct TransientShaper_Platinum::Impl {
         // Update cache once per block
         updateBlockCache();
         
-        // Early bypass if dry
-        if (cache.mixAmount < 0.001f) return;
+        // Allow processing at very low mix values for subtle mixing (removed 0.001f threshold)
+        // The mix calculation will naturally handle blending, even at very low values
         
         for (int ch = 0; ch < numChannels; ++ch) {
             float* data = buffer.getWritePointer(ch);

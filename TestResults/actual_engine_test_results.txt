@@ -1,0 +1,118 @@
+JUCE v8.0.8
+
+CHIMERA PHOENIX - ACTUAL ENGINE TEST
+=====================================
+
+[ 0] EngineFactory::createEngine called with engineID: 0
+None                           PASS
+[1 ] EngineFactory::createEngine called with engineID: 1
+Vintage Opto Platinum          FAILED (NaN/Inf)
+[2 ] EngineFactory::createEngine called with engineID: 2
+Classic Compressor Pro         PASS
+[3 ] EngineFactory::createEngine called with engineID: 3
+Transient Shaper Pro           PASS
+[4 ] EngineFactory::createEngine called with engineID: 4
+Noise Gate Platinum            PASS
+[5 ] EngineFactory::createEngine called with engineID: 5
+Mastering Limiter Platinum     PASS
+[6 ] EngineFactory::createEngine called with engineID: 6
+Dynamic EQ                     PASS
+[7 ] EngineFactory::createEngine called with engineID: 7
+Parametric EQ Platinum         PASS
+[8 ] EngineFactory::createEngine called with engineID: 8
+Vintage Console EQ             PASS
+[9 ] EngineFactory::createEngine called with engineID: 9
+Ladder Filter Pro              PASS
+[10] EngineFactory::createEngine called with engineID: 10
+State Variable Filter          PASS
+[11] EngineFactory::createEngine called with engineID: 11
+Formant Filter Pro             PASS
+[12] EngineFactory::createEngine called with engineID: 12
+Envelope Filter                PASS
+[13] EngineFactory::createEngine called with engineID: 13
+Comb Resonator                 PASS
+[14] EngineFactory::createEngine called with engineID: 14
+Vocal Formant Filter           PASS
+[15] EngineFactory::createEngine called with engineID: 15
+Vintage Tube Preamp Ultimate   PASS
+[16] EngineFactory::createEngine called with engineID: 16
+Wave Folder                    PASS
+[17] EngineFactory::createEngine called with engineID: 17
+Harmonic Exciter Pro           PASS
+[18] EngineFactory::createEngine called with engineID: 18
+Bit Crusher                    PASS
+[19] EngineFactory::createEngine called with engineID: 19
+Multiband Saturator Ultimate   PASS
+[20] EngineFactory::createEngine called with engineID: 20
+Muff Fuzz                      PASS
+[21] EngineFactory::createEngine called with engineID: 21
+Rodent Distortion              PASS
+[22] EngineFactory::createEngine called with engineID: 22
+K-Style Overdrive              FAILED (NaN/Inf)
+[23] EngineFactory::createEngine called with engineID: 23
+StereoChorus                   PASS
+[24] EngineFactory::createEngine called with engineID: 24
+Resonant Chorus Platinum       PASS
+[25] SKIPPED (may hang)
+[26] SKIPPED (may hang)
+[27] EngineFactory::createEngine called with engineID: 27
+Frequency Shifter              PASS
+[28] EngineFactory::createEngine called with engineID: 28
+Harmonic Tremolo Pro           PASS
+[29] EngineFactory::createEngine called with engineID: 29
+Classic Tremolo                PASS
+[30] EngineFactory::createEngine called with engineID: 30
+Rotary Speaker Platinum        PASS
+[31] EngineFactory::createEngine called with engineID: 31
+Pitch Shifter                  PASS
+[32] EngineFactory::createEngine called with engineID: 32
+Detune Doubler Pro             PASS
+[33] EngineFactory::createEngine called with engineID: 33
+Intelligent Harmonizer         PASS
+[34] EngineFactory::createEngine called with engineID: 34
+Tape Echo                      PASS
+[35] EngineFactory::createEngine called with engineID: 35
+Digital Delay Pro              PASS
+[36] EngineFactory::createEngine called with engineID: 36
+Magnetic Drum Echo             PASS
+[37] EngineFactory::createEngine called with engineID: 37
+Bucket Brigade Delay           PASS
+[38] EngineFactory::createEngine called with engineID: 38
+Buffer Repeat Platinum         PASS
+[39] EngineFactory::createEngine called with engineID: 39
+Plate Reverb                   PASS
+[40] EngineFactory::createEngine called with engineID: 40
+Spring Reverb Platinum         FAILED (NaN/Inf)
+[41] EngineFactory::createEngine called with engineID: 41
+Convolution Reverb             PASS
+[42] SKIPPED (may hang)
+[43] EngineFactory::createEngine called with engineID: 43
+Gated Reverb                   PASS
+[44] EngineFactory::createEngine called with engineID: 44
+Stereo Widener                 PASS
+[45] EngineFactory::createEngine called with engineID: 45
+Stereo Imager                  PASS
+[46] EngineFactory::createEngine called with engineID: 46
+Dimension Expander             FAILED (NaN/Inf)
+[47] EngineFactory::createEngine called with engineID: 47
+Spectral Freeze Ultimate      JUCE Assertion failure in SpectralFreeze.cpp:144
+ PASS
+[48] SKIPPED (may hang)
+[49] EngineFactory::createEngine called with engineID: 49
+Phased Vocoder                 PASS
+[50] SKIPPED (may hang)
+[51] SKIPPED (may hang)
+[52] SKIPPED (may hang)
+[53] EngineFactory::createEngine called with engineID: 53
+Mid-Side Processor             PASS
+[54] EngineFactory::createEngine called with engineID: 54
+Gain Utility Platinum          PASS
+[55] EngineFactory::createEngine called with engineID: 55
+Mono Maker Platinum            PASS
+[56] EngineFactory::createEngine called with engineID: 56
+Phase Align Platinum           FAILED (NaN/Inf)
+
+=====================================
+RESULTS: 45 passed, 5 failed
+Success rate: 78.9474%
+

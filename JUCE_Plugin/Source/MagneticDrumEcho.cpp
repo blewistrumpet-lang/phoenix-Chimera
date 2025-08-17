@@ -1,5 +1,6 @@
 // ==================== MagneticDrumEcho.cpp ====================
 #include "MagneticDrumEcho.h"
+#include "DspEngineUtilities.h"
 #include <algorithm>
 
 MagneticDrumEcho::MagneticDrumEcho() {
@@ -110,6 +111,8 @@ void MagneticDrumEcho::reset() {
 }
 
 void MagneticDrumEcho::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     

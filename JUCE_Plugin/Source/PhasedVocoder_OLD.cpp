@@ -44,7 +44,35 @@ void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
 
 void PhasedVocoder::reset() {
     // Reset all internal state
-    // TODO: Implement specific reset logic for PhasedVocoder
+    for (auto& state : m_channelStates) {
+        // Clear all buffers
+        std::fill(state.inputBuffer.begin(), state.inputBuffer.end(), 0.0f);
+        std::fill(state.outputBuffer.begin(), state.outputBuffer.end(), 0.0f);
+        std::fill(state.grainBuffer.begin(), state.grainBuffer.end(), 0.0f);
+        std::fill(state.fftBuffer.begin(), state.fftBuffer.end(), std::complex<float>(0.0f, 0.0f));
+        
+        // Clear magnitude and phase arrays
+        std::fill(state.magnitude.begin(), state.magnitude.end(), 0.0f);
+        std::fill(state.phase.begin(), state.phase.end(), 0.0f);
+        std::fill(state.lastPhase.begin(), state.lastPhase.end(), 0.0f);
+        std::fill(state.phaseAccum.begin(), state.phaseAccum.end(), 0.0f);
+        std::fill(state.trueBinFreq.begin(), state.trueBinFreq.end(), 0.0f);
+        
+        // Clear freeze buffers
+        std::fill(state.freezeMagnitude.begin(), state.freezeMagnitude.end(), 0.0f);
+        std::fill(state.freezePhase.begin(), state.freezePhase.end(), 0.0f);
+        state.isFrozen = false;
+        
+        // Reset position tracking
+        state.readPos = 0.0f;
+        state.writePos = 0;
+        state.outputReadPos = 0;
+        state.hopCounter = 0;
+        
+        // Reset transient detection state
+        state.envelopeFollower = 0.0f;
+        state.lastMagnitudeSum = 0.0f;
+    }
 }
 
 void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {

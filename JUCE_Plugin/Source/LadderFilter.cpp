@@ -373,10 +373,18 @@ void LadderFilter::FilterCoefficients::update(float cutoffNorm, float resonance,
 }
 
 void LadderFilter::FilterCoefficients::ensureStability() {
-    // Limit g to prevent numerical instability
-    g = clampSafe(g, 0.0f, 0.98f);
+    // Stability fix: Prevent g from reaching -1 to avoid division by zero in maxK calculation
+    // This prevents NaN propagation that causes audio loss
+    g = clampSafe(g, -0.99f, 0.98f);
+    
+    // Additional safety check before division to prevent numerical instability
+    // Ensure denominator (1.0f + g) is never zero or close to zero
+    if (std::abs(1.0f + g) < 1e-6f) {
+        g = -0.99f; // Safe fallback value
+    }
     
     // Dynamic k limiting based on g (Nyquist stability criterion)
+    // This formula is now safe from division by zero due to the safety checks above
     float maxK = 4.0f * (1.0f - g) / (1.0f + g);
     k = clampSafe(k, 0.0f, maxK * 0.95f); // 5% safety margin, clamped to safe range
     

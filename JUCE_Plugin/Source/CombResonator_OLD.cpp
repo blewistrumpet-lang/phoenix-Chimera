@@ -24,7 +24,15 @@ void CombResonator::prepareToPlay(double sampleRate, int samplesPerBlock) {
 
 void CombResonator::reset() {
     // Reset all internal state
-    // TODO: Implement specific reset logic for CombResonator
+    for (auto& channel : m_channels) {
+        channel.reset();
+    }
+    
+    // Reset DC blockers
+    for (auto& dcBlocker : m_dcBlockers) {
+        dcBlocker.x1 = 0.0f;
+        dcBlocker.y1 = 0.0f;
+    }
 }
 
 void CombResonator::process(juce::AudioBuffer<float>& buffer) {

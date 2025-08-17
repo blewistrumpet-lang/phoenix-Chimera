@@ -88,20 +88,49 @@ void ParametricEQ_Studio::updateParameters(const std::map<int,float>& p){
         return it != p.end() ? it->second : defaultValue;
     };
     
-    bypass_     = getParam(kGlobalBypass, 0.f) >= 0.5f;
-    trim_       = std::clamp(getParam(kOutputTrim_dB, 0.f), -24.f, 24.f);
-    wetDry_     = std::clamp(getParam(kWetDry, 1.f), 0.f, 1.f);
-    vintageOn_  = getParam(kVintageOn, 0.f)  >= 0.5f;
-    midSideOn_  = getParam(kMidSideOn, 0.f)  >= 0.5f;
-    analyzerOn_ = getParam(kAnalyzerOn, 1.f) >= 0.5f;
+    // Map slot parameters (0-14) to EQ parameters:
+    // 0-2: Band 1 (Freq, Gain, Q)
+    // 3-5: Band 2 (Freq, Gain, Q)  
+    // 6-8: Band 3 (Freq, Gain, Q)
+    // 9-11: Band 4 (Freq, Gain, Q)
+    // 12: Output trim
+    // 13: Mix/WetDry
+    // 14: (unused)
     
-    for (int b=0; b<kMaxBands; ++b) {
-        const int base = kBandBase + b*4;
+    // Note: Bypass is handled by the plugin framework
+    bypass_     = false; // Always process when called
+    trim_       = (getParam(12, 0.5f) - 0.5f) * 48.f; // Map 0-1 to -24 to +24 dB
+    wetDry_     = getParam(13, 1.f);
+    vintageOn_  = false; // Not mapped for now
+    midSideOn_  = false; // Not mapped for now
+    analyzerOn_ = false; // Not needed for processing
+    
+    // Map first 4 bands from slot parameters
+    for (int b = 0; b < 4 && b < kMaxBands; ++b) {
         auto& B = bands_[b];
-        B.tEnabled = std::clamp(getParam(base+0, B.tEnabled), 0.f, 1.f);
-        B.tFreq    = std::clamp(getParam(base+1, B.tFreq),   20.f, 20000.f);
-        B.tGainDB  = std::clamp(getParam(base+2, B.tGainDB), -18.f, 18.f);
-        B.tQ       = std::clamp(getParam(base+3, B.tQ),       0.1f, 20.f);
+        int paramBase = b * 3; // Each band uses 3 params starting at 0
+        
+        if (paramBase + 2 <= 11) {
+            // Frequency: map 0-1 to 20-20000 Hz (logarithmic)
+            float freqNorm = getParam(paramBase, 0.5f);
+            B.tFreq = 20.f * std::pow(1000.f, freqNorm);
+            
+            // Gain: map 0-1 to -18 to +18 dB
+            B.tGainDB = (getParam(paramBase + 1, 0.5f) - 0.5f) * 36.f;
+            
+            // Q: map 0-1 to 0.1-20 (logarithmic)
+            float qNorm = getParam(paramBase + 2, 0.3f);
+            B.tQ = 0.1f * std::pow(200.f, qNorm);
+            
+            // Enable band if gain is not zero
+            B.tEnabled = std::abs(B.tGainDB) > 0.1f ? 1.f : 0.f;
+        }
+    }
+    
+    // Disable unused bands
+    for (int b = 4; b < kMaxBands; ++b) {
+        bands_[b].tEnabled = 0.f;
+        bands_[b].tGainDB = 0.f;
     }
 }
 

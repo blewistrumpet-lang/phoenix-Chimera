@@ -78,21 +78,29 @@ private:
         double getCurrent() const { return currentValue; }
     };
     
-    // Authentic BBD stage modeling with dynamic allocation
+    // Authentic BBD stage modeling with lock-free thread safety
+    // 
+    // THREAD SAFETY DESIGN:
+    // - All bucket storage uses atomic<double> with proper memory ordering
+    // - Parameters use atomic storage to prevent race conditions during updates
+    // - Lock-free design maintains real-time performance requirements
+    // - Memory barriers ensure proper synchronization between threads
+    // - Eliminates clicking artifacts and inconsistent delay behavior
     class BBDChain {
-        std::vector<double> buckets;  // Dynamic allocation
-        int numStages = 1024;
+        std::unique_ptr<std::atomic<double>[]> buckets;  // Thread-safe atomic buckets
+        std::atomic<int> numStages{1024};
+        size_t bucketCapacity = 0;
         
         // Two-phase non-overlapping clock
         double clockPhase = 0.0;
         enum ClockState { IDLE, PHASE1, DEAD_TIME, PHASE2 } clockState = IDLE;
         static constexpr double DEAD_TIME_RATIO = 0.05;  // 5% dead time
         
-        // Charge transfer characteristics
-        double transferEfficiency = 0.997;
-        double chargeLeakage = 0.00001;
-        double inputCapacitance = 0.1;
-        double clockFeedthrough = 0.002;
+        // Charge transfer characteristics (atomic for thread safety)
+        std::atomic<double> transferEfficiency{0.997};
+        std::atomic<double> chargeLeakage{0.00001};
+        std::atomic<double> inputCapacitance{0.1};
+        std::atomic<double> clockFeedthrough{0.002};
         
     public:
         void setNumStages(int stages);

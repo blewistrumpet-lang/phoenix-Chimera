@@ -185,11 +185,11 @@ namespace {
 // ===================== PIMPL Implementation =====================
 struct MultibandSaturator::Impl {
     // Core
-    float sampleRate = 44100.0f;
+    float sampleRate = 0.0f;
     int blockSize = 512;
     
     // Per-channel processing
-    static constexpr int kMaxChannels = 2;
+    static constexpr int kMaxChannels = 8;
     std::array<Crossover, kMaxChannels> crossovers;
     
     // Parameters

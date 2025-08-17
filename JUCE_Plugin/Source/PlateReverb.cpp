@@ -60,7 +60,7 @@ private:
     float m_current = 0.5f;
     float m_coefficient = 1.0f;
     double m_smoothingTime = 0.02;
-    double m_sampleRate = 44100.0;
+    double m_sampleRate = 0.0;
 };
 
 // SoftKneeLimiter implementation
@@ -518,6 +518,11 @@ PlateReverb::PlateReverb() {
 PlateReverb::~PlateReverb() = default;
 
 void PlateReverb::prepareToPlay(double sampleRate, int samplesPerBlock) {
+    if (sampleRate <= 0.0) {
+        jassertfalse; // Invalid sample rate
+        return;
+    }
+    
     m_sampleRate = sampleRate;
     m_currentBlockSize = PlateConstants::getBlockSize(m_performanceMode.load());
     

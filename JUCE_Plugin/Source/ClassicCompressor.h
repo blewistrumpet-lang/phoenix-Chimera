@@ -48,6 +48,11 @@ public:
         m_peakGainReduction.store(0.0f, std::memory_order_relaxed);
     }
     
+#ifdef JUCE_DEBUG
+    // Test method for verifying chunked processing fix
+    bool testChunkedProcessing();
+#endif
+    
 private:
     // Constants
     static constexpr int SUBBLOCK_SIZE = 32;

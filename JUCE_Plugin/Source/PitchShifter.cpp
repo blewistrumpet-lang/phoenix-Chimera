@@ -68,7 +68,7 @@ struct PitchShifter::Impl {
     static constexpr int FFT_SIZE = 1 << FFT_ORDER;
     static constexpr int OVERLAP_FACTOR = 4;
     static constexpr int HOP_SIZE = FFT_SIZE / OVERLAP_FACTOR;
-    static constexpr int MAX_CHANNELS = 2;
+    static constexpr int MAX_CHANNELS = 8;
     
     // Parameters (lock-free)
     AtomicSmoothParam pitchRatio;
@@ -375,9 +375,9 @@ struct PitchShifter::Impl {
             double phaseDiff = phase - ch.phaseLast[bin];
             ch.phaseLast[bin] = phase;
             
-            // Wrap to [-pi, pi]
-            while (phaseDiff > M_PI) phaseDiff -= 2.0 * M_PI;
-            while (phaseDiff < -M_PI) phaseDiff += 2.0 * M_PI;
+            // Wrap to [-pi, pi] using efficient modulo operation
+            // This prevents numerical drift from iterative subtraction
+            phaseDiff = std::fmod(phaseDiff + M_PI, 2.0 * M_PI) - M_PI;
             
             // True frequency calculation
             const double expectedPhase = expectedPhaseInc * bin;
@@ -409,9 +409,9 @@ struct PitchShifter::Impl {
                 const double shiftedFreq = ch.frequency[bin] * pitch;
                 ch.phaseSum[bin] += 2.0 * M_PI * shiftedFreq * HOP_SIZE / sampleRate;
                 
-                // Wrap phase to prevent accumulation errors
-                while (ch.phaseSum[bin] > M_PI) ch.phaseSum[bin] -= 2.0 * M_PI;
-                while (ch.phaseSum[bin] < -M_PI) ch.phaseSum[bin] += 2.0 * M_PI;
+                // Wrap phase to [-pi, pi] using efficient modulo operation
+                // Prevents unbounded accumulation and numerical drift that causes metallic artifacts
+                ch.phaseSum[bin] = std::fmod(ch.phaseSum[bin] + M_PI, 2.0 * M_PI) - M_PI;
                 
                 // Reconstruct bin
                 const float mag = shiftedMag[bin];
@@ -467,8 +467,9 @@ void PitchShifter::process(juce::AudioBuffer<float>& buffer) {
         pimpl->processChannel(pimpl->channels[ch], buffer.getWritePointer(ch), numSamples);
     }
     
-    // Apply stereo width if stereo
-    if (numChannels == 2) {
+    // Apply stereo width if stereo (2 channels)
+    // For surround sound, only apply width to first stereo pair
+    if (numChannels >= 2) {
         pimpl->processStereoWidth(buffer.getWritePointer(0), 
                                  buffer.getWritePointer(1), 
                                  numSamples);

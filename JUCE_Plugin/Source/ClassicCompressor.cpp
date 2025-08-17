@@ -1,4 +1,7 @@
 #include "ClassicCompressor.h"
+#ifdef JUCE_DEBUG
+#include <vector>
+#endif
 
 // Platform-specific SIMD support (should match header)
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
@@ -81,70 +84,131 @@ void ClassicCompressor::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
+    // Early exit for empty buffers
     if (numChannels == 0 || numSamples == 0) return;
     
-    // Safety check: ensure we don't exceed our buffer size
-    if (numSamples > MAX_BLOCK_SIZE) {
-        // Process in chunks if the block is too large
-        // For now, just process what we can to avoid crashes
-        const int safeNumSamples = std::min(numSamples, MAX_BLOCK_SIZE);
-        
-        // Process only the safe amount
-        float* channelData[2] = { nullptr, nullptr };
-        channelData[0] = buffer.getWritePointer(0);
-        if (numChannels > 1) {
-            channelData[1] = buffer.getWritePointer(1);
-        } else {
-            channelData[1] = channelData[0]; // Mono
-        }
-        
-        int samplesRemaining = safeNumSamples;
-        int currentSample = 0;
-        
-        while (samplesRemaining > 0) {
-            int subBlockSize = std::min(samplesRemaining, SUBBLOCK_SIZE);
-            processSubBlock(channelData[0] + currentSample, 
-                           channelData[1] + currentSample, 
-                           currentSample, subBlockSize);
-            
-            currentSample += subBlockSize;
-            samplesRemaining -= subBlockSize;
-        }
-        
-        scrubBuffer(buffer);
-        return;
-    }
+    /*
+     * BLOCK SIZE SAFETY SYSTEM:
+     * 
+     * This compressor uses fixed-size work buffers (MAX_BLOCK_SIZE = 2048 samples)
+     * to ensure predictable memory usage and prevent stack overflows. When the
+     * incoming audio buffer exceeds this size, we process it in chunks.
+     * 
+     * Processing hierarchy:
+     * 1. CHUNKS: Split large buffers into MAX_BLOCK_SIZE chunks
+     * 2. SUB-BLOCKS: Process each chunk in SUBBLOCK_SIZE pieces for efficiency
+     * 
+     * This approach guarantees:
+     * - No buffer overflows in work buffers
+     * - All input samples are processed (nothing is dropped)
+     * - Consistent performance regardless of host buffer size
+     * - Safe operation with any DAW buffer configuration
+     */
     
-    // Get channel pointers
+    // Get channel pointers with proper mono handling
     float* channelData[2] = { nullptr, nullptr };
     channelData[0] = buffer.getWritePointer(0);
     if (numChannels > 1) {
         channelData[1] = buffer.getWritePointer(1);
     } else {
-        channelData[1] = channelData[0]; // Mono
+        channelData[1] = channelData[0]; // Mono: use same buffer for both channels
     }
     
-    // Process in sub-blocks for efficiency
+    /*
+     * CHUNKED PROCESSING IMPLEMENTATION:
+     * 
+     * Large audio buffers (> MAX_BLOCK_SIZE) are processed in chunks to prevent
+     * work buffer overflows. Each chunk is then processed in smaller sub-blocks
+     * for optimal cache performance and parameter smoothing.
+     */
     int samplesRemaining = numSamples;
     int currentSample = 0;
     
     while (samplesRemaining > 0) {
-        int subBlockSize = std::min(samplesRemaining, SUBBLOCK_SIZE);
-        processSubBlock(channelData[0] + currentSample, 
-                       channelData[1] + currentSample, 
-                       currentSample, subBlockSize);
+        // Calculate chunk size: never exceed MAX_BLOCK_SIZE to prevent buffer overflow
+        // This is the critical safety measure that prevents stack overflow crashes
+        const int chunkSize = std::min(samplesRemaining, MAX_BLOCK_SIZE);
         
-        currentSample += subBlockSize;
-        samplesRemaining -= subBlockSize;
+        /*
+         * SUB-BLOCK PROCESSING:
+         * 
+         * Each chunk is processed in small sub-blocks (SUBBLOCK_SIZE = 32 samples)
+         * for several reasons:
+         * - Better cache locality and SIMD efficiency
+         * - Smoother parameter interpolation
+         * - More responsive envelope detection
+         * - Reduced computational peaks
+         */
+        int chunkSamplesRemaining = chunkSize;
+        int chunkCurrentSample = 0;
+        
+        while (chunkSamplesRemaining > 0) {
+            const int subBlockSize = std::min(chunkSamplesRemaining, SUBBLOCK_SIZE);
+            const int absoluteSampleIndex = currentSample + chunkCurrentSample;
+            
+            // Safety validation: ensure we don't exceed buffer boundaries
+            // This should never happen with correct chunk sizing, but provides
+            // an additional safety net against potential integer overflow issues
+            if (absoluteSampleIndex + subBlockSize > numSamples) {
+                jassert(false && "Buffer boundary exceeded - chunking logic error");
+                break; // Prevent buffer overrun
+            }
+            
+            // Process this sub-block with validated parameters
+            processSubBlock(channelData[0] + absoluteSampleIndex, 
+                           channelData[1] + absoluteSampleIndex, 
+                           absoluteSampleIndex, subBlockSize);
+            
+            chunkCurrentSample += subBlockSize;
+            chunkSamplesRemaining -= subBlockSize;
+        }
+        
+        // Move to next chunk
+        currentSample += chunkSize;
+        samplesRemaining -= chunkSize;
+        
+        // Progress validation: ensure we're making forward progress
+        jassert(samplesRemaining >= 0 && "Negative samples remaining - logic error");
     }
     
     scrubBuffer(buffer);
 }
 
 void ClassicCompressor::processSubBlock(float* left, float* right, int startSample, int numSamples) {
-    // Safety check
-    if (numSamples <= 0 || numSamples > SUBBLOCK_SIZE) return;
-    if (left == nullptr || right == nullptr) return;
+    /*
+     * SUB-BLOCK PROCESSING WITH BUFFER SAFETY:
+     * 
+     * This method processes small chunks of audio (≤ SUBBLOCK_SIZE samples) with
+     * strict bounds checking to prevent buffer overflows. It's called by the main
+     * process() method as part of the chunked processing system.
+     * 
+     * Key safety measures:
+     * - Validates numSamples ≤ SUBBLOCK_SIZE (32 samples)
+     * - Ensures work buffer copies never exceed MAX_BLOCK_SIZE
+     * - Uses defensive programming with debug assertions
+     * - Gracefully handles edge cases without crashing
+     */
+    
+    // Critical safety validation to prevent buffer overflows
+    if (numSamples <= 0 || numSamples > SUBBLOCK_SIZE) {
+        // Log error in debug builds but don't crash in release
+        jassert(false && "processSubBlock: invalid numSamples");
+        return;
+    }
+    
+    // Validate pointers
+    if (left == nullptr || right == nullptr) {
+        jassert(false && "processSubBlock: null audio pointers");
+        return;
+    }
+    
+    // Additional safety: ensure we don't exceed work buffer capacity
+    // Work buffers are sized to MAX_BLOCK_SIZE, so this should never happen
+    // if the chunking in process() works correctly
+    if (numSamples > static_cast<int>(MAX_BLOCK_SIZE)) {
+        jassert(false && "processSubBlock: numSamples exceeds work buffer capacity");
+        return;
+    }
     
     // Update parameters once per sub-block
     double threshold = m_threshold.processSubBlock(numSamples);
@@ -184,12 +248,25 @@ void ClassicCompressor::processSubBlock(float* left, float* right, int startSamp
     // Process samples in the sub-block
     double makeupLinear = dbToLinear(makeupDb);
     
-    // Copy to work buffers for processing (with bounds check)
-    const int safeSamples = std::min(numSamples, static_cast<int>(MAX_BLOCK_SIZE));
+    // Copy to work buffers for processing with strict bounds checking
+    // Note: numSamples is already validated to be <= SUBBLOCK_SIZE <= MAX_BLOCK_SIZE
+    // This ensures we never overflow the work buffers
+    const int safeSamples = numSamples; // No need for min() after validation above
+    
+    // Defensive programming: double-check bounds before copy
+    if (safeSamples <= 0 || safeSamples > static_cast<int>(MAX_BLOCK_SIZE)) {
+        jassert(false && "Work buffer bounds check failed");
+        return;
+    }
+    
     std::copy(left, left + safeSamples, m_workBuffer1.ptr());
     std::copy(right, right + safeSamples, m_workBuffer2.ptr());
     
+    // Process samples with additional bounds checking in debug builds
     for (int i = 0; i < safeSamples; ++i) {
+        // Debug assertion to catch array bounds issues early
+        jassert(i >= 0 && i < static_cast<int>(MAX_BLOCK_SIZE));
+        jassert(i < safeSamples);
         // Sidechain processing
         double scSignals[2];
         float delayedSignals[2];
@@ -302,3 +379,63 @@ juce::String ClassicCompressor::getParameterName(int index) const {
         default: return "";
     }
 }
+
+#ifdef JUCE_DEBUG
+/*
+ * DEBUG TEST METHOD:
+ * 
+ * This method verifies that the chunked processing fix works correctly
+ * by testing various buffer sizes, including edge cases that would
+ * previously cause buffer overflows.
+ */
+bool ClassicCompressor::testChunkedProcessing() {
+    const std::vector<int> testSizes = {
+        1,                    // Minimum size
+        31,                   // Just under sub-block size
+        32,                   // Exactly sub-block size
+        33,                   // Just over sub-block size
+        512,                  // Medium size
+        2047,                 // Just under max block size
+        2048,                 // Exactly max block size
+        2049,                 // Just over max block size (would overflow before fix)
+        4096,                 // Double max block size
+        8192,                 // Large buffer
+        16384                 // Very large buffer (typical DAW maximum)
+    };
+    
+    // Prepare with typical settings
+    prepareToPlay(44100.0, 512);
+    
+    for (int testSize : testSizes) {
+        // Create test buffer with known pattern
+        juce::AudioBuffer<float> testBuffer(2, testSize);
+        for (int ch = 0; ch < 2; ++ch) {
+            for (int i = 0; i < testSize; ++i) {
+                float value = std::sin(2.0f * M_PI * 440.0f * i / 44100.0f) * 0.5f;
+                testBuffer.setSample(ch, i, value);
+            }
+        }
+        
+        // Process the buffer (this should not crash)
+        try {
+            process(testBuffer);
+            
+            // Verify no samples are NaN or infinite
+            for (int ch = 0; ch < 2; ++ch) {
+                for (int i = 0; i < testSize; ++i) {
+                    float sample = testBuffer.getSample(ch, i);
+                    if (!std::isfinite(sample)) {
+                        jassertfalse; // Found invalid sample
+                        return false;
+                    }
+                }
+            }
+        } catch (...) {
+            jassertfalse; // Processing threw an exception
+            return false;
+        }
+    }
+    
+    return true; // All tests passed
+}
+#endif

@@ -333,7 +333,7 @@ struct HarmonicExciter_Platinum::Impl {
     };
     
     std::array<ChannelProcessor, 2> channels;
-    double sampleRate{44100.0};
+    double sampleRate{0.0};
     
     // Block processing cache
     struct BlockCache {
@@ -458,8 +458,8 @@ struct HarmonicExciter_Platinum::Impl {
         // Update cache once per block
         updateBlockCache();
         
-        // Early bypass if dry
-        if (cache.mixAmt < 0.001f) return;
+        // Allow processing at very low mix values for subtle mixing (removed 0.001f threshold)
+        // The mix calculation will naturally handle blending, even at very low values
         
         for (int ch = 0; ch < numChannels; ++ch) {
             float* data = buffer.getWritePointer(ch);

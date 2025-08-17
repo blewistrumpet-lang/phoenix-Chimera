@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <random>
+#include <chrono>
 
 namespace {
 struct FTZGuard {
@@ -55,6 +56,9 @@ void GranularCloud::reset() {
     writePos_ = 0;
     grainTimer_ = 0.0;
     nextGrainTime_ = 0.0;
+    
+    // Reset debug statistics
+    grainStats_.reset();
 
     for (auto& g : grains_) {
         g.active = false;
@@ -107,12 +111,42 @@ void GranularCloud::process(juce::AudioBuffer<float>& buffer) { DenormalGuard gu
     float* Lp = buffer.getWritePointer(0);
     float* Rp = (numCh > 1) ? buffer.getWritePointer(1) : nullptr;
 
-    // Bounded main loop
+    // SAFETY: Bounded main loop with multiple safety mechanisms
+    // These limits prevent infinite loops that could cause CPU spikes and audio dropouts:
+    // 1. maxIterations: Conservative limit (2x buffer size, max 8192) for normal operation
+    // 2. emergencyBreak: Last resort fallback (10x buffer size) for runaway conditions
+    // 3. Time-based limit: Prevents excessive processing time per audio block
     int iterations = 0;
-    const int maxIterations = N * 10; // Safety limit
+    const int maxIterations = std::min(N * 2, 8192); // Conservative safety limit
+    const int emergencyBreak = N * 10; // Emergency fallback
+    
+    // Additional safety: track processing time per block
+    auto blockStartTime = std::chrono::high_resolution_clock::now();
+    const auto maxProcessingTime = std::chrono::microseconds(1000); // 1ms max
 
     for (int n = 0; n < N; ++n) {
-        if (++iterations > maxIterations) break; // Prevent infinite loops
+        // Primary iteration safety check
+        if (++iterations > maxIterations) {
+            // Log this occurrence for debugging (would be logged in real implementation)
+            break;
+        }
+        
+        // Emergency break for runaway conditions
+        if (iterations > emergencyBreak) {
+            // This should never happen - indicates serious bug
+            grainStats_.emergencyBreaks++; // Track for debugging
+            reset(); // Reset state to prevent continued issues
+            break;
+        }
+        
+        // Time-based safety check (every 64 samples)
+        if ((n & 63) == 0) {
+            auto elapsed = std::chrono::high_resolution_clock::now() - blockStartTime;
+            if (elapsed > maxProcessingTime) {
+                // Processing is taking too long - abort to prevent audio dropouts
+                break;
+            }
+        }
 
         const float inL = Lp[n];
         const float inR = (Rp ? Rp[n] : inL);
@@ -122,19 +156,56 @@ void GranularCloud::process(juce::AudioBuffer<float>& buffer) { DenormalGuard gu
         circularBuffer_[writePos_] = inMono;
         writePos_ = (writePos_ + 1) % bufferSize_;
 
-        // Grain spawning with bounded attempts
+        // SAFETY: Grain spawning with runaway protection
+        // Prevents infinite grain spawning that could exhaust memory and CPU
         grainTimer_ += 1.0 / sr_;
         if (grainTimer_ >= nextGrainTime_) {
-            triggerGrain(grainMs, scatter, position);
-            nextGrainTime_ = grainTimer_ + grainInterval * (0.5 + rng_.uniform() * 1.0);
+            // Count active grains before spawning to prevent runaway allocation
+            int currentActiveGrains = 0;
+            for (const auto& g : grains_) {
+                if (g.active) currentActiveGrains++;
+            }
+            
+            // Only trigger new grain if we're below the safety threshold
+            if (currentActiveGrains < kMaxActiveGrains) {
+                triggerGrain(grainMs, scatter, position);
+                grainStats_.totalGrainsSpawned++;
+            }
+            
+            // Update statistics
+            grainStats_.currentActiveGrains = currentActiveGrains;
+            grainStats_.peakActiveGrains = std::max(grainStats_.peakActiveGrains, currentActiveGrains);
+            
+            // Always advance timer to prevent stuck state
+            const double minInterval = 0.001; // Minimum 1ms between attempts
+            const double randomizedInterval = grainInterval * (0.5 + rng_.uniform() * 1.0);
+            nextGrainTime_ = grainTimer_ + std::max(minInterval, randomizedInterval);
         }
 
-        // Process active grains (bounded)
+        // SAFETY: Process active grains with multiple bounds to prevent infinite loops
+        // grainIterations: Prevents infinite grain processing loops
+        // activeCount: Limits concurrent grain processing to prevent CPU spikes
+        // maxGrainIterations: Double the expected active count as safety margin
         float outL = 0.0f, outR = 0.0f;
         int activeCount = 0;
+        int grainIterations = 0;
+        const int maxGrainIterations = std::min(kMaxGrains, kMaxActiveGrains * 2); // Safety limit
+        
         for (auto& g : grains_) {
+            // Prevent infinite loops in grain processing
+            if (++grainIterations > maxGrainIterations) {
+                // Emergency brake - this should never happen in normal operation
+                break;
+            }
+            
             if (!g.active) continue;
-            if (++activeCount > kMaxActiveGrains) break; // Limit active grains
+            
+            // Strict limit on active grains to prevent CPU spikes
+            if (++activeCount > kMaxActiveGrains) {
+                // Mark excess grains as inactive to prevent runaway processing
+                g.active = false;
+                break;
+            }
 
             // Read from buffer with linear interpolation
             const double readPos = writePos_ - g.pos;
@@ -178,26 +249,63 @@ void GranularCloud::process(juce::AudioBuffer<float>& buffer) { DenormalGuard gu
 }
 
 void GranularCloud::triggerGrain(float grainMs, float scatter, float position) {
-    // Find free grain (bounded search)
+    // Find free grain with improved bounded search and recycling
     Grain* grain = nullptr;
     int attempts = 0;
+    int activeGrainCount = 0;
+    
+    // First pass: look for truly inactive grains
     for (auto& g : grains_) {
-        if (++attempts > kMaxActiveGrains) break; // Limit search
+        if (++attempts > kMaxGrains) break; // Safety limit on search iterations
+        
         if (!g.active) {
             grain = &g;
             break;
+        } else {
+            activeGrainCount++;
         }
     }
-    if (!grain) return; // All grains busy
+    
+    // If no free grain found and we have too many active grains, recycle oldest
+    if (!grain && activeGrainCount >= kMaxActiveGrains) {
+        // Find the grain that's closest to completion for recycling
+        Grain* oldestGrain = nullptr;
+        float maxProgress = -1.0f;
+        
+        attempts = 0;
+        for (auto& g : grains_) {
+            if (++attempts > kMaxGrains) break; // Safety limit
+            
+            if (g.active && g.length > 0) {
+                float progress = float(g.elapsed) / float(g.length);
+                if (progress > maxProgress) {
+                    maxProgress = progress;
+                    oldestGrain = &g;
+                }
+            }
+        }
+        
+        if (oldestGrain && maxProgress > 0.7f) { // Only recycle if >70% complete
+            grain = oldestGrain;
+            grain->active = false; // Mark for reuse
+            grainStats_.grainsRecycled++; // Track recycling for debugging
+        }
+    }
+    
+    if (!grain) return; // No grain available (safety fallback)
 
-    // Set grain parameters
+    // Set grain parameters with safety bounds
     grain->active = true;
-    grain->length = std::max(64, (int)(grainMs * 0.001 * sr_));
+    
+    // SAFETY: Bound grain length to prevent excessive processing
+    const int minGrainLength = 64;  // Minimum grain size (prevents clicks)
+    const int maxGrainLength = (int)(0.5 * sr_); // Maximum 500ms grain
+    grain->length = clamp((int)(grainMs * 0.001 * sr_), minGrainLength, maxGrainLength);
     grain->elapsed = 0;
 
-    // Random position in buffer (last 500ms)
+    // SAFETY: Random position in buffer with bounds checking
     const double maxDelay = std::min(0.5 * sr_, (double)bufferSize_ * 0.9);
-    grain->pos = rng_.uniform() * maxDelay;
+    grain->pos = clamp(rng_.uniform() * maxDelay, 0.0, maxDelay);
 
     // Pitch variation
     if (scatter > 0.001f) {

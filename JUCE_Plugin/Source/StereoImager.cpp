@@ -39,7 +39,78 @@ void StereoImager::prepareToPlay(double sampleRate, int samplesPerBlock) {
 
 void StereoImager::reset() {
     // Reset all internal state
-    // TODO: Implement specific reset logic for StereoImager
+    
+    // Reset channel state components
+    m_channelState.crossover.reset();
+    m_channelState.inputDCBlocker.reset();
+    m_channelState.outputDCBlocker.reset();
+    
+    // Reset binaural processor
+    std::fill(m_channelState.binaural.convolutionBuffer.begin(), 
+              m_channelState.binaural.convolutionBuffer.end(), 0.0f);
+    m_channelState.binaural.bufferPos = 0;
+    
+    // Reset pseudo stereo processor
+    for (auto& filter : m_channelState.pseudoStereo.leftFilters) {
+        filter.delay1 = filter.delay2 = filter.delay3 = 0.0f;
+    }
+    for (auto& filter : m_channelState.pseudoStereo.rightFilters) {
+        filter.delay1 = filter.delay2 = filter.delay3 = 0.0f;
+    }
+    
+    // Reset phase adjuster
+    for (auto& stage : m_channelState.phaseAdjuster.stages) {
+        stage.x1 = stage.y1 = 0.0f;
+    }
+    
+    // Reset thermal model
+    m_channelState.thermalModel.thermalNoise = 0.0f;
+    
+    // Reset component aging
+    m_componentAge = 0.0f;
+    m_sampleCount = 0;
+    m_channelState.componentAging.update(0.0f);
+    
+    // Reset correlation analyzer
+    std::fill(m_correlationAnalyzer.leftHistory.begin(), 
+              m_correlationAnalyzer.leftHistory.end(), 0.0f);
+    std::fill(m_correlationAnalyzer.rightHistory.begin(), 
+              m_correlationAnalyzer.rightHistory.end(), 0.0f);
+    m_correlationAnalyzer.historyPos = 0;
+    m_correlationAnalyzer.correlation = 0.0f;
+    
+    // Reset delay buffer
+    std::fill(m_channelState.delayBuffer.begin(), 
+              m_channelState.delayBuffer.end(), 0.0f);
+    m_channelState.delayPos = 0;
+    
+    // Reset oversampler if used
+    if (m_channelState.useOversampling) {
+        std::fill(m_channelState.oversampler.upsampleBuffer.begin(), 
+                  m_channelState.oversampler.upsampleBuffer.end(), 0.0f);
+        std::fill(m_channelState.oversampler.downsampleBuffer.begin(), 
+                  m_channelState.oversampler.downsampleBuffer.end(), 0.0f);
+        
+        // Reset anti-aliasing filters
+        m_channelState.oversampler.upsampleFilter.x1 = 0.0f;
+        m_channelState.oversampler.upsampleFilter.x2 = 0.0f;
+        m_channelState.oversampler.upsampleFilter.y1 = 0.0f;
+        m_channelState.oversampler.upsampleFilter.y2 = 0.0f;
+        m_channelState.oversampler.downsampleFilter.x1 = 0.0f;
+        m_channelState.oversampler.downsampleFilter.x2 = 0.0f;
+        m_channelState.oversampler.downsampleFilter.y1 = 0.0f;
+        m_channelState.oversampler.downsampleFilter.y2 = 0.0f;
+    }
+    
+    // Reset smoothed parameters to current values (maintain continuity)
+    m_width.current = m_width.target;
+    m_lowWidth.current = m_lowWidth.target;
+    m_midWidth.current = m_midWidth.target;
+    m_highWidth.current = m_highWidth.target;
+    m_crossover1.current = m_crossover1.target;
+    m_crossover2.current = m_crossover2.target;
+    m_phase.current = m_phase.target;
+    m_mix.current = m_mix.target;
 }
 
 
@@ -128,8 +199,8 @@ void StereoImager::process(juce::AudioBuffer<float>& buffer) {
             
             // Add subtle noise floor for realism
             float noiseLevel = std::pow(10.0f, m_channelState.noiseFloor / 20.0f);
-            left += noiseLevel * ((rand() % 1000) / 1000.0f - 0.5f) * 0.001f;
-            right += noiseLevel * ((rand() % 1000) / 1000.0f - 0.5f) * 0.001f;
+            left += noiseLevel * m_channelState.thermalModel.dist(m_channelState.thermalModel.rng) * 0.001f;
+            right += noiseLevel * m_channelState.thermalModel.dist(m_channelState.thermalModel.rng) * 0.001f;
             
             // Mix with dry signal
             left = dryLeft * (1.0f - m_mix.current) + left * m_mix.current;

@@ -229,7 +229,7 @@ private:
         return bp;
     }
     
-    float sampleRate{44100.0f};
+    float sampleRate{0.0f};
     float s1{0.0f}, s2{0.0f}, s3{0.0f}, s4{0.0f}, s5{0.0f}, s6{0.0f};
 };
 
@@ -317,7 +317,7 @@ private:
     std::atomic<uint64_t> totalSamples{0};
     
     std::chrono::high_resolution_clock::time_point blockStartTime;
-    double sampleRate{48000.0};
+    double sampleRate{0.0};
 };
 
 // Flush denormal array helper
@@ -329,7 +329,7 @@ void flushDenormArray(float* data, int numSamples) noexcept {
 
 // Main implementation
 struct WaveFolder::Impl {
-    static constexpr int MAX_CHANNELS = 2;
+    static constexpr int MAX_CHANNELS = 8;
     static constexpr int OVERSAMPLE_FACTOR = 4;
     static constexpr int MAX_BLOCK_SIZE = 2048;
     
@@ -405,7 +405,7 @@ struct WaveFolder::Impl {
     };
     
     std::array<ChannelState, MAX_CHANNELS> channels;
-    double sampleRate{44100.0};
+    double sampleRate{0.0};
     int maxBlockSize{MAX_BLOCK_SIZE};
     int denormalFlushCounter{0};
     

@@ -1,0 +1,91 @@
+# Makefile for Comprehensive Engine Test Suite
+# Project Chimera v3.0 Phoenix
+
+# Compiler settings
+CXX = clang++
+CXXFLAGS = -std=c++17 -O2 -Wall -Wextra -I.
+
+# JUCE settings (adjust paths as needed)
+JUCE_ROOT = JUCE
+JUCE_MODULES = $(JUCE_ROOT)/modules
+JUCE_FLAGS = -DJUCE_STANDALONE_APPLICATION=1 \
+             -DJUCE_USE_CURL=0 \
+             -DJUCE_WEB_BROWSER=0 \
+             -DJUCE_USE_CAMERA=disabled \
+             -I$(JUCE_MODULES)
+
+# macOS specific flags
+MACOS_FLAGS = -framework CoreFoundation \
+              -framework CoreAudio \
+              -framework CoreMIDI \
+              -framework AudioUnit \
+              -framework AudioToolbox \
+              -framework Accelerate \
+              -framework Cocoa
+
+# Source files
+TEST_SOURCES = comprehensive_engine_test.cpp
+ENGINE_SOURCES = JUCE_Plugin/Source/EngineFactory.cpp \
+                JUCE_Plugin/Source/TestSignalGenerator.cpp \
+                JUCE_Plugin/Source/AudioMeasurements.cpp
+
+# JUCE library sources (minimal set for standalone)
+JUCE_SOURCES = $(JUCE_MODULES)/juce_core/juce_core.cpp \
+               $(JUCE_MODULES)/juce_audio_basics/juce_audio_basics.cpp \
+               $(JUCE_MODULES)/juce_audio_devices/juce_audio_devices.cpp \
+               $(JUCE_MODULES)/juce_audio_formats/juce_audio_formats.cpp \
+               $(JUCE_MODULES)/juce_audio_processors/juce_audio_processors.cpp \
+               $(JUCE_MODULES)/juce_dsp/juce_dsp.cpp
+
+# All sources
+ALL_SOURCES = $(TEST_SOURCES) $(ENGINE_SOURCES) $(JUCE_SOURCES)
+
+# Output executable
+TARGET = comprehensive_engine_test
+
+# Build rules
+all: $(TARGET)
+
+$(TARGET): $(ALL_SOURCES)
+	@echo "Building Comprehensive Engine Test Suite..."
+	$(CXX) $(CXXFLAGS) $(JUCE_FLAGS) $(MACOS_FLAGS) -o $(TARGET) $(ALL_SOURCES)
+	@echo "Build complete: $(TARGET)"
+
+# Run the test
+test: $(TARGET)
+	@echo "Running comprehensive engine tests..."
+	./$(TARGET)
+
+# Clean build files
+clean:
+	rm -f $(TARGET)
+	rm -f comprehensive_engine_test_report.txt
+
+# Alternative build without JUCE (standalone test)
+standalone: 
+	@echo "Building standalone test (no JUCE dependencies)..."
+	$(CXX) $(CXXFLAGS) -DSTANDALONE_TEST=1 -o $(TARGET)_standalone comprehensive_engine_test.cpp
+	@echo "Standalone build complete: $(TARGET)_standalone"
+
+# Quick syntax check
+check:
+	$(CXX) $(CXXFLAGS) $(JUCE_FLAGS) -fsyntax-only comprehensive_engine_test.cpp
+
+# Install dependencies (if needed)
+deps:
+	@echo "Checking for required dependencies..."
+	@which clang++ || (echo "Error: clang++ not found. Install Xcode command line tools." && exit 1)
+	@echo "Dependencies OK"
+
+# Help
+help:
+	@echo "Available targets:"
+	@echo "  all        - Build the test suite"
+	@echo "  test       - Build and run the test suite" 
+	@echo "  clean      - Remove build files"
+	@echo "  standalone - Build without JUCE dependencies"
+	@echo "  check      - Check syntax only"
+	@echo "  deps       - Check for required dependencies"
+	@echo "  help       - Show this help"
+
+.PHONY: all test clean standalone check deps help

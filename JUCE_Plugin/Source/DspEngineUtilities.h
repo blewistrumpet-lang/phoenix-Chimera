@@ -6,12 +6,16 @@
 
 // Ensure JUCE is included first for inline and other macros
 #ifndef JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED
-    #include <JuceHeader.h>
+    #include "../JuceLibraryCode/JuceHeader.h"
 #endif
 
 #include <atomic>
 #include <cmath>
 #include <array>
+
+#if JUCE_USE_SSE_INTRINSICS || defined(__SSE__)
+    #include <xmmintrin.h>
+#endif
 
 // ========== Denormal Protection ==========
 

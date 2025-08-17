@@ -277,6 +277,18 @@
             file="Source/VintageConsoleEQ_Platinum.h"/>
       <FILE id="vC3pL4" name="VintageConsoleEQ_Platinum.cpp" compile="1" resource="0"
             file="Source/VintageConsoleEQ_Platinum.cpp"/>
+      <FILE id="pS1sL1" name="ParametricEQ_Studio.h" compile="0" resource="0"
+            file="Source/ParametricEQ_Studio.h"/>
+      <FILE id="pS2sL2" name="ParametricEQ_Studio.cpp" compile="1" resource="0"
+            file="Source/ParametricEQ_Studio.cpp"/>
+      <FILE id="vS1sL1" name="VintageConsoleEQ_Studio.h" compile="0" resource="0"
+            file="Source/VintageConsoleEQ_Studio.h"/>
+      <FILE id="vS2sL2" name="VintageConsoleEQ_Studio.cpp" compile="1" resource="0"
+            file="Source/VintageConsoleEQ_Studio.cpp"/>
+      <FILE id="tS1sL1" name="VintageTubePreamp_Studio.h" compile="0" resource="0"
+            file="Source/VintageTubePreamp_Studio.h"/>
+      <FILE id="tS2sL2" name="VintageTubePreamp_Studio.cpp" compile="1" resource="0"
+            file="Source/VintageTubePreamp_Studio.cpp"/>
       <FILE id="vO5pL6" name="VintageOptoCompressor_Platinum.h" compile="0" resource="0"
             file="Source/VintageOptoCompressor_Platinum.h"/>
       <FILE id="vO7pL8" name="VintageOptoCompressor_Platinum.cpp" compile="1" resource="0"

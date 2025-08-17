@@ -96,7 +96,11 @@ private:
     int bufferSize_{0};
     int writePos_{0};
 
-    // Grain pool (bounded)
+    // Grain pool (bounded for CPU safety)
+    // kMaxGrains: Total grain objects in pool (64 = reasonable memory usage)
+    // kMaxActiveGrains: Maximum concurrent processing limit (32 = prevents CPU spikes)
+    // These limits prevent infinite loops and runaway grain allocation that could
+    // cause audio dropouts or system instability
     static constexpr int kMaxGrains = 64;
     static constexpr int kMaxActiveGrains = 32;
     std::array<Grain, kMaxGrains> grains_;
@@ -111,6 +115,19 @@ private:
 
     // RNG
     SimpleRNG rng_;
+    
+    // DEBUG: Grain statistics for monitoring and debugging
+    struct GrainStats {
+        int currentActiveGrains{0};
+        int peakActiveGrains{0};
+        int totalGrainsSpawned{0};
+        int grainsRecycled{0};
+        int emergencyBreaks{0};
+        void reset() {
+            currentActiveGrains = peakActiveGrains = 0;
+            totalGrainsSpawned = grainsRecycled = emergencyBreaks = 0;
+        }
+    } grainStats_;
 
     // --------- Methods ----------
     void triggerGrain(float grainMs, float scatter, float position);

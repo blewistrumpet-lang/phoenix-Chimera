@@ -1,4 +1,5 @@
 #include "VintageConsoleEQ_Platinum.h"
+#include "DspEngineUtilities.h"
 #include <cmath>
 #include <algorithm>
 #include <cstring>
@@ -32,7 +33,7 @@
 //==============================================================================
 struct VintageConsoleEQ_Platinum::Impl {
     // Sample rate and processing info
-    float sampleRate = 44100.0f;
+    float sampleRate = 0.0f;
     int samplesPerBlock = 512;
     std::atomic<float> cpuLoad{0.0f};
     
@@ -288,9 +289,10 @@ struct VintageConsoleEQ_Platinum::Impl {
             // Vintage noise floor
             if (vintageAmount > 0.0f) {
                 float noiseLevel = std::pow(10.0f, console.noiseFloor / 20.0f) * vintageAmount;
-                // Simplified noise (would use proper RNG in production)
-                left += noiseLevel * ((float(rand()) / RAND_MAX) - 0.5f) * 0.001f;
-                right += noiseLevel * ((float(rand()) / RAND_MAX) - 0.5f) * 0.001f;
+                // Thread-safe noise generation
+                thread_local juce::Random random;
+                left += noiseLevel * (random.nextFloat() - 0.5f) * 0.001f;
+                right += noiseLevel * (random.nextFloat() - 0.5f) * 0.001f;
             }
             
             FLUSH_DENORMAL(left);
@@ -394,6 +396,8 @@ void VintageConsoleEQ_Platinum::prepareToPlay(double sampleRate, int samplesPerB
 }
 
 void VintageConsoleEQ_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     

@@ -1,6 +1,6 @@
 #pragma once
 
-// JuceHeader.h already stubbed
+#include "../JuceLibraryCode/JuceHeader.h"
 #include <map>
 
 class EngineBase {

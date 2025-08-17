@@ -5,6 +5,7 @@
 #include "EngineTypes.h"
 // #include "EngineTestRunner.h"  // Commented out for plugin build
 #include "QuickEngineDiagnostic.h"
+#include "QuickProcessingTest.h"
 
 // Engine ID to Choice Index mapping table - NEW SIMPLIFIED SYSTEM
 // Direct 1:1 mapping where engine ID = dropdown index (0-56)
@@ -190,6 +191,12 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
 {
     // Validate engine mappings on construction
     DBG("Initializing ChimeraAudioProcessor - Validating engine mappings...");
+    
+    // Run audio processing test in debug builds
+    #ifdef DEBUG
+    DBG("Running audio processing test...");
+    QuickProcessingTest::runAllTests();
+    #endif
     
     // Log the engine choice array for debugging
     auto* testParam = dynamic_cast<juce::AudioParameterChoice*>(parameters.getParameter("slot1_engine"));
@@ -483,6 +490,15 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             }
             break;
             
+        case ENGINE_TRANSIENT_SHAPER:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.5f); // Attack (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.5f); // Sustain (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.3f); // Attack Time (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.3f); // Release Time (index 3)
+            // Mix is at index 9 (parameter 10)
+            parameters.getParameter(slotPrefix + "10")->setValueNotifyingHost(1.0f); // Mix at index 9 - CRITICAL FIX
+            break;
+            
         case ENGINE_MAGNETIC_DRUM_ECHO:
         case ENGINE_BUFFER_REPEAT:
             parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.4f); // Delay time
@@ -606,6 +622,67 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
             if (auto* mixParam = parameters.getParameter(mixParamID)) {
                 mixParam->setValueNotifyingHost(1.0f); // Full wet for multiband
             }
+            break;
+            
+        case ENGINE_HARMONIC_EXCITER:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.5f); // Frequency (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.3f); // Drive (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Harmonics (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.5f); // Clarity (index 3)
+            // Mix is at index 7 (parameter 8) - CRITICAL FIX
+            parameters.getParameter(slotPrefix + "8")->setValueNotifyingHost(1.0f); // Mix at index 7
+            break;
+            
+        case ENGINE_VINTAGE_TUBE:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.3f); // Drive (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.5f); // Bass (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Mid (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.5f); // Treble (index 3)
+            // Mix is at index 9 (parameter 10)
+            parameters.getParameter(slotPrefix + "10")->setValueNotifyingHost(1.0f); // Mix at index 9
+            break;
+            
+        case ENGINE_SHIMMER_REVERB:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.5f); // Size (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.4f); // Damping (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Shimmer (index 2)
+            // Mix is at index 9 (parameter 10)
+            parameters.getParameter(slotPrefix + "10")->setValueNotifyingHost(0.8f); // Mix at index 9
+            break;
+            
+        case ENGINE_SPRING_REVERB:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.5f); // Size (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.4f); // Damping (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.5f); // Tension (index 2)
+            // Mix is at index 9 (parameter 10)
+            parameters.getParameter(slotPrefix + "10")->setValueNotifyingHost(0.8f); // Mix at index 9
+            break;
+            
+        case ENGINE_OPTO_COMPRESSOR:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.6f); // Threshold (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.4f); // Ratio (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.3f); // Attack (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.4f); // Release (index 3)
+            // Mix is at index 5 (parameter 6)
+            parameters.getParameter(slotPrefix + "6")->setValueNotifyingHost(1.0f); // Mix at index 5
+            break;
+            
+        case ENGINE_NOISE_GATE:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.3f); // Threshold (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.8f); // Ratio (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.1f); // Attack (index 2)
+            parameters.getParameter(slotPrefix + "4")->setValueNotifyingHost(0.3f); // Hold (index 3)
+            parameters.getParameter(slotPrefix + "5")->setValueNotifyingHost(0.4f); // Release (index 4)
+            // Mix is at index 6 (parameter 7)
+            parameters.getParameter(slotPrefix + "7")->setValueNotifyingHost(1.0f); // Mix at index 6
+            break;
+            
+        case ENGINE_MASTERING_LIMITER:
+            parameters.getParameter(slotPrefix + "1")->setValueNotifyingHost(0.9f); // Ceiling (index 0)
+            parameters.getParameter(slotPrefix + "2")->setValueNotifyingHost(0.4f); // Release (index 1)
+            parameters.getParameter(slotPrefix + "3")->setValueNotifyingHost(0.0f); // Lookahead off (index 2)
+            // Mix is at index 5 (parameter 6)
+            parameters.getParameter(slotPrefix + "6")->setValueNotifyingHost(1.0f); // Mix at index 5
             break;
             
         default:
@@ -806,90 +883,98 @@ int ChimeraAudioProcessor::choiceIndexToEngineID(int choiceIndex) {
 
 int ChimeraAudioProcessor::getMixParameterIndex(int engineID) {
     // Returns the 0-based index of the Mix parameter for each engine
-    // Based on parameter analysis from engine metadata
+    // Based on comprehensive analysis of each engine's header file
     
     switch (engineID) {
-        // Mix at index 3 (parameter 4)
-        case ENGINE_PLATE_REVERB:
-        case ENGINE_CONVOLUTION_REVERB:
-        case ENGINE_GATED_REVERB:
-        case ENGINE_MAGNETIC_DRUM_ECHO:
-        case ENGINE_BUFFER_REPEAT:
-        case ENGINE_K_STYLE:
-        case ENGINE_CHAOS_GENERATOR:
-        case ENGINE_SPECTRAL_FREEZE:
-        case ENGINE_FORMANT_FILTER:
-        case ENGINE_COMB_RESONATOR:
-        case ENGINE_VOCAL_FORMANT:
-        case ENGINE_WAVE_FOLDER:
+        // Mix at index 2
         case ENGINE_FREQUENCY_SHIFTER:
-        case ENGINE_PHASED_VOCODER:
-        case ENGINE_INTELLIGENT_HARMONIZER:
+        case ENGINE_PITCH_SHIFTER:
+            return 2;
+            
+        // Mix at index 3  
+        case ENGINE_K_STYLE:
             return 3;
             
-        // Mix at index 5 (parameter 6)
-        case ENGINE_RODENT_DISTORTION:
-        case ENGINE_STEREO_CHORUS:
-        case ENGINE_RESONANT_CHORUS:
-        case ENGINE_BUCKET_BRIGADE_DELAY:
-        case ENGINE_ROTARY_SPEAKER:
+        // Mix at index 4
+        case ENGINE_VCA_COMPRESSOR: // ClassicCompressor
+        case ENGINE_CONVOLUTION_REVERB:
+        case ENGINE_TAPE_ECHO:
         case ENGINE_DETUNE_DOUBLER:
-        case ENGINE_HARMONIC_TREMOLO:
+            return 4;
+            
+        // Mix at index 5
+        case ENGINE_OPTO_COMPRESSOR: // VintageOptoCompressor
+        case ENGINE_MASTERING_LIMITER:
+        case ENGINE_RODENT_DISTORTION:
             return 5;
             
-        // Mix at index 6 (parameter 7)
-        case ENGINE_VCA_COMPRESSOR: // Same as ENGINE_CLASSIC_COMPRESSOR
-        case ENGINE_MULTIBAND_SATURATOR:
-        case ENGINE_MUFF_FUZZ:
-        case ENGINE_VINTAGE_TUBE:
-        case ENGINE_PARAMETRIC_EQ:
-        case ENGINE_VINTAGE_CONSOLE_EQ:
-        case ENGINE_DYNAMIC_EQ:
-        case ENGINE_TRANSIENT_SHAPER:
+        // Mix at index 6
         case ENGINE_NOISE_GATE:
-        case ENGINE_MASTERING_LIMITER:
+        case ENGINE_BIT_CRUSHER:
+        case ENGINE_PLATE_REVERB:
+        case ENGINE_DIGITAL_DELAY:
+        case ENGINE_BUCKET_BRIGADE_DELAY:
+        case ENGINE_STEREO_CHORUS:
+        case ENGINE_CLASSIC_TREMOLO:
+        case ENGINE_HARMONIC_TREMOLO:
+        case ENGINE_COMB_RESONATOR:
+        case ENGINE_MUFF_FUZZ:
+        case ENGINE_MULTIBAND_SATURATOR:
+        case ENGINE_DYNAMIC_EQ:
+            return 6;
+            
+        // Mix at index 7
+        case ENGINE_ANALOG_PHASER:
+        case ENGINE_ENVELOPE_FILTER:
+        case ENGINE_STATE_VARIABLE_FILTER:
+        case ENGINE_FORMANT_FILTER:
+        case ENGINE_WAVE_FOLDER:
+        case ENGINE_SPECTRAL_GATE:
+        case ENGINE_HARMONIC_EXCITER: // CRITICAL FIX - was missing!
+        case ENGINE_BUFFER_REPEAT:
         case ENGINE_STEREO_WIDENER:
         case ENGINE_STEREO_IMAGER:
         case ENGINE_DIMENSION_EXPANDER:
-        case ENGINE_SPECTRAL_GATE:
+        case ENGINE_CHAOS_GENERATOR:
+        case ENGINE_FEEDBACK_NETWORK:
+        case ENGINE_INTELLIGENT_HARMONIZER:
+            return 7;
+            
+        // Mix at index 8
+        case ENGINE_GATED_REVERB:
+        case ENGINE_MAGNETIC_DRUM_ECHO:
+        case ENGINE_RESONANT_CHORUS:
+        case ENGINE_LADDER_FILTER:
+        case ENGINE_VOCAL_FORMANT:
+        case ENGINE_PARAMETRIC_EQ:
+            return 8;
+            
+        // Mix at index 9
+        case ENGINE_SPRING_REVERB:
+        case ENGINE_SHIMMER_REVERB:
+        case ENGINE_ROTARY_SPEAKER:
+        case ENGINE_VINTAGE_TUBE:
+        case ENGINE_TRANSIENT_SHAPER:
+        case ENGINE_PHASE_ALIGN:
+            return 9;
+            
+        // Mix at index 10
+        case ENGINE_VINTAGE_CONSOLE_EQ:
+            return 10;
+            
+        // Special cases - no mix parameter
+        case ENGINE_GRANULAR_CLOUD:
+        case ENGINE_RING_MODULATOR:
         case ENGINE_MID_SIDE_PROCESSOR:
         case ENGINE_GAIN_UTILITY:
         case ENGINE_MONO_MAKER:
-        case ENGINE_PHASE_ALIGN:
-        case ENGINE_FEEDBACK_NETWORK:
-        case ENGINE_LADDER_FILTER:
-            return 6;
-            
-        // Mix at index 7 (parameter 8)
-        case ENGINE_BIT_CRUSHER:
-        case ENGINE_SPRING_REVERB:
-        case ENGINE_ENVELOPE_FILTER:
-            return 7;
-            
-        // Mix at index 2 (parameter 3)
-        case ENGINE_DIGITAL_DELAY:
-            return 2;
-            
-        // Mix at index 4 (parameter 5)
-        case ENGINE_OPTO_COMPRESSOR:
-        case ENGINE_TAPE_ECHO:
-        case ENGINE_ANALOG_PHASER:
-            return 4;
-            
-        // Mix at index 9 (parameter 10)
-        case ENGINE_SHIMMER_REVERB:
-        case ENGINE_STATE_VARIABLE_FILTER:
-            return 9;
-            
-        // Special cases
-        case ENGINE_GRANULAR_CLOUD: // No mix parameter
-        case ENGINE_RING_MODULATOR: // No mix parameter (hardcoded 50/50)
-            return -1; // Special value to indicate no mix
+        case ENGINE_SPECTRAL_FREEZE:
+            return -1; // No mix parameter
             
         // Default case
         case ENGINE_NONE:
         default:
-            return 3; // Default to index 3 for unknown engines
+            return 6; // Default to index 6 for unknown engines
     }
 }
 

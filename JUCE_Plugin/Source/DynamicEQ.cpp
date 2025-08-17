@@ -172,7 +172,8 @@ float DynamicEQ::applyAnalogSaturation(float input) {
 
 float DynamicEQ::applyComponentTolerance(float value, float tolerance) {
     // Simulate component tolerance (typically ±5% for audio components)
-    float randomFactor = ((rand() % 1000) / 1000.0f - 0.5f) * tolerance;
+    thread_local juce::Random random;
+    float randomFactor = (random.nextFloat() - 0.5f) * tolerance;
     return value * (1.0f + randomFactor);
 }
 

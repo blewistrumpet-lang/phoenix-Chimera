@@ -213,7 +213,11 @@ private:
             
             // Thermal noise increases with temperature
             float noiseLevel = (temperature - 20.0f) * 0.0001f;
-            thermalNoise = ((rand() % 1000) / 1000.0f - 0.5f) * noiseLevel;
+            
+            // Thread-safe thermal noise generation (replaces unsafe rand() call)
+            // Maintains same distribution: range [-0.5, 0.5) with 1000 discrete steps
+            thread_local juce::Random tlsRandom;
+            thermalNoise = ((tlsRandom.nextInt(1000) / 1000.0f) - 0.5f) * noiseLevel;
             
             // Thermal drift affects parameters
             thermalDrift = (temperature - 25.0f) * 0.002f;
@@ -305,4 +309,11 @@ private:
     // Analog modeling
     float applyAnalogCharacter(float input, float amount);
     float applyVintageNoise(float input);
+    
+    // Thread-safe random number generation
+    // Using JUCE's Random class which is thread-safe when used with thread_local storage
+    static juce::Random& getThreadLocalRandom() {
+        thread_local juce::Random tlsRandom;
+        return tlsRandom;
+    }
 };

@@ -371,20 +371,40 @@ struct ChaosGenerator_Platinum::Impl {
     }
 
     void reset() {
+        // Reset chaos output smoothing
         chaosSmoothed = 0.0;
+        
+        // Reset all one-pole filters
         for (auto& op : onePoleLP) op.reset();
 
-        // Reseed
+        // Reset all chaos systems with current seed
         const double seed = (pSeed.load(std::memory_order_relaxed) / 4294967295.0);
-        for (auto& s : systems) if (s) s->reset(seed);
+        for (auto& s : systems) {
+            if (s) {
+                s->reset(seed);
+                s->harden(); // Ensure clean state after reset
+            }
+        }
 
-        // Default snaps for deterministic start
-        pRate.snap(0.5f);
-        pDepth.snap(0.5f);
-        pSmooth.snap(0.5f);
-        pMix.snap(1.0f);
+        // Reset parameter smoothers to current targets for deterministic start
+        pRate.snap(pRate.value());
+        pDepth.snap(pDepth.value());
+        pSmooth.snap(pSmooth.value());
+        pMix.snap(pMix.value());
 
-        lastDepth = 0.5f;
+        // Reset internal tracking state
+        lastDepth = pDepth.value();
+        
+        // Additional safety: ensure atomic parameters are in valid ranges
+        const int currentType = pType.load(std::memory_order_relaxed);
+        if (currentType < 0 || currentType >= static_cast<int>(ChaosType::Count)) {
+            pType.store(0, std::memory_order_relaxed); // Default to Lorenz
+        }
+        
+        const int currentTarget = pTarget.load(std::memory_order_relaxed);
+        if (currentTarget < 0 || currentTarget >= static_cast<int>(ModTargetCount)) {
+            pTarget.store(0, std::memory_order_relaxed); // Default to ModPitch
+        }
     }
 
     inline double stepChaos() noexcept {

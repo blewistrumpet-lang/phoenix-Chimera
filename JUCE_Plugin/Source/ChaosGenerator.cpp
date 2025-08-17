@@ -14,8 +14,74 @@ void ChaosGenerator::prepareToPlay(double sampleRate, int samplesPerBlock) {
 }
 
 void ChaosGenerator::reset() {
-    // Reset all internal state
-    // TODO: Implement specific reset logic for ChaosGenerator
+    // Reset all internal state to ensure clean start
+    
+    for (auto& channel : m_channelStates) {
+        // Reset chaos systems to initial conditions
+        channel.lorenz.x = 0.1;
+        channel.lorenz.y = 0.0;
+        channel.lorenz.z = 0.0;
+        
+        channel.rossler.x = 0.1;
+        channel.rossler.y = 0.0;
+        channel.rossler.z = 0.0;
+        
+        channel.henon.x = 0.0;
+        channel.henon.y = 0.0;
+        
+        channel.logistic.x = 0.5;
+        
+        channel.ikeda.x = 0.1;
+        channel.ikeda.y = 0.1;
+        
+        channel.duffing.x = 0.1;
+        channel.duffing.y = 0.0;
+        channel.duffing.phase = 0.0;
+        
+        // Reset modulation processors
+        channel.pitchShifter.prepare(); // This clears internal buffers
+        
+        channel.filter.state1 = 0.0f;
+        channel.filter.state2 = 0.0f;
+        
+        // Reset DC blockers
+        channel.inputDCBlocker.reset();
+        channel.outputDCBlocker.reset();
+        
+        // Reset chaos value smoothing
+        channel.chaosValue.current = 0.0f;
+        channel.chaosValue.target = 0.0f;
+        
+        // Reset thermal model state
+        channel.thermalModel.thermalNoise = 0.0f;
+        
+        // Reset component aging
+        channel.componentAging.age = 0.0f;
+        channel.componentAging.drift = 0.0f;
+        channel.componentAging.nonlinearity = 0.0f;
+        
+        // Reset sample counters
+        channel.sampleCounter = 0;
+        
+        // Clear chaos history
+        std::fill(channel.chaosHistory.begin(), channel.chaosHistory.end(), 0.0f);
+        channel.historyIndex = 0;
+    }
+    
+    // Reset smoothed parameters to their current targets
+    m_rate.current = m_rate.target;
+    m_depth.current = m_depth.target;
+    m_type.current = m_type.target;
+    m_smoothing.current = m_smoothing.target;
+    m_modTarget.current = m_modTarget.target;
+    m_sync.current = m_sync.target;
+    m_seed.current = m_seed.target;
+    m_mix.current = m_mix.target;
+    
+    // Reset shared state
+    m_lastSeed = m_seed.current;
+    m_componentAge = 0.0f;
+    m_sampleCount = 0;
 }
 
 void ChaosGenerator::process(juce::AudioBuffer<float>& buffer) {

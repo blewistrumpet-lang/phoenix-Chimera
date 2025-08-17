@@ -47,7 +47,7 @@ namespace {
 // Implementation
 struct GatedReverb::Impl {
     // Core state
-    double sampleRate = 44100.0;
+    double sampleRate = 0.0;
     int blockSize = 512;
     
     // Smoothed parameters with denormal protection
@@ -136,7 +136,7 @@ struct GatedReverb::Impl {
         
         void prepare(const std::array<int, NUM_COMBS>& tunings, double sr) {
             for (int i = 0; i < NUM_COMBS; ++i) {
-                int targetSize = tunings[i] * sr / 44100.0;
+                int targetSize = static_cast<int>(tunings[i] * sr / 44100.0);
                 int size = 1;
                 while (size < targetSize) size <<= 1;
                 masks[i] = size - 1;
@@ -553,7 +553,7 @@ void GatedReverb::prepareToPlay(double sampleRate, int samplesPerBlock) {
         
         // Initialize allpass filters
         for (int i = 0; i < 4; ++i) {
-            int size = pimpl->allpassTunings[i] * sampleRate / 44100.0;
+            int size = static_cast<int>(pimpl->allpassTunings[i] * sampleRate / 44100.0);
             state.allpassFilters[i].prepare(size);
         }
         

@@ -310,6 +310,20 @@ public:
     };
     
     // ========================================================================
+    // Playback Modes
+    // ========================================================================
+    enum class PlaybackMode : int {
+        NORMAL = 0,
+        FORWARD = 1,
+        FADE_IN = 2,
+        FADE_OUT = 3,
+        PITCH_SHIFT = 4,
+        REVERSE = 5,        // Reverse playback mode
+        STUTTER = 6,        // Stutter/retrigger mode
+        GRANULAR = 7
+    };
+    
+    // ========================================================================
     // Ultra-Optimized Slice Player
     // ========================================================================
     class UltraSlicePlayer {
@@ -323,6 +337,14 @@ public:
         int m_repeatCount{0};
         bool m_isPlaying{false};
         bool m_isReversed{false};
+        
+        // Mode-specific variables
+        PlaybackMode m_playbackMode{PlaybackMode::NORMAL};
+        float m_rate{1.0f};                    // Rate parameter for stutter mode
+        int m_stutterSegmentLength{64};        // Segment length for stutter mode
+        double m_stutterPhase{0.0};            // Phase for stutter retriggering
+        int m_crossfadeLength{256};            // Crossfade length in samples
+        float m_crossfadeGain{1.0f};           // Current crossfade gain
         
         // Pre-computed crossfade table
         static constexpr int XFADE_SIZE = 64;
@@ -348,21 +370,63 @@ public:
             m_bufferSize = size;
         }
         
-        void startSlice(int start, int length, bool reverse, float pitch, float feedback) noexcept {
+        void startSlice(int start, int length, bool reverse, float pitch, float feedback, PlaybackMode mode = PlaybackMode::NORMAL, float rate = 1.0f) noexcept {
             m_sliceStart = start;
             m_sliceLength = std::max(MIN_SLICE_SIZE, length);
             m_isReversed = reverse;
             m_pitchRatio = static_cast<double>(pitch);
             m_feedback = feedback;
-            m_readPos = reverse ? static_cast<double>(m_sliceLength - 1) : 0.0;
+            m_playbackMode = mode;
+            m_rate = rate;
+            
+            // Set initial read position based on mode
+            if (mode == PlaybackMode::REVERSE || reverse) {
+                m_readPos = static_cast<double>(m_sliceLength - 1);
+            } else {
+                m_readPos = 0.0;
+            }
+            
             m_isPlaying = true;
             m_repeatCount = 0;
             m_xfadeIndex = 0;
+            m_stutterPhase = 0.0;
+            m_crossfadeGain = 1.0f;
+            
+            // Set stutter segment length based on rate parameter
+            if (mode == PlaybackMode::STUTTER) {
+                m_stutterSegmentLength = static_cast<int>(64 + rate * 512); // 64-576 samples
+                m_crossfadeLength = std::min(m_stutterSegmentLength / 8, 64); // 5-10ms crossfade
+            }
+        }
+        
+        float processMode(PlaybackMode mode) noexcept {
+            switch (mode) {
+                case PlaybackMode::NORMAL:
+                case PlaybackMode::FORWARD:
+                case PlaybackMode::FADE_IN:
+                case PlaybackMode::FADE_OUT:
+                case PlaybackMode::PITCH_SHIFT:
+                case PlaybackMode::GRANULAR:
+                    return processNormalMode();
+                
+                case PlaybackMode::REVERSE:
+                    return processReverseMode();
+                
+                case PlaybackMode::STUTTER:
+                    return processStutterMode();
+                
+                default:
+                    return 0.0f;
+            }
         }
         
         float getNextSample() noexcept {
             if (!m_isPlaying || m_sliceLength == 0) return 0.0f;
-            
+            return processMode(m_playbackMode);
+        }
+        
+    private:
+        float processNormalMode() noexcept {
             // Calculate buffer position
             int bufferPos = (m_sliceStart + static_cast<int>(m_readPos)) % m_bufferSize;
             
@@ -434,6 +498,139 @@ public:
             
             return flushDenormSSE(sample);
         }
+        
+        // REVERSE MODE (case 5): Read buffer backwards with crossfading
+        float processReverseMode() noexcept {
+            // Calculate buffer position for reverse reading
+            int bufferPos = (m_sliceStart + static_cast<int>(m_readPos)) % m_bufferSize;
+            
+            // High-quality interpolation for reverse playback
+            float sample = getInterpolatedSample(bufferPos);
+            
+            // Apply crossfade at grain boundaries to avoid clicks
+            float crossfadeGain = 1.0f;
+            int fadeLength = 32; // ~0.7ms at 48kHz
+            
+            // Crossfade at the beginning of reverse grain
+            if (m_readPos > (m_sliceLength - fadeLength)) {
+                float fadePos = (m_sliceLength - m_readPos) / fadeLength;
+                crossfadeGain *= fadePos;
+            }
+            // Crossfade at the end of reverse grain  
+            else if (m_readPos < fadeLength) {
+                crossfadeGain *= m_readPos / fadeLength;
+            }
+            
+            sample *= crossfadeGain;
+            
+            // Decrement read position and wrap at buffer boundaries
+            m_readPos -= m_pitchRatio;
+            if (m_readPos < 0.0) {
+                m_readPos += m_sliceLength;
+                m_repeatCount++;
+                if (m_feedback <= 0.01f && m_repeatCount > 0) {
+                    m_isPlaying = false;
+                }
+            }
+            
+            // Apply feedback with gain reduction
+            float gain = std::pow(m_feedback, static_cast<float>(m_repeatCount));
+            sample *= gain;
+            
+            // Maintain pitch characteristics during reverse playback
+            if (std::abs(sample) > 0.9f) {
+                sample = fastTanh(sample);
+            }
+            
+            return flushDenormSSE(sample);
+        }
+        
+        // STUTTER MODE (case 6): Rapidly retrigger small buffer segments
+        float processStutterMode() noexcept {
+            // Update stutter phase based on rate
+            m_stutterPhase += m_rate * 0.01; // Rate controls stutter speed
+            
+            // Rapid segment retriggering
+            int segmentPos = static_cast<int>(m_stutterPhase * m_stutterSegmentLength) % m_stutterSegmentLength;
+            
+            // Add optional random nudge for variation (±4 samples)
+            static thread_local uint32_t rngState = 0x12345678;
+            float randomNudge = (fastRandom(rngState) - 0.5f) * 8.0f;
+            segmentPos = std::max(0, std::min(m_stutterSegmentLength - 1, 
+                                            static_cast<int>(segmentPos + randomNudge)));
+            
+            // Calculate buffer position within the segment
+            int bufferPos = (m_sliceStart + segmentPos) % m_bufferSize;
+            
+            // Get interpolated sample
+            float sample = getInterpolatedSample(bufferPos);
+            
+            // Crossfade between stutters (5-10ms) to avoid clicks
+            float crossfadeGain = 1.0f;
+            if (segmentPos < m_crossfadeLength) {
+                crossfadeGain = static_cast<float>(segmentPos) / m_crossfadeLength;
+            } else if (segmentPos > (m_stutterSegmentLength - m_crossfadeLength)) {
+                crossfadeGain = static_cast<float>(m_stutterSegmentLength - segmentPos) / m_crossfadeLength;
+            }
+            
+            sample *= crossfadeGain;
+            
+            // Update segment position
+            if (m_stutterPhase >= 1.0) {
+                m_stutterPhase -= 1.0;
+                m_repeatCount++;
+                if (m_feedback <= 0.01f && m_repeatCount > 3) { // Allow a few repeats in stutter mode
+                    m_isPlaying = false;
+                }
+            }
+            
+            // Apply feedback
+            float gain = std::pow(m_feedback, static_cast<float>(m_repeatCount) * 0.5f);
+            sample *= gain;
+            
+            // Gentle saturation for stutter mode
+            if (std::abs(sample) > 0.8f) {
+                sample = fastTanh(sample * 0.8f);
+            }
+            
+            return flushDenormSSE(sample);
+        }
+        
+        // Helper method for high-quality interpolation
+        float getInterpolatedSample(int bufferPos, double fracPos = -1.0) noexcept {
+            // Use provided fractional position, or calculate from m_readPos
+            double frac = (fracPos >= 0.0) ? fracPos : (m_readPos - std::floor(m_readPos));
+#if defined(__AVX2__)
+            // AVX2 gather for interpolation points
+            __m128i indices = _mm_set_epi32(
+                (bufferPos + 3) % m_bufferSize,
+                (bufferPos + 2) % m_bufferSize,
+                (bufferPos + 1) % m_bufferSize,
+                bufferPos
+            );
+            __m128 samples = _mm_i32gather_ps(m_buffer, indices, 4);
+            
+            float y[4];
+            _mm_storeu_ps(y, samples);
+#else
+            // Scalar interpolation
+            float y[4];
+            y[0] = m_buffer[bufferPos];
+            y[1] = m_buffer[(bufferPos + 1) % m_bufferSize];
+            y[2] = m_buffer[(bufferPos + 2) % m_bufferSize];
+            y[3] = m_buffer[(bufferPos + 3) % m_bufferSize];
+#endif
+            
+            // Catmull-Rom interpolation for smooth playback
+            float c0 = y[1];
+            float c1 = 0.5f * (y[2] - y[0]);
+            float c2 = y[0] - 2.5f * y[1] + 2.0f * y[2] - 0.5f * y[3];
+            float c3 = 0.5f * (y[3] - y[0]) + 1.5f * (y[1] - y[2]);
+            
+            return static_cast<float>(((c3 * frac + c2) * frac + c1) * frac + c0);
+        }
+        
+    public:
         
         void reset() noexcept {
             if (m_buffer) std::memset(m_buffer, 0, MAX_BUFFER_SAMPLES * sizeof(float));
@@ -512,7 +709,7 @@ public:
         }
         
         void triggerSlice(int sliceSize, float probability, bool reverse, 
-                         float pitch, float feedback) {
+                         float pitch, float feedback, PlaybackMode mode = PlaybackMode::NORMAL, float rate = 1.0f) {
             if (fastRandom(rngState) > probability) return;
             
             UltraSlicePlayer* player = nullptr;
@@ -530,7 +727,7 @@ public:
             
             player->copyBuffer(recordBuffer, MAX_BUFFER_SAMPLES);
             int sliceStart = (writePos - sliceSize + MAX_BUFFER_SAMPLES) % MAX_BUFFER_SAMPLES;
-            player->startSlice(sliceStart, sliceSize, reverse, pitch, feedback);
+            player->startSlice(sliceStart, sliceSize, reverse, pitch, feedback, mode, rate);
         }
     };
     
@@ -552,7 +749,7 @@ public:
     
     std::array<std::unique_ptr<ChannelState>, 2> m_channelStates;
     
-    double m_sampleRate{44100.0};
+    double m_sampleRate{0.0};
     float m_bpm{120.0f};
     
     // Pre-calculated mix coefficients
@@ -660,11 +857,28 @@ public:
                 if (state.slicePhase >= 1.0) {
                     state.slicePhase -= 1.0;
                     
-                    bool shouldReverse = reverseProb > 0.5f || 
-                                        (reverseProb > 0.0f && fastRandom(state.rngState) < reverseProb);
+                    // Determine playback mode based on parameters
+                    PlaybackMode mode = PlaybackMode::NORMAL;
+                    bool shouldReverse = false;
+                    
+                    // Check if reverse mode should be used (case 5)
+                    if (reverseProb > 0.7f) { // Strong reverse preference
+                        mode = PlaybackMode::REVERSE;
+                        shouldReverse = true;
+                    } else if (reverseProb > 0.3f && fastRandom(state.rngState) < reverseProb) {
+                        shouldReverse = true; // Probability-based reverse
+                    }
+                    
+                    // Check if stutter mode should be used (case 6)
+                    if (stutterAmount > 0.6f) { // Strong stutter preference
+                        mode = PlaybackMode::STUTTER;
+                    }
+                    
+                    // Use rate parameter for stutter mode speed control
+                    float rate = divisionParam * 4.0f + 1.0f; // 1.0 to 5.0
                     
                     state.triggerSlice(sliceSize, probability, shouldReverse, 
-                                      pitchRatio, feedback);
+                                      pitchRatio, feedback, mode, rate);
                 }
                 
                 // Mix slice players

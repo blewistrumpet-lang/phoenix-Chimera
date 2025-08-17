@@ -1,5 +1,6 @@
 // RotarySpeaker.cpp
 #include "RotarySpeaker.h"
+#include "DspEngineUtilities.h"
 
 namespace AudioDSP {
 
@@ -91,6 +92,8 @@ void RotarySpeaker::reset() {
 }
 
 void RotarySpeaker::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     

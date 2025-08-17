@@ -509,7 +509,7 @@ public:
     std::array<Voice, MAX_VOICES> m_voicesArray;
     
     // Configuration
-    double m_sampleRate{44100.0};
+    double m_sampleRate{0.0};
     Mode m_mode{Mode::CLASSIC};
     LFOShape m_lfoShape{LFOShape::SINE};
     Config m_config;

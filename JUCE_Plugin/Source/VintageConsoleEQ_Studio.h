@@ -32,7 +32,7 @@ public:
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     juce::String getName() const override { return "Vintage Console EQ Studio"; }
-    int getNumParameters() const override { return 10; }
+    int getNumParameters() const override { return 13; }
     juce::String getParameterName(int index) const override;
 
     // Console selection
@@ -41,27 +41,24 @@ public:
 
     // Parameters (IDs must align with your plugin parameter table)
     enum ParamID : int {
-        kBypass        = 0,
-        kOutputTrim_dB = 1,
-        kDrive         = 2,   // 0..1 input drive into transformer stage
-        kOSOn          = 3,   // force OS on/off (0=auto)
-        kNoiseOn       = 4,   // vintage hiss
-        kConsoleType   = 5,   // 0=Neve,1=SSL,2=API,3=CUSTOM
+        // Frequency indices per band
+        kLow_Index     = 0,   // Low shelf frequency index
+        kLM_Index      = 2,   // Low-mid bell frequency index
+        kHM_Index      = 4,   // High-mid bell frequency index
+        kHigh_Index    = 6,   // High shelf frequency index
 
-        // Stepped frequency index per band (console dependent)
-        kLow_Index     = 10,
-        kLM_Index      = 11,
-        kHM_Index      = 12,
-        kHigh_Index    = 13,
+        // Band gains (±15 dB range mapped from 0-1)
+        kLow_Gain_dB   = 1,   // Low shelf gain
+        kLM_Gain_dB    = 3,   // Low-mid bell gain
+        kHM_Gain_dB    = 5,   // High-mid bell gain
+        kHigh_Gain_dB  = 7,   // High shelf gain
 
-        // Band gains (±16 dB typical), bells use proportional-Q
-        kLow_Gain_dB   = 20,
-        kLM_Gain_dB    = 21,
-        kHM_Gain_dB    = 22,
-        kHigh_Gain_dB  = 23,
-
-        // Optional continuous Q bias (0..1 -> min..max in console law)
-        kQBias         = 30
+        // Global controls
+        kDrive         = 8,   // 0..1 input drive into transformer stage
+        kConsoleType   = 9,   // 0=Neve,0.33=SSL,0.66=API,1=CUSTOM
+        kQBias         = 10,  // Q character (0..1 -> min..max in console law)
+        kNoiseOn       = 11,  // vintage hiss
+        kOutputTrim_dB = 12   // output trim (±24 dB range mapped from 0-1)
     };
 
 private:

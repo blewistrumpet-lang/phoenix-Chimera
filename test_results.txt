@@ -1,0 +1,288 @@
+JUCE v8.0.8
+JUCE Assertion failure in juce_Timer.cpp:376
+Initializing ChimeraAudioProcessor - Validating engine mappings...
+Running audio processing test...
+=== AUDIO PROCESSING TEST ===
+EngineFactory::createEngine called with engineID: 0
+JUCE Assertion failure in juce_String.cpp:327
+â ï¸  Engine 0 [None]: NO PROCESSING
+EngineFactory::createEngine called with engineID: 1
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 1 [Vintage Opto Platinum]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 2
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 2 [Classic Compressor Pro]: OK (98% changed)
+EngineFactory::createEngine called with engineID: 3
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 3 [Transient Shaper Pro]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 4
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 4 [Noise Gate Platinum]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 5
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 5 [Mastering Limiter Platinum]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 6
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 6 [Dynamic EQ]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 7
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 7 [Parametric EQ Studio]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 8
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 8 [Vintage Console EQ Studio]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 9
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 9 [Ladder Filter Pro]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 10
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 10 [State Variable Filter]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 11
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 11 [Formant Filter Pro]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 12
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 12 [Envelope Filter]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 13
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 13 [Comb Resonator]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 14
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 14 [Vocal Formant Filter]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 15
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 15 [Vintage Tube Preamp Studio]: OK (100% changed)
+EngineFactory::createEngine called with engineID: 16
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 16 [Wave Folder]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 17
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 17 [Harmonic Exciter Pro]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 18
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 18 [Bit Crusher]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 19
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 19 [Multiband Saturator Ultimate]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 20
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 20 [Muff Fuzz]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 21
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 21 [Rodent Distortion]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 22
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 22 [K-Style Overdrive]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 23
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 23 [StereoChorus]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 24
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 24 [Resonant Chorus Platinum]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 25
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 25 [Analog Phaser]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 26
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 26 [Platinum Ring Modulator]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 27
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 27 [Frequency Shifter]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 28
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 28 [Harmonic Tremolo Pro]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 29
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 29 [Classic Tremolo]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 30
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 30 [Rotary Speaker Platinum]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 31
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 31 [Pitch Shifter]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 32
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 32 [Detune Doubler Pro]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 33
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 33 [Intelligent Harmonizer]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 34
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 34 [Tape Echo]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 35
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 35 [Digital Delay Pro]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 36
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 36 [Magnetic Drum Echo]: OK (100% changed)
+EngineFactory::createEngine called with engineID: 37
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 37 [Bucket Brigade Delay]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 38
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 38 [Buffer Repeat Platinum]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 39
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 39 [Plate Reverb]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 40
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 40 [Spring Reverb Platinum]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 41
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 41 [Convolution Reverb]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 42
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 42 [Shimmer Reverb]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 43
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 43 [Gated Reverb]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 44
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 44 [Stereo Widener]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 45
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 45 [Stereo Imager]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 46
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 46 [Dimension Expander]: OK (98% changed)
+EngineFactory::createEngine called with engineID: 47
+JUCE Assertion failure in SpectralFreeze.cpp:128
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 47 [Spectral Freeze Ultimate]: OK (86% changed)
+EngineFactory::createEngine called with engineID: 48
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 48 [Spectral Gate Platinum]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 49
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 49 [Phased Vocoder]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 50
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 50 [Granular Cloud]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 51
+JUCE Assertion failure in juce_String.cpp:327
+â ï¸  Engine 51 [Chaos Generator Platinum]: NO PROCESSING
+EngineFactory::createEngine called with engineID: 52
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 52 [Feedback Network]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 53
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 53 [Mid-Side Processor]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 54
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 54 [Gain Utility Platinum]: OK (95% changed)
+EngineFactory::createEngine called with engineID: 55
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 55 [Mono Maker Platinum]: OK (99% changed)
+EngineFactory::createEngine called with engineID: 56
+JUCE Assertion failure in juce_String.cpp:327
+â Engine 56 [Phase Align Platinum]: OK (99% changed)
+
+=== SUMMARY ===
+Working: 55
+Not Processing: 2
+Errors: 0
+Total: 57 engines
+Engine choices in dropdown:
+  Choice 0: None
+  Choice 1: Vintage Opto Compressor
+  Choice 2: Classic Compressor
+  Choice 3: Transient Shaper
+  Choice 4: Noise Gate
+  Choice 5: Mastering Limiter
+  Choice 6: Dynamic EQ
+  Choice 7: Parametric EQ
+  Choice 8: Vintage Console EQ
+  Choice 9: Ladder Filter
+  Choice 10: State Variable Filter
+  Choice 11: Formant Filter
+  Choice 12: Envelope Filter
+  Choice 13: Comb Resonator
+  Choice 14: Vocal Formant Filter
+  Choice 15: Vintage Tube Preamp
+  Choice 16: Wave Folder
+  Choice 17: Harmonic Exciter
+  Choice 18: Bit Crusher
+  Choice 19: Multiband Saturator
+  Choice 20: Muff Fuzz
+  Choice 21: Rodent Distortion
+  Choice 22: K-Style Overdrive
+  Choice 23: Stereo Chorus
+  Choice 24: Resonant Chorus
+  Choice 25: Analog Phaser
+  Choice 26: Ring Modulator
+  Choice 27: Frequency Shifter
+  Choice 28: Harmonic Tremolo
+  Choice 29: Classic Tremolo
+  Choice 30: Rotary Speaker
+  Choice 31: Pitch Shifter
+  Choice 32: Detune Doubler
+  Choice 33: Intelligent Harmonizer
+  Choice 34: Tape Echo
+  Choice 35: Digital Delay
+  Choice 36: Magnetic Drum Echo
+  Choice 37: Bucket Brigade Delay
+  Choice 38: Buffer Repeat
+  Choice 39: Plate Reverb
+  Choice 40: Spring Reverb
+  Choice 41: Convolution Reverb
+  Choice 42: Shimmer Reverb
+  Choice 43: Gated Reverb
+  Choice 44: Stereo Widener
+  Choice 45: Stereo Imager
+  Choice 46: Dimension Expander
+  Choice 47: Spectral Freeze
+  Choice 48: Spectral Gate
+  Choice 49: Phased Vocoder
+  Choice 50: Granular Cloud
+  Choice 51: Chaos Generator
+  Choice 52: Feedback Network
+  Choice 53: Mid-Side Processor
+  Choice 54: Gain Utility
+  Choice 55: Mono Maker
+  Choice 56: Phase Align
+Initializing 6 slots with null engines
+Setting null engine for slot 0
+  ERROR: Failed to create engine for slot 0
+Setting null engine for slot 1
+  ERROR: Failed to create engine for slot 1
+Setting null engine for slot 2
+  ERROR: Failed to create engine for slot 2
+Setting null engine for slot 3
+  ERROR: Failed to create engine for slot 3
+Setting null engine for slot 4
+  ERROR: Failed to create engine for slot 4
+Setting null engine for slot 5
+  ERROR: Failed to create engine for slot 5
+Found .env file with API key
+Starting AI Server with Python at: /Library/Frameworks/Python.framework/Versions/3.10/bin/python3
+AI Server script: /Users/Branden/branden/Project_Chimera_v3.0_Phoenix/AI_Server/main.py
+AI Server already running
+EngineFactory::createEngine called with engineID: 0
+EngineFactory::createEngine called with engineID: 1
+EngineFactory::createEngine called with engineID: 2
+EngineFactory::createEngine called with engineID: 3
+==========================================
+   COMPREHENSIVE ENGINE TEST SUITE
+==========================================
+
+[0] Testing MuffFuzz...
+  Bypass/Mix          : ✅ PASS (Bypass error: 0.000000)
+  NaN/Inf/Denormal    : ❌ FAIL (NaN: 0, Inf: 0, Denorm: 1)
+  Reset               : ✅ PASS (Residual: 0.000000)
+  Block Invariance    : ✅ PASS (Max diff: 0.000000)
+  CPU Usage           : ✅ PASS (0.000008%)
+
+[1] Testing RodentDistortion...
+  Bypass/Mix          : ❌ FAIL (Bypass error: 0.110196)
+  NaN/Inf/Denormal    : ❌ FAIL (NaN: 0, Inf: 0, Denorm: 1)
+  Reset               : ✅ PASS (Residual: 0.000000)
+  Block Invariance    : ❌ FAIL (Max diff: 0.175244)
+  CPU Usage           : ✅ PASS (1.021192%)
+
+[2] Testing GritCrusher...
+  Bypass/Mix          : ❌ FAIL (Bypass error: 0.118352)
+  NaN/Inf/Denormal    : ❌ FAIL (NaN: 0, Inf: 0, Denorm: 1)
+  Reset               : ✅ PASS (Residual: 0.000000)
+  Block Invariance    : ❌ FAIL (Max diff: 0.315679)
+  CPU Usage           : ✅ PASS (0.758825%)
+
+[3] Testing MetalZone...
