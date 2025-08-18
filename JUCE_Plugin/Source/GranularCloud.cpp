@@ -94,7 +94,9 @@ void GranularCloud::updateParameters(const std::map<int, float>& params) {
 }
 
 // -------------------------------------------------------
-void GranularCloud::process(juce::AudioBuffer<float>& buffer) { DenormalGuard guard;
+void GranularCloud::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int numCh = std::min(buffer.getNumChannels(), 2);
     const int N = buffer.getNumSamples();
     if (N <= 0) return;

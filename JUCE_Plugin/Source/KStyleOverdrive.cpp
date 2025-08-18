@@ -59,6 +59,8 @@ juce::String KStyleOverdrive::getParameterName(int index) const {
 }
 
 void KStyleOverdrive::process(juce::AudioBuffer<float>& buffer) {
+    DenormalGuard guard;
+    
     const int nCh = std::min(buffer.getNumChannels(), 2);
     const int n   = buffer.getNumSamples();
     if (nCh <= 0 || n <= 0) return;
@@ -107,4 +109,6 @@ void KStyleOverdrive::process(juce::AudioBuffer<float>& buffer) {
         Lw[i] = outL;
         if (Rw) Rw[i] = outR;
     }
+    
+    scrubBuffer(buffer);
 }
