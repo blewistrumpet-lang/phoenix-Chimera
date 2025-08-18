@@ -23,8 +23,8 @@ add_library(ChimeraPhoenix MODULE
 
 # Define the test executable
 add_executable(QualityTestRunner
-    Source/QualityTestRunner.cpp
-    Source/EngineQualityTest.cpp
+    ../tests/unit/QualityTestRunner.cpp
+    ../tests/unit/EngineQualityTest.cpp
     Source/EngineFactory.cpp
     Source/DefaultParameterValues.cpp
     Source/CompleteEngineMetadata.cpp
@@ -38,17 +38,17 @@ add_executable(QualityTestRunner
 
 # Define the comprehensive test harness executable
 add_executable(ComprehensiveTestHarness
-    Source/ComprehensiveTestHarnessMain.cpp
-    Source/ComprehensiveTestHarness.cpp
-    Source/ComprehensiveTestImplementations.cpp
-    Source/ComprehensiveTestPerformance.cpp
-    Source/ComprehensiveTestReporting.cpp
+    ../tests/harness/ComprehensiveTestHarnessMain.cpp
+    ../tests/harness/ComprehensiveTestHarness.cpp
+    ../tests/harness/ComprehensiveTestImplementations.cpp
+    ../tests/harness/ComprehensiveTestPerformance.cpp
+    ../tests/harness/ComprehensiveTestReporting.cpp
     Source/EngineFactory.cpp
     Source/DefaultParameterValues.cpp
     Source/CompleteEngineMetadata.cpp
     Source/EngineMetadataInit.cpp
-    Source/TestSignalGenerator.cpp
-    Source/AudioMeasurements.cpp
+    ../tests/unit/TestSignalGenerator.cpp
+    ../tests/unit/AudioMeasurements.cpp
     # Add all engine source files that exist
     Source/KStyleOverdrive.cpp
     Source/TapeEcho.cpp
@@ -127,10 +127,20 @@ target_include_directories(ChimeraPhoenix PRIVATE
 
 target_include_directories(QualityTestRunner PRIVATE
     Source
+    ../tests/unit
+    ../tests/integration
+    ../tests/quality
+    ../tests/validation
+    ../tests/harness
 )
 
 target_include_directories(ComprehensiveTestHarness PRIVATE
     Source
+    ../tests/unit
+    ../tests/integration
+    ../tests/quality
+    ../tests/validation
+    ../tests/harness
 )
 
 # Compiler settings for comprehensive test harness

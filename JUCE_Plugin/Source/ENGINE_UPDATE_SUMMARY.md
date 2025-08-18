@@ -138,10 +138,11 @@ This commit contains professional DSP implementations for 10 audio engines, repl
 - `EngineFactory.cpp` - Updated to use PlatinumRingModulator
 - All 10 engine .h/.cpp files - Complete rewrites
 
-### Backup Files Created:
-- `CombResonator_OLD.h/cpp`
-- `PitchShifter_OLD.h/cpp`
+### Backup Files (Archived):
+- `CombResonator_OLD.h/cpp` (archived in `archive/deprecated_implementations/`)
+- `PitchShifter_OLD.h/cpp` (archived in `archive/deprecated_implementations/`)
 - `MultibandSaturator_OLD.h/cpp` (removed after verification)
+- All OLD files have been moved to archive for historical reference
 
 ## Testing
 Each engine has a corresponding test file that validates:

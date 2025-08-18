@@ -5,6 +5,10 @@
     Maps string engine identifiers to internal engine types
     This eliminates the need for numeric ID conversion
 
+    ⚠️  SECONDARY SYSTEM: Used for AI integration and JSON preset loading only.
+    For core plugin operations, use EngineTypes.h constants directly.
+    See AUTHORITATIVE_SYSTEMS.md for complete system hierarchy.
+
   ==============================================================================
 */
 

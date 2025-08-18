@@ -7,6 +7,10 @@
  * This helps the test harness understand which engines are actually implemented.
  * 
  * Generated from analysis of EngineFactory.cpp and EngineTypes.h
+ * 
+ * ⚠️  NOTE: This is a SECONDARY system for testing purposes only.
+ * For authoritative engine information, use EngineFactory.cpp and EngineTypes.h.
+ * See AUTHORITATIVE_SYSTEMS.md for complete system hierarchy.
  */
 
 #include "EngineTypes.h"

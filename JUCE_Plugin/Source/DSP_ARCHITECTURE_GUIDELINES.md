@@ -163,10 +163,12 @@ Engines must handle:
 
 ## Reference Implementation
 
-See `StereoChorus_Reference.h/cpp` for a complete example demonstrating:
+See `StereoChorus.h/cpp` for a complete example demonstrating:
 - Extended EngineBase API
 - DspEngineUtilities usage
 - PIMPL pattern
+
+Note: Previous reference implementations have been archived in `archive/deprecated_implementations/`.
 - Denormal protection
 - Parameter smoothing
 - Thread-safe atomics

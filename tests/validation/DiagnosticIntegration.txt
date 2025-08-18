@@ -1,0 +1,91 @@
+/*
+ * DIAGNOSTIC INTEGRATION FOR PluginProcessor.cpp
+ * 
+ * Add this code to your PluginProcessor.cpp to enable engine diagnostics.
+ * This will help verify that PlateReverb, ClassicCompressor, and RodentDistortion
+ * are working correctly and processing audio as expected.
+ */
+
+// 1. ADD THESE INCLUDES at the top of PluginProcessor.cpp:
+
+#include "PlateReverb.h"
+#include "ClassicCompressor.h" 
+#include "RodentDistortion.h"
+#include "SimpleEngineDiagnostic.h"
+
+// 2. ADD THIS DIAGNOSTIC FUNCTION to PluginProcessor.cpp:
+
+void ChimeraAudioProcessor::runEngineDiagnostics() {
+    std::cout << "\n=== CHIMERA ENGINE DIAGNOSTICS ===\n";
+    std::cout << "Running at: " << getSampleRate() << " Hz\n\n";
+    
+    runSimpleEngineDiagnostic(getSampleRate(), 512);
+}
+
+// 3. ADD THIS METHOD DECLARATION to PluginProcessor.h (in the public section):
+
+void runEngineDiagnostics();
+
+// 4. CALL THE DIAGNOSTIC from wherever you want to test:
+
+// Option A: Call from prepareToPlay() to test during startup
+void ChimeraAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
+    // ... existing prepareToPlay code ...
+    
+    // Run diagnostics on startup (comment out after testing)
+    // runEngineDiagnostics();
+}
+
+// Option B: Call from processBlock() once for debugging (add flag to prevent repeated calls)
+void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
+    // Add this at the beginning of processBlock for one-time testing
+    static bool diagnosticsRun = false;
+    if (!diagnosticsRun) {
+        runEngineDiagnostics();
+        diagnosticsRun = true;
+    }
+    
+    // ... rest of existing processBlock code ...
+}
+
+// Option C: Add a button or parameter to trigger diagnostics from the UI
+
+/*
+ * EXPECTED OUTPUT:
+ * 
+ * The diagnostic will test each engine and show:
+ * - Whether the engine processes without errors
+ * - If the audio is actually modified (should be YES for working engines)
+ * - Input vs output levels
+ * - Gain changes in dB
+ * - Current mix parameter values
+ * 
+ * TROUBLESHOOTING:
+ * 
+ * If "Audio Modified: NO":
+ * - Check if mix parameter is 0 (would be dry signal only)
+ * - Verify parameters are in the right ranges
+ * - Check if process() method is actually modifying the buffer
+ * 
+ * If "Status: ERROR":
+ * - Check for missing includes or linking issues
+ * - Verify engine constructors work properly
+ * - Check prepareToPlay() is being called correctly
+ * 
+ * PlateReverb Expected Results:
+ * - Should modify audio (add reverb)
+ * - Mix at 0.5 means 50% wet/dry blend
+ * - May slightly change levels due to reverb mix
+ * 
+ * ClassicCompressor Expected Results:
+ * - Should modify audio (compress dynamics)
+ * - With threshold at 0.3 (-18dB), should compress the -6dB test signal
+ * - Should reduce overall level due to compression
+ * - Mix at 1.0 means 100% compressed signal
+ * 
+ * RodentDistortion Expected Results:
+ * - Should modify audio (add distortion)
+ * - High gain + clipping should create audible distortion
+ * - May boost overall level due to gain and output parameters
+ * - Mix at 1.0 means 100% distorted signal
+ */

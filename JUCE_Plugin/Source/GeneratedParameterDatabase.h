@@ -2,6 +2,19 @@
 // Generated from parameter_database.json on 2025-08-04 02:06:38
 // DO NOT EDIT MANUALLY - Edit parameter_database.json and regenerate
 
+// ⚠️  DEPRECATION WARNING ⚠️
+// ==========================================================================================================
+// THIS FILE IS DEPRECATED FOR MIX PARAMETER MAPPING
+// 
+// For mix parameter indices, use PluginProcessor.cpp getMixParameterIndex() instead.
+// That function contains hand-verified mappings based on actual engine implementations.
+// 
+// This file may contain incorrect dropdown indices and unverified parameter mappings.
+// Use only for reference or AI system integration, NOT for core plugin parameter mapping.
+// 
+// See AUTHORITATIVE_SYSTEMS.md for complete guidance on which systems to use.
+// ==========================================================================================================
+
 #pragma once
 #include <array>
 #include <string>

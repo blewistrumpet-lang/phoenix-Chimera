@@ -896,7 +896,6 @@ int ChimeraAudioProcessor::getMixParameterIndex(int engineID) {
             return 3;
             
         // Mix at index 4
-        case ENGINE_VCA_COMPRESSOR: // ClassicCompressor
         case ENGINE_CONVOLUTION_REVERB:
         case ENGINE_TAPE_ECHO:
         case ENGINE_DETUNE_DOUBLER:
@@ -911,7 +910,7 @@ int ChimeraAudioProcessor::getMixParameterIndex(int engineID) {
         // Mix at index 6
         case ENGINE_NOISE_GATE:
         case ENGINE_BIT_CRUSHER:
-        case ENGINE_PLATE_REVERB:
+        case ENGINE_VCA_COMPRESSOR: // ClassicCompressor - FIXED: Mix is at index 6, not 4
         case ENGINE_DIGITAL_DELAY:
         case ENGINE_BUCKET_BRIGADE_DELAY:
         case ENGINE_STEREO_CHORUS:
@@ -949,8 +948,15 @@ int ChimeraAudioProcessor::getMixParameterIndex(int engineID) {
         case ENGINE_PARAMETRIC_EQ:
             return 8;
             
+        // Mix at index 7
+        case ENGINE_SPRING_REVERB: // FIXED: Mix is at index 7, not 9
+            return 7;
+            
+        // Mix at index 3
+        case ENGINE_PLATE_REVERB: // FIXED: Mix is at index 3, not 6
+            return 3;
+            
         // Mix at index 9
-        case ENGINE_SPRING_REVERB:
         case ENGINE_SHIMMER_REVERB:
         case ENGINE_ROTARY_SPEAKER:
         case ENGINE_VINTAGE_TUBE:
