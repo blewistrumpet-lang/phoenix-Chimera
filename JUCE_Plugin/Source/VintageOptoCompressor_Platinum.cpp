@@ -176,7 +176,8 @@ void VintageOptoCompressor_Platinum::process(juce::AudioBuffer<float>& buffer) {
 
         // Gain reduction (dB), smooth in dB, then convert to linear
         const float grDB = gainReductionDB(env_, peakRed, /*ratio*/ juce::jmap(peakRed,0.f,1.f,2.f,6.f), kneeDB);
-        const float grLin = fromDB( grSmooth_.process(grDB) );
+        const float smoothedGRDB = grSmooth_.process(grDB);
+        const float grLin = fromDB(smoothedGRDB);
 
         float yL = xL * grLin;
         float yR = xR * grLin;
@@ -197,9 +198,9 @@ void VintageOptoCompressor_Platinum::process(juce::AudioBuffer<float>& buffer) {
         float outL = (1.0f - mix) * dryL + mix * wetL;
         float outR = (1.0f - mix) * dryR + mix * wetR;
 
-        // final sanity (shouldn't ever trip with this math)
-        if (!finitef(outL)) outL = 0.0f;
-        if (!finitef(outR)) outR = 0.0f;
+        // final sanity - comprehensive NaN/Inf protection
+        if (!std::isfinite(outL) || std::isnan(outL)) outL = 0.0f;
+        if (!std::isfinite(outR) || std::isnan(outR)) outR = 0.0f;
 
         Lw[i] = outL;
         if (Rw) Rw[i] = outR;

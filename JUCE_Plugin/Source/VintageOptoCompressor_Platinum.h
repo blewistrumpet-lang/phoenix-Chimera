@@ -46,7 +46,12 @@ private:
     static inline float clamp01(float v) noexcept { return juce::jlimit(0.0f, 1.0f, v); }
     static inline bool finitef(float x) noexcept { return std::isfinite(x); }
     static inline float toDB(float x) noexcept   { return 20.0f * std::log10(std::max(x, 1.0e-20f)); }
-    static inline float fromDB(float x) noexcept { return std::pow(10.0f, x / 20.0f); }
+    static inline float fromDB(float x) noexcept { 
+        // Clamp input to reasonable range to prevent NaN/Inf
+        x = juce::jlimit(-100.0f, 20.0f, x);
+        float result = std::pow(10.0f, x / 20.0f);
+        return std::isfinite(result) ? result : 0.0f;
+    }
 
     struct Smoothed {
         std::atomic<float> target{0.f};

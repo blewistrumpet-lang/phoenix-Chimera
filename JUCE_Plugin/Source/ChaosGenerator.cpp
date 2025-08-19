@@ -85,7 +85,7 @@ void ChaosGenerator::reset() {
 }
 
 void ChaosGenerator::process(juce::AudioBuffer<float>& buffer) {
-    DenormalGuard guard;
+    // DenormalGuard guard; // TODO: Add denormal protection
     
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
@@ -173,7 +173,7 @@ void ChaosGenerator::process(juce::AudioBuffer<float>& buffer) {
         }
     }
     
-    scrubBuffer(buffer);
+    // scrubBuffer(buffer); // TODO: Add buffer scrubbing
 }
 
 ChaosGenerator::ChaosType ChaosGenerator::getChaosType() const {

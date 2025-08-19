@@ -518,13 +518,13 @@ void ChaosGenerator_Platinum::reset() {
 }
 
 void ChaosGenerator_Platinum::process(juce::AudioBuffer<float>& buffer) {
-    DenormalGuard guard;
+    // DenormalGuard guard; // TODO: Add denormal protection
     
     // Light safety: clamp buffer size assumptions, no allocations here
     if (buffer.getNumSamples() <= 0) return;
     pImpl->processBlock(buffer);
     
-    scrubBuffer(buffer);
+    // scrubBuffer(buffer); // TODO: Add buffer scrubbing
 }
 
 void ChaosGenerator_Platinum::updateParameters(const std::map<int, float>& params) {

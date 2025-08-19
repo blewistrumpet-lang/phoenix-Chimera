@@ -200,8 +200,9 @@ void DimensionExpander::process(juce::AudioBuffer<float>& buffer) {
         float outL = (1.0f - mix) * inL + mix * wetL;
         float outR = (1.0f - mix) * inR + mix * wetR;
 
-        if (!finitef(outL)) outL = 0.0f;
-        if (!finitef(outR)) outR = 0.0f;
+        // Comprehensive NaN/Inf protection
+        if (!std::isfinite(outL) || std::isnan(outL)) outL = 0.0f;
+        if (!std::isfinite(outR) || std::isnan(outR)) outR = 0.0f;
 
         Lw[i] = outL;
         if (Rw) Rw[i] = outR;

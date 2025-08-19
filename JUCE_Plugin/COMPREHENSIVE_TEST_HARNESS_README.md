@@ -2,6 +2,10 @@
 
 A sophisticated automated testing system for all 57 engines (0-56) in the Chimera Phoenix plugin. This harness performs systematic testing to identify issues, measure performance, and provide actionable recommendations for fixes.
 
+## UnifiedDefaultParameters Integration
+
+Chimera Phoenix v3.0 features the new **UnifiedDefaultParameters system**, providing professionally crafted default values for all 57 engines. The test harness automatically validates these defaults and ensures they provide safe, musical starting points across all engine categories.
+
 ## Features
 
 The comprehensive test harness performs the following tests on each engine:

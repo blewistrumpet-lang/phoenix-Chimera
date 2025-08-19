@@ -273,6 +273,10 @@ void PhaseAlign_Platinum::process(juce::AudioBuffer<float>& buffer) {
         float outL = (1.0f - mix) * Lr[i] + mix * LwWet;
         float outR = (1.0f - mix) * Rr[i] + mix * RwWet;
 
+        // Comprehensive NaN/Inf protection
+        if (!std::isfinite(outL) || std::isnan(outL)) outL = 0.0f;
+        if (!std::isfinite(outR) || std::isnan(outR)) outR = 0.0f;
+
         Lw[i] = outL;
         if (Rw) Rw[i] = outR;
     }

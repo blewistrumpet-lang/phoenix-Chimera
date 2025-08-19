@@ -193,18 +193,26 @@ inline const char* getEngineTypeName(int engineType) {
 inline int getEngineCategory(int engineType) {
     if (engineType == ENGINE_NONE)
         return -1; // No category for "None"
-    else if (engineType >= ENGINE_VINTAGE_TUBE && engineType <= ENGINE_BUCKET_BRIGADE_DELAY)
-        return EngineCategory::VINTAGE_EFFECTS;
-    else if (engineType >= ENGINE_DIGITAL_CHORUS && engineType <= ENGINE_CLASSIC_TREMOLO)
-        return EngineCategory::MODULATION;
-    else if (engineType >= ENGINE_COMB_RESONATOR && engineType <= ENGINE_FORMANT_FILTER)
+    // DYNAMICS & COMPRESSION (IDs 1-6)
+    else if (engineType >= ENGINE_OPTO_COMPRESSOR && engineType <= ENGINE_DYNAMIC_EQ)
+        return EngineCategory::DYNAMICS;
+    // FILTERS & EQ (IDs 7-14)
+    else if (engineType >= ENGINE_PARAMETRIC_EQ && engineType <= ENGINE_VOCAL_FORMANT)
         return EngineCategory::FILTERS_EQ;
-    else if (engineType >= ENGINE_WAVE_FOLDER && engineType <= ENGINE_K_STYLE)
+    // DISTORTION & SATURATION (IDs 15-22)
+    else if (engineType >= ENGINE_VINTAGE_TUBE && engineType <= ENGINE_K_STYLE)
         return EngineCategory::DISTORTION_SATURATION;
-    else if (engineType >= ENGINE_SPECTRAL_FREEZE && engineType <= ENGINE_MASTERING_LIMITER)
+    // MODULATION EFFECTS (IDs 23-33)
+    else if (engineType >= ENGINE_DIGITAL_CHORUS && engineType <= ENGINE_INTELLIGENT_HARMONIZER)
+        return EngineCategory::MODULATION;
+    // REVERB & DELAY (IDs 34-43)
+    else if (engineType >= ENGINE_TAPE_ECHO && engineType <= ENGINE_GATED_REVERB)
+        return EngineCategory::VINTAGE_EFFECTS;
+    // SPATIAL & SPECIAL EFFECTS (IDs 44-52)
+    else if (engineType >= ENGINE_STEREO_WIDENER && engineType <= ENGINE_FEEDBACK_NETWORK)
         return EngineCategory::SPATIAL_TIME;
-    else if ((engineType >= ENGINE_STEREO_WIDENER && engineType <= ENGINE_STEREO_IMAGER) ||
-             (engineType >= ENGINE_GAIN_UTILITY && engineType <= ENGINE_PHASE_ALIGN))
+    // UTILITY (IDs 53-56)
+    else if (engineType >= ENGINE_MID_SIDE_PROCESSOR && engineType <= ENGINE_PHASE_ALIGN)
         return EngineCategory::UTILITY;
     else
         return -1; // Invalid category

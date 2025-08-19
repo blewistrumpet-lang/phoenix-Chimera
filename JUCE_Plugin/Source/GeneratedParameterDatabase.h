@@ -171,9 +171,16 @@ static constexpr ParameterInfo harmonic_exciter_params[] = {
 
 // Mid/Side Processor parameters
 static constexpr ParameterInfo mid_side_processor_params[] = {
-    {"Mid Level", 0.5f, 0.0f, 1.0f, "Mid signal level", "percent", 0.5f},
-    {"Side Level", 0.5f, 0.0f, 1.0f, "Side signal level", "percent", 0.5f},
-    {"Width", 0.5f, 0.0f, 1.0f, "Stereo width", "percent", 0.5f},
+    {"Mid Gain", 0.5f, 0.0f, 1.0f, "Mid channel gain (-20dB to +20dB)", "dB", 0.5f},
+    {"Side Gain", 0.5f, 0.0f, 1.0f, "Side channel gain (-20dB to +20dB)", "dB", 0.5f},
+    {"Width", 0.5f, 0.0f, 1.0f, "Stereo width (0-200%)", "percent", 0.5f},
+    {"Mid Low", 0.5f, 0.0f, 1.0f, "Mid low shelf EQ (-15dB to +15dB)", "dB", 0.5f},
+    {"Mid High", 0.5f, 0.0f, 1.0f, "Mid high shelf EQ (-15dB to +15dB)", "dB", 0.5f},
+    {"Side Low", 0.5f, 0.0f, 1.0f, "Side low shelf EQ (-15dB to +15dB)", "dB", 0.5f},
+    {"Side High", 0.5f, 0.0f, 1.0f, "Side high shelf EQ (-15dB to +15dB)", "dB", 0.5f},
+    {"Bass Mono", 0.0f, 0.0f, 1.0f, "Bass mono frequency (off to 500Hz)", "Hz", 0.5f},
+    {"Solo Mode", 0.0f, 0.0f, 1.0f, "Solo monitoring (off/mid/side)", "mode", 0.5f},
+    {"Presence", 0.0f, 0.0f, 1.0f, "Presence boost (0-6dB @ 10kHz)", "dB", 0.5f},
 };
 
 // Vintage Console EQ parameters
@@ -285,12 +292,16 @@ static constexpr ParameterInfo phased_vocoder_params[] = {
     {"Mix", 0.2f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
 };
 
-// Spectral Gate parameters
+// Spectral Gate parameters (fixed to match SpectralGate_Platinum implementation)
 static constexpr ParameterInfo spectral_gate_params[] = {
-    {"Threshold", 0.3f, 0.0f, 1.0f, "Gate threshold", "dB", 0.5f},
-    {"Frequency", 0.5f, 0.0f, 1.0f, "Center frequency", "Hz", 0.3f},
-    {"Q", 0.5f, 0.0f, 1.0f, "Filter Q", "Q", 0.5f},
-    {"Mix", 0.3f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
+    {"Threshold", 0.25f, 0.0f, 1.0f, "Gate threshold", "dB", 0.5f},
+    {"Ratio", 0.3f, 0.0f, 1.0f, "Gate ratio", "ratio", 0.5f},
+    {"Attack", 0.3f, 0.0f, 1.0f, "Attack time", "ms", 0.3f},
+    {"Release", 0.3f, 0.0f, 1.0f, "Release time", "ms", 0.3f},
+    {"Freq Low", 0.0f, 0.0f, 1.0f, "Low frequency", "Hz", 0.3f},
+    {"Freq High", 1.0f, 0.0f, 1.0f, "High frequency", "Hz", 0.3f},
+    {"Lookahead", 0.0f, 0.0f, 1.0f, "Lookahead time", "ms", 0.3f},
+    {"Mix", 1.0f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
 };
 
 // Noise Gate parameters
@@ -415,16 +426,27 @@ static constexpr ParameterInfo ladder_filter_params[] = {
 
 // Utility Engine parameters
 static constexpr ParameterInfo gain_utility_params[] = {
-    {"Gain", 0.5f, 0.0f, 1.0f, "Input/Output gain (-24dB to +24dB)", "dB", 0.5f},
-    {"High Pass", 0.0f, 0.0f, 1.0f, "High-pass filter cutoff (20Hz-1kHz)", "Hz", 0.0f},
-    {"Low Pass", 1.0f, 0.0f, 1.0f, "Low-pass filter cutoff (1kHz-20kHz)", "Hz", 1.0f},
-    {"Phase Invert", 0.0f, 0.0f, 1.0f, "Invert signal phase", "toggle", 0.0f},
+    {"Gain", 0.5f, 0.0f, 1.0f, "Main gain control (-24dB to +24dB)", "dB", 0.5f},
+    {"Left Gain", 0.5f, 0.0f, 1.0f, "Left channel gain (-12dB to +12dB)", "dB", 0.5f},
+    {"Right Gain", 0.5f, 0.0f, 1.0f, "Right channel gain (-12dB to +12dB)", "dB", 0.5f},
+    {"Mid Gain", 0.5f, 0.0f, 1.0f, "Mid (M) gain (-12dB to +12dB)", "dB", 0.5f},
+    {"Side Gain", 0.5f, 0.0f, 1.0f, "Side (S) gain (-12dB to +12dB)", "dB", 0.5f},
+    {"Mode", 0.0f, 0.0f, 1.0f, "Processing mode (stereo/M-S/mono)", "mode", 0.5f},
+    {"Phase L", 0.0f, 0.0f, 1.0f, "Left channel phase invert", "toggle", 0.5f},
+    {"Phase R", 0.0f, 0.0f, 1.0f, "Right channel phase invert", "toggle", 0.5f},
+    {"Channel Swap", 0.0f, 0.0f, 1.0f, "Swap L/R channels", "toggle", 0.5f},
+    {"Auto Gain", 0.0f, 0.0f, 1.0f, "Auto gain compensation", "toggle", 0.5f},
 };
 
 static constexpr ParameterInfo mono_maker_params[] = {
-    {"Frequency", 0.0f, 0.0f, 1.0f, "Transition frequency (all/low/mid/high)", "Hz", 0.0f},
-    {"Stereo Width", 0.5f, 0.0f, 1.0f, "Stereo width control", "percent", 0.5f},
-    {"Mix", 1.0f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.0f},
+    {"Frequency", 0.3f, 0.0f, 1.0f, "Mono below this frequency (20Hz-1kHz)", "Hz", 0.5f},
+    {"Slope", 0.5f, 0.0f, 1.0f, "Filter slope (6-48 dB/oct)", "dB/oct", 0.5f},
+    {"Mode", 0.0f, 0.0f, 1.0f, "Processing mode (standard/elliptical/M-S)", "mode", 0.5f},
+    {"Bass Mono", 1.0f, 0.0f, 1.0f, "Bass mono amount (0-100%)", "percent", 0.5f},
+    {"Preserve Phase", 0.0f, 0.0f, 1.0f, "Phase preservation (minimum/linear)", "mode", 0.5f},
+    {"DC Filter", 1.0f, 0.0f, 1.0f, "DC blocking filter", "toggle", 0.5f},
+    {"Width Above", 1.0f, 0.0f, 1.0f, "Stereo width above cutoff (0-200%)", "percent", 0.5f},
+    {"Output Gain", 0.5f, 0.0f, 1.0f, "Output gain compensation (-6 to +6 dB)", "dB", 0.5f},
 };
 
 static constexpr ParameterInfo phase_align_params[] = {
@@ -450,7 +472,7 @@ static constexpr EngineInfo engineDatabase[] = {
     {"harmonic_tremolo", "Harmonic Tremolo", 21, "ENGINE_HARMONIC_TREMOLO", 20, "Modulation", 4, harmonic_tremolo_params},
     {"dimension_expander", "Dimension Expander", 18, "ENGINE_DIMENSION_EXPANDER", 22, "Spatial", 3, dimension_expander_params},
     {"harmonic_exciter", "Harmonic Exciter", 32, "ENGINE_HARMONIC_EXCITER", 36, "Enhancement", 3, harmonic_exciter_params},
-    {"mid_side_processor", "Mid/Side Processor", 25, "ENGINE_MID_SIDE_PROCESSOR", 47, "Spatial", 3, mid_side_processor_params},
+    {"mid_side_processor", "Mid/Side Processor", 53, "ENGINE_MID_SIDE_PROCESSOR", 47, "Spatial", 10, mid_side_processor_params},
     {"vintage_console_eq", "Vintage Console EQ", 26, "ENGINE_VINTAGE_CONSOLE_EQ", 46, "EQ", 5, vintage_console_eq_params},
     {"parametric_eq", "Parametric EQ", 27, "ENGINE_PARAMETRIC_EQ", 39, "EQ", 9, parametric_eq_params},
     {"transient_shaper", "Transient Shaper", 20, "ENGINE_TRANSIENT_SHAPER", 28, "Dynamics", 3, transient_shaper_params},
@@ -462,23 +484,23 @@ static constexpr EngineInfo engineDatabase[] = {
     {"intelligent_harmonizer", "Intelligent Harmonizer", 42, "ENGINE_INTELLIGENT_HARMONIZER", 38, "Pitch", 8, intelligent_harmonizer_params},
     {"gated_reverb", "Gated Reverb", 43, "ENGINE_GATED_REVERB", 35, "Reverb", 4, gated_reverb_params},
     {"detune_doubler", "Detune Doubler", 44, "ENGINE_DETUNE_DOUBLER", 12, "Pitch", 5, detune_doubler_params},
-    {"phased_vocoder", "Phased Vocoder", 45, "ENGINE_PHASED_VOCODER", 30, "Spectral", 4, phased_vocoder_params},
-    {"spectral_gate", "Spectral Gate", 46, "ENGINE_SPECTRAL_GATE", 43, "Dynamics", 4, spectral_gate_params},
-    {"noise_gate", "Noise Gate", 47, "ENGINE_NOISE_GATE", 41, "Dynamics", 5, noise_gate_params},
-    {"envelope_filter", "Envelope Filter", 48, "ENGINE_ENVELOPE_FILTER", 29, "Filter", 5, envelope_filter_params},
-    {"feedback_network", "Feedback Network", 49, "ENGINE_FEEDBACK_NETWORK", 37, "Experimental", 4, feedback_network_params},
-    {"mastering_limiter", "Mastering Limiter", 50, "ENGINE_MASTERING_LIMITER", 40, "Dynamics", 4, mastering_limiter_params},
-    {"stereo_widener", "Stereo Widener", 51, "ENGINE_STEREO_WIDENER", 51, "Spatial", 3, stereo_widener_params},
-    {"resonant_chorus", "Resonant Chorus", 52, "ENGINE_RESONANT_CHORUS", 50, "Modulation", 4, resonant_chorus_params},
-    {"dynamic_eq", "Dynamic EQ", 54, "ENGINE_DYNAMIC_EQ", 52, "EQ", 8, dynamic_eq_params},
-    {"stereo_imager", "Stereo Imager", 55, "ENGINE_STEREO_IMAGER", 53, "Spatial", 4, stereo_imager_params},
+    {"phased_vocoder", "Phased Vocoder", 49, "ENGINE_PHASED_VOCODER", 30, "Spectral", 4, phased_vocoder_params},
+    {"spectral_gate", "Spectral Gate", 48, "ENGINE_SPECTRAL_GATE", 43, "Dynamics", 8, spectral_gate_params},
+    {"noise_gate", "Noise Gate", 4, "ENGINE_NOISE_GATE", 41, "Dynamics", 5, noise_gate_params},
+    {"envelope_filter", "Envelope Filter", 12, "ENGINE_ENVELOPE_FILTER", 29, "Filter", 5, envelope_filter_params},
+    {"feedback_network", "Feedback Network", 52, "ENGINE_FEEDBACK_NETWORK", 37, "Experimental", 4, feedback_network_params},
+    {"mastering_limiter", "Mastering Limiter", 5, "ENGINE_MASTERING_LIMITER", 40, "Dynamics", 4, mastering_limiter_params},
+    {"stereo_widener", "Stereo Widener", 44, "ENGINE_STEREO_WIDENER", 51, "Spatial", 3, stereo_widener_params},
+    {"resonant_chorus", "Resonant Chorus", 24, "ENGINE_RESONANT_CHORUS", 50, "Modulation", 4, resonant_chorus_params},
+    {"dynamic_eq", "Dynamic EQ", 6, "ENGINE_DYNAMIC_EQ", 52, "EQ", 8, dynamic_eq_params},
+    {"stereo_imager", "Stereo Imager", 45, "ENGINE_STEREO_IMAGER", 53, "Spatial", 4, stereo_imager_params},
     {"rodent_distortion", "Rodent Distortion", 36, "ENGINE_RODENT_DISTORTION", 2, "Distortion", 8, rodent_distortion_params},
     {"muff_fuzz", "Muff Fuzz", 35, "ENGINE_MUFF_FUZZ", 3, "Distortion", 7, muff_fuzz_params},
     {"rotary_speaker", "Rotary Speaker", 30, "ENGINE_ROTARY_SPEAKER", 54, "Modulation", 6, rotary_speaker_params},
     {"comb_resonator", "Comb Resonator", 23, "ENGINE_COMB_RESONATOR", 9, "Filter", 3, comb_resonator_params},
     {"ladder_filter", "Ladder Filter Pro", 9, "ENGINE_LADDER_FILTER", 55, "Filter", 7, ladder_filter_params},
-    {"gain_utility", "Gain Utility", 54, "ENGINE_GAIN_UTILITY", 53, "Utility", 4, gain_utility_params},
-    {"mono_maker", "Mono Maker", 55, "ENGINE_MONO_MAKER", 54, "Utility", 3, mono_maker_params},
+    {"gain_utility", "Gain Utility", 54, "ENGINE_GAIN_UTILITY", 53, "Utility", 10, gain_utility_params},
+    {"mono_maker", "Mono Maker", 55, "ENGINE_MONO_MAKER", 54, "Utility", 8, mono_maker_params},
     {"phase_align", "Phase Align", 56, "ENGINE_PHASE_ALIGN", 55, "Utility", 4, phase_align_params},
 };
 

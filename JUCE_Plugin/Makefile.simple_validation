@@ -1,0 +1,31 @@
+# Simple Makefile for Final Validation Test
+# Compiles architectural validation without JUCE dependencies
+
+CXX = clang++
+CXXFLAGS = -std=c++17 -O2 -Wall -Wextra -I./Source
+
+# Simple validation test
+TARGET = simple_final_validation
+SOURCE = simple_final_validation.cpp
+
+all: build run
+
+build:
+	@echo "Building Simple Final Validation Test..."
+	$(CXX) $(CXXFLAGS) $(SOURCE) -o $(TARGET)
+	@echo "Build complete."
+
+run:
+	@echo "Running Simple Final Validation Test..."
+	./$(TARGET)
+
+quick:
+	@echo "Running quick validation..."
+	./$(TARGET) | grep -E "(PASS|FAIL|WARN|SUMMARY|READINESS|RECOMMENDATION)"
+
+clean:
+	rm -f $(TARGET)
+	rm -f simple_validation_report.txt
+	@echo "Cleaned build artifacts."
+
+.PHONY: all build run quick clean
