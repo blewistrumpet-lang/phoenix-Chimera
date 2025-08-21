@@ -224,8 +224,9 @@ struct PitchShifter::Impl {
         // Pre-compute constants
         binFrequency = static_cast<float>(sampleRate / FFT_SIZE);
         expectedPhaseInc = 2.0f * static_cast<float>(M_PI) * HOP_SIZE / FFT_SIZE;
-        // Adjusted scaling - slightly higher to compensate for window overlap
-        outputScale = 1.15f / OVERLAP_FACTOR;  // 1.15/4 = 0.2875 (was too low before)
+        // Proper scaling for overlap-add with Hann window
+        // For 75% overlap (4x), the scaling is 1/2 due to Hann window sum
+        outputScale = 0.5f / OVERLAP_FACTOR;  // 0.5/4 = 0.125
         
         // Initialize FFT objects and windows
         for (auto& ch : channels) {
@@ -564,82 +565,30 @@ struct PitchShifter::Impl {
         }
         
         // Laroche-Dolson vertical phase coherence
-        // Lock phases of non-peak bins to maintain harmonic relationships
-        for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
-            if (!ch.isPeak[bin] && ch.closestPeak[bin] >= 0) {
-                int peakBin = ch.closestPeak[bin];
-                
-                // Calculate expected phase relationship
-                double expectedPhaseDiff = 2.0 * M_PI * (bin - peakBin) * HOP_SIZE / FFT_SIZE;
-                
-                // Lock phase to peak with gentle blending
-                double lockedPhase = ch.phaseSum[peakBin] + expectedPhaseDiff;
-                lockedPhase = lockedPhase - 2.0 * M_PI * std::round(lockedPhase / (2.0 * M_PI));
-                
-                // Blend 70% locked phase with 30% original for stability
-                ch.phaseSum[bin] = 0.7 * lockedPhase + 0.3 * ch.phaseSum[bin];
-                ch.phaseSum[bin] = ch.phaseSum[bin] - 2.0 * M_PI * std::round(ch.phaseSum[bin] / (2.0 * M_PI));
+        // Only apply to clear peaks to avoid over-processing
+        if (std::abs(pitch - 1.0f) > 0.1f) {  // Only for significant pitch shifts
+            for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                if (!ch.isPeak[bin] && ch.closestPeak[bin] >= 0) {
+                    int peakBin = ch.closestPeak[bin];
+                    
+                    // Only lock if peak is strong enough
+                    if (ch.magnitude[peakBin] > 0.01f) {
+                        // Calculate expected phase relationship
+                        double expectedPhaseDiff = 2.0 * M_PI * (bin - peakBin) * HOP_SIZE / FFT_SIZE;
+                        
+                        // Lock phase to peak with gentle blending
+                        double lockedPhase = ch.phaseSum[peakBin] + expectedPhaseDiff;
+                        lockedPhase = lockedPhase - 2.0 * M_PI * std::round(lockedPhase / (2.0 * M_PI));
+                        
+                        // Blend 50% locked phase with 50% original for stability
+                        ch.phaseSum[bin] = 0.5 * lockedPhase + 0.5 * ch.phaseSum[bin];
+                        ch.phaseSum[bin] = ch.phaseSum[bin] - 2.0 * M_PI * std::round(ch.phaseSum[bin] / (2.0 * M_PI));
+                    }
+                }
             }
         }
         
-        // Apply phase locking to maintain relationships between harmonics
-        // Peak detection with improved thresholds
-        if (std::abs(pitch - 1.0f) > 0.001f) {
-            // First pass: identify spectral peaks with better detection
-            std::array<bool, FFT_SIZE/2 + 1> isPeak{};
-            std::array<float, FFT_SIZE/2 + 1> peakMagnitude{};
-            
-            // Smooth magnitude spectrum for better peak detection
-            for (int bin = 1; bin < FFT_SIZE/2; ++bin) {
-                peakMagnitude[bin] = 0.25f * ch.magnitude[bin-1] + 0.5f * ch.magnitude[bin] + 0.25f * ch.magnitude[bin+1];
-            }
-            peakMagnitude[0] = ch.magnitude[0];
-            peakMagnitude[FFT_SIZE/2] = ch.magnitude[FFT_SIZE/2];
-            
-            // Find peaks using local maxima
-            for (int bin = 2; bin <= FFT_SIZE/2 - 2; ++bin) {
-                // Check if this is a local maximum
-                if (peakMagnitude[bin] > peakMagnitude[bin-1] * 1.1f && 
-                    peakMagnitude[bin] > peakMagnitude[bin+1] * 1.1f &&
-                    peakMagnitude[bin] > peakMagnitude[bin-2] * 1.05f &&
-                    peakMagnitude[bin] > peakMagnitude[bin+2] * 1.05f &&
-                    peakMagnitude[bin] > 0.001f) {
-                    isPeak[bin] = true;
-                }
-            }
-            
-            // Second pass: phase locking for harmonic coherence
-            // Only lock phases when we have clear harmonic structure
-            for (int fundamentalBin = 1; fundamentalBin <= FFT_SIZE/8; ++fundamentalBin) {
-                if (!isPeak[fundamentalBin]) continue;
-                
-                // Check for harmonic series
-                int harmonicsFound = 0;
-                for (int h = 2; h <= 4; ++h) {
-                    int hBin = fundamentalBin * h;
-                    if (hBin <= FFT_SIZE/2 && isPeak[hBin]) {
-                        harmonicsFound++;
-                    }
-                }
-                
-                // If we found harmonics, lock their phases
-                if (harmonicsFound >= 2) {
-                    for (int harmonic = 2; harmonic <= 6; ++harmonic) {
-                        int harmonicBin = std::round(fundamentalBin * harmonic * pitch);
-                        if (harmonicBin > 0 && harmonicBin <= FFT_SIZE/2) {
-                            // Phase locking with soft blending
-                            double targetPhase = ch.phaseSum[fundamentalBin] * harmonic;
-                            const double twoPi = 2.0 * M_PI;
-                            targetPhase = targetPhase - twoPi * std::round(targetPhase / twoPi);
-                            
-                            // Blend 60% locked phase with 40% original for smoother sound
-                            ch.phaseSum[harmonicBin] = 0.6 * targetPhase + 0.4 * ch.phaseSum[harmonicBin];
-                            ch.phaseSum[harmonicBin] = ch.phaseSum[harmonicBin] - twoPi * std::round(ch.phaseSum[harmonicBin] / twoPi);
-                        }
-                    }
-                }
-            }
-        }
+        // Remove redundant second phase locking - already handled above
         
         // 2. Reconstruct spectrum with pitch shifting
         for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
@@ -665,14 +614,7 @@ struct PitchShifter::Impl {
                     // Linear interpolation
                     mag = mag1 + fraction * (mag2 - mag1);
                     
-                    // Apply spectral smoothing to reduce artifacts
-                    if (bin > 0 && bin < FFT_SIZE/2) {
-                        float prevMag = (bin > 0) ? originalMags[std::max(0, sourceBin - 1)] : mag1;
-                        float nextMag = (bin < FFT_SIZE/2 - 1) ? originalMags[std::min(FFT_SIZE/2, sourceBin + 2)] : mag2;
-                        
-                        // Smooth with neighbors
-                        mag = 0.1f * prevMag + 0.8f * mag + 0.1f * nextMag;
-                    }
+                    // Skip spectral smoothing - it causes more artifacts than it solves
                     
                     // Ensure non-negative magnitude
                     mag = std::max(0.0f, mag);
