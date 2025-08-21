@@ -199,7 +199,7 @@ struct PitchShifter::Impl {
     Impl() {
         // Initialize parameters with default values
         pitchRatio.setImmediate(1.0f);
-        formantShift.setImmediate(1.0f);
+        formantShift.setImmediate(0.5f);  // 0.5 is neutral for formant
         mixAmount.setImmediate(1.0f);
         windowWidth.setImmediate(0.5f);
         spectralGate.setImmediate(0.0f);
@@ -266,6 +266,22 @@ struct PitchShifter::Impl {
     }
     
     ALWAYS_INLINE void processChannel(ChannelState& ch, float* data, int numSamples) {
+        // Check for true bypass condition first
+        const float currentPitch = pitchRatio.getValue();
+        const float currentFormant = formantShift.getValue();
+        const float currentMix = mixAmount.getValue();
+        
+        // Complete bypass if pitch is 1.0, formant is 0.5, and other params are neutral
+        const bool canBypass = (std::abs(currentPitch - 1.0f) < 0.001f) && 
+                               (std::abs(currentFormant - 0.5f) < 0.001f) &&
+                               (std::abs(feedback.getValue()) < 0.001f) &&
+                               (std::abs(spectralGate.getValue()) < 0.001f);
+        
+        if (canBypass && std::abs(currentMix - 1.0f) < 0.001f) {
+            // Complete bypass - no processing at all
+            return;
+        }
+        
         // Process samples with per-sample parameter smoothing
         for (int i = 0; i < numSamples; ++i) {
             // Update ALL parameters per-sample for click-free automation
@@ -360,7 +376,7 @@ struct PitchShifter::Impl {
         ch.fft->perform(ch.spectrum.data(), ch.spectrum.data(), false);
         
         // BYPASS: If no processing needed, skip phase vocoder
-        if (std::abs(pitch - 1.0f) < 0.001f && std::abs(formant - 1.0f) < 0.001f) {
+        if (std::abs(pitch - 1.0f) < 0.001f && std::abs(formant - 0.5f) < 0.001f) {
             // Direct passthrough when no pitch/formant shift
             // Apply gate if needed (soft gate to avoid glitches)
             if (gate > 1e-6f) {
@@ -674,46 +690,36 @@ struct PitchShifter::Impl {
                 phase = static_cast<float>(ch.phaseSum[bin]);
             }
             
-            // FORMANT/BRIGHTNESS: VERY pronounced spectral shaping
+            // FORMANT/BRIGHTNESS: Spectral envelope shifting
             // formant = 0.5 is neutral, < 0.5 darker, > 0.5 brighter
-            if (mag > 0) {
-                float freqHz = bin * binFrequency;
+            // At 0.5, there should be NO change to the spectrum
+            if (mag > 0 && std::abs(formant - 0.5f) > 0.001f) {
+                // Formant shift by spectral envelope warping
+                // This shifts the spectral envelope without changing pitch
+                float formantFactor = std::pow(2.0f, (formant - 0.5f) * 2.0f);  // 0.5 to 2.0 range
                 
-                // Multi-band EQ approach for dramatic effect
-                float gain = 1.0f;
+                // Find the warped source bin for this frequency's envelope
+                float envelopeSourceBin = bin / formantFactor;
                 
-                // Low frequencies (< 500 Hz) - slightly affected
-                if (freqHz < 500.0f) {
-                    if (formant < 0.5f) {
-                        // Boost lows when dark
-                        gain = 1.0f + (0.5f - formant) * 0.5f;  // Up to 1.25x
+                if (envelopeSourceBin >= 0 && envelopeSourceBin <= FFT_SIZE/2) {
+                    int srcBin = static_cast<int>(envelopeSourceBin);
+                    float frac = envelopeSourceBin - srcBin;
+                    
+                    // Get envelope magnitude from warped position
+                    float envMag = 0;
+                    if (srcBin < FFT_SIZE/2) {
+                        float mag1 = originalMags[srcBin];
+                        float mag2 = (srcBin + 1 <= FFT_SIZE/2) ? originalMags[srcBin + 1] : mag1;
+                        envMag = mag1 + frac * (mag2 - mag1);
                     } else {
-                        // Cut lows when bright
-                        gain = 1.0f - (formant - 0.5f) * 0.3f;  // Down to 0.85x
+                        envMag = originalMags[FFT_SIZE/2];
+                    }
+                    
+                    // Apply envelope scaling
+                    if (originalMags[bin] > 1e-6f) {
+                        mag = mag * (envMag / originalMags[bin]);
                     }
                 }
-                // Mid frequencies (500-2000 Hz) - moderately affected  
-                else if (freqHz < 2000.0f) {
-                    if (formant < 0.5f) {
-                        // Cut mids when dark
-                        gain = std::pow(10.0f, (formant - 0.5f) * 2.0f);  // Up to -20dB
-                    } else {
-                        // Boost mids when bright
-                        gain = 1.0f + (formant - 0.5f) * 4.0f;  // Up to +12dB
-                    }
-                }
-                // High frequencies (> 2000 Hz) - heavily affected
-                else {
-                    if (formant < 0.5f) {
-                        // Heavily cut highs when dark
-                        gain = std::pow(10.0f, (formant - 0.5f) * 6.0f);  // Up to -60dB!
-                    } else {
-                        // Heavily boost highs when bright
-                        gain = 1.0f + (formant - 0.5f) * 20.0f;  // Up to +26dB!
-                    }
-                }
-                
-                mag *= gain;
             }
             
             // Create the shifted bin
