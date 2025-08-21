@@ -1055,7 +1055,8 @@ void NoiseGate_Platinum::process(juce::AudioBuffer<float>& buffer) {
     // Convert to actual values
     const float thresholdDb = -60.0f + thresholdNorm * 60.0f;
     const float threshold = dbToLinear(thresholdDb);
-    const float rangeDb = -40.0f + rangeNorm * 40.0f;
+    // Inverted range: 0.0 = no gating, 1.0 = max gating (-40dB)
+    const float rangeDb = -40.0f * rangeNorm;
     const float range = dbToLinear(rangeDb);
     const float attackMs = 0.1f + attackNorm * 99.9f;
     const float holdMs = holdNorm * 500.0f;

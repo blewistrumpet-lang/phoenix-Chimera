@@ -1,0 +1,54 @@
+=== DISTORTION & SATURATION ENGINE TEST SUMMARY ===
+Generated: Tue Aug 19 07:01:20 CDT 2025
+Test Suite: Project Chimera v3.0 Phoenix
+
+ENGINES TESTED:
+1. ENGINE_VINTAGE_TUBE (ID: 15) - Vintage Tube Preamp
+2. ENGINE_WAVE_FOLDER (ID: 16) - Wave Folder
+3. ENGINE_HARMONIC_EXCITER (ID: 17) - Harmonic Exciter
+4. ENGINE_BIT_CRUSHER (ID: 18) - Bit Crusher
+5. ENGINE_MULTIBAND_SATURATOR (ID: 19) - Multiband Saturator
+6. ENGINE_MUFF_FUZZ (ID: 20) - Muff Fuzz
+7. ENGINE_RODENT_DISTORTION (ID: 21) - Rodent Distortion
+8. ENGINE_K_STYLE (ID: 22) - K-Style Overdrive
+
+TEST RESULTS:
+=============
+VintageTubePreamp:
+  Status: Test not run or failed
+
+WaveFolder:
+  Status: Test not run or failed
+
+HarmonicExciter:
+  Status: Test not run or failed
+
+BitCrusher:
+  Status: Test not run or failed
+
+MultibandSaturator:
+  Status: Test not run or failed
+
+MuffFuzz:
+  Status: Test not run or failed
+
+RodentDistortion:
+  Status: Test not run or failed
+
+KStyleOverdrive:
+  Status: Test not run or failed
+
+OVERALL SUMMARY:
+================
+Engines Tested: 0
+Engines Passed: 0
+Total Tests Passed: 0
+Total Tests Failed: 0
+Overall Success Rate: 0%
+
+DETAILED RESULTS:
+==================
+Individual test results and data files are available in:
+/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/Tests/Distortion/Results
+
+CSV data files contain detailed measurements for analysis.

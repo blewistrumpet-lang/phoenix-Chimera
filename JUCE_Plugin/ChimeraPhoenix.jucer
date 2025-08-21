@@ -21,6 +21,9 @@
       <FILE id="wE3rTy" name="EngineFactory.cpp" compile="1" resource="0"
             file="Source/EngineFactory.cpp"/>
       <FILE id="xC2vBn" name="BypassEngine.h" compile="0" resource="0" file="Source/BypassEngine.h"/>
+      <FILE id="uDpAr1" name="UnifiedDefaultParameters.h" compile="0" resource="0" file="Source/UnifiedDefaultParameters.h"/>
+      <FILE id="uDpAr2" name="UnifiedDefaultParameters.cpp" compile="1" resource="0" file="Source/UnifiedDefaultParameters.cpp"/>
+      <FILE id="eTyPe1" name="EngineTypes.h" compile="0" resource="0" file="Source/EngineTypes.h"/>
     </GROUP>
     <GROUP id="{7A3E5F1B-8C6D-9F0A-0D3E-4F6B8D0E1G2H}" name="Engines">
       <FILE id="jK8mN9" name="KStyleOverdrive.h" compile="0" resource="0"

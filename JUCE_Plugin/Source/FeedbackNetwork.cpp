@@ -25,8 +25,9 @@ void FeedbackNetwork::updateParameters(const std::map<int, float>& params) {
     };
 
     delayTimeSec    = std::max(0.001f, get(kDelayTime, 0.25f));
-    feedback        = clampSafe(get(kFeedback, 0.5f), -0.95f, 0.95f);  // Safer feedback range
-    crossFeed       = clampSafe(get(kCrossFeed, 0.0f), -0.95f, 0.95f); // Safer crossfeed range
+    // Limited to 0.85 to prevent runaway feedback
+    feedback        = clampSafe(get(kFeedback, 0.5f), -0.85f, 0.85f);  // Safer feedback range
+    crossFeed       = clampSafe(get(kCrossFeed, 0.0f), -0.85f, 0.85f); // Safer crossfeed range
     diffusion       = std::clamp(get(kDiffusion, 0.0f), 0.0f, 1.0f);
     modulationDepth = std::clamp(get(kModulation, 0.0f), 0.0f, 0.05f);
     freeze          = std::clamp(get(kFreeze, 0.0f), 0.0f, 1.0f);

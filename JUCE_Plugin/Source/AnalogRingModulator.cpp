@@ -205,8 +205,9 @@ float AnalogRingModulator::processRingModulation(float input, float carrier, Cha
     // Apply soft clipping for analog warmth with aging
     output = softClipWithAging(output, m_componentAge);
     
-    // Mix with dry signal (50/50)
-    return input * 0.5f + output * 0.5f;
+    // Mix with dry signal using adjustable mix control
+    float mixAmount = m_mixAmount.current;
+    return input * (1.0f - mixAmount) + output * mixAmount;
 }
 
 void AnalogRingModulator::updateParameters(const std::map<int, float>& params) {
@@ -215,9 +216,14 @@ void AnalogRingModulator::updateParameters(const std::map<int, float>& params) {
         return it != params.end() ? it->second : defaultValue;
     };
     
-    // Carrier frequency: 0.1Hz to 5kHz (exponential)
+    // Carrier frequency: 0Hz (bypass) to 5kHz (exponential)
     float freqParam = getParam(0, 0.5f);
-    m_carrierFreq.target = 0.1f * std::pow(50000.0f, freqParam);
+    if (freqParam < 0.01f) {
+        m_carrierFreq.target = 0.0f;  // True bypass at zero
+    } else {
+        // Musical frequency mapping: 20Hz to 5kHz
+        m_carrierFreq.target = 20.0f * std::pow(250.0f, freqParam);
+    }
     
     // Ring/Shift blend
     m_ringShiftBlend.target = getParam(1, 0.0f);
@@ -227,6 +233,9 @@ void AnalogRingModulator::updateParameters(const std::map<int, float>& params) {
     
     // Tracking (input frequency following)
     m_tracking.target = getParam(3, 0.0f);
+    
+    // Mix amount (dry/wet) - default to 50%
+    m_mixAmount.target = getParam(4, 0.5f);
 }
 
 juce::String AnalogRingModulator::getParameterName(int index) const {
@@ -235,6 +244,7 @@ juce::String AnalogRingModulator::getParameterName(int index) const {
         case 1: return "Ring/Shift";
         case 2: return "Drift";
         case 3: return "Tracking";
+        case 4: return "Mix";
         default: return "";
     }
 }

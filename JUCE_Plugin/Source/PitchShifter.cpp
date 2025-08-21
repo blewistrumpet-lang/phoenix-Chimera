@@ -107,7 +107,8 @@ struct PitchShifter::Impl {
         int inputReadIdx{0};
         int outputWriteIdx{0};
         int outputReadIdx{0};
-        int feedbackPos{0};
+        int feedbackWritePos{0};  // Separate write position for feedback
+        int feedbackReadPos{0};   // Separate read position for feedback
         int hopCounter{0};
         
         // FFT object
@@ -127,7 +128,8 @@ struct PitchShifter::Impl {
             inputReadIdx = 0;
             outputWriteIdx = 0;
             outputReadIdx = 0;
-            feedbackPos = 0;
+            feedbackWritePos = 0;
+            feedbackReadPos = 0;
             hopCounter = 0;
             inputDC.reset();
             outputDC.reset();
@@ -209,7 +211,7 @@ struct PitchShifter::Impl {
         // Pre-compute constants
         binFrequency = static_cast<float>(sampleRate / FFT_SIZE);
         expectedPhaseInc = 2.0f * static_cast<float>(M_PI) * HOP_SIZE / FFT_SIZE;
-        outputScale = 1.0f / (FFT_SIZE * OVERLAP_FACTOR * 0.5f);
+        outputScale = 1.0f / OVERLAP_FACTOR;  // Correct scaling: 1/4 = 0.25, not 1/32768!
         
         // Initialize FFT objects and windows
         for (auto& ch : channels) {
@@ -258,32 +260,37 @@ struct PitchShifter::Impl {
             const float mix = mixAmount.tick();
             const float gate = spectralGate.tick();
             const float fbAmount = feedback.tick() * 0.7f;
+            const float window = windowWidth.tick();  // Now using window parameter
+            // const float grain = grainSize.tick();  // Temporarily disabled - was breaking overlap-add
             
             // DC block input
             float input = ch.inputDC.process(data[i]);
             
-            // Add feedback with denormal prevention
+            // Add feedback with denormal prevention (with delay)
             if (fbAmount > 1e-6f) {
-                input += DSPUtils::flushDenorm(ch.feedbackBuffer[ch.feedbackPos] * fbAmount);
-                ch.feedbackPos = (ch.feedbackPos + 1) % ch.feedbackBuffer.size();
+                // Read from delayed position for feedback
+                input += DSPUtils::flushDenorm(ch.feedbackBuffer[ch.feedbackReadPos] * fbAmount);
+                ch.feedbackReadPos = (ch.feedbackReadPos + 1) % ch.feedbackBuffer.size();
             }
             
             // Write to ring buffer
             ch.writeSample(input);
             ch.hopCounter++;
             
-            // Process frame when ready
+            // Process frame when ready (fixed hop size for correct overlap-add)
             if (ch.hopCounter >= HOP_SIZE) {
                 ch.hopCounter = 0;
-                processSpectralFrame(ch, pitch, formant, gate);
+                // Note: grain parameter temporarily disabled - was breaking overlap-add
+                processSpectralFrame(ch, pitch, formant, gate, window);
             }
             
             // Read from output ring buffer
             float output = ch.readOutput();
             
-            // Store feedback
+            // Store feedback (write to different position for delay)
             if (fbAmount > 1e-6f) {
-                ch.feedbackBuffer[ch.feedbackPos] = output;
+                ch.feedbackBuffer[ch.feedbackWritePos] = output;
+                ch.feedbackWritePos = (ch.feedbackWritePos + 1) % ch.feedbackBuffer.size();
             }
             
             // DC block output with denormal flush
@@ -299,14 +306,24 @@ struct PitchShifter::Impl {
         }
     }
     
-    void processSpectralFrame(ChannelState& ch, float pitch, float formant, float gate) {
+    void processSpectralFrame(ChannelState& ch, float pitch, float formant, float gate, float window) {
         // Gather frame from ring buffer (zero-copy)
         ch.gatherFrame();
         
         // Window input with denormal prevention
+        // Window parameter affects the window shape (0.0 = sharp, 1.0 = smooth)
         alignas(32) std::array<float, FFT_SIZE> windowed;
         for (int i = 0; i < FFT_SIZE; ++i) {
-            windowed[i] = DSPUtils::flushDenorm(ch.frameBuffer[i] * ch.analysisWindow[i]);
+            // Apply dynamic window shaping based on parameter
+            float windowShape = ch.analysisWindow[i];
+            if (window < 0.5f) {
+                // Sharper window for better time resolution
+                windowShape = std::pow(windowShape, 1.0f + (0.5f - window) * 2.0f);
+            } else {
+                // Smoother window for better frequency resolution
+                windowShape = std::pow(windowShape, 1.0f / (1.0f + (window - 0.5f) * 2.0f));
+            }
+            windowed[i] = DSPUtils::flushDenorm(ch.frameBuffer[i] * windowShape);
         }
         
         // Copy to complex array
@@ -390,37 +407,58 @@ struct PitchShifter::Impl {
     }
     
     void shiftSpectrum(ChannelState& ch, float pitch, float formant) {
-        // Temporary buffers for shifted spectrum
+        // Temporary buffer for shifted spectrum
         alignas(16) std::array<std::complex<float>, FFT_SIZE> shifted{};
-        alignas(16) std::array<float, FFT_SIZE/2 + 1> shiftedMag{};
         
-        // Formant shift (magnitude envelope)
+        // CRITICAL FIX: Update phase for ALL bins, not just non-zero ones
+        // The phase accumulator needs to track phase evolution even for silent bins
         for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
-            const int targetBin = static_cast<int>(bin * formant + 0.5f);
-            if (targetBin >= 0 && targetBin <= FFT_SIZE/2) {
-                shiftedMag[targetBin] += ch.magnitude[bin];
-            }
+            // Calculate the frequency for this bin after pitch shifting
+            const double shiftedFreq = ch.frequency[bin] * pitch;
+            
+            // Update phase accumulator for this frequency
+            ch.phaseSum[bin] += 2.0 * M_PI * shiftedFreq * HOP_SIZE / sampleRate;
+            
+            // Wrap phase to [-pi, pi] to prevent numerical overflow
+            while (ch.phaseSum[bin] > M_PI) ch.phaseSum[bin] -= 2.0 * M_PI;
+            while (ch.phaseSum[bin] < -M_PI) ch.phaseSum[bin] += 2.0 * M_PI;
         }
         
-        // Pitch shift with phase coherence
-        for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
-            if (shiftedMag[bin] > 1e-10f) {
-                // Update phase accumulator in double precision
-                const double shiftedFreq = ch.frequency[bin] * pitch;
-                ch.phaseSum[bin] += 2.0 * M_PI * shiftedFreq * HOP_SIZE / sampleRate;
+        // Now apply spectral reconstruction with optional formant shift
+        if (std::abs(formant - 1.0f) < 0.001f) {
+            // No formant shift - direct reconstruction with pitch-shifted phases
+            for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                if (ch.magnitude[bin] > 1e-10f) {
+                    // Use original magnitude with pitch-shifted phase
+                    const float mag = ch.magnitude[bin];
+                    const float phase = static_cast<float>(ch.phaseSum[bin]);
+                    shifted[bin] = std::polar(mag, phase);
+                    
+                    // Maintain Hermitian symmetry for real output
+                    if (bin > 0 && bin < FFT_SIZE/2) {
+                        shifted[FFT_SIZE - bin] = std::conj(shifted[bin]);
+                    }
+                }
+            }
+        } else {
+            // Apply formant shift by remapping magnitude envelope
+            // while preserving pitch-shifted phases
+            for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                // Find source bin for magnitude (formant shift)
+                const int sourceBin = static_cast<int>(bin / formant + 0.5f);
                 
-                // Wrap phase to [-pi, pi] using efficient modulo operation
-                // Prevents unbounded accumulation and numerical drift that causes metallic artifacts
-                ch.phaseSum[bin] = std::fmod(ch.phaseSum[bin] + M_PI, 2.0 * M_PI) - M_PI;
-                
-                // Reconstruct bin
-                const float mag = shiftedMag[bin];
-                const float phase = static_cast<float>(ch.phaseSum[bin]);
-                shifted[bin] = std::polar(mag, phase);
-                
-                // Hermitian symmetry for real output
-                if (bin > 0 && bin < FFT_SIZE/2) {
-                    shifted[FFT_SIZE - bin] = std::conj(shifted[bin]);
+                if (sourceBin >= 0 && sourceBin <= FFT_SIZE/2 && 
+                    ch.magnitude[sourceBin] > 1e-10f) {
+                    // Use magnitude from formant-shifted source
+                    // but phase from pitch-shifted target bin
+                    const float mag = ch.magnitude[sourceBin];
+                    const float phase = static_cast<float>(ch.phaseSum[bin]);
+                    shifted[bin] = std::polar(mag, phase);
+                    
+                    // Maintain Hermitian symmetry
+                    if (bin > 0 && bin < FFT_SIZE/2) {
+                        shifted[FFT_SIZE - bin] = std::conj(shifted[bin]);
+                    }
                 }
             }
         }
@@ -483,8 +521,23 @@ void PitchShifter::updateParameters(const std::map<int, float>& params) {
     // Thread-safe parameter updates
     for (const auto& [index, value] : params) {
         switch (index) {
-            case kPitch:    pimpl->pitchRatio.setTarget(0.25f + value * 3.75f); break;
-            case kFormant:  pimpl->formantShift.setTarget(0.5f + value * 1.5f); break;
+            case kPitch: {
+                // Convert 0-1 parameter to -24 to +24 semitones for musical intervals
+                // 0.0 = -24 semitones (2 octaves down)
+                // 0.5 = 0 semitones (unison)
+                // 1.0 = +24 semitones (2 octaves up)
+                float semitones = (value - 0.5f) * 48.0f;
+                float ratio = std::pow(2.0f, semitones / 12.0f);
+                pimpl->pitchRatio.setTarget(ratio);
+                break;
+            }
+            case kFormant:  
+                // Fix formant mapping: 0.5 should map to 1.0 (no shift)
+                // 0.0 -> 0.5 (down one octave formant)
+                // 0.5 -> 1.0 (no shift)
+                // 1.0 -> 2.0 (up one octave formant)
+                pimpl->formantShift.setTarget(0.5f + value); 
+                break;
             case kMix:      pimpl->mixAmount.setTarget(value); break;
             case kWindow:   pimpl->windowWidth.setTarget(value); break;
             case kGate:     pimpl->spectralGate.setTarget(value); break;

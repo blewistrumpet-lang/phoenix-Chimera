@@ -96,7 +96,8 @@ void NoiseGate::process(juce::AudioBuffer<float>& buffer) {
     float thresholdDb = -60.0f + m_threshold.current * 60.0f;  // -60 to 0 dB
     float thresholdLinear = dbToLinear(thresholdDb);
     
-    float rangeDb = -40.0f + m_range.current * 40.0f;  // -40 to 0 dB
+    // Inverted range: 0.0 = no gating (0dB), 1.0 = max gating (-40dB)
+    float rangeDb = -40.0f * m_range.current;  // Now intuitive: higher value = more gating
     float rangeLinear = dbToLinear(rangeDb);
     
     float attackMs = 0.1f + m_attack.current * 99.9f;  // 0.1 to 100ms

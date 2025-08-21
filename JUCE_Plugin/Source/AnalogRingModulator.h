@@ -16,7 +16,7 @@ public:
     void updateParameters(const std::map<int, float>& params) override;
     
     juce::String getName() const override { return "Analog Ring Modulator"; }
-    int getNumParameters() const override { return 4; }
+    int getNumParameters() const override { return 5; }
     juce::String getParameterName(int index) const override;
     
 private:
@@ -44,6 +44,7 @@ private:
     SmoothParam m_ringShiftBlend;
     SmoothParam m_carrierDrift;
     SmoothParam m_tracking;
+    SmoothParam m_mixAmount;  // Dry/wet mix control
     
     // DSP State
     double m_sampleRate = 44100.0;

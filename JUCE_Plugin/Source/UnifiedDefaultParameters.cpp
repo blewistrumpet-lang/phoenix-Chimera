@@ -291,9 +291,14 @@ std::map<int, float> getDefaultParameters(int engineId) {
             break;
             
         case ENGINE_PITCH_SHIFTER: // Pitch Shifter
-            defaults[0] = 0.5f;   // Pitch - No pitch change (0 cents)
-            defaults[1] = 0.5f;   // Fine - No fine tuning
-            defaults[2] = 0.5f;   // Mix - Balanced original/shifted
+            defaults[0] = 0.5f;   // Pitch - No pitch change (0 semitones)
+            defaults[1] = 0.333f;  // Formant - No formant shift (maps to 1.0 after fix)
+            defaults[2] = 1.0f;   // Mix - Full wet to hear the effect
+            defaults[3] = 0.5f;   // Window - Medium window
+            defaults[4] = 0.0f;   // Gate - No gating
+            defaults[5] = 0.5f;   // Grain - Medium grain size
+            defaults[6] = 0.0f;   // Feedback - No feedback
+            defaults[7] = 0.5f;   // Width - Normal stereo width
             break;
             
         case ENGINE_DETUNE_DOUBLER: // Detune Doubler

@@ -223,7 +223,8 @@ void ClassicCompressor::processSubBlock(float* left, float* right, int startSamp
     double sidechainParam = m_sidechain.processSubBlock(numSamples);
     
     // Convert parameters
-    double thresholdDb = -60.0 + threshold * 60.0;
+    // Better threshold range: -40dB to 0dB (more usable range)
+    double thresholdDb = -40.0 + threshold * 40.0;
     double ratioValue = 1.0 + ratio * 19.0;
     if (ratio > 0.95) ratioValue = 1000.0; // Infinity
     

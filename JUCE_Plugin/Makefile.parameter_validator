@@ -1,0 +1,31 @@
+# Makefile for Parameter Mapping Validator
+# Builds a standalone executable to test parameter mappings
+
+CXX = clang++
+CXXFLAGS = -std=c++17 -I. -I../JUCE/modules -DJUCE_STANDALONE_APPLICATION=1 -DJUCE_DEBUG=1
+LDFLAGS = -framework Cocoa -framework CoreAudio -framework CoreMIDI -framework AudioUnit -framework AudioToolbox
+
+# JUCE Library files needed
+JUCE_SOURCES = \
+	../JUCE/modules/juce_audio_basics/juce_audio_basics.cpp \
+	../JUCE/modules/juce_core/juce_core.cpp \
+	../JUCE/modules/juce_events/juce_events.cpp \
+	../JUCE/modules/juce_audio_processors/juce_audio_processors.cpp
+
+# Engine sources (only include the ones that can compile standalone)
+ENGINE_SOURCES = \
+	Source/EngineFactory.cpp \
+	Source/NoneEngine.h \
+	Source/EngineBase.h
+
+SOURCES = parameter_mapping_validator.cpp $(ENGINE_SOURCES)
+
+TARGET = parameter_validator
+
+$(TARGET): $(SOURCES)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SOURCES) $(LDFLAGS)
+
+clean:
+	rm -f $(TARGET)
+
+.PHONY: clean

@@ -651,7 +651,27 @@ struct IntelligentHarmonizer::Impl {
         const float mixValue = mix.tick();
         
         // Calculate harmony settings
-        const int baseSemitones = static_cast<int>((intervalValue - 0.5f) * 48.0f);
+        // Map interval parameter to discrete musical intervals for better usability
+        const int kMusicalIntervals[] = {
+            -12, // Octave down
+            -7,  // Perfect 5th down
+            -5,  // Perfect 4th down
+            -4,  // Major 3rd down
+            -3,  // Minor 3rd down
+            0,   // Unison (center position)
+            3,   // Minor 3rd up
+            4,   // Major 3rd up
+            5,   // Perfect 4th up
+            7,   // Perfect 5th up
+            12,  // Octave up
+            19   // Octave + 5th up
+        };
+        
+        // Quantize parameter to discrete interval index
+        int intervalIndex = static_cast<int>(intervalValue * 11.99f);
+        intervalIndex = std::min(intervalIndex, 11);
+        const int baseSemitones = kMusicalIntervals[intervalIndex];
+        
         const int rootKey = static_cast<int>(keyValue * 12.0f) % 12;
         const int scaleIndex = static_cast<int>(scaleValue * 10.0f);
         const int activeVoices = 1 + static_cast<int>(voiceValue * 3.0f);

@@ -371,8 +371,16 @@ float BitCrusher::processDCBlocker(float input, ChannelState& state) {
 }
 
 void BitCrusher::updateParameters(const std::map<int, float>& params) {
-    if (params.count(0)) m_bitDepth.target = 1.0f + params.at(0) * 31.0f; // 1-32 bits
-    if (params.count(1)) m_sampleRateReduction.target = 1.0f + params.at(1) * 99.0f; // 1x-100x reduction
+    if (params.count(0)) {
+        // Bit depth: 0.0 = bypass (32 bits), 1.0 = maximum crushing (1 bit)
+        float bits = params.at(0);
+        m_bitDepth.target = bits < 0.01f ? 32.0f : 32.0f - bits * 31.0f;
+    }
+    if (params.count(1)) {
+        // Sample rate reduction: 0.0 = no reduction (bypass), 1.0 = 100x reduction
+        float downsample = params.at(1);
+        m_sampleRateReduction.target = downsample < 0.01f ? 1.0f : 1.0f + downsample * 99.0f;
+    }
     if (params.count(2)) m_aliasing.target = params.at(2);
     if (params.count(3)) m_jitter.target = params.at(3);
     if (params.count(4)) m_dcOffset.target = params.at(4) * 2.0f - 1.0f; // -1 to +1

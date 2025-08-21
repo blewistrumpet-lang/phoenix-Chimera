@@ -292,18 +292,21 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         return;
     }
     
-    // Update engine parameters for all slots
-    for (int slot = 0; slot < NUM_SLOTS; ++slot) {
-        updateEngineParameters(slot);
-    }
-    
     // Process through each slot in series
     for (int slot = 0; slot < NUM_SLOTS; ++slot) {
         bool isBypassed = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_bypass")->load() > 0.5f;
         
         if (!isBypassed) {
-            // Thread-safe engine access
-            std::unique_ptr<EngineBase> engineCopy;
+            // Get parameters for this slot
+            std::map<int, float> params;
+            juce::String slotPrefix = "slot" + juce::String(slot + 1) + "_param";
+            for (int i = 0; i < 15; ++i) {
+                auto paramID = slotPrefix + juce::String(i + 1);
+                float value = parameters.getRawParameterValue(paramID)->load();
+                params[i] = value;
+            }
+            
+            // Thread-safe engine access for both parameter update and processing
             {
                 std::lock_guard<std::mutex> lock(m_engineMutex);
                 if (m_activeEngines[slot]) {
@@ -316,7 +319,8 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                         continue;
                     }
                     
-                    // Process through the engine (still under lock)
+                    // Update parameters and process in one atomic operation
+                    m_activeEngines[slot]->updateParameters(params);
                     m_activeEngines[slot]->process(buffer);
                 }
             }
@@ -489,8 +493,6 @@ void ChimeraAudioProcessor::applyDefaultParameters(int slot, int engineID) {
 }
 
 void ChimeraAudioProcessor::updateEngineParameters(int slot) {
-    if (!m_activeEngines[slot]) return;
-    
     std::map<int, float> params;
     juce::String slotPrefix = "slot" + juce::String(slot + 1) + "_param";
     
@@ -500,7 +502,11 @@ void ChimeraAudioProcessor::updateEngineParameters(int slot) {
         params[i] = value;
     }
     
-    m_activeEngines[slot]->updateParameters(params);
+    // Thread-safe parameter update
+    std::lock_guard<std::mutex> lock(m_engineMutex);
+    if (m_activeEngines[slot]) {
+        m_activeEngines[slot]->updateParameters(params);
+    }
 }
 
 
