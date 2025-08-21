@@ -627,7 +627,7 @@ struct PitchShifter::Impl {
                     continue;  // Skip bins outside range
                 }
             } else {
-                // No pitch shift - use original magnitude
+                // No pitch shift - use original magnitude directly
                 mag = originalMags[bin];
                 phase = static_cast<float>(ch.phaseSum[bin]);
             }
