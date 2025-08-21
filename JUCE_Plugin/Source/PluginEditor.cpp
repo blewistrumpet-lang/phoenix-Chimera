@@ -590,6 +590,45 @@ void ChimeraAudioProcessorEditor::updateSlotParameters(int slot) {
         
         if (visible) {
             slotUI.paramLabels[i]->setText(engine->getParameterName(i), juce::dontSendNotification);
+            
+            // Special handling for PitchShifter (engine 31)
+            int engineIndex = slotUI.engineSelector->getSelectedId() - 1;
+            if (engineIndex == 31 && i == 0) { // PitchShifter's pitch parameter
+                // Set 3 decimal places for pitch parameter
+                slotUI.paramSliders[i]->setNumDecimalPlacesToDisplay(3);
+                
+                // Custom text from value function to show snapped values
+                slotUI.paramSliders[i]->textFromValueFunction = [](double value) {
+                    // Snap points for musical intervals
+                    const float snapPoints[] = {
+                        0.250f, 0.354f, 0.396f, 0.417f, 0.438f, 0.479f,
+                        0.500f, 0.521f, 0.563f, 0.583f, 0.604f, 0.646f, 0.750f
+                    };
+                    
+                    // Find closest snap point
+                    float snappedValue = 0.5f;
+                    float minDistance = 1.0f;
+                    for (float snapPoint : snapPoints) {
+                        float distance = std::abs(static_cast<float>(value) - snapPoint);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            snappedValue = snapPoint;
+                        }
+                    }
+                    
+                    return juce::String(snappedValue, 3);
+                };
+                
+                // Also set the value from text function
+                slotUI.paramSliders[i]->valueFromTextFunction = [](const juce::String& text) {
+                    return text.getDoubleValue();
+                };
+            } else {
+                // Default 2 decimal places for other parameters
+                slotUI.paramSliders[i]->setNumDecimalPlacesToDisplay(2);
+                slotUI.paramSliders[i]->textFromValueFunction = nullptr;
+                slotUI.paramSliders[i]->valueFromTextFunction = nullptr;
+            }
         }
     }
 }

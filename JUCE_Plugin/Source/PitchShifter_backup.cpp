@@ -80,13 +80,6 @@ struct PitchShifter::Impl {
     AtomicSmoothParam feedback;
     AtomicSmoothParam stereoWidth;
     
-    // Store actual snapped pitch value for display
-    std::atomic<float> snappedPitchValue{0.5f};
-    
-    // Previous pitch for artifact reduction
-    float previousPitch{1.0f};
-    int pitchChangeCounter{0};
-    
     // Per-channel state
     struct alignas(64) ChannelState {  // Cache-line aligned
         // Ring buffers for zero-copy overlap-add
@@ -115,7 +108,7 @@ struct PitchShifter::Impl {
         int outputWriteIdx{0};
         int outputReadIdx{0};
         int feedbackWritePos{0};  // Separate write position for feedback
-        int feedbackReadPos{4000};   // Separate read position with delay offset
+        int feedbackReadPos{0};   // Separate read position for feedback
         int hopCounter{0};
         
         // FFT object
@@ -218,8 +211,9 @@ struct PitchShifter::Impl {
         // Pre-compute constants
         binFrequency = static_cast<float>(sampleRate / FFT_SIZE);
         expectedPhaseInc = 2.0f * static_cast<float>(M_PI) * HOP_SIZE / FFT_SIZE;
-        // Adjusted scaling - slightly higher to compensate for window overlap
-        outputScale = 1.15f / OVERLAP_FACTOR;  // 1.15/4 = 0.2875 (was too low before)
+        // JUCE FFT inverse transform scales by 1/FFT_SIZE
+        // No additional scaling needed for overlap-add with proper windowing
+        outputScale = 1.0f / FFT_SIZE;
         
         // Initialize FFT objects and windows
         for (auto& ch : channels) {
@@ -304,23 +298,9 @@ struct PitchShifter::Impl {
             // DC block output with denormal flush
             output = DSPUtils::flushDenorm(ch.outputDC.process(output));
             
-            // Hard limiter to prevent extreme loudness from gate
-            if (std::abs(output) > 2.0f) {
-                output = output > 0 ? 2.0f : -2.0f;
-            }
-            
             // Soft saturation for overloads
             if (std::abs(output) > 0.95f) {
-                output = std::tanh(output * 0.7f) * 1.43f;  // Softer saturation
-            }
-            
-            // Apply crossfade on pitch changes to reduce artifacts
-            if (pitchChangeCounter < 2048) {  // ~46ms crossfade at 44.1kHz for smoother transition
-                float crossfade = static_cast<float>(pitchChangeCounter) / 2048.0f;
-                // S-curve for even smoother transition
-                crossfade = crossfade * crossfade * (3.0f - 2.0f * crossfade);
-                output *= crossfade;
-                pitchChangeCounter++;
+                output = std::tanh(output);
             }
             
             // Mix with dry (per-sample for smooth automation)
@@ -333,17 +313,20 @@ struct PitchShifter::Impl {
         ch.gatherFrame();
         
         // Window input with denormal prevention
+        // Window parameter affects the window shape (0.0 = sharp, 1.0 = smooth)
         alignas(32) std::array<float, FFT_SIZE> windowed;
-        
-        // Always use Hann window for best phase vocoder performance
         for (int i = 0; i < FFT_SIZE; ++i) {
-            windowed[i] = ch.frameBuffer[i] * ch.analysisWindow[i];
+            // Apply dynamic window shaping based on parameter
+            float windowShape = ch.analysisWindow[i];
+            if (window < 0.5f) {
+                // Sharper window for better time resolution
+                windowShape = std::pow(windowShape, 1.0f + (0.5f - window) * 2.0f);
+            } else {
+                // Smoother window for better frequency resolution
+                windowShape = std::pow(windowShape, 1.0f / (1.0f + (window - 0.5f) * 2.0f));
+            }
+            windowed[i] = DSPUtils::flushDenorm(ch.frameBuffer[i] * windowShape);
         }
-        
-        // Window parameter now controls phase coherence smoothing
-        // Lower values = more phase smoothing = less artifacts but softer transients
-        // Higher values = less phase smoothing = sharper transients but more artifacts
-        const float phaseCoherence = 0.7f + window * 0.3f;  // 0.7 to 1.0
         
         // Copy to complex array
         for (int i = 0; i < FFT_SIZE; ++i) {
@@ -353,53 +336,26 @@ struct PitchShifter::Impl {
         // Forward FFT
         ch.fft->perform(ch.spectrum.data(), ch.spectrum.data(), false);
         
-        // BYPASS: If no processing needed, skip phase vocoder
-        if (std::abs(pitch - 1.0f) < 0.001f && std::abs(formant - 1.0f) < 0.001f) {
-            // Direct passthrough when no pitch/formant shift
-            // Apply gate if needed (soft gate to avoid glitches)
-            if (gate > 1e-6f) {
-                // Much lower threshold and soft gating
-                const float threshold = gate * 0.001f;  // Much smaller threshold
-                for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
-                    float mag = std::abs(ch.spectrum[bin]);
-                    if (mag < threshold) {
-                        // Soft gate - reduce instead of zeroing
-                        float reduction = mag / (threshold + 1e-10f);
-                        ch.spectrum[bin] *= reduction * reduction;
-                        if (bin > 0 && bin < FFT_SIZE/2) {
-                            ch.spectrum[FFT_SIZE - bin] = std::conj(ch.spectrum[bin]);
-                        }
-                    }
-                }
-            }
-        } else {
-            // Phase vocoder processing for pitch shifting
-            analyzeSpectrum(ch);
-            
-            // Apply spectral gate (soft gating to avoid artifacts)
-            if (gate > 1e-6f) {
-                // Calculate average magnitude for adaptive threshold
-                float avgMag = 0;
-                for (int bin = 1; bin <= FFT_SIZE/2; ++bin) {
-                    avgMag += ch.magnitude[bin];
-                }
-                avgMag /= (FFT_SIZE/2);
-                
-                // Adaptive threshold based on average magnitude
-                const float threshold = avgMag * gate * 0.01f;  // 1% of average at max
-                
-                for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
-                    if (ch.magnitude[bin] < threshold) {
-                        // Soft reduction instead of hard gating
-                        float ratio = ch.magnitude[bin] / (threshold + 1e-10f);
-                        ch.magnitude[bin] *= ratio * ratio;
-                    }
-                }
+        // Phase vocoder analysis with denormal prevention
+        analyzeSpectrum(ch);
+        
+        // Apply spectral gate with denormal prevention
+        if (gate > 1e-6f) {
+            const float threshold = gate * gate * 0.1f;
+            // Vectorized denormal prevention for magnitude array
+            for (auto& mag : ch.magnitude) {
+                mag = DSPUtils::flushDenorm(mag);
             }
             
-            // Shift spectrum with phase vocoder
-            shiftSpectrum(ch, pitch, formant);
+            for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                if (ch.magnitude[bin] < threshold) {
+                    ch.magnitude[bin] = 0.0f;  // Hard gate prevents denormals
+                }
+            }
         }
+        
+        // Shift spectrum
+        shiftSpectrum(ch, pitch, formant);
         
         // Inverse FFT
         ch.fft->perform(ch.spectrum.data(), ch.spectrum.data(), true);
@@ -407,22 +363,13 @@ struct PitchShifter::Impl {
         // Scatter to output ring buffer with overlap-add
         ch.scatterFrame(ch.spectrum.data(), outputScale);
         
-        // Periodic denormal flush and phase coherence maintenance
+        // Periodic denormal flush for phase accumulators
         if (++denormalFlushCounter >= 256) {
             denormalFlushCounter = 0;
-            
-            // Apply window-based phase coherence
-            const float phaseCoherence = 0.7f + window * 0.3f;
-            
             for (int i = 0; i <= FFT_SIZE/2; ++i) {
-                // Flush denormals
                 ch.phaseSum[i] = DSPUtils::flushDenorm(ch.phaseSum[i]);
                 ch.phaseLast[i] = DSPUtils::flushDenorm(ch.phaseLast[i]);
-                
-                // Gently reduce phase accumulation to prevent artifacts
-                ch.phaseSum[i] *= phaseCoherence;
             }
-            
             // Also flush output ring buffer to prevent accumulation
             for (auto& sample : ch.outputRing) {
                 sample = DSPUtils::flushDenorm(sample);
@@ -447,210 +394,78 @@ struct PitchShifter::Impl {
             double phaseDiff = phase - ch.phaseLast[bin];
             ch.phaseLast[bin] = phase;
             
-            // Princarg wrapping function for better phase coherence
-            const double twoPi = 2.0 * M_PI;
-            phaseDiff = phaseDiff - twoPi * std::round(phaseDiff / twoPi);
+            // Wrap to [-pi, pi] using efficient modulo operation
+            // This prevents numerical drift from iterative subtraction
+            phaseDiff = std::fmod(phaseDiff + M_PI, 2.0 * M_PI) - M_PI;
             
-            // True frequency calculation with improved precision
+            // True frequency calculation
             const double expectedPhase = expectedPhaseInc * bin;
             const double deviation = phaseDiff - expectedPhase;
-            
-            // Wrap deviation as well for better accuracy
-            const double wrappedDeviation = deviation - twoPi * std::round(deviation / twoPi);
-            
-            // Improved frequency estimation using phase vocoder formula
-            const double trueFreq = (bin + wrappedDeviation / twoPi * FFT_SIZE / HOP_SIZE) * binFrequency;
+            const double trueFreq = binFrequency * bin + 
+                                   deviation * sampleRate / (2.0 * M_PI * HOP_SIZE);
             
             ch.frequency[bin] = DSPUtils::flushDenorm(static_cast<float>(trueFreq));
         }
     }
     
     void shiftSpectrum(ChannelState& ch, float pitch, float formant) {
+        // CRITICAL FIX: When pitch is 1.0 (no shift), just pass through the spectrum
+        if (std::abs(pitch - 1.0f) < 0.001f && std::abs(formant - 1.0f) < 0.001f) {
+            // No pitch or formant shift - pass through unmodified
+            // This ensures the phase vocoder doesn't corrupt the signal
+            return;
+        }
+        
         // Temporary buffer for shifted spectrum
         alignas(16) std::array<std::complex<float>, FFT_SIZE> shifted{};
         
-        // Store original magnitudes for formant shifting
-        alignas(16) std::array<float, FFT_SIZE/2 + 1> originalMags;
-        for (int i = 0; i <= FFT_SIZE/2; ++i) {
-            originalMags[i] = ch.magnitude[i];
-        }
-        
-        // Improved phase vocoder with phase locking to reduce artifacts
-        // 1. Update phase accumulators with phase locking
+        // CRITICAL FIX: Update phase for ALL bins, not just non-zero ones
+        // The phase accumulator needs to track phase evolution even for silent bins
         for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
-            // True frequency was calculated in analyzeSpectrum
-            double trueFreq = ch.frequency[bin];
+            // Calculate the frequency for this bin after pitch shifting
+            const double shiftedFreq = ch.frequency[bin] * pitch;
             
-            // Shift the frequency for pitch change
-            double shiftedFreq = trueFreq * pitch;
+            // Update phase accumulator for this frequency
+            ch.phaseSum[bin] += 2.0 * M_PI * shiftedFreq * HOP_SIZE / sampleRate;
             
-            // Calculate expected phase advance
-            double phaseAdvance = 2.0 * M_PI * shiftedFreq * HOP_SIZE / sampleRate;
-            
-            // Update phase accumulator with smoothing for less artifacts
-            ch.phaseSum[bin] += phaseAdvance;
-            
-            // Princarg wrapping for better phase coherence
-            const double twoPi = 2.0 * M_PI;
-            ch.phaseSum[bin] = ch.phaseSum[bin] - twoPi * std::round(ch.phaseSum[bin] / twoPi);
+            // Wrap phase to [-pi, pi] to prevent numerical overflow
+            while (ch.phaseSum[bin] > M_PI) ch.phaseSum[bin] -= 2.0 * M_PI;
+            while (ch.phaseSum[bin] < -M_PI) ch.phaseSum[bin] += 2.0 * M_PI;
         }
         
-        // Apply phase locking to maintain relationships between harmonics
-        // Peak detection with improved thresholds
-        if (std::abs(pitch - 1.0f) > 0.001f) {
-            // First pass: identify spectral peaks with better detection
-            std::array<bool, FFT_SIZE/2 + 1> isPeak{};
-            std::array<float, FFT_SIZE/2 + 1> peakMagnitude{};
-            
-            // Smooth magnitude spectrum for better peak detection
-            for (int bin = 1; bin < FFT_SIZE/2; ++bin) {
-                peakMagnitude[bin] = 0.25f * ch.magnitude[bin-1] + 0.5f * ch.magnitude[bin] + 0.25f * ch.magnitude[bin+1];
-            }
-            peakMagnitude[0] = ch.magnitude[0];
-            peakMagnitude[FFT_SIZE/2] = ch.magnitude[FFT_SIZE/2];
-            
-            // Find peaks using local maxima
-            for (int bin = 2; bin <= FFT_SIZE/2 - 2; ++bin) {
-                // Check if this is a local maximum
-                if (peakMagnitude[bin] > peakMagnitude[bin-1] * 1.1f && 
-                    peakMagnitude[bin] > peakMagnitude[bin+1] * 1.1f &&
-                    peakMagnitude[bin] > peakMagnitude[bin-2] * 1.05f &&
-                    peakMagnitude[bin] > peakMagnitude[bin+2] * 1.05f &&
-                    peakMagnitude[bin] > 0.001f) {
-                    isPeak[bin] = true;
+        // Now apply spectral reconstruction with optional formant shift
+        if (std::abs(formant - 1.0f) < 0.001f) {
+            // No formant shift - direct reconstruction with pitch-shifted phases
+            for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                // Use original magnitude with pitch-shifted phase
+                const float mag = ch.magnitude[bin];
+                const float phase = static_cast<float>(ch.phaseSum[bin]);
+                shifted[bin] = std::polar(mag, phase);
+                
+                // Maintain Hermitian symmetry for real output
+                if (bin > 0 && bin < FFT_SIZE/2) {
+                    shifted[FFT_SIZE - bin] = std::conj(shifted[bin]);
                 }
             }
-            
-            // Second pass: phase locking for harmonic coherence
-            // Only lock phases when we have clear harmonic structure
-            for (int fundamentalBin = 1; fundamentalBin <= FFT_SIZE/8; ++fundamentalBin) {
-                if (!isPeak[fundamentalBin]) continue;
+        } else {
+            // Apply formant shift by remapping magnitude envelope
+            // while preserving pitch-shifted phases
+            for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
+                // Find source bin for magnitude (formant shift)
+                const int sourceBin = static_cast<int>(bin / formant + 0.5f);
                 
-                // Check for harmonic series
-                int harmonicsFound = 0;
-                for (int h = 2; h <= 4; ++h) {
-                    int hBin = fundamentalBin * h;
-                    if (hBin <= FFT_SIZE/2 && isPeak[hBin]) {
-                        harmonicsFound++;
-                    }
-                }
-                
-                // If we found harmonics, lock their phases
-                if (harmonicsFound >= 2) {
-                    for (int harmonic = 2; harmonic <= 6; ++harmonic) {
-                        int harmonicBin = std::round(fundamentalBin * harmonic * pitch);
-                        if (harmonicBin > 0 && harmonicBin <= FFT_SIZE/2) {
-                            // Phase locking with soft blending
-                            double targetPhase = ch.phaseSum[fundamentalBin] * harmonic;
-                            const double twoPi = 2.0 * M_PI;
-                            targetPhase = targetPhase - twoPi * std::round(targetPhase / twoPi);
-                            
-                            // Blend 60% locked phase with 40% original for smoother sound
-                            ch.phaseSum[harmonicBin] = 0.6 * targetPhase + 0.4 * ch.phaseSum[harmonicBin];
-                            ch.phaseSum[harmonicBin] = ch.phaseSum[harmonicBin] - twoPi * std::round(ch.phaseSum[harmonicBin] / twoPi);
-                        }
-                    }
-                }
-            }
-        }
-        
-        // 2. Reconstruct spectrum with pitch shifting
-        for (int bin = 0; bin <= FFT_SIZE/2; ++bin) {
-            float mag = 0;
-            float phase = 0;
-            
-            // PITCH SHIFTING: Resample spectrum with improved interpolation
-            if (std::abs(pitch - 1.0f) > 0.001f) {
-                // Find source bin for this target bin
-                float sourceBinFloat = bin / pitch;
-                int sourceBin = static_cast<int>(sourceBinFloat);
-                float fraction = sourceBinFloat - sourceBin;
-                
-                if (sourceBin >= 0 && sourceBin < FFT_SIZE/2 - 1) {
-                    // Linear interpolation with magnitude preservation
-                    // Simpler but cleaner for real-time pitch shifting
-                    int bin1 = sourceBin;
-                    int bin2 = std::min(FFT_SIZE/2, sourceBin + 1);
+                if (sourceBin >= 0 && sourceBin <= FFT_SIZE/2) {
+                    // Use magnitude from formant-shifted source
+                    // but phase from pitch-shifted target bin
+                    const float mag = ch.magnitude[sourceBin];
+                    const float phase = static_cast<float>(ch.phaseSum[bin]);
+                    shifted[bin] = std::polar(mag, phase);
                     
-                    float mag1 = originalMags[bin1];
-                    float mag2 = originalMags[bin2];
-                    
-                    // Linear interpolation
-                    mag = mag1 + fraction * (mag2 - mag1);
-                    
-                    // Apply spectral smoothing to reduce artifacts
+                    // Maintain Hermitian symmetry
                     if (bin > 0 && bin < FFT_SIZE/2) {
-                        float prevMag = (bin > 0) ? originalMags[std::max(0, sourceBin - 1)] : mag1;
-                        float nextMag = (bin < FFT_SIZE/2 - 1) ? originalMags[std::min(FFT_SIZE/2, sourceBin + 2)] : mag2;
-                        
-                        // Smooth with neighbors
-                        mag = 0.1f * prevMag + 0.8f * mag + 0.1f * nextMag;
-                    }
-                    
-                    // Ensure non-negative magnitude
-                    mag = std::max(0.0f, mag);
-                    phase = static_cast<float>(ch.phaseSum[bin]);
-                } else if (sourceBin == FFT_SIZE/2) {
-                    // Edge case - use linear interpolation
-                    mag = originalMags[sourceBin] * (1.0f - fraction);
-                    phase = static_cast<float>(ch.phaseSum[bin]);
-                } else {
-                    continue;  // Skip bins outside range
-                }
-            } else {
-                // No pitch shift - use original magnitude
-                mag = originalMags[bin];
-                phase = static_cast<float>(ch.phaseSum[bin]);
-            }
-            
-            // FORMANT/BRIGHTNESS: VERY pronounced spectral shaping
-            // formant = 0.5 is neutral, < 0.5 darker, > 0.5 brighter
-            if (mag > 0) {
-                float freqHz = bin * binFrequency;
-                
-                // Multi-band EQ approach for dramatic effect
-                float gain = 1.0f;
-                
-                // Low frequencies (< 500 Hz) - slightly affected
-                if (freqHz < 500.0f) {
-                    if (formant < 0.5f) {
-                        // Boost lows when dark
-                        gain = 1.0f + (0.5f - formant) * 0.5f;  // Up to 1.25x
-                    } else {
-                        // Cut lows when bright
-                        gain = 1.0f - (formant - 0.5f) * 0.3f;  // Down to 0.85x
+                        shifted[FFT_SIZE - bin] = std::conj(shifted[bin]);
                     }
                 }
-                // Mid frequencies (500-2000 Hz) - moderately affected  
-                else if (freqHz < 2000.0f) {
-                    if (formant < 0.5f) {
-                        // Cut mids when dark
-                        gain = std::pow(10.0f, (formant - 0.5f) * 2.0f);  // Up to -20dB
-                    } else {
-                        // Boost mids when bright
-                        gain = 1.0f + (formant - 0.5f) * 4.0f;  // Up to +12dB
-                    }
-                }
-                // High frequencies (> 2000 Hz) - heavily affected
-                else {
-                    if (formant < 0.5f) {
-                        // Heavily cut highs when dark
-                        gain = std::pow(10.0f, (formant - 0.5f) * 6.0f);  // Up to -60dB!
-                    } else {
-                        // Heavily boost highs when bright
-                        gain = 1.0f + (formant - 0.5f) * 20.0f;  // Up to +26dB!
-                    }
-                }
-                
-                mag *= gain;
-            }
-            
-            // Create the shifted bin
-            shifted[bin] = std::polar(mag, phase);
-            
-            // Maintain Hermitian symmetry for real output
-            if (bin > 0 && bin < FFT_SIZE/2) {
-                shifted[FFT_SIZE - bin] = std::conj(shifted[bin]);
             }
         }
         
@@ -713,59 +528,21 @@ void PitchShifter::updateParameters(const std::map<int, float>& params) {
     for (const auto& [index, value] : params) {
         switch (index) {
             case kPitch: {
-                // Snap to musical intervals if close
-                float snappedValue = value;
-                
-                // Define snap points (musical intervals)
-                const float snapPoints[] = {
-                    0.250f,  // Octave down
-                    0.354f,  // Perfect 5th down
-                    0.396f,  // Perfect 4th down  
-                    0.417f,  // Major 3rd down
-                    0.438f,  // Minor 3rd down
-                    0.479f,  // Minor 2nd down
-                    0.500f,  // Unison
-                    0.521f,  // Minor 2nd up
-                    0.563f,  // Minor 3rd up
-                    0.583f,  // Major 3rd up
-                    0.604f,  // Perfect 4th up
-                    0.646f,  // Perfect 5th up
-                    0.750f   // Octave up
-                };
-                
-                // Find closest snap point
-                float minDistance = 1.0f;
-                for (float snapPoint : snapPoints) {
-                    float distance = std::abs(value - snapPoint);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        snappedValue = snapPoint;
-                    }
-                }
-                
-                // Store the snapped value for display
-                pimpl->snappedPitchValue.store(snappedValue);
-                
-                // Convert to semitones and ratio
-                float semitones = (snappedValue - 0.5f) * 48.0f;
+                // Convert 0-1 parameter to -24 to +24 semitones for musical intervals
+                // 0.0 = -24 semitones (2 octaves down)
+                // 0.5 = 0 semitones (unison)
+                // 1.0 = +24 semitones (2 octaves up)
+                float semitones = (value - 0.5f) * 48.0f;
                 float ratio = std::pow(2.0f, semitones / 12.0f);
-                
-                // Check if pitch actually changed
-                if (std::abs(ratio - pimpl->previousPitch) > 0.001f) {
-                    pimpl->previousPitch = ratio;
-                    pimpl->pitchChangeCounter = 0;  // Reset counter for crossfade
-                }
-                
-                // Set immediately without smoothing for pitch
-                pimpl->pitchRatio.setImmediate(ratio);
+                pimpl->pitchRatio.setTarget(ratio);
                 break;
             }
             case kFormant:  
-                // Formant/Brightness control
-                // 0.0 -> Very dark
-                // 0.5 -> Neutral  
-                // 1.0 -> Very bright
-                pimpl->formantShift.setTarget(value); 
+                // Fix formant mapping: 0.5 should map to 1.0 (no shift)
+                // 0.0 -> 0.5 (down one octave formant)
+                // 0.5 -> 1.0 (no shift)
+                // 1.0 -> 2.0 (up one octave formant)
+                pimpl->formantShift.setTarget(0.5f + value); 
                 break;
             case kMix:      pimpl->mixAmount.setTarget(value); break;
             case kWindow:   pimpl->windowWidth.setTarget(value); break;
@@ -788,16 +565,5 @@ juce::String PitchShifter::getParameterName(int index) const {
         case kFeedback: return "Feedback";
         case kWidth:    return "Width";
         default:        return "";
-    }
-}
-
-juce::String PitchShifter::getParameterText(int index, float /*value*/) const {
-    if (index == kPitch) {
-        // Return the actual snapped value with 3 decimal places
-        float snappedValue = pimpl->snappedPitchValue.load();
-        return juce::String(snappedValue, 3);  // 3 decimal places
-    } else {
-        // Other parameters show 2 decimal places
-        return "";  // Let default handle it
     }
 }

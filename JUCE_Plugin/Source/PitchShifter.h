@@ -33,6 +33,9 @@ public:
     juce::String getParameterName(int index) const override;
     juce::String getName() const override { return "Pitch Shifter"; }
     
+    // Get the actual snapped value for display (3 decimal places)
+    juce::String getParameterText(int index, float value) const;
+    
     // Parameter indices
     enum ParamIndex {
         kPitch = 0,
