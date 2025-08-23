@@ -268,15 +268,26 @@ void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
     for (auto& statePtr : pimpl->channelStates) {
         pimpl->initializeWindow(statePtr->window);
         
-        // Calculate window sum for proper normalization
-        for (int i = 0; i < FFT_SIZE; i += HOP_SIZE) {
-            pimpl->windowSum += statePtr->window[i];
+        // Calculate proper window sum for overlap-add normalization
+        // For Hann window with 75% overlap (4x), the overlapping windows should sum to ~1.5
+        pimpl->windowSum = 0.0f;
+        for (int offset = 0; offset < HOP_SIZE; ++offset) {
+            float sum = 0.0f;
+            for (int frame = 0; frame < OVERLAP; ++frame) {
+                int idx = offset + frame * HOP_SIZE;
+                if (idx < FFT_SIZE) {
+                    sum += statePtr->window[idx];
+                }
+            }
+            if (sum > pimpl->windowSum) {
+                pimpl->windowSum = sum; // Use peak overlap sum
+            }
         }
         
-        // Verify against analytical value
-        const float analyticalSum = 2.0f / OVERLAP;
-        if (std::abs(pimpl->windowSum - analyticalSum) > 0.01f) {
-            pimpl->windowSum = analyticalSum;
+        // For Hann window with 75% overlap, this should be ~1.5
+        // If calculation is off, use the theoretical value
+        if (pimpl->windowSum < 1.0f || pimpl->windowSum > 2.0f) {
+            pimpl->windowSum = 1.5f; // Theoretical value for Hann with 75% overlap
         }
         
         // Clear all buffers
@@ -287,7 +298,7 @@ void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
         
         statePtr->readPos = 0.0;
         statePtr->writePos = 0;
-        statePtr->outputWritePos = 0;
+        statePtr->outputWritePos = FFT_SIZE; // Start write ahead for proper latency
         statePtr->outputReadPos = 0;
         statePtr->hopCounter = 0;
         statePtr->isFrozen = false;
@@ -319,7 +330,7 @@ void PhasedVocoder::reset() {
         // Reset positions
         state.readPos = 0.0;
         state.writePos = 0;
-        state.outputWritePos = 0;
+        state.outputWritePos = FFT_SIZE; // Start write ahead for proper latency
         state.outputReadPos = 0;
         state.hopCounter = 0;
         
@@ -474,13 +485,14 @@ void PhasedVocoder::Impl::processFrame(ChannelState& state) noexcept {
 }
 
 void PhasedVocoder::Impl::analyzeFrame(ChannelState& state) noexcept {
-    // Copy to FFT buffer
+    // Copy to FFT buffer - JUCE expects interleaved real/imaginary format
     for (size_t i = 0; i < FFT_SIZE; ++i) {
         state.fftBuffer[i] = std::complex<float>(state.grainBuffer[i], 0.0f);
     }
     
-    // Forward FFT
-    state.fft.perform(state.fftBuffer.data(), state.fftBuffer.data(), false);
+    // Forward FFT - JUCE performs unnormalized FFT
+    state.fft.perform(reinterpret_cast<float*>(state.fftBuffer.data()), 
+                     reinterpret_cast<float*>(state.fftBuffer.data()), false);
     
     // Extract magnitude and phase with improved precision
     const double binFreqHz = sampleRate / FFT_SIZE;
@@ -607,16 +619,25 @@ void PhasedVocoder::Impl::synthesizeFrame(ChannelState& state) noexcept {
         state.fftBuffer[bin] = std::polar(state.magnitude[bin], 
                                          static_cast<float>(state.phaseAccum[bin]));
         
-        // Hermitian symmetry
+        // Hermitian symmetry for real-valued output
         if (bin > 0 && bin < FFT_SIZE/2) {
             state.fftBuffer[FFT_SIZE - bin] = std::conj(state.fftBuffer[bin]);
         }
     }
     
-    // Inverse FFT
-    state.fft.perform(state.fftBuffer.data(), state.fftBuffer.data(), true);
+    // Ensure DC and Nyquist bins are real (no imaginary component)
+    state.fftBuffer[0] = std::complex<float>(state.fftBuffer[0].real(), 0.0f);
+    if (FFT_SIZE % 2 == 0) {
+        state.fftBuffer[FFT_SIZE/2] = std::complex<float>(state.fftBuffer[FFT_SIZE/2].real(), 0.0f);
+    }
+    
+    // Inverse FFT - JUCE expects interleaved real/imaginary format
+    state.fft.perform(reinterpret_cast<float*>(state.fftBuffer.data()), 
+                     reinterpret_cast<float*>(state.fftBuffer.data()), true);
     
     // Overlap-add with proper scaling
+    // JUCE FFT is unnormalized, so we need to divide by FFT_SIZE for round-trip
+    // Also account for window overlap normalization
     const float scale = invFFTSize / windowSum;
     
 #ifdef __AVX2__
@@ -760,6 +781,58 @@ juce::String PhasedVocoder::getParameterName(int index) const {
         case ParamID::TransientAttack:   return "Attack";
         case ParamID::TransientRelease:  return "Release";
         default:                         return "";
+    }
+}
+
+juce::String PhasedVocoder::getParameterDisplayString(int index, float value) const {
+    switch (static_cast<ParamID>(index)) {
+        case ParamID::TimeStretch: {
+            // Time stretch from 0.25x to 4x
+            float stretch = 0.25f + value * 3.75f;
+            return juce::String(stretch, 2) + "x";
+        }
+        case ParamID::PitchShift: {
+            // Pitch shift from -24 to +24 semitones
+            float semitones = (value - 0.5f) * 48.0f;
+            if (std::abs(semitones) < 0.1f) return "0 st";
+            return juce::String(semitones, 1) + " st";
+        }
+        case ParamID::SpectralSmear: {
+            // Spectral smear 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case ParamID::TransientPreserve: {
+            // Transient preservation 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case ParamID::PhaseReset: {
+            // Phase reset 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case ParamID::SpectralGate: {
+            // Spectral gate threshold 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case ParamID::Mix: {
+            // Mix 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case ParamID::Freeze: {
+            // Freeze on/off
+            return value > 0.5f ? "ON" : "OFF";
+        }
+        case ParamID::TransientAttack: {
+            // Attack time 0.1-100ms
+            float ms = 0.1f + value * 99.9f;
+            return juce::String(ms, 1) + " ms";
+        }
+        case ParamID::TransientRelease: {
+            // Release time 1-500ms
+            float ms = 1.0f + value * 499.0f;
+            return juce::String(ms, 0) + " ms";
+        }
+        default:
+            return "";
     }
 }
 
