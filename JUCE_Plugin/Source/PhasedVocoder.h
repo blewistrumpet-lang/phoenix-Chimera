@@ -23,6 +23,7 @@ public:
     
     int getNumParameters() const override { return 10; } // Added attack/release
     juce::String getParameterName(int index) const override;
+    juce::String getParameterDisplayString(int index, float value) const;
     juce::String getName() const override;
     
     // Parameter IDs for type safety

@@ -9,6 +9,7 @@
 #include <atomic>
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 // Define ALWAYS_INLINE
 #ifndef ALWAYS_INLINE
@@ -183,39 +184,47 @@ struct PhasedVocoder::Impl {
     // Per-channel processing state
     struct alignas(32) ChannelState {
         // Pre-allocated circular buffers (no dynamic allocation)
-        static constexpr size_t BUFFER_SIZE = FFT_SIZE * MAX_STRETCH * 2;
+        static constexpr size_t BUFFER_SIZE = FFT_SIZE * 8;  // Larger for safety
         alignas(32) std::array<float, BUFFER_SIZE> inputBuffer{};
         alignas(32) std::array<float, BUFFER_SIZE> outputBuffer{};
+        alignas(32) std::array<float, BUFFER_SIZE> normBuffer{};  // NEW: normalization buffer
         alignas(32) std::array<float, FFT_SIZE> grainBuffer{};
         
-        // FFT workspace
-        alignas(32) std::array<std::complex<float>, FFT_SIZE> fftBuffer{};
+        // FFT workspace (JUCE uses interleaved real/imag format)
+        alignas(32) std::array<float, FFT_SIZE * 2> fftRI{};  // [Re0, Im0, Re1, Im1, ...]
+        alignas(32) std::array<float, FFT_SIZE * 2> savedRI{}; // For STFT identity test
         alignas(32) std::array<float, FFT_SIZE> window{};
         
         // Spectral data (double precision for phase accumulation)
         alignas(32) std::array<float, FFT_SIZE/2 + 1> magnitude{};
         alignas(32) std::array<double, FFT_SIZE/2 + 1> phase{};
         alignas(32) std::array<double, FFT_SIZE/2 + 1> lastPhase{};
-        alignas(32) std::array<double, FFT_SIZE/2 + 1> phaseAccum{};
-        alignas(32) std::array<float, FFT_SIZE/2 + 1> trueBinFreq{};
+        alignas(32) std::array<double, FFT_SIZE/2 + 1> instFreq{};  // instantaneous frequency
+        alignas(32) std::array<double, FFT_SIZE/2 + 1> synthPhase{};  // synthesis phase accumulator
+        bool firstFrame{true};  // Flag for first frame initialization
+        alignas(32) std::array<double, FFT_SIZE/2 + 1> omega{};  // bin frequencies
         
         // Freeze state
         alignas(32) std::array<float, FFT_SIZE/2 + 1> freezeMagnitude{};
         alignas(32) std::array<double, FFT_SIZE/2 + 1> freezePhase{};
         std::atomic<bool> isFrozen{false};
         
-        // Position tracking (double precision for sub-sample accuracy)
-        double readPos{0.0};
-        size_t writePos{0};
+        // Position tracking
+        size_t inputWritePos{0};
         size_t outputWritePos{0};
         size_t outputReadPos{0};
-        int hopCounter{0};
+        int accumulated{0};  // samples accumulated for next hop
+        int latency{FFT_SIZE};
+        size_t warmupSamples{0};  // Priming counter
         
         // Transient detection
         TransientDetector transientDetector;
         
         // Denormal flush counter
         int denormFlushCounter{0};
+        
+        // FFT scaling detection
+        float invIFFTRoundtrip{1.0f};  // 1 / (forward*inverse scale)
         
         // Crossfade state
         CrossfadeState freezeCrossfade;
@@ -293,14 +302,44 @@ void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
         // Clear all buffers
         std::fill(statePtr->inputBuffer.begin(), statePtr->inputBuffer.end(), 0.0f);
         std::fill(statePtr->outputBuffer.begin(), statePtr->outputBuffer.end(), 0.0f);
+        std::fill(statePtr->normBuffer.begin(), statePtr->normBuffer.end(), 0.0f);
         std::fill(statePtr->lastPhase.begin(), statePtr->lastPhase.end(), 0.0);
-        std::fill(statePtr->phaseAccum.begin(), statePtr->phaseAccum.end(), 0.0);
+        std::fill(statePtr->synthPhase.begin(), statePtr->synthPhase.end(), 0.0);
+        std::fill(statePtr->instFreq.begin(), statePtr->instFreq.end(), 0.0);
         
-        statePtr->readPos = 0.0;
-        statePtr->writePos = 0;
-        statePtr->outputWritePos = FFT_SIZE; // Start write ahead for proper latency
+        // Initialize omega (bin frequencies in radians/sample)
+        for (int k = 0; k <= FFT_SIZE/2; ++k) {
+            statePtr->omega[k] = 2.0 * M_PI * k / FFT_SIZE;
+        }
+        
+        
+        // Auto-detect FFT round-trip scaling
+        {
+            // Impulse in time domain -> FFT -> IFFT -> measure y[0]
+            std::vector<float> tmp(2 * FFT_SIZE, 0.0f);   // interleaved re/im
+            tmp[0] = 1.0f;                                 // x[0] = 1, others 0
+
+            statePtr->fft.perform(reinterpret_cast<std::complex<float>*>(tmp.data()),
+                                reinterpret_cast<std::complex<float>*>(tmp.data()), false);
+            statePtr->fft.perform(reinterpret_cast<std::complex<float>*>(tmp.data()),
+                                reinterpret_cast<std::complex<float>*>(tmp.data()), true);
+
+            // After a forward+inverse roundtrip on an impulse, tmp[0] equals the overall scale
+            const float roundtrip = tmp[0];
+            // Guard tiny/NaN
+            statePtr->invIFFTRoundtrip = (std::abs(roundtrip) > 1e-12f) ? (1.0f / roundtrip) : 1.0f;
+            
+        }
+        
+        // Initialize positions with proper write head offset
         statePtr->outputReadPos = 0;
-        statePtr->hopCounter = 0;
+        statePtr->latency = FFT_SIZE;  // safe lead
+        statePtr->outputWritePos = (statePtr->outputReadPos + statePtr->latency) % statePtr->outputBuffer.size();
+        statePtr->inputWritePos = 0;
+        statePtr->accumulated = 0;
+        statePtr->firstFrame = true;
+        statePtr->warmupSamples = statePtr->latency + FFT_SIZE;  // Conservative prime
+        
         statePtr->isFrozen = false;
         statePtr->denormFlushCounter = 0;
         
@@ -320,19 +359,37 @@ void PhasedVocoder::reset() {
         // Zero all audio buffers
         std::fill(state.inputBuffer.begin(), state.inputBuffer.end(), 0.0f);
         std::fill(state.outputBuffer.begin(), state.outputBuffer.end(), 0.0f);
+        std::fill(state.normBuffer.begin(), state.normBuffer.end(), 0.0f);
         std::fill(state.grainBuffer.begin(), state.grainBuffer.end(), 0.0f);
         
         // Reset phase accumulators
         std::fill(state.phase.begin(), state.phase.end(), 0.0);
         std::fill(state.lastPhase.begin(), state.lastPhase.end(), 0.0);
-        std::fill(state.phaseAccum.begin(), state.phaseAccum.end(), 0.0);
+        std::fill(state.synthPhase.begin(), state.synthPhase.end(), 0.0);
+        std::fill(state.instFreq.begin(), state.instFreq.end(), 0.0);
         
-        // Reset positions
-        state.readPos = 0.0;
-        state.writePos = 0;
-        state.outputWritePos = FFT_SIZE; // Start write ahead for proper latency
+        // Auto-detect FFT round-trip scaling
+        {
+            std::vector<float> tmp(2 * FFT_SIZE, 0.0f);
+            tmp[0] = 1.0f;
+            
+            state.fft.perform(reinterpret_cast<std::complex<float>*>(tmp.data()),
+                            reinterpret_cast<std::complex<float>*>(tmp.data()), false);
+            state.fft.perform(reinterpret_cast<std::complex<float>*>(tmp.data()),
+                            reinterpret_cast<std::complex<float>*>(tmp.data()), true);
+            
+            const float roundtrip = tmp[0];
+            state.invIFFTRoundtrip = (std::abs(roundtrip) > 1e-12f) ? (1.0f / roundtrip) : 1.0f;
+        }
+        
+        // Reset positions with proper write head offset
         state.outputReadPos = 0;
-        state.hopCounter = 0;
+        state.latency = FFT_SIZE;  // safe lead
+        state.outputWritePos = (state.outputReadPos + state.latency) % state.outputBuffer.size();
+        state.inputWritePos = 0;
+        state.accumulated = 0;
+        state.firstFrame = true;
+        state.warmupSamples = state.latency + FFT_SIZE;  // Conservative prime
         
         // Reset detection states
         state.transientDetector.reset();
@@ -358,6 +415,7 @@ void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
+    
     // Get smoothed parameters
     const float smoothMix = pimpl->mixSmoother->tick();
     const float freeze = pimpl->params.freeze.load(std::memory_order_relaxed);
@@ -367,20 +425,7 @@ void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {
         auto& state = *pimpl->channelStates[ch];
         float* channelData = buffer.getWritePointer(ch);
         
-        // Calculate RMS for silence detection
-        float rms = 0.0f;
-        for (int i = 0; i < numSamples; ++i) {
-            rms += channelData[i] * channelData[i];
-        }
-        rms = std::sqrt(rms / numSamples);
-        
-        // Fast path for silence
-        const bool isSilent = state.silenceDetector.process(rms);
-        if (isSilent && !shouldFreeze) {
-            // Just clear the output
-            std::fill(channelData, channelData + numSamples, 0.0f);
-            continue;
-        }
+        // REMOVED: Silence detection - it was killing valid audio
         
         // Update freeze state with crossfade
         bool wasFrozen = state.isFrozen.load(std::memory_order_relaxed);
@@ -394,26 +439,41 @@ void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {
             state.isFrozen.store(false, std::memory_order_relaxed);
         }
         
-        // Process samples
+        // Process samples with proper frame scheduling
         for (int i = 0; i < numSamples; ++i) {
-            // Store input sample
-            state.inputBuffer[state.writePos] = channelData[i];
-            state.writePos = wrapIndex(state.writePos + 1, state.inputBuffer.size());
+            // Store input sample in circular buffer
+            state.inputBuffer[state.inputWritePos] = channelData[i];
+            state.inputWritePos = (state.inputWritePos + 1) % state.inputBuffer.size();
             
-            // Process frame at hop boundary
-            if (++state.hopCounter >= HOP_SIZE) {
-                state.hopCounter = 0;
+            // Trigger every needed frame (use while loop for large blocks)
+            state.accumulated += 1;
+            while (state.accumulated >= HOP_SIZE) {
+                state.accumulated -= HOP_SIZE;
                 pimpl->processFrame(state);
             }
             
-            // Read output with mixing
-            float output = state.outputBuffer[state.outputReadPos];
-            state.outputBuffer[state.outputReadPos] = 0.0f;
-            state.outputReadPos = wrapIndex(state.outputReadPos + 1, state.outputBuffer.size());
+            // Read path: consume one sample, no latency math here
+            const size_t readIdx = state.outputReadPos;
+            float y = 0.0f;
             
-            // Apply mix with denormal prevention
-            channelData[i] = flushDenorm(channelData[i] * (1.0f - smoothMix) + 
-                                         output * smoothMix);
+            bool priming = state.warmupSamples > 0;
+            if (!priming) {
+                const float g = state.normBuffer[readIdx];
+                if (g > 1e-9f) {
+                    y = state.outputBuffer[readIdx] / g;
+                }
+                
+            } else {
+                --state.warmupSamples;
+            }
+            
+            // consume
+            state.outputBuffer[readIdx] = 0.0f;
+            state.normBuffer[readIdx] = 0.0f;
+            state.outputReadPos = (state.outputReadPos + 1) % state.outputBuffer.size();
+            
+            // mix
+            channelData[i] = flushDenorm(channelData[i] * (1.0f - smoothMix) + y * smoothMix);
         }
     }
     
@@ -427,52 +487,15 @@ void PhasedVocoder::Impl::processFrame(ChannelState& state) noexcept {
     const float smoothTimeStretch = timeStretchSmoother->tick();
     const float smoothPitchShift = pitchShiftSmoother->tick();
     
+    // Read analysis frame from the input buffer
+    // Frame ends at current write position minus one
+    const size_t frameEnd = (state.inputWritePos + state.inputBuffer.size() - 1) % state.inputBuffer.size();
+    const size_t frameStart = (frameEnd + state.inputBuffer.size() - FFT_SIZE + 1) % state.inputBuffer.size();
+    
     // Fill grain buffer with windowed input
-    const size_t readPosInt = static_cast<size_t>(state.readPos);
-    
-    // SIMD-optimized windowing
-#ifdef __AVX2__
-    for (size_t i = 0; i < FFT_SIZE; i += 8) {
-        size_t idx = readPosInt + i;
-        idx = wrapIndex(idx, state.inputBuffer.size());
-        __m256 input = _mm256_loadu_ps(&state.inputBuffer[idx]);
-        __m256 win = _mm256_load_ps(&state.window[i]);
-        __m256 result = _mm256_mul_ps(input, win);
-        _mm256_store_ps(&state.grainBuffer[i], result);
-    }
-#elif defined(__SSE2__)
-    for (size_t i = 0; i < FFT_SIZE; i += 4) {
-        size_t idx = readPosInt + i;
-        idx = wrapIndex(idx, state.inputBuffer.size());
-        __m128 input = _mm_loadu_ps(&state.inputBuffer[idx]);
-        __m128 win = _mm_load_ps(&state.window[i]);
-        __m128 result = _mm_mul_ps(input, win);
-        _mm_store_ps(&state.grainBuffer[i], result);
-    }
-#else
     for (size_t i = 0; i < FFT_SIZE; ++i) {
-        size_t idx = readPosInt + i;
-        idx = wrapIndex(idx, state.inputBuffer.size());
+        size_t idx = (frameStart + i) % state.inputBuffer.size();
         state.grainBuffer[i] = state.inputBuffer[idx] * state.window[i];
-    }
-#endif
-    
-    // Advance read position with time stretch
-    float hopAdvance = HOP_SIZE / std::max(0.25f, std::min(4.0f, smoothTimeStretch));
-    
-    // Transient preservation
-    const float transientAmount = state.transientDetector.process(
-        std::accumulate(state.magnitude.begin(), state.magnitude.end(), 0.0f));
-    
-    if (transientAmount > 0.0f) {
-        const float preserve = params.transientPreserve.load(std::memory_order_relaxed);
-        const float transientMod = 1.0f - (transientAmount * preserve * 0.9f);
-        hopAdvance = HOP_SIZE / (smoothTimeStretch * transientMod);
-    }
-    
-    state.readPos += hopAdvance;
-    if (state.readPos >= state.inputBuffer.size()) {
-        state.readPos -= state.inputBuffer.size();
     }
     
     // Process spectral data
@@ -485,43 +508,46 @@ void PhasedVocoder::Impl::processFrame(ChannelState& state) noexcept {
 }
 
 void PhasedVocoder::Impl::analyzeFrame(ChannelState& state) noexcept {
-    // Copy to FFT buffer - JUCE expects interleaved real/imaginary format
+    // Copy to FFT buffer in JUCE's interleaved format
     for (size_t i = 0; i < FFT_SIZE; ++i) {
-        state.fftBuffer[i] = std::complex<float>(state.grainBuffer[i], 0.0f);
+        state.fftRI[2*i] = state.grainBuffer[i];  // Real part
+        state.fftRI[2*i + 1] = 0.0f;              // Imaginary part
     }
     
-    // Forward FFT - JUCE performs unnormalized FFT
-    state.fft.perform(reinterpret_cast<float*>(state.fftBuffer.data()), 
-                     reinterpret_cast<float*>(state.fftBuffer.data()), false);
+    // Forward FFT (JUCE expects complex<float>* but we have interleaved floats)
+    state.fft.perform(reinterpret_cast<std::complex<float>*>(state.fftRI.data()), 
+                      reinterpret_cast<std::complex<float>*>(state.fftRI.data()), false);
     
-    // Extract magnitude and phase with improved precision
-    const double binFreqHz = sampleRate / FFT_SIZE;
-    const double expectedPhaseInc = TWO_PI_D * HOP_SIZE / FFT_SIZE;
+    // Save spectrum for STFT identity test
+    std::memcpy(state.savedRI.data(), state.fftRI.data(), sizeof(float) * 2 * FFT_SIZE);
     
-    for (size_t bin = 0; bin <= FFT_SIZE/2; ++bin) {
-        const float real = state.fftBuffer[bin].real();
-        const float imag = state.fftBuffer[bin].imag();
+    // Extract magnitude and phase with phase vocoder analysis
+    const double Ha = static_cast<double>(HOP_SIZE);
+    
+    for (size_t k = 0; k <= FFT_SIZE/2; ++k) {
+        const float real = state.fftRI[2*k];
+        const float imag = state.fftRI[2*k + 1];
         
-        // Magnitude with denormal prevention
-        state.magnitude[bin] = flushDenorm(std::sqrt(real * real + imag * imag));
+        // Magnitude
+        state.magnitude[k] = std::sqrt(real * real + imag * imag);
         
-        // Phase in double precision
-        state.phase[bin] = std::atan2(static_cast<double>(imag), 
-                                      static_cast<double>(real));
+        // Phase
+        const double currentPhase = std::atan2(static_cast<double>(imag), 
+                                              static_cast<double>(real));
+        state.phase[k] = currentPhase;
         
-        // Phase unwrapping
-        double phaseDiff = state.phase[bin] - state.lastPhase[bin];
-        state.lastPhase[bin] = state.phase[bin];
+        // Phase difference from last frame
+        const double omega_k = 2.0 * M_PI * static_cast<double>(k) / static_cast<double>(FFT_SIZE);
+        double delta = currentPhase - state.lastPhase[k] - omega_k * Ha;
         
-        // Wrap to [-π, π]
-        while (phaseDiff > PI_D) phaseDiff -= TWO_PI_D;
-        while (phaseDiff < -PI_D) phaseDiff += TWO_PI_D;
+        // Principal value in (-pi, pi] using std::remainder
+        delta = std::remainder(delta, 2.0 * M_PI);
         
-        // True frequency estimation
-        const double deviation = phaseDiff - expectedPhaseInc * bin;
-        const double trueFreq = binFreqHz * bin + 
-                               deviation * sampleRate / (TWO_PI_D * HOP_SIZE);
-        state.trueBinFreq[bin] = static_cast<float>(trueFreq);
+        // Instantaneous frequency (rad/sample)
+        state.instFreq[k] = omega_k + delta / Ha;
+        
+        // Update last phase for next frame
+        state.lastPhase[k] = currentPhase;
     }
 }
 
@@ -601,89 +627,109 @@ void PhasedVocoder::Impl::applySpectralProcessing(ChannelState& state) noexcept 
 }
 
 void PhasedVocoder::Impl::synthesizeFrame(ChannelState& state) noexcept {
+    const float timeStretch = timeStretchSmoother->tick();
     const float pitchShift = pitchShiftSmoother->tick();
     
-    // Phase accumulation and spectrum reconstruction
-    for (size_t bin = 0; bin <= FFT_SIZE/2; ++bin) {
-        // Pitch-shifted frequency
-        const double shiftedFreq = state.trueBinFreq[bin] * pitchShift;
-        
-        // Accumulate phase in double precision
-        state.phaseAccum[bin] += TWO_PI_D * shiftedFreq * HOP_SIZE / sampleRate;
-        
-        // Wrap phase to prevent unbounded growth
-        while (state.phaseAccum[bin] > PI_D) state.phaseAccum[bin] -= TWO_PI_D;
-        while (state.phaseAccum[bin] < -PI_D) state.phaseAccum[bin] += TWO_PI_D;
-        
-        // Reconstruct spectrum
-        state.fftBuffer[bin] = std::polar(state.magnitude[bin], 
-                                         static_cast<float>(state.phaseAccum[bin]));
-        
-        // Hermitian symmetry for real-valued output
-        if (bin > 0 && bin < FFT_SIZE/2) {
-            state.fftBuffer[FFT_SIZE - bin] = std::conj(state.fftBuffer[bin]);
+    // Calculate synthesis hop size (H_s) - must be integer rounded
+    const double Ha = static_cast<double>(HOP_SIZE);
+    const double Hs = static_cast<double>(std::round(HOP_SIZE * timeStretch));  // Use same Hs everywhere
+    
+    // Initialize synthesis phase on first frame
+    if (state.firstFrame) {
+        for (size_t k = 0; k <= FFT_SIZE/2; ++k) {
+            state.synthPhase[k] = state.phase[k];
+        }
+        state.firstFrame = false;
+    }
+    
+    // STFT identity bypass for testing
+#define IDENTITY_STFT 0  // Set to 1 to bypass PV processing
+#define ANALYSIS_PHASE_PASSTHROUGH 0  // Use analysis phase directly
+#define PHASE_LOCKING 1  // Enable phase locking for vertical coherence
+    
+#if IDENTITY_STFT
+    // Direct copy of analysis spectrum
+    std::memcpy(state.fftRI.data(), state.savedRI.data(), sizeof(float) * 2 * FFT_SIZE);
+#else
+#if ANALYSIS_PHASE_PASSTHROUGH
+    // Use analysis phase directly (no phase advance)
+    for (size_t k = 0; k <= FFT_SIZE/2; ++k) {
+        const float mag = state.magnitude[k];
+        const float ph = static_cast<float>(state.phase[k]);  // analysis phase
+        state.fftRI[2*k]     = mag * std::cos(ph);
+        state.fftRI[2*k + 1] = mag * std::sin(ph);
+    }
+#elif PHASE_LOCKING
+    // Phase locking: find dominant peak and lock all bins to it
+    int kPeak = 1;
+    float maxMag = 0.0f;
+    for (int k = 1; k < FFT_SIZE/2; ++k) {
+        if (state.magnitude[k] > maxMag) {
+            maxMag = state.magnitude[k];
+            kPeak = k;
         }
     }
     
-    // Ensure DC and Nyquist bins are real (no imaginary component)
-    state.fftBuffer[0] = std::complex<float>(state.fftBuffer[0].real(), 0.0f);
-    if (FFT_SIZE % 2 == 0) {
-        state.fftBuffer[FFT_SIZE/2] = std::complex<float>(state.fftBuffer[FFT_SIZE/2].real(), 0.0f);
-    }
+    // Advance ONLY the peak with PV
+    state.synthPhase[kPeak] += state.instFreq[kPeak] * Hs * pitchShift;
     
-    // Inverse FFT - JUCE expects interleaved real/imaginary format
-    state.fft.perform(reinterpret_cast<float*>(state.fftBuffer.data()), 
-                     reinterpret_cast<float*>(state.fftBuffer.data()), true);
+    // Lock all bins' phases to the peak's advanced phase, preserving intra-lobe offsets
+    const float phaseAnchor = static_cast<float>(state.synthPhase[kPeak]);
+    const float phasePeakNow = static_cast<float>(state.phase[kPeak]);
     
-    // Overlap-add with proper scaling
-    // JUCE FFT is unnormalized, so we need to divide by FFT_SIZE for round-trip
-    // Also account for window overlap normalization
-    const float scale = invFFTSize / windowSum;
-    
-#ifdef __AVX2__
-    const __m256 vScale = _mm256_set1_ps(scale);
-    for (size_t i = 0; i < FFT_SIZE; i += 8) {
-        size_t outIdx = state.outputWritePos + i;
-        outIdx = wrapIndex(outIdx, state.outputBuffer.size());
+    for (size_t k = 0; k <= FFT_SIZE/2; ++k) {
+        const float mag = state.magnitude[k];
+        // Relative phase from analysis spectrum
+        float rel = static_cast<float>(std::remainder(state.phase[k] - phasePeakNow, 2.0 * M_PI));
+        const float ph = phaseAnchor + rel;
         
-        __m256 fftReal = _mm256_set_ps(
-            state.fftBuffer[i+7].real(), state.fftBuffer[i+6].real(),
-            state.fftBuffer[i+5].real(), state.fftBuffer[i+4].real(),
-            state.fftBuffer[i+3].real(), state.fftBuffer[i+2].real(),
-            state.fftBuffer[i+1].real(), state.fftBuffer[i].real());
-        __m256 win = _mm256_load_ps(&state.window[i]);
-        __m256 result = _mm256_mul_ps(_mm256_mul_ps(fftReal, win), vScale);
-        
-        __m256 existing = _mm256_loadu_ps(&state.outputBuffer[outIdx]);
-        _mm256_storeu_ps(&state.outputBuffer[outIdx], _mm256_add_ps(existing, result));
-    }
-#elif defined(__SSE2__)
-    const __m128 vScale = _mm_set1_ps(scale);
-    for (size_t i = 0; i < FFT_SIZE; i += 4) {
-        size_t outIdx = state.outputWritePos + i;
-        outIdx = wrapIndex(outIdx, state.outputBuffer.size());
-        
-        __m128 fftReal = _mm_set_ps(state.fftBuffer[i+3].real(),
-                                    state.fftBuffer[i+2].real(),
-                                    state.fftBuffer[i+1].real(),
-                                    state.fftBuffer[i].real());
-        __m128 win = _mm_load_ps(&state.window[i]);
-        __m128 result = _mm_mul_ps(_mm_mul_ps(fftReal, win), vScale);
-        
-        __m128 existing = _mm_loadu_ps(&state.outputBuffer[outIdx]);
-        _mm_storeu_ps(&state.outputBuffer[outIdx], _mm_add_ps(existing, result));
+        state.fftRI[2*k]     = mag * std::cos(ph);
+        state.fftRI[2*k + 1] = mag * std::sin(ph);
     }
 #else
-    for (size_t i = 0; i < FFT_SIZE; ++i) {
-        size_t outIdx = state.outputWritePos + i;
-        outIdx = wrapIndex(outIdx, state.outputBuffer.size());
-        state.outputBuffer[outIdx] += state.fftBuffer[i].real() * 
-                                     state.window[i] * scale;
+    // Standard per-bin PV phase update
+    for (size_t k = 0; k <= FFT_SIZE/2; ++k) {
+        // Advance synthesis phase
+        state.synthPhase[k] += state.instFreq[k] * Hs * pitchShift;
+        
+        const float mag = state.magnitude[k];
+        const float ph = static_cast<float>(state.synthPhase[k]);
+        state.fftRI[2*k]     = mag * std::cos(ph);
+        state.fftRI[2*k + 1] = mag * std::sin(ph);
     }
 #endif
     
-    state.outputWritePos = wrapIndex(state.outputWritePos + HOP_SIZE, 
-                                    state.outputBuffer.size());
+    // mirror 1..N/2-1 into N-1..N/2+1
+    for (size_t k = 1; k < FFT_SIZE/2; ++k) {
+        state.fftRI[2*(FFT_SIZE - k)]     =  state.fftRI[2*k];       // real
+        state.fftRI[2*(FFT_SIZE - k) + 1] = -state.fftRI[2*k + 1];   // -imag
+    }
+    
+    // DC/Nyquist imag = 0
+    state.fftRI[1] = 0.0f;
+    state.fftRI[2*(FFT_SIZE/2) + 1] = 0.0f;
+#endif  // IDENTITY_STFT
+    
+    // IFFT on fftRI
+    state.fft.perform(reinterpret_cast<std::complex<float>*>(state.fftRI.data()),
+                      reinterpret_cast<std::complex<float>*>(state.fftRI.data()), true);
+    
+    // Scale exactly once according to runtime detection
+    const float postIFFTScale = state.invIFFTRoundtrip;   // replaces 1.0f / FFT_SIZE
+    
+    
+    // OLA (writer head) + normalizer
+    const size_t wBase = state.outputWritePos;
+    for (size_t i = 0; i < FFT_SIZE; ++i) {
+        const size_t idx = (wBase + i) % state.outputBuffer.size();
+        const float  w   = state.window[i];
+        const float  s   = state.fftRI[2*i] * postIFFTScale;  // real part
+        state.outputBuffer[idx] += s * w;
+        state.normBuffer[idx]   += w * w;
+    }
+    
+    // advance writer by synthesis hop (use the same Hs computed at top)
+    state.outputWritePos = (state.outputWritePos + static_cast<size_t>(Hs)) % state.outputBuffer.size();
 }
 
 void PhasedVocoder::Impl::initializeWindow(std::array<float, FFT_SIZE>& window) noexcept {
@@ -700,9 +746,9 @@ void PhasedVocoder::Impl::flushAllDenormals(ChannelState& state) noexcept {
         state.denormFlushCounter = 0;
         
         // Flush ALL feedback paths
-        for (auto& p : state.phaseAccum) p = flushDenorm(p);
+        for (auto& p : state.synthPhase) p = flushDenorm(p);
         for (auto& p : state.lastPhase) p = flushDenorm(p);
-        for (auto& f : state.trueBinFreq) f = flushDenorm(f);
+        for (auto& f : state.instFreq) f = flushDenorm(f);
         for (auto& m : state.magnitude) m = flushDenorm(m);
         
         // Also flush transient detector state
@@ -715,8 +761,14 @@ void PhasedVocoder::updateParameters(const std::map<int, float>& params) {
     for (const auto& [id, value] : params) {
         switch (static_cast<ParamID>(id)) {
             case ParamID::TimeStretch:
-                pimpl->params.timeStretch.store(0.25f + value * 3.75f, 
-                                               std::memory_order_relaxed);
+                // Map 0-1 to 0.25x-4x, with 0.2 giving exactly 1.0x
+                float stretch;
+                if (std::abs(value - 0.2f) < 0.01f) {
+                    stretch = 1.0f;  // Snap to 1x for pass-through
+                } else {
+                    stretch = 0.25f + value * 3.75f;
+                }
+                pimpl->params.timeStretch.store(stretch, std::memory_order_relaxed);
                 break;
             case ParamID::PitchShift:
                 pimpl->params.pitchShift.store(0.5f + value * 1.5f, 

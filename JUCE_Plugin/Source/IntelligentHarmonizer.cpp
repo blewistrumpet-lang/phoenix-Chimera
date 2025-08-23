@@ -1,56 +1,25 @@
-// IntelligentHarmonizer.cpp - Platinum-spec implementation
+// IntelligentHarmonizer using Signalsmith Stretch library
+// High-quality pitch shifting with MIT license
+
 #include "IntelligentHarmonizer.h"
-
+#include "IntelligentHarmonizerChords.h"
+#include "signalsmith-stretch.h"
 #include <algorithm>
-#include <array>
-#include <atomic>
 #include <cmath>
-#include <cstring>
-#include <vector>
+#include <memory>
+#include <atomic>
 #include <random>
-#include <chrono>
-
-// Platform-specific includes
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-    #include <immintrin.h>
-    #define HAS_SSE2 1
-#else
-    #define HAS_SSE2 0
-#endif
-
-// Platform-specific optimizations
-#ifdef _MSC_VER
-#define ALWAYS_INLINE __forceinline
-#elif defined(__GNUC__) || defined(__clang__)
-#define ALWAYS_INLINE __attribute__((always_inline)) inline
-#else
-#define ALWAYS_INLINE inline
-#endif
 
 namespace {
 
-// ==================== Denormal Prevention ====================
-struct DenormalGuard {
-    DenormalGuard() {
-#if HAS_SSE2
-        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-#endif
-    }
-} static denormGuard;
-
+// Utilities
 template<typename T>
-ALWAYS_INLINE T flushDenorm(T v) noexcept {
-#if HAS_SSE2
-    if constexpr (std::is_same_v<T, float>) {
-        return _mm_cvtss_f32(_mm_add_ss(_mm_set_ss(v), _mm_set_ss(0.0f)));
-    }
-#endif
+inline T flushDenorm(T v) noexcept {
     constexpr T tiny = static_cast<T>(1.0e-38);
     return std::fabs(v) < tiny ? static_cast<T>(0) : v;
 }
 
-// ==================== Lock-free Parameter Smoothing ====================
+// Parameter smoothing
 class SmoothedParam {
     std::atomic<float> target{0.0f};
     float current{0.0f};
@@ -59,733 +28,447 @@ class SmoothedParam {
 public:
     void setSmoothingTime(float timeMs, double sampleRate) noexcept {
         float samples = timeMs * 0.001f * sampleRate;
-        coeff = std::exp(-2.0f * static_cast<float>(M_PI) / samples);
+        coeff = std::exp(-1.0f / samples);
     }
     
-    void set(float v) noexcept { 
-        target.store(v, std::memory_order_relaxed); 
+    void set(float value) noexcept {
+        target.store(value, std::memory_order_relaxed);
     }
     
-    void snap(float v) noexcept { 
-        current = v;
-        target.store(v, std::memory_order_relaxed); 
+    void snap(float value) noexcept {
+        target.store(value, std::memory_order_relaxed);
+        current = value;
     }
     
-    ALWAYS_INLINE float tick() noexcept {
-        const float t = target.load(std::memory_order_relaxed);
-        current += (1.0f - coeff) * (t - current);
-        current = flushDenorm(current);
+    float tick() noexcept {
+        float t = target.load(std::memory_order_relaxed);
+        current = t + coeff * (current - t);
         return current;
     }
     
-    float get() const noexcept { 
-        return target.load(std::memory_order_relaxed); 
-    }
+    float get() const noexcept { return current; }
 };
 
-// ==================== High-Quality Biquad Filter ====================
-class PlatinumBiquad {
-    double a1{}, a2{}, b0{}, b1{}, b2{};
-    double x1{}, x2{}, y1{}, y2{};
-    
-public:
-    void reset() noexcept {
-        x1 = x2 = y1 = y2 = 0.0;
-    }
-    
-    void setCoefficients(double b0_, double b1_, double b2_,
-                        double a0_, double a1_, double a2_) noexcept {
-        const double norm = 1.0 / std::max(a0_, 1e-30);
-        b0 = b0_ * norm;
-        b1 = b1_ * norm;
-        b2 = b2_ * norm;
-        a1 = a1_ * norm;
-        a2 = a2_ * norm;
-    }
-    
-    void setLowpass(double freq, double q, double sampleRate) noexcept {
-        const double w = 2.0 * M_PI * freq / sampleRate;
-        const double cosw = std::cos(w);
-        const double sinw = std::sin(w);
-        const double alpha = sinw / (2.0 * q);
-        
-        const double b0_ = (1.0 - cosw) / 2.0;
-        const double b1_ = 1.0 - cosw;
-        const double b2_ = b0_;
-        const double a0_ = 1.0 + alpha;
-        const double a1_ = -2.0 * cosw;
-        const double a2_ = 1.0 - alpha;
-        
-        setCoefficients(b0_, b1_, b2_, a0_, a1_, a2_);
-    }
-    
-    // Transposed Direct Form II for better numerical stability
-    ALWAYS_INLINE float processTDF2(float x) noexcept {
-        const double y = b0 * x + x1;
-        x1 = b1 * x - a1 * y + x2;
-        x2 = b2 * x - a2 * y;
-        x1 = flushDenorm(x1);
-        x2 = flushDenorm(x2);
-        return static_cast<float>(y);
-    }
+// Scale definitions
+const std::vector<std::vector<int>> scales = {
+    {0, 2, 4, 5, 7, 9, 11},           // Major
+    {0, 2, 3, 5, 7, 8, 10},           // Natural Minor
+    {0, 2, 3, 5, 7, 8, 11},           // Harmonic Minor
+    {0, 2, 3, 5, 7, 9, 11},           // Melodic Minor
+    {0, 2, 3, 5, 7, 9, 10},           // Dorian
+    {0, 1, 3, 5, 7, 8, 10},           // Phrygian
+    {0, 2, 4, 6, 7, 9, 11},           // Lydian
+    {0, 2, 4, 5, 7, 9, 10},           // Mixolydian
+    {0, 1, 3, 5, 6, 8, 10},           // Locrian
+    {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11} // Chromatic
 };
 
-// ==================== DC Blocker ====================
-class DCBlocker {
-    double x1{0.0}, y1{0.0};
-    static constexpr double R = 0.995;
-    
-public:
-    void reset() noexcept { x1 = y1 = 0.0; }
-    
-    ALWAYS_INLINE float process(float input) noexcept {
-        double output = input - x1 + R * y1;
-        x1 = input;
-        y1 = flushDenorm(output);
-        return static_cast<float>(output);
+int quantizeToScale(int semitones, int scaleIndex, int /*key*/) {
+    if (scaleIndex < 0 || scaleIndex >= scales.size()) {
+        return semitones;
     }
-};
-
-// ==================== Polyphase Oversampling ====================
-class PolyphaseOversampler {
-    static constexpr int kMaxOversample = 8;
-    static constexpr int kFilterStages = 4;
     
-    int factor{1};
-    std::array<PlatinumBiquad, kFilterStages> upFilters;
-    std::array<PlatinumBiquad, kFilterStages> downFilters;
-    std::vector<float> workBuffer;
+    const auto& scale = scales[scaleIndex];
+    if (scale.empty() || scaleIndex == 9) { // Chromatic
+        return semitones;
+    }
     
-public:
-    void init(int oversampleFactor, double baseSampleRate, int maxBlockSize) {
-        factor = std::min(kMaxOversample, oversampleFactor);
-        workBuffer.resize(maxBlockSize * factor);
-        
-        if (factor > 1) {
-            const double cutoff = 0.45 * baseSampleRate; // 90% of Nyquist
-            const double oversampledRate = baseSampleRate * factor;
-            
-            // Cascaded Butterworth for steep rolloff
-            for (int i = 0; i < kFilterStages; ++i) {
-                const double q = 0.707 + i * 0.1; // Slightly increase Q for later stages
-                upFilters[i].setLowpass(cutoff, q, oversampledRate);
-                downFilters[i].setLowpass(cutoff, q, oversampledRate);
-            }
+    int octave = semitones / 12;
+    int chroma = ((semitones % 12) + 12) % 12;
+    
+    int minDist = 12;
+    int closest = chroma;
+    
+    for (int note : scale) {
+        int dist = std::abs(chroma - note);
+        if (dist < minDist) {
+            minDist = dist;
+            closest = note;
         }
     }
     
-    void reset() noexcept {
-        for (auto& filter : upFilters) filter.reset();
-        for (auto& filter : downFilters) filter.reset();
+    return octave * 12 + closest;
+}
+
+float intervalToRatio(int semitones) {
+    return std::pow(2.0f, semitones / 12.0f);
+}
+
+} // namespace
+
+// Implementation using Signalsmith Stretch
+class IntelligentHarmonizer::Impl {
+public:
+    // Signalsmith Stretch engine
+    signalsmith::stretch::SignalsmithStretch<float> stretcher_;
+    
+    // Parameters - Voice pitches
+    SmoothedParam pitchRatio1_;
+    SmoothedParam pitchRatio2_;
+    SmoothedParam pitchRatio3_;
+    
+    // Parameters - Voice volumes
+    SmoothedParam voice1Volume_;
+    SmoothedParam voice2Volume_;
+    SmoothedParam voice3Volume_;
+    
+    // Parameters - Voice formants
+    SmoothedParam voice1Formant_;
+    SmoothedParam voice2Formant_;
+    SmoothedParam voice3Formant_;
+    
+    // Parameters - Global
+    SmoothedParam masterMix_;
+    SmoothedParam humanize_;
+    SmoothedParam width_;
+    
+    // Settings
+    int numVoices_ = 3;  // Default to 3 voices for full chords
+    int chordIndex_ = 0;  // Major chord by default
+    int rootKey_ = 0;     // C by default
+    int scaleIndex_ = 9;  // Chromatic by default
+    int transposeOctaves_ = 0;
+    bool lowLatencyMode_ = true;  // Default to low-latency mode
+    
+    // Engine state
+    double sampleRate_ = 48000.0;
+    int blockSize_ = 512;
+    bool prepared_ = false;
+    
+    // Humanization
+    std::mt19937 rng_{std::random_device{}()};
+    std::uniform_real_distribution<float> pitchDist_{-0.02f, 0.02f};
+    std::uniform_real_distribution<float> timeDist_{0.0f, 0.001f};
+    
+    // Processing buffers
+    std::vector<float> inputBuffer_;
+    std::vector<float> outputBuffer_;
+    std::vector<float> delayBuffer_;
+    int delayWritePos_ = 0;
+    
+    void processLowLatency(const float* input, float* output, int numSamples) {
+        // Simple variable-speed playback for pitch shifting
+        // Zero latency but with artifacts
+        static float readPos1 = 0.0f;
+        static float readPos2 = 0.0f;
+        static float readPos3 = 0.0f;
+        const int bufferSize = 4096;
+        
+        if (delayBuffer_.size() != bufferSize) {
+            delayBuffer_.resize(bufferSize, 0.0f);
+        }
+        
+        // Get current parameters
+        float ratio1 = pitchRatio1_.tick();
+        float ratio2 = pitchRatio2_.tick();
+        float ratio3 = pitchRatio3_.tick();
+        
+        float vol1 = voice1Volume_.tick();
+        float vol2 = voice2Volume_.tick();
+        float vol3 = voice3Volume_.tick();
+        
+        float masterMix = masterMix_.tick();
+        float humanizeAmt = humanize_.tick();
+        
+        for (int i = 0; i < numSamples; ++i) {
+            // Write to circular buffer
+            delayBuffer_[delayWritePos_] = input[i];
+            delayWritePos_ = (delayWritePos_ + 1) % bufferSize;
+            
+            float wetSignal = 0.0f;
+            
+            // Voice 1
+            if (numVoices_ >= 1 && vol1 > 0.01f) {
+                // Add humanization
+                float pitchMod = 1.0f;
+                if (humanizeAmt > 0.01f) {
+                    pitchMod = 1.0f + (pitchDist_(rng_) * humanizeAmt);
+                }
+                
+                int readIdx = static_cast<int>(readPos1);
+                float frac = readPos1 - readIdx;
+                
+                int idx0 = readIdx % bufferSize;
+                int idx1 = (readIdx + 1) % bufferSize;
+                
+                float voice1 = delayBuffer_[idx0] * (1.0f - frac) + delayBuffer_[idx1] * frac;
+                wetSignal += voice1 * vol1;
+                
+                readPos1 += 1.0f / (ratio1 * pitchMod);
+                if (readPos1 >= bufferSize) readPos1 -= bufferSize;
+            }
+            
+            // Voice 2
+            if (numVoices_ >= 2 && vol2 > 0.01f) {
+                float pitchMod = 1.0f;
+                if (humanizeAmt > 0.01f) {
+                    pitchMod = 1.0f + (pitchDist_(rng_) * humanizeAmt * 0.7f);
+                }
+                
+                int readIdx = static_cast<int>(readPos2);
+                float frac = readPos2 - readIdx;
+                
+                int idx0 = readIdx % bufferSize;
+                int idx1 = (readIdx + 1) % bufferSize;
+                
+                float voice2 = delayBuffer_[idx0] * (1.0f - frac) + delayBuffer_[idx1] * frac;
+                wetSignal += voice2 * vol2;
+                
+                readPos2 += 1.0f / (ratio2 * pitchMod);
+                if (readPos2 >= bufferSize) readPos2 -= bufferSize;
+            }
+            
+            // Voice 3
+            if (numVoices_ >= 3 && vol3 > 0.01f) {
+                float pitchMod = 1.0f;
+                if (humanizeAmt > 0.01f) {
+                    pitchMod = 1.0f + (pitchDist_(rng_) * humanizeAmt * 0.5f);
+                }
+                
+                int readIdx = static_cast<int>(readPos3);
+                float frac = readPos3 - readIdx;
+                
+                int idx0 = readIdx % bufferSize;
+                int idx1 = (readIdx + 1) % bufferSize;
+                
+                float voice3 = delayBuffer_[idx0] * (1.0f - frac) + delayBuffer_[idx1] * frac;
+                wetSignal += voice3 * vol3;
+                
+                readPos3 += 1.0f / (ratio3 * pitchMod);
+                if (readPos3 >= bufferSize) readPos3 -= bufferSize;
+            }
+            
+            // Mix dry and wet
+            output[i] = input[i] * (1.0f - masterMix) + wetSignal * masterMix;
+        }
     }
     
-    int getFactor() const noexcept { return factor; }
+    void prepare(double sampleRate, int samplesPerBlock) {
+        sampleRate_ = sampleRate;
+        blockSize_ = samplesPerBlock;
+        
+        // Configure Signalsmith Stretch
+        // Using "cheaper" preset for lower latency
+        stretcher_.presetCheaper(1, (float)sampleRate);
+        stretcher_.reset();
+        
+        // Setup smoothing for all parameters
+        const float smoothTime = 10.0f;
+        
+        // Voice pitches
+        pitchRatio1_.setSmoothingTime(smoothTime, sampleRate);
+        pitchRatio2_.setSmoothingTime(smoothTime, sampleRate);
+        pitchRatio3_.setSmoothingTime(smoothTime, sampleRate);
+        
+        // Voice volumes
+        voice1Volume_.setSmoothingTime(smoothTime, sampleRate);
+        voice2Volume_.setSmoothingTime(smoothTime, sampleRate);
+        voice3Volume_.setSmoothingTime(smoothTime, sampleRate);
+        
+        // Voice formants
+        voice1Formant_.setSmoothingTime(smoothTime, sampleRate);
+        voice2Formant_.setSmoothingTime(smoothTime, sampleRate);
+        voice3Formant_.setSmoothingTime(smoothTime, sampleRate);
+        
+        // Global parameters
+        masterMix_.setSmoothingTime(smoothTime, sampleRate);
+        humanize_.setSmoothingTime(smoothTime, sampleRate);
+        width_.setSmoothingTime(smoothTime, sampleRate);
+        
+        // Initialize to defaults - Major chord (3rd, 5th, octave)
+        pitchRatio1_.snap(1.26f);   // Major 3rd (4 semitones)
+        pitchRatio2_.snap(1.5f);    // Fifth (7 semitones)
+        pitchRatio3_.snap(2.0f);    // Octave (12 semitones)
+        
+        voice1Volume_.snap(1.0f);
+        voice2Volume_.snap(0.7f);
+        voice3Volume_.snap(0.5f);
+        
+        voice1Formant_.snap(0.5f);  // No shift
+        voice2Formant_.snap(0.5f);
+        voice3Formant_.snap(0.5f);
+        
+        masterMix_.snap(1.0f);  // Default to 100% wet for testing
+        humanize_.snap(0.0f);
+        width_.snap(0.0f);
+        
+        // Allocate buffers
+        inputBuffer_.resize(blockSize_);
+        outputBuffer_.resize(blockSize_);
+        
+        prepared_ = true;
+    }
     
-    // Process with callback for oversampled processing
-    template<typename ProcessFunc>
-    void process(const float* input, float* output, int numSamples, ProcessFunc&& func) noexcept {
-        if (factor == 1) {
-            // No oversampling - direct processing
-            for (int i = 0; i < numSamples; ++i) {
-                output[i] = func(input[i]);
-            }
+    void processBlock(const float* input, float* output, int numSamples) {
+        if (!prepared_) {
+            std::copy(input, input + numSamples, output);
             return;
         }
         
-        // Upsample
-        for (int i = 0; i < numSamples; ++i) {
-            // Zero-stuff
-            for (int j = 0; j < factor; ++j) {
-                workBuffer[i * factor + j] = (j == 0) ? input[i] * factor : 0.0f;
-            }
+        // Get current mix level
+        float masterMix = masterMix_.tick();
+        
+        // Always process if we have any mix
+        if (masterMix < 0.001f) {
+            // Dry only
+            std::copy(input, input + numSamples, output);
+            return;
         }
         
-        // Filter upsampled signal
-        for (int i = 0; i < numSamples * factor; ++i) {
-            for (auto& filter : upFilters) {
-                workBuffer[i] = filter.processTDF2(workBuffer[i]);
-            }
-        }
-        
-        // Process at higher sample rate
-        for (int i = 0; i < numSamples * factor; ++i) {
-            workBuffer[i] = func(workBuffer[i]);
-        }
-        
-        // Filter before downsampling
-        for (int i = 0; i < numSamples * factor; ++i) {
-            for (auto& filter : downFilters) {
-                workBuffer[i] = filter.processTDF2(workBuffer[i]);
-            }
-        }
-        
-        // Downsample
-        for (int i = 0; i < numSamples; ++i) {
-            output[i] = workBuffer[i * factor];
-        }
-    }
-};
-
-// ==================== PSOLA Pitch Shifter ====================
-class PSOLAPitchShifter {
-    static constexpr int kBufferSize = 65536;  // Power of 2 for fast modulo
-    static constexpr int kBufferMask = kBufferSize - 1;
-    static constexpr int kMaxGrainSize = 4096;
-    static constexpr int kNumGrains = 4;
-    
-    // Circular buffer
-    std::array<float, kBufferSize> buffer;
-    int writePos{0};
-    
-    // Grain state
-    struct Grain {
-        float readPos{0.0f};
-        float phase{0.0f};
-        float amplitude{0.0f};
-        bool active{false};
-        int size{2048};
-    };
-    
-    std::array<Grain, kNumGrains> grains;
-    int grainCounter{0};
-    int nextGrain{0};
-    
-    // Pitch control
-    float currentRatio{1.0f};
-    SmoothedParam pitchSmoother;
-    
-    // Window function LUT (Hann)
-    std::array<float, kMaxGrainSize> windowLUT;
-    
-public:
-    void init(double sampleRate) {
-        buffer.fill(0.0f);
-        writePos = 0;
-        
-        // Initialize window LUT
-        for (int i = 0; i < kMaxGrainSize; ++i) {
-            float x = static_cast<float>(i) / (kMaxGrainSize - 1);
-            windowLUT[i] = 0.5f * (1.0f - std::cos(2.0f * M_PI * x));
-        }
-        
-        // Setup pitch smoother
-        pitchSmoother.setSmoothingTime(5.0f, sampleRate);
-        pitchSmoother.snap(1.0f);
-        
-        reset();
-    }
-    
-    void reset() noexcept {
-        for (auto& grain : grains) {
-            grain.active = false;
-            grain.phase = 0.0f;
-            grain.readPos = 0.0f;
-        }
-        grainCounter = 0;
-        nextGrain = 0;
-    }
-    
-    ALWAYS_INLINE float process(float input, float pitchRatio) noexcept {
-        // Write to circular buffer
-        buffer[writePos] = input;
-        writePos = (writePos + 1) & kBufferMask;
-        
-        // Smooth pitch changes
-        pitchSmoother.set(pitchRatio);
-        currentRatio = pitchSmoother.tick();
-        
-        // Adaptive grain scheduling based on pitch ratio
-        const int baseGrainSize = 2048;
-        const int grainHop = static_cast<int>(baseGrainSize / (4.0f * std::max(0.5f, std::min(2.0f, currentRatio))));
-        
-        if (++grainCounter >= grainHop) {
-            grainCounter = 0;
+        if (lowLatencyMode_) {
+            // Low-latency mode: Use the processLowLatency method
+            processLowLatency(input, output, numSamples);
+        } else {
+            // High-quality mode: Use Signalsmith Stretch for each voice
+            std::fill(output, output + numSamples, 0.0f);
             
-            // Activate next grain
-            auto& grain = grains[nextGrain];
-            grain.active = true;
-            grain.phase = 0.0f;
-            grain.size = baseGrainSize;
-            
-            // Position grain behind write head
-            int delay = grain.size * 2;
-            grain.readPos = static_cast<float>((writePos - delay + kBufferSize) & kBufferMask);
-            
-            nextGrain = (nextGrain + 1) % kNumGrains;
-        }
-        
-        // Mix active grains
-        float output = 0.0f;
-        int activeCount = 0;
-        
-        for (auto& grain : grains) {
-            if (!grain.active) continue;
-            
-            // Calculate window position
-            int windowIdx = static_cast<int>(grain.phase * (kMaxGrainSize - 1) / grain.size);
-            windowIdx = std::min(windowIdx, kMaxGrainSize - 1);
-            float window = windowLUT[windowIdx];
-            
-            // Windowed-sinc interpolation (4-tap)
-            int idx = static_cast<int>(grain.readPos) & kBufferMask;
-            float frac = grain.readPos - std::floor(grain.readPos);
-            
-            // 4-tap windowed sinc coefficients
-            float h0 = sincInterp(frac + 1.0f);
-            float h1 = sincInterp(frac);
-            float h2 = sincInterp(1.0f - frac);
-            float h3 = sincInterp(2.0f - frac);
-            
-            // Normalize coefficients
-            float sum = h0 + h1 + h2 + h3;
-            if (std::abs(sum) > 1e-6f) {
-                float norm = 1.0f / sum;
-                h0 *= norm; h1 *= norm; h2 *= norm; h3 *= norm;
-            }
-            
-            // Apply interpolation
-            float sample = buffer[(idx - 1) & kBufferMask] * h0 +
-                          buffer[idx & kBufferMask] * h1 +
-                          buffer[(idx + 1) & kBufferMask] * h2 +
-                          buffer[(idx + 2) & kBufferMask] * h3;
-            
-            sample = flushDenorm(sample * window);
-            output += sample;
-            activeCount++;
-            
-            // Update grain with denormal protection
-            grain.readPos = flushDenorm(grain.readPos + currentRatio);
-            grain.phase += 1.0f;
-            
-            if (grain.phase >= grain.size) {
-                grain.active = false;
-            }
-        }
-        
-        // Normalize output with denormal protection
-        if (activeCount > 0) {
-            output /= std::sqrt(static_cast<float>(activeCount));
-        }
-        
-        return flushDenorm(output);
-    }
-    
-private:
-    // Windowed sinc function for interpolation
-    ALWAYS_INLINE float sincInterp(float x) noexcept {
-        if (std::abs(x) < 1e-6f) return 1.0f;
-        float pix = M_PI * x;
-        float sinc = std::sin(pix) / pix;
-        // Blackman window
-        float w = 0.42f - 0.5f * std::cos(M_PI * (x + 2.0f) / 4.0f) + 
-                 0.08f * std::cos(2.0f * M_PI * (x + 2.0f) / 4.0f);
-        return sinc * w;
-    }
-};
-
-// ==================== Scale Quantizer ====================
-class ScaleQuantizer {
-    static constexpr int kScaleIntervals[10][12] = {
-        {0, 2, 4, 5, 7, 9, 11, -1, -1, -1, -1, -1}, // Major
-        {0, 2, 3, 5, 7, 8, 10, -1, -1, -1, -1, -1}, // Natural Minor
-        {0, 2, 3, 5, 7, 9, 10, -1, -1, -1, -1, -1}, // Dorian
-        {0, 2, 4, 5, 7, 9, 10, -1, -1, -1, -1, -1}, // Mixolydian
-        {0, 2, 3, 5, 7, 8, 11, -1, -1, -1, -1, -1}, // Harmonic Minor
-        {0, 2, 3, 5, 7, 9, 11, -1, -1, -1, -1, -1}, // Melodic Minor
-        {0, 2, 4, 7, 9, -1, -1, -1, -1, -1, -1, -1}, // Pentatonic Major
-        {0, 3, 5, 7, 10, -1, -1, -1, -1, -1, -1, -1}, // Pentatonic Minor
-        {0, 3, 5, 6, 7, 10, -1, -1, -1, -1, -1, -1}, // Blues
-        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}      // Chromatic
-    };
-    
-public:
-    static int quantize(int noteOffset, int scaleIndex, int rootKey) noexcept {
-        if (scaleIndex < 0 || scaleIndex >= 10) return flushDenorm(static_cast<float>(noteOffset));
-        
-        // Chromatic scale - no quantization
-        if (scaleIndex == 9) return flushDenorm(static_cast<float>(noteOffset));
-        
-        // Calculate absolute note
-        int absoluteNote = 60 + noteOffset;
-        
-        // Find position relative to root
-        int noteFromRoot = ((absoluteNote - rootKey) % 12 + 12) % 12;
-        
-        // Find closest scale degree
-        int closestDegree = 0;
-        int minDistance = 12;
-        
-        for (int i = 0; i < 12; ++i) {
-            if (kScaleIntervals[scaleIndex][i] == -1) break;
-            
-            int distance = std::abs(noteFromRoot - kScaleIntervals[scaleIndex][i]);
-            if (distance > 6) distance = 12 - distance; // Wrap around
-            
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestDegree = kScaleIntervals[scaleIndex][i];
-            }
-        }
-        
-        // Calculate quantized note
-        int octave = (absoluteNote - rootKey) / 12;
-        if (absoluteNote < rootKey && (absoluteNote - rootKey) % 12 != 0) {
-            octave--;
-        }
-        
-        int result = rootKey + octave * 12 + closestDegree - 60;
-        
-        // Apply denormal protection to the result
-        return static_cast<int>(flushDenorm(static_cast<float>(result)));
-    }
-};
-
-// ==================== Formant Shifter ====================
-class FormantShifter {
-    static constexpr int kNumFormants = 5;
-    std::array<PlatinumBiquad, kNumFormants> analysisFilters;
-    std::array<PlatinumBiquad, kNumFormants> synthesisFilters;
-    std::array<float, kNumFormants> formantFreqs{700, 1220, 2600, 3500, 4500};
-    std::array<float, kNumFormants> formantBandwidths{130, 170, 250, 350, 450};
-    
-public:
-    void init(double sampleRate) {
-        for (int i = 0; i < kNumFormants; ++i) {
-            // Use bandpass filters for better formant isolation
-            setBandpass(analysisFilters[i], formantFreqs[i], 
-                       formantFreqs[i] / formantBandwidths[i], sampleRate);
-            setBandpass(synthesisFilters[i], formantFreqs[i], 
-                       formantFreqs[i] / formantBandwidths[i], sampleRate);
-        }
-    }
-    
-    void reset() noexcept {
-        for (auto& filter : analysisFilters) filter.reset();
-        for (auto& filter : synthesisFilters) filter.reset();
-    }
-    
-    float process(float input, float shiftRatio, float amount) noexcept {
-        if (amount < 0.01f) return flushDenorm(input);
-        
-        // Extract formant magnitudes with bandpass filters
-        float formantSum = 0.0f;
-        std::array<float, kNumFormants> formantMags;
-        
-        for (int i = 0; i < kNumFormants; ++i) {
-            formantMags[i] = analysisFilters[i].processTDF2(input);
-            formantMags[i] = flushDenorm(formantMags[i]);
-            formantSum += std::abs(formantMags[i]);
-        }
-        
-        // Synthesize shifted formants
-        float shifted = 0.0f;
-        if (formantSum > 1e-6f) {
-            for (int i = 0; i < kNumFormants; ++i) {
-                // Shift formant frequency
-                float shiftedFreq = formantFreqs[i] * shiftRatio;
-                shiftedFreq = std::max(20.0f, std::min(20000.0f, shiftedFreq));
+            // Process each voice separately
+            for (int voice = 0; voice < numVoices_; ++voice) {
+                float ratio = 1.0f;
+                float volume = 0.0f;
                 
-                // Resynthesize at shifted frequency
-                float component = synthesisFilters[i].processTDF2(formantMags[i]);
-                shifted += flushDenorm(component);
-            }
-        }
-        
-        return flushDenorm(input * (1.0f - amount) + shifted * amount);
-    }
-    
-private:
-    void setBandpass(PlatinumBiquad& filter, double freq, double q, double sampleRate) noexcept {
-        const double w = 2.0 * M_PI * freq / sampleRate;
-        const double cosw = std::cos(w);
-        const double sinw = std::sin(w);
-        const double alpha = sinw / (2.0 * q);
-        
-        const double b0 = alpha;
-        const double b1 = 0.0;
-        const double b2 = -alpha;
-        const double a0 = 1.0 + alpha;
-        const double a1 = -2.0 * cosw;
-        const double a2 = 1.0 - alpha;
-        
-        filter.setCoefficients(b0, b1, b2, a0, a1, a2);
-    }
-};
-
-} // anonymous namespace
-
-// ==================== Main Implementation ====================
-struct IntelligentHarmonizer::Impl {
-    // Audio processing state
-    static constexpr int kMaxChannels = 2;
-    static constexpr int kMaxVoices = 4;
-    
-    struct ChannelState {
-        DCBlocker inputDC, outputDC;
-        std::array<PSOLAPitchShifter, kMaxVoices> pitchShifters;
-        std::array<FormantShifter, kMaxVoices> formantShifters;
-        PolyphaseOversampler oversampler;
-        PlatinumBiquad antiAliasFilter;
-        
-        void prepare(double sampleRate, int maxBlockSize, int oversampleFactor) {
-            inputDC.reset();
-            outputDC.reset();
-            
-            for (auto& shifter : pitchShifters) {
-                shifter.init(sampleRate * oversampleFactor);
-            }
-            
-            for (auto& formant : formantShifters) {
-                formant.init(sampleRate * oversampleFactor);
-            }
-            
-            oversampler.init(oversampleFactor, sampleRate, maxBlockSize);
-            antiAliasFilter.setLowpass(sampleRate * 0.45, 0.707, sampleRate);
-        }
-        
-        void reset() noexcept {
-            inputDC.reset();
-            outputDC.reset();
-            for (auto& shifter : pitchShifters) shifter.reset();
-            for (auto& formant : formantShifters) formant.reset();
-            oversampler.reset();
-            antiAliasFilter.reset();
-        }
-    };
-    
-    std::array<ChannelState, kMaxChannels> channels;
-    
-    // Parameters
-    SmoothedParam interval;      // -24 to +24 semitones
-    SmoothedParam key;          // Root note
-    SmoothedParam scale;        // Scale type
-    SmoothedParam voiceCount;   // 1-4 voices
-    SmoothedParam spread;       // Stereo spread
-    SmoothedParam humanize;     // Variation
-    SmoothedParam formant;      // Formant preservation
-    SmoothedParam mix;          // Dry/wet
-    
-    // Configuration
-    double sampleRate{48000.0};
-    int maxBlockSize{512};
-    int latencySamples{0};
-    
-    // Work buffers (pre-allocated)
-    std::vector<float> dryBuffer;
-    std::vector<float> wetBuffer;
-    std::vector<float> voiceBuffer;
-    
-    // Performance tracking
-    std::atomic<uint64_t> samplesProcessed{0};
-    std::atomic<bool> denormalsDetected{false};
-    std::chrono::high_resolution_clock::time_point lastProcessTime;
-    float cpuUsage{0.0f};
-    
-    // Humanization
-    std::mt19937 rng{std::random_device{}()};
-    std::normal_distribution<float> noise{0.0f, 1.0f};
-    std::array<float, kMaxVoices> vibratoPhases{};
-    
-    void prepare(double sr, int blockSize) {
-        sampleRate = sr;
-        maxBlockSize = blockSize;
-        
-        // Standard quality with 2x oversampling
-        int oversampleFactor = 2;
-        
-        // Calculate latency
-        latencySamples = oversampleFactor * 4; // Filter stages
-        
-        // Pre-allocate buffers with reserve (never resize in RT)
-        dryBuffer.reserve(blockSize);
-        wetBuffer.reserve(blockSize);
-        voiceBuffer.reserve(blockSize);
-        
-        // Ensure capacity without reallocation
-        dryBuffer.resize(blockSize);
-        wetBuffer.resize(blockSize);
-        voiceBuffer.resize(blockSize);
-        
-        // Setup parameter smoothing
-        interval.setSmoothingTime(10.0f, sr);
-        key.setSmoothingTime(50.0f, sr);
-        scale.setSmoothingTime(50.0f, sr);
-        voiceCount.setSmoothingTime(20.0f, sr);
-        spread.setSmoothingTime(30.0f, sr);
-        humanize.setSmoothingTime(30.0f, sr);
-        formant.setSmoothingTime(20.0f, sr);
-        mix.setSmoothingTime(20.0f, sr);
-        
-        // Initialize defaults
-        interval.snap(0.5f);     // Center = no shift
-        key.snap(0.0f);         // C
-        scale.snap(0.0f);       // Major
-        voiceCount.snap(0.25f); // 1 voice
-        spread.snap(0.3f);      // 30% spread
-        humanize.snap(0.0f);    // No humanization
-        formant.snap(0.0f);     // No formant
-        mix.snap(0.5f);         // 50% wet
-        
-        // Prepare channels
-        for (auto& channel : channels) {
-            channel.prepare(sr, blockSize, oversampleFactor);
-        }
-        
-        vibratoPhases.fill(0.0f);
-    }
-    
-    void processBlock(float* const* io, int numChannels, int numSamples) noexcept {
-        auto startTime = std::chrono::high_resolution_clock::now();
-        
-        // Ensure we have valid channels
-        numChannels = std::min(numChannels, kMaxChannels);
-        
-        // Update parameters once per block
-        const float intervalValue = interval.tick();
-        const float keyValue = key.tick();
-        const float scaleValue = scale.tick();
-        const float voiceValue = voiceCount.tick();
-        const float spreadValue = spread.tick();
-        const float humanizeValue = humanize.tick();
-        const float formantValue = formant.tick();
-        const float mixValue = mix.tick();
-        
-        // Calculate harmony settings
-        // Map interval parameter to discrete musical intervals for better usability
-        const int kMusicalIntervals[] = {
-            -12, // Octave down
-            -7,  // Perfect 5th down
-            -5,  // Perfect 4th down
-            -4,  // Major 3rd down
-            -3,  // Minor 3rd down
-            0,   // Unison (center position)
-            3,   // Minor 3rd up
-            4,   // Major 3rd up
-            5,   // Perfect 4th up
-            7,   // Perfect 5th up
-            12,  // Octave up
-            19   // Octave + 5th up
-        };
-        
-        // Quantize parameter to discrete interval index
-        int intervalIndex = static_cast<int>(intervalValue * 11.99f);
-        intervalIndex = std::min(intervalIndex, 11);
-        const int baseSemitones = kMusicalIntervals[intervalIndex];
-        
-        const int rootKey = static_cast<int>(keyValue * 12.0f) % 12;
-        const int scaleIndex = static_cast<int>(scaleValue * 10.0f);
-        const int activeVoices = 1 + static_cast<int>(voiceValue * 3.0f);
-        
-        // Process each channel
-        for (int ch = 0; ch < numChannels; ++ch) {
-            auto& channel = channels[ch];
-            float* data = io[ch];
-            
-            // Copy dry signal
-            std::copy(data, data + numSamples, dryBuffer.data());
-            
-            // Clear wet buffer
-            std::fill(wetBuffer.begin(), wetBuffer.begin() + numSamples, 0.0f);
-            
-            // Process each voice
-            for (int voice = 0; voice < activeVoices; ++voice) {
-                // Calculate voice interval
-                int voiceInterval = baseSemitones;
-                if (activeVoices > 1) {
-                    // Create harmony intervals
-                    switch (voice) {
-                        case 1: voiceInterval += (scaleIndex == 0) ? 4 : 3; break; // 3rd
-                        case 2: voiceInterval += 7; break; // 5th
-                        case 3: voiceInterval += (scaleIndex == 0) ? 11 : 10; break; // 7th
-                    }
+                switch (voice) {
+                    case 0:
+                        ratio = pitchRatio1_.tick();
+                        volume = voice1Volume_.tick();
+                        break;
+                    case 1:
+                        ratio = pitchRatio2_.tick();
+                        volume = voice2Volume_.tick();
+                        break;
+                    case 2:
+                        ratio = pitchRatio3_.tick();
+                        volume = voice3Volume_.tick();
+                        break;
                 }
                 
-                // Quantize to scale
-                voiceInterval = ScaleQuantizer::quantize(voiceInterval, scaleIndex, rootKey);
-                
-                // Clamp to safe range
-                voiceInterval = std::max(-36, std::min(36, voiceInterval));
-                
-                // Calculate pitch ratio
-                float pitchRatio = std::pow(2.0f, voiceInterval / 12.0f);
-                
-                // Add humanization
-                if (humanizeValue > 0.01f) {
-                    vibratoPhases[voice] += 2.0f * M_PI * 5.0f / sampleRate;
-                    if (vibratoPhases[voice] > 2.0f * M_PI) {
-                        vibratoPhases[voice] -= 2.0f * M_PI;
-                    }
-                    
-                    float vibrato = std::sin(vibratoPhases[voice]) * humanizeValue * 0.02f;
-                    float drift = noise(rng) * humanizeValue * 0.005f;
-                    pitchRatio *= std::pow(2.0f, (vibrato + drift) / 12.0f);
-                }
-                
-                // Process through pitch shifter with oversampling
-                auto& shifter = channel.pitchShifters[voice];
-                auto& formantShifter = channel.formantShifters[voice];
-                
-                channel.oversampler.process(
-                    dryBuffer.data(), 
-                    voiceBuffer.data(), 
-                    numSamples,
-                    [&](float sample) {
-                        float shifted = shifter.process(sample, pitchRatio);
-                        if (formantValue > 0.01f) {
-                            shifted = formantShifter.process(shifted, 1.0f / pitchRatio, formantValue);
+                if (volume > 0.01f) {
+                    if (std::fabs(ratio - 1.0f) > 0.001f) {
+                        // Pitched voice - use Signalsmith Stretch
+                        stretcher_.setTransposeFactor(ratio);
+                        
+                        // Process with Signalsmith Stretch into temp buffer
+                        std::vector<float> tempOutput(numSamples);
+                        const float* inputChannels[1] = { input };
+                        float* outputChannels[1] = { tempOutput.data() };
+                        stretcher_.process(inputChannels, numSamples, outputChannels, numSamples);
+                        
+                        // Add to output with volume scaling
+                        for (int i = 0; i < numSamples; ++i) {
+                            output[i] += tempOutput[i] * volume;
                         }
-                        return shifted;
+                    } else {
+                        // Unison voice (ratio = 1.0), just add with volume
+                        for (int i = 0; i < numSamples; ++i) {
+                            output[i] += input[i] * volume;
+                        }
                     }
-                );
-                
-                // Calculate stereo spread
-                float pan = 0.0f;
-                if (numChannels == 2 && activeVoices > 1) {
-                    pan = (voice - (activeVoices - 1) * 0.5f) / std::max(1.0f, activeVoices - 1.0f);
-                    pan *= spreadValue;
-                }
-                
-                // Apply panning
-                float gain = 1.0f;
-                if (ch == 0) {
-                    gain = std::cos((pan + 1.0f) * 0.25f * M_PI);
-                } else {
-                    gain = std::sin((pan + 1.0f) * 0.25f * M_PI);
-                }
-                
-                // Mix voice into wet buffer
-                for (int i = 0; i < numSamples; ++i) {
-                    wetBuffer[i] += voiceBuffer[i] * gain / std::sqrt(static_cast<float>(activeVoices));
                 }
             }
             
-            // Apply DC blocking and anti-aliasing
+            // Apply master mix
             for (int i = 0; i < numSamples; ++i) {
-                wetBuffer[i] = channel.outputDC.process(wetBuffer[i]);
-                wetBuffer[i] = channel.antiAliasFilter.processTDF2(wetBuffer[i]);
-                
-                // Mix dry/wet
-                data[i] = dryBuffer[i] * (1.0f - mixValue) + wetBuffer[i] * mixValue;
-                
-                // Final denormal check
-                data[i] = flushDenorm(data[i]);
+                output[i] = input[i] * (1.0f - masterMix) + output[i] * masterMix;
             }
         }
         
-        // Update statistics
-        samplesProcessed.fetch_add(numSamples, std::memory_order_relaxed);
-        
-        // Calculate CPU usage
-        auto endTime = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-        float blockTimeMs = numSamples * 1000.0f / sampleRate;
-        cpuUsage = duration.count() / (blockTimeMs * 1000.0f);
+        // Gentle limiting
+        for (int i = 0; i < numSamples; ++i) {
+            float x = output[i];
+            if (std::fabs(x) > 0.95f) {
+                float sign = (x > 0) ? 1.0f : -1.0f;
+                x = sign * 0.95f;
+            }
+            output[i] = flushDenorm(x);
+        }
+    }
+    
+    void reset() {
+        stretcher_.reset();
+        inputBuffer_.clear();
+        outputBuffer_.clear();
+        delayBuffer_.clear();
+        delayWritePos_ = 0;
+    }
+    
+    void setPitchRatio(float ratio) { 
+        pitchRatio1_.set(ratio); 
+    }
+    
+    void setPitchRatio2(float ratio) { 
+        pitchRatio2_.set(ratio); 
+    }
+    
+    void setPitchRatio3(float ratio) { 
+        pitchRatio3_.set(ratio); 
+    }
+    
+    void setMasterMix(float m) { 
+        masterMix_.set(m); 
+    }
+    
+    void setVoice1Volume(float v) { 
+        voice1Volume_.set(v); 
+    }
+    
+    void setVoice2Volume(float v) { 
+        voice2Volume_.set(v); 
+    }
+    
+    void setVoice3Volume(float v) { 
+        voice3Volume_.set(v); 
+    }
+    
+    void setHumanize(float h) { 
+        humanize_.set(h); 
+    }
+    
+    void setPitchRatio1(float ratio) { 
+        pitchRatio1_.set(ratio); 
+    }
+    
+    void setVoice1Formant(float f) { 
+        voice1Formant_.set(f); 
+    }
+    
+    void setVoice2Formant(float f) { 
+        voice2Formant_.set(f); 
+    }
+    
+    void setVoice3Formant(float f) { 
+        voice3Formant_.set(f); 
+    }
+    
+    void setWidth(float w) { 
+        width_.set(w); 
+    }
+    
+    void setScaleIndex(int idx) { 
+        scaleIndex_ = idx; 
+    }
+    
+    void snapParameters(float ratio, float m) {
+        pitchRatio1_.snap(ratio);
+        masterMix_.snap(m);
+    }
+    
+    int getLatencySamples() const {
+        if (lowLatencyMode_) {
+            return 0;  // Zero latency in low-latency mode
+        }
+        if (prepared_) {
+            return stretcher_.inputLatency() + stretcher_.outputLatency();
+        }
+        return 0;
+    }
+    
+    void setLowLatencyMode(bool enable) {
+        lowLatencyMode_ = enable;
     }
 };
 
-// ==================== Public Interface ====================
+// Public interface
 IntelligentHarmonizer::IntelligentHarmonizer() : pimpl(std::make_unique<Impl>()) {}
-
 IntelligentHarmonizer::~IntelligentHarmonizer() = default;
 
 void IntelligentHarmonizer::prepareToPlay(double sampleRate, int samplesPerBlock) {
@@ -793,42 +476,222 @@ void IntelligentHarmonizer::prepareToPlay(double sampleRate, int samplesPerBlock
 }
 
 void IntelligentHarmonizer::process(juce::AudioBuffer<float>& buffer) {
-    pimpl->processBlock(buffer.getArrayOfWritePointers(), 
-                       buffer.getNumChannels(), 
-                       buffer.getNumSamples());
-}
-
-void IntelligentHarmonizer::reset() {
-    for (auto& channel : pimpl->channels) {
-        channel.reset();
+    const int numChannels = buffer.getNumChannels();
+    const int numSamples = buffer.getNumSamples();
+    
+    if (numChannels == 0 || numSamples == 0) return;
+    
+    // Process first channel
+    const float* input = buffer.getReadPointer(0);
+    float* output = buffer.getWritePointer(0);
+    
+    pimpl->processBlock(input, output, numSamples);
+    
+    // Copy to other channels
+    for (int ch = 1; ch < numChannels; ++ch) {
+        buffer.copyFrom(ch, 0, output, numSamples);
     }
 }
 
+void IntelligentHarmonizer::reset() {
+    pimpl->reset();
+}
+
 void IntelligentHarmonizer::updateParameters(const std::map<int, float>& params) {
-    if (params.count(0)) pimpl->interval.set(params.at(0));
-    if (params.count(1)) pimpl->key.set(params.at(1));
-    if (params.count(2)) pimpl->scale.set(params.at(2));
-    if (params.count(3)) pimpl->voiceCount.set(params.at(3));
-    if (params.count(4)) pimpl->spread.set(params.at(4));
-    if (params.count(5)) pimpl->humanize.set(params.at(5));
-    if (params.count(6)) pimpl->formant.set(params.at(6));
-    if (params.count(7)) pimpl->mix.set(params.at(7));
+    // The plugin sends 15 parameters (indices 0-14) in normalized 0-1 range
+    // New chord-based parameter structure
+    
+    auto getParam = [&params](int index, float defaultValue) -> float {
+        auto it = params.find(index);
+        return it != params.end() ? it->second : defaultValue;
+    };
+    
+    // Parameter 0: Number of voices (1-3)
+    float voicesNorm = getParam(kVoices, 0.0f);
+    int numVoices = 1;
+    if (voicesNorm > 0.66f) {
+        numVoices = 3;
+    } else if (voicesNorm > 0.33f) {
+        numVoices = 2;
+    }
+    pimpl->numVoices_ = numVoices;
+    
+    // Parameter 1: Chord type (maps to chord presets)
+    float chordNorm = getParam(kChordType, 0.0f);
+    pimpl->chordIndex_ = IntelligentHarmonizerChords::getChordIndex(chordNorm);
+    
+    // Parameter 2: Root key (C-B)
+    float keyNorm = getParam(kRootKey, 0.0f);
+    pimpl->rootKey_ = IntelligentHarmonizerChords::getKeyIndex(keyNorm);
+    
+    // Parameter 3: Scale type (0-9)
+    float scaleNorm = getParam(kScale, 0.0f);
+    int scaleIndex = IntelligentHarmonizerChords::getScaleIndex(scaleNorm);
+    pimpl->setScaleIndex(scaleIndex);
+    
+    // Parameter 4: Master Mix (dry/wet)
+    float masterMixNorm = getParam(kMasterMix, 0.5f);
+    pimpl->setMasterMix(masterMixNorm);
+    
+    // Parameter 5: Voice 1 Volume
+    float voice1VolNorm = getParam(kVoice1Volume, 1.0f);
+    pimpl->setVoice1Volume(voice1VolNorm);
+    
+    // Parameter 6: Voice 1 Formant
+    float voice1FormantNorm = getParam(kVoice1Formant, 0.5f);
+    pimpl->setVoice1Formant(voice1FormantNorm);
+    
+    // Parameter 7: Voice 2 Volume
+    float voice2VolNorm = getParam(kVoice2Volume, 0.7f);
+    pimpl->setVoice2Volume(voice2VolNorm);
+    
+    // Parameter 8: Voice 2 Formant
+    float voice2FormantNorm = getParam(kVoice2Formant, 0.5f);
+    pimpl->setVoice2Formant(voice2FormantNorm);
+    
+    // Parameter 9: Voice 3 Volume
+    float voice3VolNorm = getParam(kVoice3Volume, 0.5f);
+    pimpl->setVoice3Volume(voice3VolNorm);
+    
+    // Parameter 10: Voice 3 Formant
+    float voice3FormantNorm = getParam(kVoice3Formant, 0.5f);
+    pimpl->setVoice3Formant(voice3FormantNorm);
+    
+    // Parameter 11: Quality mode (0 = low latency, 1 = high quality)
+    float qualityNorm = getParam(kQuality, 0.0f);
+    pimpl->setLowLatencyMode(qualityNorm < 0.5f);
+    
+    // Parameter 12: Humanize amount
+    float humanizeNorm = getParam(kHumanize, 0.0f);
+    pimpl->setHumanize(humanizeNorm);
+    
+    // Parameter 13: Stereo width
+    float widthNorm = getParam(kWidth, 0.0f);
+    pimpl->setWidth(widthNorm);
+    
+    // Parameter 14: Global transpose (snap to octaves)
+    float transposeNorm = getParam(kTranspose, 0.5f);  // 0.5 = no transpose
+    int transposeOctaves = 0;
+    if (transposeNorm < 0.2f) {
+        transposeOctaves = -2;  // -2 octaves
+    } else if (transposeNorm < 0.4f) {
+        transposeOctaves = -1;  // -1 octave
+    } else if (transposeNorm > 0.8f) {
+        transposeOctaves = 2;   // +2 octaves
+    } else if (transposeNorm > 0.6f) {
+        transposeOctaves = 1;   // +1 octave
+    }
+    pimpl->transposeOctaves_ = transposeOctaves;
+    
+    // Calculate chord-based pitch ratios
+    // Get chord intervals from the chord presets
+    float chordNormalized = getParam(kChordType, 0.0f);
+    auto chordIntervals = IntelligentHarmonizerChords::getChordIntervals(chordNormalized);
+    
+    // Apply scale quantization if not chromatic
+    if (pimpl->scaleIndex_ != 9) { // Not chromatic
+        for (int i = 0; i < 3; ++i) {
+            chordIntervals[i] = IntelligentHarmonizerChords::quantizeToScale(
+                chordIntervals[i], pimpl->scaleIndex_, pimpl->rootKey_
+            );
+        }
+    } else {
+        // Apply root key transposition for chromatic mode
+        for (int i = 0; i < 3; ++i) {
+            chordIntervals[i] += pimpl->rootKey_;
+        }
+    }
+    
+    // Apply global transpose (in octaves)
+    int transposeOctavesInSemitones = pimpl->transposeOctaves_ * 12;
+    for (int i = 0; i < 3; ++i) {
+        chordIntervals[i] += transposeOctavesInSemitones;
+    }
+    
+    // Convert intervals to pitch ratios and set them
+    pimpl->setPitchRatio(intervalToRatio(chordIntervals[0]));    // Voice 1
+    pimpl->setPitchRatio2(intervalToRatio(chordIntervals[1]));   // Voice 2  
+    pimpl->setPitchRatio3(intervalToRatio(chordIntervals[2]));   // Voice 3
+}
+
+void IntelligentHarmonizer::snapParameters(const std::map<int, float>& params) {
+    float ratio = 1.0f;
+    float mix = 0.5f;
+    
+    for (const auto& [paramId, value] : params) {
+        if (paramId == kMasterMix) {
+            mix = value;
+        }
+        // For chord-based system, we'll snap to the root ratio
+        // The chord intervals will be calculated from the chord type
+    }
+    
+    pimpl->snapParameters(ratio, mix);
 }
 
 juce::String IntelligentHarmonizer::getParameterName(int index) const {
     switch (index) {
-        case 0: return "Interval";
-        case 1: return "Key";
-        case 2: return "Scale";
-        case 3: return "Voices";
-        case 4: return "Spread";
-        case 5: return "Humanize";
-        case 6: return "Formant";
-        case 7: return "Mix";
+        case kVoices: return "Voices";
+        case kChordType: return "Chord Type";
+        case kRootKey: return "Root Key";
+        case kScale: return "Scale";
+        case kMasterMix: return "Master Mix";
+        case kVoice1Volume: return "Voice 1 Vol";
+        case kVoice1Formant: return "Voice 1 Formant";
+        case kVoice2Volume: return "Voice 2 Vol";
+        case kVoice2Formant: return "Voice 2 Formant";
+        case kVoice3Volume: return "Voice 3 Vol";
+        case kVoice3Formant: return "Voice 3 Formant";
+        case kQuality: return "Quality";
+        case kHumanize: return "Humanize";
+        case kWidth: return "Width";
+        case kTranspose: return "Transpose";
         default: return "";
     }
 }
 
+juce::String IntelligentHarmonizer::getParameterDisplayString(int index, float normalizedValue) const {
+    switch (index) {
+        case kVoices: // Number of voices
+            return juce::String(IntelligentHarmonizerChords::getVoiceCountDisplay(normalizedValue));
+            
+        case kChordType: // Chord type
+            return juce::String(IntelligentHarmonizerChords::getChordName(normalizedValue));
+            
+        case kRootKey: // Root key
+            return juce::String(IntelligentHarmonizerChords::getKeyName(normalizedValue));
+            
+        case kScale: // Scale type
+            return juce::String(IntelligentHarmonizerChords::getScaleName(normalizedValue));
+            
+        case kMasterMix: // Master mix
+        case kVoice1Volume: // Voice volumes
+        case kVoice2Volume:
+        case kVoice3Volume:
+            return juce::String(IntelligentHarmonizerChords::getVolumeDisplay(normalizedValue));
+            
+        case kVoice1Formant: // Formant shifts
+        case kVoice2Formant:
+        case kVoice3Formant:
+            return juce::String(IntelligentHarmonizerChords::getFormantDisplay(normalizedValue));
+            
+        case kQuality: // Quality mode
+            return juce::String(IntelligentHarmonizerChords::getQualityDisplay(normalizedValue));
+            
+        case kHumanize: // Humanize amount
+            return juce::String(IntelligentHarmonizerChords::getHumanizeDisplay(normalizedValue));
+            
+        case kWidth: // Stereo width
+            return juce::String(IntelligentHarmonizerChords::getWidthDisplay(normalizedValue));
+            
+        case kTranspose: // Global transpose
+            return juce::String(IntelligentHarmonizerChords::getTransposeDisplay(normalizedValue));
+            
+        default:
+            return juce::String(normalizedValue, 2);
+    }
+}
+
 int IntelligentHarmonizer::getLatencySamples() const noexcept {
-    return pimpl->latencySamples;
+    return pimpl->getLatencySamples();
 }

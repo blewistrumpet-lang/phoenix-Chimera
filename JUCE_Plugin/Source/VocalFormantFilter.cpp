@@ -466,3 +466,43 @@ juce::String VocalFormantFilter::getParameterName(int index) const {
         default:          return "";
     }
 }
+
+juce::String VocalFormantFilter::getParameterDisplayString(int index, float value) const {
+    switch (index) {
+        case kVowel1:
+        case kVowel2: {
+            // Map to vowel sounds
+            const char* vowels[] = {"A", "E", "I", "O", "U", "AH", "EE", "OO"};
+            int vowelIndex = static_cast<int>(value * 7.999f);
+            return juce::String(vowels[std::min(7, vowelIndex)]);
+        }
+        case kMorph: {
+            // Morph between vowels 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case kResonance: {
+            // Resonance 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case kBrightness: {
+            // Brightness -100% to +100%
+            float brightness = (value - 0.5f) * 200.0f;
+            return juce::String(static_cast<int>(brightness)) + "%";
+        }
+        case kModRate: {
+            // Modulation rate 0.1-10 Hz
+            float hz = 0.1f + value * 9.9f;
+            return juce::String(hz, 1) + " Hz";
+        }
+        case kModDepth: {
+            // Modulation depth 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case kMix: {
+            // Mix 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        default:
+            return "";
+    }
+}

@@ -316,3 +316,37 @@ juce::String FormantFilter::getParameterName(int index) const {
         default: return "";
     }
 }
+
+juce::String FormantFilter::getParameterDisplayString(int index, float value) const {
+    switch (index) {
+        case kVowelPosition: {
+            // Vowel position from A to U
+            const char* vowels[] = {"A", "E", "I", "O", "U"};
+            int vowelIndex = static_cast<int>(value * 4.999f);
+            return juce::String(vowels[std::min(4, vowelIndex)]);
+        }
+        case kFormantShift: {
+            // Shift from -100% to +100%
+            float shift = (value - 0.5f) * 200.0f;
+            return juce::String(static_cast<int>(shift)) + "%";
+        }
+        case kResonance: {
+            // Resonance 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case kMorph: {
+            // Morph 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case kDrive: {
+            // Drive 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case kMix: {
+            // Mix 0-100%
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        default:
+            return "";
+    }
+}

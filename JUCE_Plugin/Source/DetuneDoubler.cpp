@@ -177,9 +177,11 @@ void DetuneDoubler::processStereo(float* left, float* right, int numSamples) {
         float thickL = centerL + sideR * crossAmount + centerR * thickness * 0.3f;
         float thickR = centerR + sideL * crossAmount + centerL * thickness * 0.3f;
         
-        // Mix with dry signal
-        left[i] = dryL * (1.0f - mix) + thickL * mix * 0.7f;
-        right[i] = dryR * (1.0f - mix) + thickR * mix * 0.7f;
+        // Mix with dry signal - adjust gain based on detune amount
+        // Higher detune needs more gain compensation
+        float wetGain = 0.7f + detune * 0.4f; // Range from 0.7 to 1.1
+        left[i] = dryL * (1.0f - mix) + thickL * mix * wetGain;
+        right[i] = dryR * (1.0f - mix) + thickR * mix * wetGain;
         
         // Soft limiting
         left[i] = std::tanh(left[i] * 0.9f) * 1.1f;
@@ -212,6 +214,30 @@ juce::String DetuneDoubler::getParameterName(int index) const {
         case 3: return "Thickness";
         case 4: return "Mix";
         default: return "";
+    }
+}
+
+juce::String DetuneDoubler::getParameterDisplayString(int index, float value) const {
+    switch (index) {
+        case 0: { // Detune Amount (0-50 cents)
+            float cents = value * MAX_DETUNE_CENTS;
+            return juce::String(cents, 1) + " cents";
+        }
+        case 1: { // Delay Time (10-60 ms)
+            float ms = MIN_DELAY_MS + value * (MAX_DELAY_MS - MIN_DELAY_MS);
+            return juce::String(ms, 1) + " ms";
+        }
+        case 2: { // Stereo Width (0-100%)
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case 3: { // Thickness (0-100%)
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        case 4: { // Mix (0-100%)
+            return juce::String(static_cast<int>(value * 100)) + "%";
+        }
+        default:
+            return "";
     }
 }
 
