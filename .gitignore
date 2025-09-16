@@ -83,6 +83,27 @@ logs/
 *.dylib
 *.a
 *.lib
+*.o
+
+# Test executables (keep source files)
+test_*
+!test_*.cpp
+!test_*.h
+!test_*.py
+!test_*.sh
+
+# Backup and old files
+*_backup.*
+*_BACKUP.*
+*_old.*
+*_OLD.*
+*_Original.*
+*_original.*
+*_broken.*
+*_BROKEN.*
+*_temp.*
+*_TEMP.*
+*.orig
 
 # CMake
 CMakeCache.txt
