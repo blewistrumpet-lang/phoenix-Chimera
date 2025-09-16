@@ -93,7 +93,7 @@ namespace {
         }
         
         float process(float input) {
-            if (buffer.empty()) return input;
+            if (buffer.empty() || currentDelay == 0) return input;
             
             buffer[writePos] = input;
             
@@ -138,8 +138,14 @@ struct MasteringLimiter_Platinum::Impl {
     std::vector<DelayLine> delayLines;
     std::vector<float> lastGain;
     
-    // Simple peak detector for true peak approximation
+    // Predictive gain analysis for lookahead
+    std::vector<std::vector<float>> lookaheadAnalysis;
+    std::vector<int> analysisIndex;
+    
+    // Enhanced true-peak detection
     std::vector<float> peakHold;
+    std::vector<std::array<float, 4>> oversampleBuffer;  // 4x oversampling for true-peak
+    std::vector<int> oversampleIndex;
     
     // Initialization
     void prepare(double sr, int bs) {
@@ -152,9 +158,16 @@ struct MasteringLimiter_Platinum::Impl {
         delayLines.resize(numChannels);
         lastGain.resize(numChannels, 1.0f);
         peakHold.resize(numChannels, 0.0f);
+        oversampleBuffer.resize(numChannels);
+        oversampleIndex.resize(numChannels, 0);
         
-        // Calculate max lookahead samples
+        // Calculate max lookahead samples and initialize predictive analysis buffers
         int maxLookaheadSamples = (int)(kMaxLookaheadMs * 0.001 * sampleRate);
+        lookaheadAnalysis.resize(numChannels);
+        analysisIndex.resize(numChannels, 0);
+        for (int ch = 0; ch < numChannels; ++ch) {
+            lookaheadAnalysis[ch].resize(maxLookaheadSamples, 1.0f);
+        }
         
         for (int ch = 0; ch < numChannels; ++ch) {
             envelopes[ch].prepare(sampleRate);
@@ -169,6 +182,17 @@ struct MasteringLimiter_Platinum::Impl {
         for (auto& dl : delayLines) dl.reset();
         std::fill(lastGain.begin(), lastGain.end(), 1.0f);
         std::fill(peakHold.begin(), peakHold.end(), 0.0f);
+        
+        // Reset predictive analysis and oversampling buffers
+        for (auto& analysis : lookaheadAnalysis) {
+            std::fill(analysis.begin(), analysis.end(), 1.0f);
+        }
+        std::fill(analysisIndex.begin(), analysisIndex.end(), 0);
+        
+        for (auto& osBuffer : oversampleBuffer) {
+            osBuffer.fill(0.0f);
+        }
+        std::fill(oversampleIndex.begin(), oversampleIndex.end(), 0);
     }
     
     void processBlock(juce::AudioBuffer<float>& buffer) {
@@ -179,6 +203,11 @@ struct MasteringLimiter_Platinum::Impl {
         const int numSamples = buffer.getNumSamples();
         
         if (numChannels == 0 || numSamples == 0) return;
+        
+        // Early bypass when mix=0
+        if (mix < 0.001f) {
+            return; // Pass through unprocessed
+        }
         
         // Calculate lookahead delay
         const int lookaheadSamples = clamp((int)(lookahead * 0.001 * sampleRate), 0, 
@@ -195,18 +224,41 @@ struct MasteringLimiter_Platinum::Impl {
         const float makeupGain = dBToGain(makeup);
         const float kneeWidth = knee * 0.5f; // Half knee on each side
         
-        // Process each sample
+        // Debug every 1000th block
+        static int blockCount = 0;
+        if (blockCount++ % 1000 == 0) {
+            printf("Process: threshold=%.1fdB (gain=%.3f), ceiling=%.1fdB, makeup=%.1fdB, mix=%.2f\n",
+                   threshold, thresholdGain, ceiling, makeup, mix);
+        }
+        
+        // First pass: fill predictive analysis buffer
         for (int i = 0; i < numSamples; ++i) {
             // Peak detection across channels
             float peak = 0.0f;
             for (int ch = 0; ch < numChannels; ++ch) {
                 float sample = buffer.getReadPointer(ch)[i];
                 
-                // True peak approximation (simple oversampled peak hold)
-                if (truePeakMode > 0.5f) {
-                    peakHold[ch] = std::max(peakHold[ch] * 0.9999f, std::fabs(sample));
+                // Enhanced true peak detection with 4x oversampling
+                if (truePeakMode > 0.5f && ch < (int)oversampleBuffer.size()) {
+                    // Store current sample in oversampling buffer
+                    oversampleBuffer[ch][oversampleIndex[ch]] = sample;
+                    oversampleIndex[ch] = (oversampleIndex[ch] + 1) % 4;
+                    
+                    // Simple linear interpolation for 4x oversampling
+                    float maxOversampledPeak = std::fabs(sample);
+                    for (int j = 0; j < 3; ++j) {
+                        int idx1 = oversampleIndex[ch];
+                        int idx2 = (oversampleIndex[ch] + 3) % 4;  // Previous sample
+                        float interpSample = oversampleBuffer[ch][idx2] + 
+                                           (oversampleBuffer[ch][idx1] - oversampleBuffer[ch][idx2]) * (j + 1) / 4.0f;
+                        maxOversampledPeak = std::max(maxOversampledPeak, std::fabs(interpSample));
+                    }
+                    
+                    // Update peak hold with oversampled peak
+                    peakHold[ch] = std::max(peakHold[ch] * 0.9999f, maxOversampledPeak);
                     peak = std::max(peak, peakHold[ch]);
                 } else {
+                    // Standard peak detection
                     peak = std::max(peak, std::fabs(sample));
                 }
             }
@@ -218,36 +270,52 @@ struct MasteringLimiter_Platinum::Impl {
                 // For simplicity, we'll just use the peak as-is
             }
             
-            // Calculate gain reduction with soft knee
+            // True limiting with infinite ratio and proper gain reduction calculation
             float gainReduction = 1.0f;
             
-            if (linkedPeak > thresholdGain - kneeWidth) {
-                float kneeStart = thresholdGain - kneeWidth;
-                float kneeEnd = thresholdGain + kneeWidth;
+            if (linkedPeak > thresholdGain) {
+                // True limiting: infinite ratio above threshold
+                gainReduction = thresholdGain / linkedPeak;
                 
-                if (linkedPeak < kneeEnd) {
-                    // Soft knee region - quadratic interpolation
-                    float kneePos = (linkedPeak - kneeStart) / (2.0f * kneeWidth);
-                    kneePos = clamp(kneePos, 0.0f, 1.0f);
-                    float softRatio = kneePos * kneePos; // Quadratic curve
-                    
-                    float excessDb = gainTodB(linkedPeak) - threshold;
-                    float reductionDb = excessDb * softRatio;
-                    gainReduction = dBToGain(-reductionDb);
-                } else {
-                    // Above knee - full limiting
-                    float excessDb = gainTodB(linkedPeak) - threshold;
-                    gainReduction = thresholdGain / linkedPeak;
+                // Debug first sample that's limited
+                static bool debugged = false;
+                if (!debugged && i == 0) {
+                    printf("  Limiting: peak=%.3f > threshold=%.3f, gainReduction=%.3f\n",
+                           linkedPeak, thresholdGain, gainReduction);
+                    debugged = true;
                 }
                 
-                // Apply ceiling
-                float outputLevel = linkedPeak * gainReduction;
-                if (outputLevel > ceilingGain) {
-                    gainReduction *= ceilingGain / outputLevel;
+                // Apply soft knee only below threshold
+                if (linkedPeak > thresholdGain - kneeWidth && kneeWidth > 0.0f) {
+                    float kneeStart = thresholdGain - kneeWidth;
+                    if (linkedPeak > kneeStart) {
+                        // Soft knee region - smooth transition to limiting
+                        float kneePosition = (linkedPeak - kneeStart) / kneeWidth;
+                        kneePosition = clamp(kneePosition, 0.0f, 1.0f);
+                        
+                        // Quadratic curve for smooth knee
+                        float kneeGainReduction = thresholdGain / linkedPeak;
+                        float linearGain = 1.0f;
+                        float kneeFactor = kneePosition * kneePosition;
+                        gainReduction = linearGain * (1.0f - kneeFactor) + kneeGainReduction * kneeFactor;
+                    }
+                }
+                
+                // Hard ceiling enforcement - never exceed ceiling regardless of threshold
+                if (linkedPeak * gainReduction > ceilingGain) {
+                    gainReduction = ceilingGain / linkedPeak;
                 }
             }
             
             gainReduction = clamp(gainReduction, 0.001f, 1.0f);
+            
+            // Store gain reduction in predictive analysis buffer for lookahead smoothing
+            for (int ch = 0; ch < numChannels && ch < (int)lookaheadAnalysis.size(); ++ch) {
+                if (!lookaheadAnalysis[ch].empty()) {
+                    lookaheadAnalysis[ch][analysisIndex[ch]] = gainReduction;
+                    analysisIndex[ch] = (analysisIndex[ch] + 1) % (int)lookaheadAnalysis[ch].size();
+                }
+            }
             
             // Process each channel
             for (int ch = 0; ch < numChannels; ++ch) {
@@ -256,13 +324,60 @@ struct MasteringLimiter_Platinum::Impl {
                 // Get delayed dry signal
                 float drySample = delayLines[ch].process(channelData[i]);
                 
-                // Smooth gain changes
-                float targetGain = gainReduction * makeupGain;
+                // Debug first channel, first sample
+                if (ch == 0 && i == 0) {
+                    static int debugCount = 0;
+                    if (debugCount++ < 3) {
+                        printf("    Channel %d, sample %d: input=%.3f, drySample=%.3f\n", 
+                               ch, i, channelData[i], drySample);
+                    }
+                }
+                
+                // SIMPLIFIED: Just use the current gain reduction directly
+                // Skip the complex lookahead buffer for now to fix the basic limiting
+                float currentGainReduction = gainReduction;
+                
+                // Predictive gain smoothing: look ahead to anticipate gain changes
+                float targetGain = currentGainReduction * makeupGain;
                 float currentGain = lastGain[ch];
                 
-                // Simple one-pole smoothing for gain
-                const float smoothCoeff = 0.01f; // Fast smoothing
-                currentGain += smoothCoeff * (targetGain - currentGain);
+                // Logarithmic release coefficient calculation for smoother limiting
+                float attackCoeff, releaseCoeff;
+                
+                // Attack: fast response to limiting (1ms equivalent)
+                attackCoeff = 1.0f - std::exp(-1.0f / (0.001f * sampleRate));
+                
+                // Release: logarithmic curve based on release parameter
+                // release parameter is in ms, convert to samples and apply logarithmic scaling
+                float releaseSamples = release * 0.001f * sampleRate;
+                float logReleaseTime = std::log(1.0f + releaseSamples * 0.01f);  // Logarithmic scaling
+                releaseCoeff = 1.0f - std::exp(-1.0f / (logReleaseTime * sampleRate * 0.001f));
+                
+                // Predictive lookahead adjustment
+                float adaptiveCoeff = releaseCoeff;  // Default to release
+                if (ch < (int)lookaheadAnalysis.size() && !lookaheadAnalysis[ch].empty()) {
+                    // Analyze future gain reduction values
+                    float minFutureGain = gainReduction;
+                    int lookaheadSamplesToCheck = std::min(lookaheadSamples, (int)lookaheadAnalysis[ch].size() - 1);
+                    for (int j = 1; j <= lookaheadSamplesToCheck; ++j) {
+                        int futureIndex = (analysisIndex[ch] + j) % (int)lookaheadAnalysis[ch].size();
+                        minFutureGain = std::min(minFutureGain, lookaheadAnalysis[ch][futureIndex]);
+                    }
+                    
+                    // Use attack coefficient if we predict incoming gain reduction
+                    if (minFutureGain < gainReduction * 0.9f) {
+                        adaptiveCoeff = attackCoeff;  // Fast attack for predicted limiting
+                    }
+                }
+                
+                // Apply appropriate coefficient based on gain change direction
+                if (targetGain < currentGain) {
+                    // Limiting (gain reduction) - use attack or predictive coefficient
+                    currentGain += adaptiveCoeff * (targetGain - currentGain);
+                } else {
+                    // Recovery - use logarithmic release coefficient
+                    currentGain += releaseCoeff * (targetGain - currentGain);
+                }
                 lastGain[ch] = flushDenorm(currentGain);
                 
                 // Apply gain
@@ -343,8 +458,25 @@ void MasteringLimiter_Platinum::updateParameters(const std::map<int, float>& par
         return it != params.end() ? it->second : defaultVal;
     };
     
+    // Debug: Print what we're receiving and what we're setting
+    static int callCount = 0;
+    if (callCount++ % 100 == 0) {  // Print every 100th call
+        printf("MasteringLimiter params: ");
+        for (auto& p : params) {
+            printf("[%d]=%.3f ", p.first, p.second);
+        }
+        printf("\n");
+    }
+    
     // Map normalized 0-1 to meaningful ranges
-    pimpl->threshold = -30.0f + 30.0f * get(kThreshold, 0.5f);        // -30 to 0 dB
+    // Correct limiter mapping: 0 = -30dB (max limiting), 1 = 0dB (no limiting)
+    float threshParam = get(kThreshold, 0.9f);  // Default to 0.9 (light limiting)
+    pimpl->threshold = -30.0f + 30.0f * threshParam;  // -30 to 0 dB
+    
+    if (callCount % 100 == 1) {
+        printf("  Threshold param %.3f -> %.1f dB (gain %.3f)\n", 
+               threshParam, pimpl->threshold, std::pow(10.0f, pimpl->threshold * 0.05f));
+    }
     pimpl->ceiling = -10.0f + 9.9f * get(kCeiling, 0.99f);            // -10 to -0.1 dB
     pimpl->release = 1.0f + 199.0f * get(kRelease, 0.25f);            // 1 to 200 ms
     pimpl->lookahead = 0.1f + 9.9f * get(kLookahead, 0.5f);           // 0.1 to 10 ms

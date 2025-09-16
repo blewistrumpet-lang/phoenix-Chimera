@@ -127,7 +127,7 @@ void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
     
     // Update thermal model (once per block)
     double avgPower = 0.1;  // Simplified power calculation
-    m_thermalModel.update(avgPower, numSamples / m_sampleRate);
+    m_thermalModel.update(avgPower, numSamples / std::max(8000.0, m_sampleRate));
     
     scrubBuffer(buffer);
 }

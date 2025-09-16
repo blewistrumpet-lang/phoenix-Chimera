@@ -67,6 +67,27 @@ public:
     
     // Level metering (public for UI)
     float getCurrentOutputLevel() const { return m_currentOutputLevel.load(); }
+    float getCurrentInputLevel() const { return m_currentInputLevel.load(); }
+    
+    // Slot management for UI
+    float getSlotActivity(int slot) const;
+    void setSlotEngine(int slot, int engineID);
+    int getEngineIDForSlot(int slot) const {
+        if (slot < 0 || slot >= NUM_SLOTS) return 0;
+        if (m_activeEngines[slot]) {
+            // Get engine ID from the actual engine instance
+            // For now, get from parameter value
+            auto* param = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_engine");
+            if (param) {
+                int choiceIndex = static_cast<int>(param->load());
+                return choiceIndexToEngineID(choiceIndex);
+            }
+        }
+        return 0;
+    }
+    
+    // Performance monitoring
+    float getCpuUsage() const { return 0.0f; } // TODO: Implement actual CPU measurement
     
 private:
     std::vector<DiagnosticResult> m_diagnosticResults;
@@ -101,6 +122,8 @@ private:
     
     // Level metering
     std::atomic<float> m_currentOutputLevel{0.0f};
+    std::atomic<float> m_currentInputLevel{0.0f};
+    std::array<std::atomic<float>, NUM_SLOTS> m_slotActivityLevels;
     
     // Thread safety for engine management
     mutable std::mutex m_engineMutex;

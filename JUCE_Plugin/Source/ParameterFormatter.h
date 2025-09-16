@@ -42,6 +42,50 @@ public:
     static std::map<std::string, ParameterInfo> parameterMap;
     
     static void initializeParameterMap() {
+        // BitCrusher parameters  
+        parameterMap["Bit Crusher_Bits"] = {TYPE_NORMALIZED, 1.0f, 24.0f, 16.0f, false, " bits"};
+        parameterMap["Bit Crusher_Downsample"] = {TYPE_NORMALIZED, 1.0f, 16.0f, 1.0f, false, "x"};
+        parameterMap["Bit Crusher_Mix"] = {TYPE_PERCENT, 0.0f, 100.0f, 100.0f, false, "%"};
+        
+        // Dynamic EQ parameters
+        parameterMap["Dynamic EQ_Frequency"] = {TYPE_FREQUENCY, 20.0f, 20000.0f, 1000.0f, true, " Hz"};
+        parameterMap["Dynamic EQ_Threshold"] = {TYPE_DECIBEL, -60.0f, 0.0f, -12.0f, false, " dB"};
+        parameterMap["Dynamic EQ_Ratio"] = {TYPE_RATIO, 1.0f, 20.0f, 4.0f, true, ":1"};
+        parameterMap["Dynamic EQ_Attack"] = {TYPE_TIME_MS, 0.1f, 100.0f, 10.0f, true, " ms"};
+        parameterMap["Dynamic EQ_Release"] = {TYPE_TIME_MS, 10.0f, 1000.0f, 100.0f, true, " ms"};
+        parameterMap["Dynamic EQ_Gain"] = {TYPE_DECIBEL, -18.0f, 18.0f, 0.0f, false, " dB"};
+        parameterMap["Dynamic EQ_Mix"] = {TYPE_PERCENT, 0.0f, 100.0f, 100.0f, false, "%"};
+        
+        // Vintage Tube Preamp parameters
+        parameterMap["Vintage Tube Preamp Studio_Drive"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        parameterMap["Vintage Tube Preamp Studio_Input Trim (dB)"] = {TYPE_DECIBEL, -24.0f, 24.0f, 0.0f, false, " dB"};
+        parameterMap["Vintage Tube Preamp Studio_Output Trim (dB)"] = {TYPE_DECIBEL, -24.0f, 24.0f, 0.0f, false, " dB"};
+        parameterMap["Vintage Tube Preamp Studio_Bright"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        parameterMap["Vintage Tube Preamp Studio_Bass"] = {TYPE_DECIBEL, -12.0f, 12.0f, 0.0f, false, " dB"};
+        parameterMap["Vintage Tube Preamp Studio_Mid"] = {TYPE_DECIBEL, -12.0f, 12.0f, 0.0f, false, " dB"};
+        parameterMap["Vintage Tube Preamp Studio_Treble"] = {TYPE_DECIBEL, -12.0f, 12.0f, 0.0f, false, " dB"};
+        parameterMap["Vintage Tube Preamp Studio_Presence"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        
+        // Intelligent Harmonizer parameters
+        parameterMap["Intelligent Harmonizer_Voices"] = {TYPE_VOICES, 1.0f, 4.0f, 2.0f, false, ""};
+        parameterMap["Intelligent Harmonizer_Master Mix"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        parameterMap["Intelligent Harmonizer_Voice 1 Vol"] = {TYPE_PERCENT, 0.0f, 100.0f, 100.0f, false, "%"};
+        parameterMap["Intelligent Harmonizer_Voice 2 Vol"] = {TYPE_PERCENT, 0.0f, 100.0f, 80.0f, false, "%"};
+        parameterMap["Intelligent Harmonizer_Voice 3 Vol"] = {TYPE_PERCENT, 0.0f, 100.0f, 60.0f, false, "%"};
+        
+        // Chaos Generator parameters
+        parameterMap["Chaos Generator_Rate"] = {TYPE_FREQUENCY, 0.01f, 20.0f, 1.0f, true, " Hz"};
+        parameterMap["Chaos Generator_Depth"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        parameterMap["Chaos Generator_Smoothing"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        parameterMap["Chaos Generator_Mix"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        
+        // Gain Utility parameters
+        parameterMap["Gain Utility_Gain"] = {TYPE_DECIBEL, -60.0f, 24.0f, 0.0f, false, " dB"};
+        parameterMap["Gain Utility_Left Gain"] = {TYPE_DECIBEL, -12.0f, 12.0f, 0.0f, false, " dB"};
+        parameterMap["Gain Utility_Right Gain"] = {TYPE_DECIBEL, -12.0f, 12.0f, 0.0f, false, " dB"};
+        parameterMap["Gain Utility_Mid Gain"] = {TYPE_DECIBEL, -12.0f, 12.0f, 0.0f, false, " dB"};
+        parameterMap["Gain Utility_Side Gain"] = {TYPE_DECIBEL, -12.0f, 12.0f, 0.0f, false, " dB"};
+        
         // PitchShifter parameters
         parameterMap["PitchShifter_Pitch"] = {TYPE_SEMITONES, -24.0f, 24.0f, 0.0f, false, " st"};
         parameterMap["PitchShifter_Formant"] = {TYPE_SEMITONES, -12.0f, 12.0f, 0.0f, false, " st"};
@@ -78,6 +122,45 @@ public:
         parameterMap["Reverb_Damping"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
         parameterMap["Reverb_PreDelay"] = {TYPE_TIME_MS, 0.0f, 200.0f, 20.0f, false, " ms"};
         
+        // Distortion parameters
+        parameterMap["Distortion_Drive"] = {TYPE_DECIBEL, 0.0f, 40.0f, 12.0f, false, " dB"};
+        parameterMap["Distortion_Tone"] = {TYPE_FREQUENCY, 100.0f, 10000.0f, 2000.0f, true, " Hz"};
+        parameterMap["BitCrusher_Bits"] = {TYPE_NORMALIZED, 1.0f, 16.0f, 8.0f, false, " bits"};
+        parameterMap["BitCrusher_Rate"] = {TYPE_FREQUENCY, 1000.0f, 48000.0f, 22050.0f, true, " Hz"};
+        
+        // Modulation parameters
+        parameterMap["Chorus_Rate"] = {TYPE_FREQUENCY, 0.1f, 10.0f, 1.0f, true, " Hz"};
+        parameterMap["Chorus_Depth"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        parameterMap["Phaser_Rate"] = {TYPE_FREQUENCY, 0.01f, 10.0f, 0.5f, true, " Hz"};
+        parameterMap["Phaser_Depth"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        parameterMap["Phaser_Feedback"] = {TYPE_PERCENT, -95.0f, 95.0f, 0.0f, false, "%"};
+        parameterMap["Phaser_Stages"] = {TYPE_STAGES, 2.0f, 24.0f, 4.0f, false, ""};
+        
+        // Tremolo/Vibrato parameters
+        parameterMap["Tremolo_Rate"] = {TYPE_FREQUENCY, 0.1f, 20.0f, 5.0f, true, " Hz"};
+        parameterMap["Tremolo_Depth"] = {TYPE_PERCENT, 0.0f, 100.0f, 50.0f, false, "%"};
+        parameterMap["Vibrato_Rate"] = {TYPE_FREQUENCY, 0.1f, 10.0f, 4.0f, true, " Hz"};
+        parameterMap["Vibrato_Depth"] = {TYPE_SEMITONES, 0.0f, 2.0f, 0.5f, false, " st"};
+        
+        // EQ parameters
+        parameterMap["EQ_LowGain"] = {TYPE_DECIBEL, -18.0f, 18.0f, 0.0f, false, " dB"};
+        parameterMap["EQ_MidGain"] = {TYPE_DECIBEL, -18.0f, 18.0f, 0.0f, false, " dB"};
+        parameterMap["EQ_HighGain"] = {TYPE_DECIBEL, -18.0f, 18.0f, 0.0f, false, " dB"};
+        parameterMap["EQ_LowFreq"] = {TYPE_FREQUENCY, 20.0f, 1000.0f, 100.0f, true, " Hz"};
+        parameterMap["EQ_MidFreq"] = {TYPE_FREQUENCY, 200.0f, 8000.0f, 1000.0f, true, " Hz"};
+        parameterMap["EQ_HighFreq"] = {TYPE_FREQUENCY, 1000.0f, 20000.0f, 8000.0f, true, " Hz"};
+        
+        // Gate parameters
+        parameterMap["Gate_Threshold"] = {TYPE_DECIBEL, -80.0f, 0.0f, -40.0f, false, " dB"};
+        parameterMap["Gate_Attack"] = {TYPE_TIME_MS, 0.01f, 100.0f, 1.0f, true, " ms"};
+        parameterMap["Gate_Hold"] = {TYPE_TIME_MS, 0.0f, 500.0f, 10.0f, false, " ms"};
+        parameterMap["Gate_Release"] = {TYPE_TIME_MS, 1.0f, 5000.0f, 100.0f, true, " ms"};
+        
+        // Utility parameters
+        parameterMap["Pan_Position"] = {TYPE_PAN, -100.0f, 100.0f, 0.0f, false, ""};
+        parameterMap["Width_Amount"] = {TYPE_PERCENT, 0.0f, 200.0f, 100.0f, false, "%"};
+        parameterMap["Gain_Amount"] = {TYPE_DECIBEL, -60.0f, 24.0f, 0.0f, false, " dB"};
+        
         // Add more mappings as needed...
     }
     
@@ -97,8 +180,78 @@ public:
         auto it = parameterMap.find(key.toStdString());
         
         if (it == parameterMap.end()) {
-            // Default formatting for unknown parameters
-            return juce::String(normalizedValue, 2);
+            // Smart default formatting based on parameter name
+            juce::String lowerParam = paramName.toLowerCase();
+            
+            // Try to guess the type from parameter name
+            if (lowerParam.contains("freq") || lowerParam.contains("cutoff") || 
+                lowerParam.contains("x-over") || lowerParam.contains("crossover")) {
+                // Frequency - logarithmic 20Hz to 20kHz
+                float freq = 20.0f * std::pow(1000.0f, normalizedValue);
+                if (freq >= 1000.0f) {
+                    return juce::String(freq / 1000.0f, 1) + " kHz";
+                } else {
+                    return juce::String((int)freq) + " Hz";
+                }
+            }
+            else if (lowerParam.contains("gain") || lowerParam.contains("trim") ||
+                     lowerParam.contains("threshold") || lowerParam.contains("ceiling")) {
+                // Decibels - -60 to +12 range
+                float db = -60.0f + normalizedValue * 72.0f;
+                return juce::String(db, 1) + " dB";
+            }
+            else if (lowerParam.contains("time") || lowerParam.contains("delay")) {
+                // Time in ms - 0 to 1000ms
+                float ms = normalizedValue * 1000.0f;
+                if (ms >= 1000.0f) {
+                    return juce::String(ms / 1000.0f, 2) + " s";
+                } else {
+                    return juce::String((int)ms) + " ms";
+                }
+            }
+            else if (lowerParam.contains("attack") || lowerParam.contains("release") ||
+                     lowerParam.contains("hold") || lowerParam.contains("decay")) {
+                // Envelope times - logarithmic 0.1ms to 5000ms
+                float ms = 0.1f * std::pow(50000.0f, normalizedValue);
+                if (ms >= 1000.0f) {
+                    return juce::String(ms / 1000.0f, 2) + " s";
+                } else {
+                    return juce::String(ms, 1) + " ms";
+                }
+            }
+            else if (lowerParam.contains("mix") || lowerParam.contains("depth") ||
+                     lowerParam.contains("amount") || lowerParam.contains("drive") ||
+                     lowerParam.contains("feedback") || lowerParam.contains("resonance")) {
+                // Percentage 0-100%
+                return juce::String((int)(normalizedValue * 100)) + "%";
+            }
+            else if (lowerParam.contains("ratio")) {
+                // Compression ratio 1:1 to 20:1
+                float ratio = 1.0f + normalizedValue * 19.0f;
+                return juce::String(ratio, 1) + ":1";
+            }
+            else if (lowerParam.contains("pitch") || lowerParam.contains("semi") ||
+                     lowerParam.contains("detune")) {
+                // Semitones -12 to +12
+                float st = -12.0f + normalizedValue * 24.0f;
+                if (st > 0) return "+" + juce::String(st, 1) + " st";
+                else return juce::String(st, 1) + " st";
+            }
+            else if (lowerParam.contains("pan")) {
+                // Pan L100 to R100
+                float pan = -100.0f + normalizedValue * 200.0f;
+                if (pan < -1.0f) return "L" + juce::String(-pan, 0);
+                else if (pan > 1.0f) return "R" + juce::String(pan, 0);
+                else return "C";
+            }
+            else if (lowerParam.contains("width") || lowerParam.contains("stereo")) {
+                // Stereo width 0-200%
+                return juce::String((int)(normalizedValue * 200)) + "%";
+            }
+            else {
+                // Default to percentage for anything else
+                return juce::String((int)(normalizedValue * 100)) + "%";
+            }
         }
         
         const ParameterInfo& info = it->second;
@@ -164,6 +317,25 @@ public:
                 
             case TYPE_Q_FACTOR:
                 formatted = juce::String(actualValue, 1);
+                break;
+                
+            case TYPE_PAN:
+                // Format pan as L100 to R100
+                if (actualValue < 0) {
+                    formatted = "L" + juce::String(-actualValue, 0);
+                } else if (actualValue > 0) {
+                    formatted = "R" + juce::String(actualValue, 0);
+                } else {
+                    formatted = "C";
+                }
+                break;
+                
+            case TYPE_VOICES:
+                formatted = juce::String((int)actualValue);
+                break;
+                
+            case TYPE_STAGES:
+                formatted = juce::String((int)actualValue);
                 break;
                 
             default:

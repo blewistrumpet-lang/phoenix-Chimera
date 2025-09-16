@@ -17,7 +17,7 @@ public:
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
 
-    int getNumParameters() const override { return 4; }
+    int getNumParameters() const override { return 5; }
     juce::String getParameterName(int index) const override;
     juce::String getName() const override { return "Granular Cloud"; }
 
@@ -26,7 +26,8 @@ public:
         GrainSize = 0,       // ms
         Density = 1,         // grains/sec
         PitchScatter = 2,    // octaves
-        CloudPosition = 3    // stereo position
+        CloudPosition = 3,   // stereo position
+        Mix = 4              // dry/wet mix
     };
 
 private:
@@ -89,7 +90,7 @@ private:
     int maxBlock_{512};
 
     // Smoothed parameters
-    Smooth pGrainSize, pDensity, pPitchScatter, pCloudPosition;
+    Smooth pGrainSize, pDensity, pPitchScatter, pCloudPosition, pMix;
 
     // Circular buffer for input
     std::vector<float> circularBuffer_;
@@ -97,12 +98,13 @@ private:
     int writePos_{0};
 
     // Grain pool (bounded for CPU safety)
-    // kMaxGrains: Total grain objects in pool (64 = reasonable memory usage)
-    // kMaxActiveGrains: Maximum concurrent processing limit (32 = prevents CPU spikes)
+    // INCREASED for denser granular clouds
+    // kMaxGrains: Total grain objects in pool (128 for richer textures)
+    // kMaxActiveGrains: Maximum concurrent processing limit (64 for density up to 200 g/s)
     // These limits prevent infinite loops and runaway grain allocation that could
     // cause audio dropouts or system instability
-    static constexpr int kMaxGrains = 64;
-    static constexpr int kMaxActiveGrains = 32;
+    static constexpr int kMaxGrains = 128;
+    static constexpr int kMaxActiveGrains = 64;
     std::array<Grain, kMaxGrains> grains_;
 
     // Grain scheduling

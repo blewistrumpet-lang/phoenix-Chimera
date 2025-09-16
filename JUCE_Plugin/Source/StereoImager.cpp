@@ -13,7 +13,7 @@ StereoImager::StereoImager() {
     m_crossover1.reset(0.3f);     // ~250Hz
     m_crossover2.reset(0.7f);     // ~2.5kHz
     m_phase.reset(0.5f);          // No phase shift
-    m_mix.reset(1.0f);            // Full wet
+    m_mix.reset(0.5f);            // 50% wet for unity gain
 }
 
 void StereoImager::prepareToPlay(double sampleRate, int samplesPerBlock) {

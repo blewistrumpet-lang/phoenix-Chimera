@@ -25,7 +25,7 @@ public:
     void updateParameters(const std::map<int, float>& params) override;
 
     juce::String getName() const override { return "K-Style Overdrive"; }
-    int getNumParameters() const override { return 4; }
+    int getNumParameters() const override { return 4; }  // Keep 4 params for compatibility
     juce::String getParameterName(int index) const override;
 
 private:
@@ -97,14 +97,73 @@ private:
 
     // DSP blocks
     TiltTone tone_[2];
+    
+    // Simple 2x oversampler for anti-aliasing
+    struct SimpleOversampler {
+        OnePoleTPT upFilter;    // For upsampling interpolation
+        OnePoleTPT downFilter;  // For downsampling anti-aliasing
+        float lastSample = 0.0f;
+        
+        void prepare(float sampleRate) {
+            // Set cutoff at Nyquist/4 for proper anti-aliasing
+            float cutoff = sampleRate * 0.4f;  // 40% of Nyquist for safety
+            upFilter.setLowpass(cutoff, sampleRate * 2.0f);   // Filter at 2x rate
+            downFilter.setLowpass(cutoff, sampleRate * 2.0f); // Filter at 2x rate
+            lastSample = 0.0f;
+        }
+        
+        void upsample(float input, float output[2]) {
+            // Linear interpolation for upsampling
+            output[0] = upFilter.processLP((lastSample + input) * 0.5f);
+            output[1] = upFilter.processLP(input);
+            lastSample = input;
+        }
+        
+        float downsample(float input[2]) {
+            // Filter then decimate
+            float filtered0 = downFilter.processLP(input[0]);
+            float filtered1 = downFilter.processLP(input[1]);
+            // Don't reduce gain by averaging - just take the second sample (proper decimation)
+            return filtered1;
+        }
+        
+        void reset() {
+            upFilter.reset();
+            downFilter.reset();
+            lastSample = 0.0f;
+        }
+    };
+    
+    SimpleOversampler oversampler_[2];
+    
+    // DC blocking filter
+    struct DCBlocker {
+        float x1 = 0.0f, y1 = 0.0f;
+        float R = 0.995f;
+        
+        float process(float input) {
+            float output = input - x1 + R * y1;
+            x1 = input;
+            y1 = output;
+            // Denormal protection
+            if (std::abs(y1) < 1e-30f) y1 = 0.0f;
+            return output;
+        }
+        
+        void reset() { x1 = y1 = 0.0f; }
+    };
+    
+    DCBlocker dcBlocker_[2];
 
     // nonlinearity: smooth, bounded
     inline float waveshaper(float x, float drive) const noexcept {
-        // Map Drive [0..1] -> effective gain ~ [1.0 .. ~20 dB]
-        const float pre = fromdB(juce::jmap(drive, 0.0f, 1.0f, 0.0f, 20.0f));
+        // Soft clipping to prevent excessive harmonics
+        x = juce::jlimit(-2.0f, 2.0f, x);
+        // Map Drive [0..1] -> effective gain ~ [1.0 .. ~15 dB]
+        const float pre = fromdB(juce::jmap(drive, 0.0f, 1.0f, 0.0f, 15.0f));
         const float y = std::tanh(x * pre);
-        // Simple makeup to roughly preserve level across drive range
-        const float makeup = fromdB(juce::jmap(drive, 0.0f, 1.0f, 0.0f, -6.0f));
+        // Better makeup gain to maintain volume
+        const float makeup = fromdB(juce::jmap(drive, 0.0f, 1.0f, 0.0f, -3.0f));
         return y * makeup;
     }
 };

@@ -35,42 +35,41 @@ void VintageTubePreamp_Studio::updateParameters(const std::map<int,float>& p){
         return (it != p.end()) ? it->second : defaultVal;
     };
     
-    // Map slot parameters (0-14) to Tube Preamp:
-    // 0: Drive
-    // 1: Bass
-    // 2: Mid
-    // 3: Treble
-    // 4: Presence
-    // 5: Bright
-    // 6: Voicing (0-0.33=Fender, 0.33-0.66=Marshall, 0.66-1=Vox)
-    // 7: Microphonics/mechanical
-    // 8: Ghost notes
-    // 9: Noise amount
-    // 10: Input trim
-    // 11: Output trim
-    // 12: Not used
-    // 13: Mix
-    // 14: Not used
+    // Map parameters according to enum ParamID:
+    // 0: kBypass
+    // 1: kVoicing
+    // 2: kInputTrim_dB
+    // 3: kOutputTrim_dB
+    // 4: kDrive
+    // 5: kBright
+    // 6: kBass
+    // 7: kMid
+    // 8: kTreble
+    // 9: kPresence
+    // 10: kMicMech
+    // 11: kGhost
+    // 12: kNoise
+    // 13: kOSMode
     
-    bypass_   = false; // Bypass handled by plugin framework
-    drive_    = getParam(0, 0.4f);
-    bass_     = getParam(1, 0.5f);
-    mid_      = getParam(2, 0.5f);
-    treble_   = getParam(3, 0.5f);
-    presence_ = getParam(4, 0.3f);
-    bright_   = getParam(5, 0.f);
+    bypass_   = getParam(kBypass, 0.0f) > 0.5f;
     
     // Map voicing from normalized value
-    float voiceNorm = getParam(6, 0.0f);
+    float voiceNorm = getParam(kVoicing, 0.0f);
     if (voiceNorm < 0.33f) voicing_ = FENDER_DLUX;
     else if (voiceNorm < 0.66f) voicing_ = MARSHALL_PLEXI;
     else voicing_ = VOX_AC30;
     
-    micMech_  = getParam(7, 0.f);
-    ghost_    = getParam(8, 0.f);
-    noise_    = getParam(9, 0.f);
-    inTrim_   = (getParam(10, 0.5f) - 0.5f) * 48.f; // Map 0-1 to -24 to +24 dB
-    outTrim_  = (getParam(11, 0.5f) - 0.5f) * 48.f; // Map 0-1 to -24 to +24 dB
+    inTrim_   = (getParam(kInputTrim_dB, 0.5f) - 0.5f) * 48.f; // Map 0-1 to -24 to +24 dB
+    outTrim_  = (getParam(kOutputTrim_dB, 0.5f) - 0.5f) * 48.f; // Map 0-1 to -24 to +24 dB
+    drive_    = getParam(kDrive, 0.4f);
+    bright_   = getParam(kBright, 0.0f);
+    bass_     = getParam(kBass, 0.5f);
+    mid_      = getParam(kMid, 0.5f);
+    treble_   = getParam(kTreble, 0.5f);
+    presence_ = getParam(kPresence, 0.3f);
+    micMech_  = getParam(kMicMech, 0.0f);
+    ghost_    = getParam(kGhost, 0.0f);
+    noise_    = getParam(kNoise, 0.0f);
     osMode_   = 0; // Auto mode
 
     tone_.update(voicing_, bass_, mid_, treble_, (float)fs_);

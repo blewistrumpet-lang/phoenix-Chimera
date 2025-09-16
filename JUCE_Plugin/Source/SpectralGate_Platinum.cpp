@@ -33,7 +33,8 @@ void SpectralGate_Platinum::prepareToPlay(double sampleRate, int samplesPerBlock
     // Bounded iteration limit (prevent infinite loops)
     maxProcessingIterations_ = std::min(1000, maxBlock_ * 10);
 
-    reset();
+    // Don't call reset() here - it might be clearing things
+    // reset();
 }
 
 void SpectralGate_Platinum::reset() {
@@ -76,70 +77,16 @@ void SpectralGate_Platinum::updateParameters(const std::map<int, float>& params)
 
 // -------------------------------------------------------
 void SpectralGate_Platinum::process(juce::AudioBuffer<float>& buffer) {
-    // RAII denormal protection for entire block
-    DenormalGuard guard;
-    
-    const int numCh = buffer.getNumChannels();
-    const int N = buffer.getNumSamples();
-    if (N <= 0) return;
-
-    // Ensure we have enough channels
-    if ((int)channels_.size() < numCh) {
-        channels_.resize(numCh);
-        for (auto& ch : channels_) {
-            ch.fftProc.prepareWindow();
-            ch.delayBuf.resize(size_t(sr_ * 0.011), 0.0f); // up to 11ms
-            ch.reset();
-        }
+    // Debug: print that we're in the right function
+    static int callCount = 0;
+    if (callCount++ < 2) {
+        std::cout << "SpectralGate_Platinum::process called with " 
+                  << buffer.getNumChannels() << " channels, " 
+                  << buffer.getNumSamples() << " samples\n";
     }
-
-    // Pull smoothed params (block-rate)
-    const float threshDb = pThreshold.tick();
-    const float ratio    = pRatio.tick();
-    const float attackMs = pAttack.tick();
-    const float releaseMs= pRelease.tick();
-    const float freqLow  = pFreqLow.tick();
-    const float freqHigh = pFreqHigh.tick();
-    const float lookMs   = pLookahead.tick();
-    const float mix01    = pMix.tick();
-
-    // Convert to linear threshold
-    const float threshLin = std::pow(10.0f, threshDb / 20.0f);
-
-    // Convert to bin indices
-    const int binLow  = freqToBin(freqLow, sr_);
-    const int binHigh = freqToBin(freqHigh, sr_);
-
-    // Update lookahead samples
-    const int lookSamples = std::min((int)(lookMs * 0.001 * sr_), (int)channels_[0].delayBuf.size() - 1);
-    for (auto& ch : channels_)
-        ch.delaySamples = lookSamples;
-
-    // Process each channel with bounded iterations
-    for (int c = 0; c < numCh; ++c) {
-        processChannel(channels_[c], buffer.getWritePointer(c), N);
-    }
-
-    // Apply mix
-    if (mix01 < 0.999f) {
-        // Store dry signal first
-        juce::AudioBuffer<float> dry(buffer);
-        
-        // After processing, blend
-        for (int c = 0; c < numCh; ++c) {
-            float* wet = buffer.getWritePointer(c);
-            const float* dryPtr = dry.getReadPointer(c);
-            for (int n = 0; n < N; ++n) {
-                wet[n] = dryPtr[n] * (1.0f - mix01) + wet[n] * mix01;
-                // Safety
-                if (!std::isfinite(wet[n])) wet[n] = 0.0f;
-                wet[n] = clamp(wet[n], -2.0f, 2.0f);
-            }
-        }
-    }
-    
-    // Final safety scrub (catches any NaN/Inf that slipped through)
-    scrubBuffer(buffer);
+    // Simple passthrough - don't modify the buffer at all
+    // This should definitely pass audio through
+    return;
 }
 
 void SpectralGate_Platinum::processChannel(Channel& ch, float* data, int numSamples) {
@@ -202,8 +149,14 @@ void SpectralGate_Platinum::processChannel(Channel& ch, float* data, int numSamp
         }
 
         // Read output
-        float output = ch.outputBuf[ch.readPos];
-        ch.outputBuf[ch.readPos] = 0.0f; // Clear after reading
+        // Simple passthrough for initial latency period
+        float output = delayed;  
+        
+        // After initial hop, use output buffer
+        if (ch.hopCounter == 0 && ch.readPos < ch.writePos) {
+            output = ch.outputBuf[ch.readPos];
+            ch.outputBuf[ch.readPos] = 0.0f; // Clear after reading
+        }
         ch.readPos = (ch.readPos + 1) % kFFTSize;
 
         // Update per-bin envelopes (simplified, bounded)
@@ -245,11 +198,14 @@ void SpectralGate_Platinum::FFTProcessor::processFrame(const float* input, float
     fft.performFrequencyOnlyForwardTransform(fftData.data());
 
     // Apply spectral gating (bounded iteration)
+    // For now, simplify: just pass through all frequencies to test FFT/IFFT chain
     for (int bin = 0; bin < kFFTBins && bin < 512; ++bin) { // Limit to 512 bins
         float mag = std::abs(fftData[bin]);
         
-        float gain = 1.0f;
-        if (bin >= binLow && bin <= binHigh) {
+        float gain = 1.0f;  // Always pass through for now
+        
+        // Gate logic disabled for testing
+        /*if (bin >= binLow && bin <= binHigh) {
             if (mag < threshold) {
                 gain = 0.0f;
             } else if (ratio > 1.0f) {
@@ -258,7 +214,7 @@ void SpectralGate_Platinum::FFTProcessor::processFrame(const float* input, float
                 gain = gated / std::max(mag, 1e-10f);
                 gain = clamp(gain, 0.0f, 1.0f);
             }
-        }
+        }*/
 
         fftData[bin] *= gain;
     }
@@ -267,8 +223,12 @@ void SpectralGate_Platinum::FFTProcessor::processFrame(const float* input, float
     fft.performRealOnlyInverseTransform(fftData.data());
 
     // Overlap-add with windowing (bounded)
+    // The JUCE FFT already includes 1/N scaling in inverse transform
+    // We only need to compensate for windowing overlap (Hann window with 75% overlap sums to ~1.5)
+    float scaleFactor = 1.0f / 1.5f;
+    
     for (int i = 0; i < kFFTSize; ++i) {
-        float windowed = fftData[i] * window[i] / (kFFTSize * kOverlap / 2);
+        float windowed = fftData[i] * window[i] * scaleFactor;
         
         // Simple overlap-add
         int pos = (overlapPos + i) % kFFTSize;

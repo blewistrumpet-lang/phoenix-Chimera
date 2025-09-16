@@ -29,6 +29,7 @@ public:
     
     int getNumParameters() const override { return 8; }
     juce::String getParameterName(int index) const override;
+    juce::String getParameterDisplayString(int index, float value) const;
     juce::String getName() const override { return "Vocal Formant Filter"; }
     
     // Parameter indices

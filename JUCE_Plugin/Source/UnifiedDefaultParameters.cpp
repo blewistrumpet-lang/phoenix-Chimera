@@ -1,4 +1,5 @@
 #include "UnifiedDefaultParameters.h"
+#include "EngineLibrary.h"
 #include <cassert>
 
 namespace UnifiedDefaultParameters {
@@ -182,10 +183,9 @@ std::map<int, float> getDefaultParameters(int engineId) {
             break;
             
         case ENGINE_BIT_CRUSHER: // Bit Crusher
-            defaults[0] = 0.9f;   // Bit Depth - High quality (15-bit) for subtle effect
-            defaults[1] = 0.9f;   // Sample Rate - High rate for subtle aliasing
-            defaults[2] = 0.3f;   // Mix - Blend with dry signal
-            defaults[3] = 0.5f;   // Output - Unity gain
+            defaults[0] = 0.3f;   // Bits - 8-bit for noticeable but not extreme crushing
+            defaults[1] = 0.0f;   // Downsample - No downsampling by default
+            defaults[2] = 0.7f;   // Mix - 70% wet for clear effect
             break;
             
         case ENGINE_MULTIBAND_SATURATOR: // Multiband Saturator
@@ -663,14 +663,13 @@ std::map<EngineCategory, std::vector<int>> getEnginesByCategory() {
 }
 
 std::string getParameterName(int engineId, int paramIndex) {
-    // This would ideally interface with the parameter metadata system
-    // For now, return generic names - could be enhanced with specific parameter names
-    return "Parameter " + std::to_string(paramIndex + 1);
+    // Use EngineLibrary which now uses GeneratedParameterDatabase
+    return EngineLibrary::getParameterName(engineId, paramIndex);
 }
 
 int getParameterCount(int engineId) {
-    auto defaults = getDefaultParameters(engineId);
-    return static_cast<int>(defaults.size());
+    // Use EngineLibrary for accurate count from database
+    return EngineLibrary::getParameterCount(engineId);
 }
 
 bool validateEngineDefaults(int engineId) {
@@ -728,63 +727,64 @@ void applyDefaultsToMap(int engineId, std::map<int, float>& parameterMap) {
 int getMixParameterIndex(int engineId) {
     // Return the index of the mix parameter for each engine
     // Returns -1 if the engine doesn't have a mix parameter
+    // VERIFIED: Indices confirmed by examining actual engine source code
     switch (engineId) {
-        case ENGINE_VCA_COMPRESSOR: return 6;
-        case ENGINE_OPTO_COMPRESSOR: return 4;
-        case ENGINE_TRANSIENT_SHAPER: return -1; // No mix parameter
-        case ENGINE_NOISE_GATE: return -1; // No mix parameter
-        case ENGINE_MASTERING_LIMITER: return -1; // No mix parameter
-        case ENGINE_DYNAMIC_EQ: return 6;
-        case ENGINE_PARAMETRIC_EQ: return -1; // No mix parameter
-        case ENGINE_VINTAGE_CONSOLE_EQ: return -1; // No mix parameter
-        case ENGINE_LADDER_FILTER: return 6;
-        case ENGINE_STATE_VARIABLE_FILTER: return 4;
-        case ENGINE_FORMANT_FILTER: return 3;
-        case ENGINE_ENVELOPE_FILTER: return 4;
-        case ENGINE_COMB_RESONATOR: return 3;
-        case ENGINE_VOCAL_FORMANT: return 3;
-        case ENGINE_VINTAGE_TUBE: return 9;
-        case ENGINE_WAVE_FOLDER: return 4;
-        case ENGINE_HARMONIC_EXCITER: return 2;
-        case ENGINE_BIT_CRUSHER: return 2;
-        case ENGINE_MULTIBAND_SATURATOR: return 5;
-        case ENGINE_MUFF_FUZZ: return 6;
-        case ENGINE_RODENT_DISTORTION: return 5;
-        case ENGINE_K_STYLE: return 3;
-        case ENGINE_DIGITAL_CHORUS: return 2;
-        case ENGINE_RESONANT_CHORUS: return 3;
-        case ENGINE_ANALOG_PHASER: return 4;
-        case ENGINE_RING_MODULATOR: return 3;
-        case ENGINE_FREQUENCY_SHIFTER: return 3;
-        case ENGINE_HARMONIC_TREMOLO: return -1; // No mix parameter
-        case ENGINE_CLASSIC_TREMOLO: return 7;
-        case ENGINE_ROTARY_SPEAKER: return 5;
-        case ENGINE_PITCH_SHIFTER: return 2;
-        case ENGINE_DETUNE_DOUBLER: return 4;
-        case ENGINE_INTELLIGENT_HARMONIZER: return 7;
-        case ENGINE_TAPE_ECHO: return 4;
-        case ENGINE_DIGITAL_DELAY: return 2;
-        case ENGINE_MAGNETIC_DRUM_ECHO: return 2;
-        case ENGINE_BUCKET_BRIGADE_DELAY: return 5;
-        case ENGINE_BUFFER_REPEAT: return 3;
-        case ENGINE_PLATE_REVERB: return 3;
-        case ENGINE_SPRING_REVERB: return 3;
-        case ENGINE_CONVOLUTION_REVERB: return 2;
-        case ENGINE_SHIMMER_REVERB: return 3;
-        case ENGINE_GATED_REVERB: return 3;
-        case ENGINE_STEREO_WIDENER: return 2;
-        case ENGINE_STEREO_IMAGER: return 3;
-        case ENGINE_DIMENSION_EXPANDER: return 2;
-        case ENGINE_SPECTRAL_FREEZE: return 2;
-        case ENGINE_SPECTRAL_GATE: return 7;
-        case ENGINE_PHASED_VOCODER: return 3;
-        case ENGINE_GRANULAR_CLOUD: return 4;
-        case ENGINE_CHAOS_GENERATOR: return 7;
-        case ENGINE_FEEDBACK_NETWORK: return 3;
-        case ENGINE_MID_SIDE_PROCESSOR: return -1; // No mix parameter
-        case ENGINE_GAIN_UTILITY: return -1; // No mix parameter
-        case ENGINE_MONO_MAKER: return -1; // No mix parameter
-        case ENGINE_PHASE_ALIGN: return 3;
+        case ENGINE_VCA_COMPRESSOR: return 6;  // ClassicCompressor - verified (was swapped)
+        case ENGINE_OPTO_COMPRESSOR: return 4;  // VintageOptoCompressor_Platinum - verified (was swapped)
+        case ENGINE_TRANSIENT_SHAPER: return 9; // TransientShaper_Platinum - verified
+        case ENGINE_NOISE_GATE: return -1; // NoiseGate_Platinum - no mix parameter
+        case ENGINE_MASTERING_LIMITER: return 9; // MasteringLimiter_Platinum - verified
+        case ENGINE_DYNAMIC_EQ: return 6; // DynamicEQ - verified
+        case ENGINE_PARAMETRIC_EQ: return 13; // ParametricEQ_Studio - verified
+        case ENGINE_VINTAGE_CONSOLE_EQ: return -1; // VintageConsoleEQ_Studio - no mix parameter
+        case ENGINE_LADDER_FILTER: return 6; // LadderFilter - verified
+        case ENGINE_STATE_VARIABLE_FILTER: return 9; // StateVariableFilter - verified
+        case ENGINE_FORMANT_FILTER: return 5; // FormantFilter - verified
+        case ENGINE_ENVELOPE_FILTER: return 7; // EnvelopeFilter - verified
+        case ENGINE_COMB_RESONATOR: return 7; // CombResonator - verified
+        case ENGINE_VOCAL_FORMANT: return 7; // VocalFormantFilter - verified
+        case ENGINE_VINTAGE_TUBE: return -1; // VintageTubePreamp_Studio - no mix parameter
+        case ENGINE_WAVE_FOLDER: return 7; // WaveFolder - verified
+        case ENGINE_HARMONIC_EXCITER: return 7; // HarmonicExciter_Platinum - verified
+        case ENGINE_BIT_CRUSHER: return 3; // BitCrusher - simplified to 3 params
+        case ENGINE_MULTIBAND_SATURATOR: return 6; // MultibandSaturator - verified
+        case ENGINE_MUFF_FUZZ: return 6; // MuffFuzz - verified
+        case ENGINE_RODENT_DISTORTION: return 5; // RodentDistortion - verified
+        case ENGINE_K_STYLE: return 3; // KStyleOverdrive - verified
+        case ENGINE_DIGITAL_CHORUS: return 5; // StereoChorus - verified
+        case ENGINE_RESONANT_CHORUS: return 7; // ResonantChorus_Platinum - verified
+        case ENGINE_ANALOG_PHASER: return 7; // AnalogPhaser - verified
+        case ENGINE_RING_MODULATOR: return -1; // PlatinumRingModulator - no mix parameter
+        case ENGINE_FREQUENCY_SHIFTER: return 2; // FrequencyShifter - verified
+        case ENGINE_HARMONIC_TREMOLO: return -1; // HarmonicTremolo - no mix parameter
+        case ENGINE_CLASSIC_TREMOLO: return 7; // ClassicTremolo - verified
+        case ENGINE_ROTARY_SPEAKER: return 5; // RotarySpeaker_Platinum - verified
+        case ENGINE_PITCH_SHIFTER: return 2; // PitchShifter - verified
+        case ENGINE_DETUNE_DOUBLER: return 4; // DetuneDoubler - verified
+        case ENGINE_INTELLIGENT_HARMONIZER: return 4; // IntelligentHarmonizer - Master Mix at index 4
+        case ENGINE_TAPE_ECHO: return 4; // TapeEcho - verified
+        case ENGINE_DIGITAL_DELAY: return 2; // DigitalDelay - verified
+        case ENGINE_MAGNETIC_DRUM_ECHO: return 7; // MagneticDrumEcho - verified
+        case ENGINE_BUCKET_BRIGADE_DELAY: return 5; // BucketBrigadeDelay - verified
+        case ENGINE_BUFFER_REPEAT: return 7; // BufferRepeat_Platinum - verified
+        case ENGINE_PLATE_REVERB: return 3; // PlateReverb - verified (working reference)
+        case ENGINE_SPRING_REVERB: return 7; // SpringReverb - verified
+        case ENGINE_CONVOLUTION_REVERB: return 0; // ConvolutionReverb - verified
+        case ENGINE_SHIMMER_REVERB: return 9; // ShimmerReverb - verified (was 8, but getParameterName shows 9)
+        case ENGINE_GATED_REVERB: return 7; // GatedReverb - verified
+        case ENGINE_STEREO_WIDENER: return -1; // StereoWidener - no mix parameter
+        case ENGINE_STEREO_IMAGER: return -1; // StereoImager - no mix parameter
+        case ENGINE_DIMENSION_EXPANDER: return -1; // DimensionExpander - no mix parameter
+        case ENGINE_SPECTRAL_FREEZE: return -1; // SpectralFreeze - no mix parameter
+        case ENGINE_SPECTRAL_GATE: return 7; // SpectralGate_Platinum - verified
+        case ENGINE_PHASED_VOCODER: return 6; // PhasedVocoder - verified
+        case ENGINE_GRANULAR_CLOUD: return -1; // GranularCloud - no mix parameter (only 4 params)
+        case ENGINE_CHAOS_GENERATOR: return -1; // ChaosGenerator_Platinum - no mix parameter
+        case ENGINE_FEEDBACK_NETWORK: return 6; // FeedbackNetwork - verified
+        case ENGINE_MID_SIDE_PROCESSOR: return -1; // MidSideProcessor_Platinum - no mix parameter
+        case ENGINE_GAIN_UTILITY: return -1; // GainUtility_Platinum - no mix parameter
+        case ENGINE_MONO_MAKER: return -1; // MonoMaker_Platinum - no mix parameter
+        case ENGINE_PHASE_ALIGN: return -1; // PhaseAlign_Platinum - no mix parameter
         default: return -1;
     }
 }

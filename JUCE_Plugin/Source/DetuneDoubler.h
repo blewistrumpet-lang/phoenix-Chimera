@@ -39,9 +39,10 @@ public:
     void process(juce::AudioBuffer<float>& buffer) override;
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
-    juce::String getName() const override { return "Detune Doubler Pro"; }
+    juce::String getName() const override { return "Detune Doubler"; }
     int getNumParameters() const override { return 5; }
     juce::String getParameterName(int index) const override;
+    juce::String getParameterDisplayString(int index, float value) const;
     
 private:
     // Core components for each voice
@@ -102,12 +103,18 @@ public:
         m_grain1Pos = 0.0;
         m_grain2Pos = GRAIN_SIZE * 0.5;
         m_windowPhase = 0.0;
+        
+        // Pre-fill the buffer with silence to ensure we have valid data to read
+        for (int i = 0; i < BUFFER_SIZE; ++i) {
+            m_buffer[i] = 0.0f;
+        }
+        m_writePos = GRAIN_SIZE + 128; // Start writing ahead of the grain read positions
     }
     
     void setPitchShift(float cents) {
         float ratio = std::pow(2.0f, cents / 1200.0f);
         m_pitchRatio = ratio;
-        m_readSpeed = 1.0f / ratio;
+        m_readSpeed = ratio;  // Read faster for higher pitch
     }
     
     float process(float input) {
@@ -120,8 +127,8 @@ public:
         float grain2 = processGrain(m_grain2Pos, 0.5);
         
         // Update grain positions
-        m_grain1Pos += m_readSpeed;
-        m_grain2Pos += m_readSpeed;
+        m_grain1Pos += 1.0;
+        m_grain2Pos += 1.0;
         
         // Wrap grain positions
         if (m_grain1Pos >= GRAIN_SIZE) {
@@ -150,11 +157,13 @@ private:
     double m_windowPhase = 0.0;
     double m_sampleRate = 44100.0;
     std::mt19937& m_randomGen;
-    std::uniform_real_distribution<float> m_grainDist{-20.0f, 20.0f};
+    std::uniform_real_distribution<float> m_grainDist{-2.0f, 2.0f};
     
     float processGrain(double& grainPos, double phaseOffset) {
-        // Calculate read position
-        double readPos = m_writePos - GRAIN_SIZE + grainPos;
+        // Calculate read position with minimum delay to ensure we're reading valid data
+        // Add a small offset to avoid reading data that was just written
+        double minDelay = 64.0; // Minimum samples behind write position
+        double readPos = m_writePos - GRAIN_SIZE - minDelay + grainPos * m_readSpeed;
         while (readPos < 0) readPos += BUFFER_SIZE;
         
         // Get interpolated sample
@@ -163,12 +172,16 @@ private:
         float frac = static_cast<float>(readPos - std::floor(readPos));
         float sample = m_buffer[idx0] * (1.0f - frac) + m_buffer[idx1] * frac;
         
-        // Apply Hann window
+        // Apply simple Hann window with constant gain
         double windowPos = grainPos / GRAIN_SIZE + phaseOffset;
         windowPos = windowPos - std::floor(windowPos);
+        
+        // Simple Hann window
         float window = 0.5f * (1.0f - std::cos(2.0f * M_PI * windowPos));
         
-        return sample * window;
+        // Constant gain regardless of pitch ratio
+        // The overlapping grains should naturally maintain amplitude
+        return sample * window * 0.707f; // Scale for two overlapping windows
     }
     
     void randomizeGrain(double& grainPos) {

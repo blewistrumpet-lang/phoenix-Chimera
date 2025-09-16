@@ -206,6 +206,15 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
     
     if (numChannels == 0 || numSamples == 0) return;
     
+    // Early bypass check for mix parameter
+    double mixValue = m_mix->getCurrent();
+    if (mixValue < 0.001f) {
+        // Completely dry - no processing needed, just update parameters for smooth operation
+        m_gain->process();
+        m_filter->process();
+        return;
+    }
+    
     // Use pre-allocated buffers (no dynamic allocation in audio thread)
     const int oversampledSize = numSamples * DistortionConstants::OVERSAMPLE_FACTOR;
     
@@ -283,8 +292,8 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
                 sample = 0.0;
             }
             
-            // Distortion based on mode
-            int mode = static_cast<int>(distMode * 3.99);
+            // Distortion based on mode with bounds checking
+            int mode = std::clamp(static_cast<int>(distMode * 3.99), 0, 3);
             switch (static_cast<VintageMode>(mode)) {
                 case VintageMode::RAT:
                     sample = processRATCircuit(sample, ch);
@@ -297,6 +306,10 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
                     break;
                 case VintageMode::FUZZ_FACE:
                     sample = processFuzzFaceCircuit(sample, ch);
+                    break;
+                default:
+                    // Fallback to RAT mode if something goes wrong
+                    sample = processRATCircuit(sample, ch);
                     break;
             }
             
@@ -311,8 +324,8 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
             auto toneOut = m_toneFilters[ch].process(sample);
             sample = toneOut.lowpass;
             
-            // Output gain
-            sample *= outputGain * 2.0; // 0-2 range
+            // Output gain with proper scaling
+            sample *= outputGain * 1.5; // 0-1.5 range for more reasonable output
             
             // Final safety check before output
             if (!std::isfinite(sample)) {
@@ -327,6 +340,7 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
                 sample = 0.0;
             }
             
+            // Store processed wet signal (no mixing here - will be mixed at final output)
             m_oversampledOutput[i] = sample;
         }
         
@@ -336,6 +350,11 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
         // DC blocking on output
         for (int i = 0; i < numSamples; ++i) {
             m_outputDouble[i] = m_outputDCBlockers[ch].process(m_outputDouble[i]);
+        }
+        
+        // Final soft limiting for safety
+        for (int i = 0; i < numSamples; ++i) {
+            m_outputDouble[i] = std::tanh(m_outputDouble[i] * 0.8) * 1.25;
         }
         
         // Mix dry/wet and convert back to float
@@ -357,27 +376,41 @@ void RodentDistortion::process(juce::AudioBuffer<float>& buffer) {
 // ==================== CIRCUIT MODELS ====================
 
 double RodentDistortion::processRATCircuit(double input, int channel) {
-    // ProCo RAT circuit emulation
-    // Input stage - op-amp with gain (safe limits)
+    // ProCo RAT circuit emulation - FIXED FOR STUDIO QUALITY
+    // Input stage - op-amp with reasonable gain
     double clippingAmount = std::clamp(m_clipping->getCurrent(), 0.0, 1.0);
-    double opAmpGain = 1.0 + clippingAmount * 100.0; // Reduced from 1000x to 100x for safety
-    opAmpGain = std::clamp(opAmpGain, 1.0, 200.0); // Hard limit to prevent extreme values
+    double opAmpGain = 1.0 + clippingAmount * 20.0; // Reduced to reasonable 20x max gain
+    opAmpGain = std::clamp(opAmpGain, 1.0, 25.0); // Hard limit to prevent extreme values
+    
+    // Soft saturation before op-amp to prevent excessive peaks
+    input = std::tanh(input * 0.7) * 1.43;
+    
     double output = m_opAmps[channel].process(input, opAmpGain, 
                                               m_sampleRate * DistortionConstants::OVERSAMPLE_FACTOR);
     
-    // Hard clipping diodes (back-to-back silicon)
-    const double diodeThreshold = 0.7;
-    if (output > diodeThreshold) {
-        output = diodeThreshold + (output - diodeThreshold) * 0.05;
-    } else if (output < -diodeThreshold) {
-        output = -diodeThreshold + (output + diodeThreshold) * 0.05;
+    // Asymmetric clipping diodes (more musical)
+    const double diodeThresholdPos = 0.7;
+    const double diodeThresholdNeg = -0.65; // Slight asymmetry
+    
+    if (output > diodeThresholdPos) {
+        // Soft knee clipping
+        double excess = output - diodeThresholdPos;
+        output = diodeThresholdPos + std::tanh(excess * 2.0) * 0.1;
+    } else if (output < diodeThresholdNeg) {
+        // Soft knee clipping
+        double excess = output - diodeThresholdNeg;
+        output = diodeThresholdNeg + std::tanh(excess * 2.0) * 0.1;
     }
     
-    // Safety check and output filter (compensate for harsh harmonics)
+    // Gain compensation based on clipping amount
+    double compensation = 1.0 / (1.0 + clippingAmount * 0.5);
+    output *= compensation;
+    
+    // Safety check and output filter
     if (!std::isfinite(output)) {
         output = 0.0;
     }
-    return output * 0.5;
+    return output * 0.7; // Reduced output level for headroom
 }
 
 double RodentDistortion::processTubeScreamerCircuit(double input, int channel) {

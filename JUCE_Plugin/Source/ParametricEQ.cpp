@@ -18,8 +18,8 @@ ParametricEQ::ParametricEQ() {
 void ParametricEQ::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
     
-    // Set smoothing for all parameters
-    float smoothingMs = 5.0f;
+    // Set smoothing for all parameters - INSTANT response
+    float smoothingMs = 0.1f; // Was 5.0f - now nearly instant
     m_lowGain.setSmoothingTime(smoothingMs, sampleRate);
     m_lowFreq.setSmoothingTime(smoothingMs, sampleRate);
     m_midGain.setSmoothingTime(smoothingMs, sampleRate);

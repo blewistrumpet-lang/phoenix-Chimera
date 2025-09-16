@@ -1,0 +1,2511 @@
+{
+  "summary": {
+    "total_presets": 30,
+    "total_issues": 141,
+    "issues_by_type": {
+      "old_format_detected": [
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_001",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_002",
+          "issue": "Using old format with params arrays and 2 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_003",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_004",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_005",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_006",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_007",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_008",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_009",
+          "issue": "Using old format with params arrays and 2 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_010",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_011",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_012",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_013",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_014",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_015",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_016",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_017",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_018",
+          "issue": "Using old format with params arrays and 2 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_019",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_020",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_021",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_022",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_023",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_024",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_025",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_026",
+          "issue": "Using old format with params arrays and 2 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_027",
+          "issue": "Using old format with params arrays and 3 engines"
+        },
+        {
+          "type": "old_format_detected",
+          "severity": "medium",
+          "preset": "GC_028",
+          "issue": "Using old format with params arrays and 1 engines"
+        }
+      ],
+      "incorrect_param_count": [
+        {
+          "type": "incorrect_param_count",
+          "severity": "medium",
+          "preset": "GC_030",
+          "slot": 2,
+          "param_count": 6,
+          "issue": "Expected 7 params in old format, got 6"
+        }
+      ],
+      "engine_name_mismatch": [
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_001",
+          "slot": 0,
+          "engine_type": 0,
+          "actual_name": "Vintage Tube",
+          "expected_name": "None",
+          "issue": "Engine 0 name mismatch: 'Vintage Tube' != 'None'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_001",
+          "slot": 1,
+          "engine_type": 1,
+          "actual_name": "Tape Echo",
+          "expected_name": "Vintage Opto Compressor",
+          "issue": "Engine 1 name mismatch: 'Tape Echo' != 'Vintage Opto Compressor'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_001",
+          "slot": 2,
+          "engine_type": 27,
+          "actual_name": "Parametric EQ",
+          "expected_name": "Frequency Shifter",
+          "issue": "Engine 27 name mismatch: 'Parametric EQ' != 'Frequency Shifter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_002",
+          "slot": 0,
+          "engine_type": 2,
+          "actual_name": "Shimmer Reverb",
+          "expected_name": "Classic Compressor",
+          "issue": "Engine 2 name mismatch: 'Shimmer Reverb' != 'Classic Compressor'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_002",
+          "slot": 1,
+          "engine_type": 18,
+          "actual_name": "Dimension Expander",
+          "expected_name": "Bit Crusher",
+          "issue": "Engine 18 name mismatch: 'Dimension Expander' != 'Bit Crusher'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_003",
+          "slot": 0,
+          "engine_type": 33,
+          "actual_name": "Bit Crusher",
+          "expected_name": "Intelligent Harmonizer",
+          "issue": "Engine 33 name mismatch: 'Bit Crusher' != 'Intelligent Harmonizer'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_003",
+          "slot": 1,
+          "engine_type": 28,
+          "actual_name": "Ladder Filter",
+          "expected_name": "Harmonic Tremolo",
+          "issue": "Engine 28 name mismatch: 'Ladder Filter' != 'Harmonic Tremolo'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_003",
+          "slot": 2,
+          "engine_type": 5,
+          "actual_name": "Spring Reverb",
+          "expected_name": "Mastering Limiter",
+          "issue": "Engine 5 name mismatch: 'Spring Reverb' != 'Mastering Limiter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_004",
+          "slot": 0,
+          "engine_type": 32,
+          "actual_name": "Harmonic Exciter",
+          "expected_name": "Detune Doubler",
+          "issue": "Engine 32 name mismatch: 'Harmonic Exciter' != 'Detune Doubler'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_004",
+          "slot": 1,
+          "engine_type": 34,
+          "actual_name": "Multiband Saturator",
+          "expected_name": "Tape Echo",
+          "issue": "Engine 34 name mismatch: 'Multiband Saturator' != 'Tape Echo'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_004",
+          "slot": 2,
+          "engine_type": 12,
+          "actual_name": "Analog Phaser",
+          "expected_name": "Envelope Filter",
+          "issue": "Engine 12 name mismatch: 'Analog Phaser' != 'Envelope Filter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_005",
+          "slot": 0,
+          "engine_type": 4,
+          "actual_name": "Convolution Reverb",
+          "expected_name": "Noise Gate",
+          "issue": "Engine 4 name mismatch: 'Convolution Reverb' != 'Noise Gate'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_005",
+          "slot": 1,
+          "engine_type": 17,
+          "actual_name": "Vocal Formant Filter",
+          "expected_name": "Harmonic Exciter",
+          "issue": "Engine 17 name mismatch: 'Vocal Formant Filter' != 'Harmonic Exciter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_005",
+          "slot": 2,
+          "engine_type": 20,
+          "actual_name": "Transient Shaper",
+          "expected_name": "Muff Fuzz",
+          "issue": "Engine 20 name mismatch: 'Transient Shaper' != 'Muff Fuzz'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_006",
+          "slot": 0,
+          "engine_type": 19,
+          "actual_name": "Frequency Shifter",
+          "expected_name": "Multiband Saturator",
+          "issue": "Engine 19 name mismatch: 'Frequency Shifter' != 'Multiband Saturator'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_006",
+          "slot": 1,
+          "engine_type": 11,
+          "actual_name": "Digital Chorus",
+          "expected_name": "Formant Filter",
+          "issue": "Engine 11 name mismatch: 'Digital Chorus' != 'Formant Filter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_006",
+          "slot": 2,
+          "engine_type": 53,
+          "actual_name": "Digital Delay",
+          "expected_name": "Mid-Side Processor",
+          "issue": "Engine 53 name mismatch: 'Digital Delay' != 'Mid-Side Processor'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_007",
+          "slot": 0,
+          "engine_type": 21,
+          "actual_name": "Harmonic Tremolo",
+          "expected_name": "Rodent Distortion",
+          "issue": "Engine 21 name mismatch: 'Harmonic Tremolo' != 'Rodent Distortion'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_007",
+          "slot": 1,
+          "engine_type": 1,
+          "actual_name": "Tape Echo",
+          "expected_name": "Vintage Opto Compressor",
+          "issue": "Engine 1 name mismatch: 'Tape Echo' != 'Vintage Opto Compressor'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_007",
+          "slot": 2,
+          "engine_type": 26,
+          "actual_name": "Vintage Console EQ",
+          "expected_name": "Ring Modulator",
+          "issue": "Engine 26 name mismatch: 'Vintage Console EQ' != 'Ring Modulator'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_008",
+          "slot": 0,
+          "engine_type": 48,
+          "actual_name": "Envelope Filter",
+          "expected_name": "Spectral Gate",
+          "issue": "Engine 48 name mismatch: 'Envelope Filter' != 'Spectral Gate'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_008",
+          "slot": 1,
+          "engine_type": 46,
+          "actual_name": "Spectral Gate",
+          "expected_name": "Dimension Expander",
+          "issue": "Engine 46 name mismatch: 'Spectral Gate' != 'Dimension Expander'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_008",
+          "slot": 2,
+          "engine_type": 31,
+          "actual_name": "Wave Folder",
+          "expected_name": "Pitch Shifter",
+          "issue": "Engine 31 name mismatch: 'Wave Folder' != 'Pitch Shifter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_009",
+          "slot": 0,
+          "engine_type": 23,
+          "actual_name": "Comb Resonator",
+          "expected_name": "Stereo Chorus",
+          "issue": "Engine 23 name mismatch: 'Comb Resonator' != 'Stereo Chorus'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_010",
+          "slot": 0,
+          "engine_type": 42,
+          "actual_name": "Intelligent Harmonizer",
+          "expected_name": "Shimmer Reverb",
+          "issue": "Engine 42 name mismatch: 'Intelligent Harmonizer' != 'Shimmer Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_010",
+          "slot": 1,
+          "engine_type": 39,
+          "actual_name": "Spectral Freeze",
+          "expected_name": "Plate Reverb",
+          "issue": "Engine 39 name mismatch: 'Spectral Freeze' != 'Plate Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_010",
+          "slot": 2,
+          "engine_type": 49,
+          "actual_name": "Feedback Network",
+          "expected_name": "Phased Vocoder",
+          "issue": "Engine 49 name mismatch: 'Feedback Network' != 'Phased Vocoder'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_011",
+          "slot": 0,
+          "engine_type": 16,
+          "actual_name": "Granular Cloud",
+          "expected_name": "Wave Folder",
+          "issue": "Engine 16 name mismatch: 'Granular Cloud' != 'Wave Folder'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_011",
+          "slot": 1,
+          "engine_type": 8,
+          "actual_name": "Magnetic Drum Echo",
+          "expected_name": "Vintage Console EQ",
+          "issue": "Engine 8 name mismatch: 'Magnetic Drum Echo' != 'Vintage Console EQ'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_011",
+          "slot": 2,
+          "engine_type": 6,
+          "actual_name": "Opto Compressor",
+          "expected_name": "Dynamic EQ",
+          "issue": "Engine 6 name mismatch: 'Opto Compressor' != 'Dynamic EQ'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_012",
+          "slot": 0,
+          "engine_type": 20,
+          "actual_name": "Transient Shaper",
+          "expected_name": "Muff Fuzz",
+          "issue": "Engine 20 name mismatch: 'Transient Shaper' != 'Muff Fuzz'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_012",
+          "slot": 1,
+          "engine_type": 29,
+          "actual_name": "State Variable Filter",
+          "expected_name": "Classic Tremolo",
+          "issue": "Engine 29 name mismatch: 'State Variable Filter' != 'Classic Tremolo'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_012",
+          "slot": 2,
+          "engine_type": 7,
+          "actual_name": "VCA Compressor",
+          "expected_name": "Parametric EQ",
+          "issue": "Engine 7 name mismatch: 'VCA Compressor' != 'Parametric EQ'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_013",
+          "slot": 0,
+          "engine_type": 41,
+          "actual_name": "Chaos Generator",
+          "expected_name": "Convolution Reverb",
+          "issue": "Engine 41 name mismatch: 'Chaos Generator' != 'Convolution Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_013",
+          "slot": 1,
+          "engine_type": 40,
+          "actual_name": "Buffer Repeat",
+          "expected_name": "Spring Reverb",
+          "issue": "Engine 40 name mismatch: 'Buffer Repeat' != 'Spring Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_013",
+          "slot": 2,
+          "engine_type": 52,
+          "actual_name": "Resonant Chorus",
+          "expected_name": "Feedback Network",
+          "issue": "Engine 52 name mismatch: 'Resonant Chorus' != 'Feedback Network'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_014",
+          "slot": 0,
+          "engine_type": 15,
+          "actual_name": "Ring Modulator",
+          "expected_name": "Vintage Tube Preamp",
+          "issue": "Engine 15 name mismatch: 'Ring Modulator' != 'Vintage Tube Preamp'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_014",
+          "slot": 1,
+          "engine_type": 28,
+          "actual_name": "Ladder Filter",
+          "expected_name": "Harmonic Tremolo",
+          "issue": "Engine 28 name mismatch: 'Ladder Filter' != 'Harmonic Tremolo'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_014",
+          "slot": 2,
+          "engine_type": 34,
+          "actual_name": "Multiband Saturator",
+          "expected_name": "Tape Echo",
+          "issue": "Engine 34 name mismatch: 'Multiband Saturator' != 'Tape Echo'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_015",
+          "slot": 0,
+          "engine_type": 45,
+          "actual_name": "Phased Vocoder",
+          "expected_name": "Stereo Imager",
+          "issue": "Engine 45 name mismatch: 'Phased Vocoder' != 'Stereo Imager'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_015",
+          "slot": 1,
+          "engine_type": 14,
+          "actual_name": "Pitch Shifter",
+          "expected_name": "Vocal Formant Filter",
+          "issue": "Engine 14 name mismatch: 'Pitch Shifter' != 'Vocal Formant Filter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_015",
+          "slot": 2,
+          "engine_type": 44,
+          "actual_name": "Detune Doubler",
+          "expected_name": "Stereo Widener",
+          "issue": "Engine 44 name mismatch: 'Detune Doubler' != 'Stereo Widener'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_016",
+          "slot": 0,
+          "engine_type": 33,
+          "actual_name": "Bit Crusher",
+          "expected_name": "Intelligent Harmonizer",
+          "issue": "Engine 33 name mismatch: 'Bit Crusher' != 'Intelligent Harmonizer'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_016",
+          "slot": 1,
+          "engine_type": 40,
+          "actual_name": "Buffer Repeat",
+          "expected_name": "Spring Reverb",
+          "issue": "Engine 40 name mismatch: 'Buffer Repeat' != 'Spring Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_016",
+          "slot": 2,
+          "engine_type": 19,
+          "actual_name": "Frequency Shifter",
+          "expected_name": "Multiband Saturator",
+          "issue": "Engine 19 name mismatch: 'Frequency Shifter' != 'Multiband Saturator'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_017",
+          "slot": 0,
+          "engine_type": 6,
+          "actual_name": "Opto Compressor",
+          "expected_name": "Dynamic EQ",
+          "issue": "Engine 6 name mismatch: 'Opto Compressor' != 'Dynamic EQ'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_017",
+          "slot": 1,
+          "engine_type": 32,
+          "actual_name": "Harmonic Exciter",
+          "expected_name": "Detune Doubler",
+          "issue": "Engine 32 name mismatch: 'Harmonic Exciter' != 'Detune Doubler'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_017",
+          "slot": 2,
+          "engine_type": 26,
+          "actual_name": "Vintage Console EQ",
+          "expected_name": "Ring Modulator",
+          "issue": "Engine 26 name mismatch: 'Vintage Console EQ' != 'Ring Modulator'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_018",
+          "slot": 0,
+          "engine_type": 6,
+          "actual_name": "Opto Compressor",
+          "expected_name": "Dynamic EQ",
+          "issue": "Engine 6 name mismatch: 'Opto Compressor' != 'Dynamic EQ'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_018",
+          "slot": 2,
+          "engine_type": 3,
+          "actual_name": "Plate Reverb",
+          "expected_name": "Transient Shaper",
+          "issue": "Engine 3 name mismatch: 'Plate Reverb' != 'Transient Shaper'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_019",
+          "slot": 0,
+          "engine_type": 42,
+          "actual_name": "Intelligent Harmonizer",
+          "expected_name": "Shimmer Reverb",
+          "issue": "Engine 42 name mismatch: 'Intelligent Harmonizer' != 'Shimmer Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_019",
+          "slot": 1,
+          "engine_type": 23,
+          "actual_name": "Comb Resonator",
+          "expected_name": "Stereo Chorus",
+          "issue": "Engine 23 name mismatch: 'Comb Resonator' != 'Stereo Chorus'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_019",
+          "slot": 2,
+          "engine_type": 45,
+          "actual_name": "Phased Vocoder",
+          "expected_name": "Stereo Imager",
+          "issue": "Engine 45 name mismatch: 'Phased Vocoder' != 'Stereo Imager'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_020",
+          "slot": 0,
+          "engine_type": 35,
+          "actual_name": "Muff Fuzz",
+          "expected_name": "Digital Delay",
+          "issue": "Engine 35 name mismatch: 'Muff Fuzz' != 'Digital Delay'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_020",
+          "slot": 1,
+          "engine_type": 5,
+          "actual_name": "Spring Reverb",
+          "expected_name": "Mastering Limiter",
+          "issue": "Engine 5 name mismatch: 'Spring Reverb' != 'Mastering Limiter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_020",
+          "slot": 2,
+          "engine_type": 48,
+          "actual_name": "Envelope Filter",
+          "expected_name": "Spectral Gate",
+          "issue": "Engine 48 name mismatch: 'Envelope Filter' != 'Spectral Gate'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_021",
+          "slot": 0,
+          "engine_type": 9,
+          "actual_name": "Bucket Brigade Delay",
+          "expected_name": "Ladder Filter",
+          "issue": "Engine 9 name mismatch: 'Bucket Brigade Delay' != 'Ladder Filter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_021",
+          "slot": 1,
+          "engine_type": 17,
+          "actual_name": "Vocal Formant Filter",
+          "expected_name": "Harmonic Exciter",
+          "issue": "Engine 17 name mismatch: 'Vocal Formant Filter' != 'Harmonic Exciter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_021",
+          "slot": 2,
+          "engine_type": 24,
+          "actual_name": "Rotary Speaker",
+          "expected_name": "Resonant Chorus",
+          "issue": "Engine 24 name mismatch: 'Rotary Speaker' != 'Resonant Chorus'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_022",
+          "slot": 0,
+          "engine_type": 42,
+          "actual_name": "Intelligent Harmonizer",
+          "expected_name": "Shimmer Reverb",
+          "issue": "Engine 42 name mismatch: 'Intelligent Harmonizer' != 'Shimmer Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_022",
+          "slot": 1,
+          "engine_type": 49,
+          "actual_name": "Feedback Network",
+          "expected_name": "Phased Vocoder",
+          "issue": "Engine 49 name mismatch: 'Feedback Network' != 'Phased Vocoder'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_022",
+          "slot": 2,
+          "engine_type": 46,
+          "actual_name": "Spectral Gate",
+          "expected_name": "Dimension Expander",
+          "issue": "Engine 46 name mismatch: 'Spectral Gate' != 'Dimension Expander'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_023",
+          "slot": 0,
+          "engine_type": 50,
+          "actual_name": "Mastering Limiter",
+          "expected_name": "Granular Cloud",
+          "issue": "Engine 50 name mismatch: 'Mastering Limiter' != 'Granular Cloud'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_023",
+          "slot": 1,
+          "engine_type": 29,
+          "actual_name": "State Variable Filter",
+          "expected_name": "Classic Tremolo",
+          "issue": "Engine 29 name mismatch: 'State Variable Filter' != 'Classic Tremolo'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_023",
+          "slot": 2,
+          "engine_type": 18,
+          "actual_name": "Dimension Expander",
+          "expected_name": "Bit Crusher",
+          "issue": "Engine 18 name mismatch: 'Dimension Expander' != 'Bit Crusher'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_024",
+          "slot": 0,
+          "engine_type": 0,
+          "actual_name": "Vintage Tube",
+          "expected_name": "None",
+          "issue": "Engine 0 name mismatch: 'Vintage Tube' != 'None'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_024",
+          "slot": 1,
+          "engine_type": 27,
+          "actual_name": "Parametric EQ",
+          "expected_name": "Frequency Shifter",
+          "issue": "Engine 27 name mismatch: 'Parametric EQ' != 'Frequency Shifter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_024",
+          "slot": 2,
+          "engine_type": 6,
+          "actual_name": "Opto Compressor",
+          "expected_name": "Dynamic EQ",
+          "issue": "Engine 6 name mismatch: 'Opto Compressor' != 'Dynamic EQ'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_025",
+          "slot": 0,
+          "engine_type": 47,
+          "actual_name": "Noise Gate",
+          "expected_name": "Spectral Freeze",
+          "issue": "Engine 47 name mismatch: 'Noise Gate' != 'Spectral Freeze'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_025",
+          "slot": 1,
+          "engine_type": 16,
+          "actual_name": "Granular Cloud",
+          "expected_name": "Wave Folder",
+          "issue": "Engine 16 name mismatch: 'Granular Cloud' != 'Wave Folder'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_025",
+          "slot": 2,
+          "engine_type": 39,
+          "actual_name": "Spectral Freeze",
+          "expected_name": "Plate Reverb",
+          "issue": "Engine 39 name mismatch: 'Spectral Freeze' != 'Plate Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_026",
+          "slot": 1,
+          "engine_type": 2,
+          "actual_name": "Shimmer Reverb",
+          "expected_name": "Classic Compressor",
+          "issue": "Engine 2 name mismatch: 'Shimmer Reverb' != 'Classic Compressor'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_026",
+          "slot": 3,
+          "engine_type": 40,
+          "actual_name": "Buffer Repeat",
+          "expected_name": "Spring Reverb",
+          "issue": "Engine 40 name mismatch: 'Buffer Repeat' != 'Spring Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_027",
+          "slot": 0,
+          "engine_type": 34,
+          "actual_name": "Multiband Saturator",
+          "expected_name": "Tape Echo",
+          "issue": "Engine 34 name mismatch: 'Multiband Saturator' != 'Tape Echo'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_027",
+          "slot": 1,
+          "engine_type": 31,
+          "actual_name": "Wave Folder",
+          "expected_name": "Pitch Shifter",
+          "issue": "Engine 31 name mismatch: 'Wave Folder' != 'Pitch Shifter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_027",
+          "slot": 2,
+          "engine_type": 17,
+          "actual_name": "Vocal Formant Filter",
+          "expected_name": "Harmonic Exciter",
+          "issue": "Engine 17 name mismatch: 'Vocal Formant Filter' != 'Harmonic Exciter'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_028",
+          "slot": 0,
+          "engine_type": 49,
+          "actual_name": "Feedback Network",
+          "expected_name": "Phased Vocoder",
+          "issue": "Engine 49 name mismatch: 'Feedback Network' != 'Phased Vocoder'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_029",
+          "slot": 0,
+          "engine_type": 19,
+          "actual_name": "Frequency Shifter",
+          "expected_name": "Multiband Saturator",
+          "issue": "Engine 19 name mismatch: 'Frequency Shifter' != 'Multiband Saturator'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_029",
+          "slot": 1,
+          "engine_type": 28,
+          "actual_name": "Ladder Filter",
+          "expected_name": "Harmonic Tremolo",
+          "issue": "Engine 28 name mismatch: 'Ladder Filter' != 'Harmonic Tremolo'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_029",
+          "slot": 2,
+          "engine_type": 2,
+          "actual_name": "Shimmer Reverb",
+          "expected_name": "Classic Compressor",
+          "issue": "Engine 2 name mismatch: 'Shimmer Reverb' != 'Classic Compressor'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_029",
+          "slot": 3,
+          "engine_type": 21,
+          "actual_name": "Harmonic Tremolo",
+          "expected_name": "Rodent Distortion",
+          "issue": "Engine 21 name mismatch: 'Harmonic Tremolo' != 'Rodent Distortion'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_030",
+          "slot": 0,
+          "engine_type": 41,
+          "actual_name": "Chaos Generator",
+          "expected_name": "Convolution Reverb",
+          "issue": "Engine 41 name mismatch: 'Chaos Generator' != 'Convolution Reverb'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_030",
+          "slot": 2,
+          "engine_type": 47,
+          "actual_name": "Noise Gate",
+          "expected_name": "Spectral Freeze",
+          "issue": "Engine 47 name mismatch: 'Noise Gate' != 'Spectral Freeze'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_030",
+          "slot": 3,
+          "engine_type": 15,
+          "actual_name": "Ring Modulator",
+          "expected_name": "Vintage Tube Preamp",
+          "issue": "Engine 15 name mismatch: 'Ring Modulator' != 'Vintage Tube Preamp'"
+        },
+        {
+          "type": "engine_name_mismatch",
+          "severity": "medium",
+          "preset": "GC_030",
+          "slot": 4,
+          "engine_type": 20,
+          "actual_name": "Transient Shaper",
+          "expected_name": "Muff Fuzz",
+          "issue": "Engine 20 name mismatch: 'Transient Shaper' != 'Muff Fuzz'"
+        }
+      ],
+      "old_format_preset": [
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_001",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_002",
+          "engine_count": 2,
+          "max_slot": 1,
+          "issue": "Preset uses old format (max 2 engines, slot 1)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_003",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_004",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_005",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_006",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_007",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_008",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_009",
+          "engine_count": 2,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 2 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_010",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_011",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_012",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_013",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_014",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_015",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_016",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_017",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_018",
+          "engine_count": 2,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 2 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_019",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_020",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_021",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_022",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_023",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_024",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_025",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_027",
+          "engine_count": 3,
+          "max_slot": 2,
+          "issue": "Preset uses old format (max 3 engines, slot 2)"
+        },
+        {
+          "type": "old_format_preset",
+          "severity": "info",
+          "preset": "GC_028",
+          "engine_count": 1,
+          "max_slot": 0,
+          "issue": "Preset uses old format (max 1 engines, slot 0)"
+        }
+      ]
+    },
+    "issues_by_severity": {
+      "critical": 0,
+      "high": 0,
+      "medium": 114,
+      "low": 0,
+      "info": 27
+    },
+    "old_format_count": 27,
+    "new_format_count": 3
+  },
+  "detailed_issues": [
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_001",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_002",
+      "issue": "Using old format with params arrays and 2 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_003",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_004",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_005",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_006",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_007",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_008",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_009",
+      "issue": "Using old format with params arrays and 2 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_010",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_011",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_012",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_013",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_014",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_015",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_016",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_017",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_018",
+      "issue": "Using old format with params arrays and 2 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_019",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_020",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_021",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_022",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_023",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_024",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_025",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_026",
+      "issue": "Using old format with params arrays and 2 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_027",
+      "issue": "Using old format with params arrays and 3 engines"
+    },
+    {
+      "type": "old_format_detected",
+      "severity": "medium",
+      "preset": "GC_028",
+      "issue": "Using old format with params arrays and 1 engines"
+    },
+    {
+      "type": "incorrect_param_count",
+      "severity": "medium",
+      "preset": "GC_030",
+      "slot": 2,
+      "param_count": 6,
+      "issue": "Expected 7 params in old format, got 6"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_001",
+      "slot": 0,
+      "engine_type": 0,
+      "actual_name": "Vintage Tube",
+      "expected_name": "None",
+      "issue": "Engine 0 name mismatch: 'Vintage Tube' != 'None'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_001",
+      "slot": 1,
+      "engine_type": 1,
+      "actual_name": "Tape Echo",
+      "expected_name": "Vintage Opto Compressor",
+      "issue": "Engine 1 name mismatch: 'Tape Echo' != 'Vintage Opto Compressor'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_001",
+      "slot": 2,
+      "engine_type": 27,
+      "actual_name": "Parametric EQ",
+      "expected_name": "Frequency Shifter",
+      "issue": "Engine 27 name mismatch: 'Parametric EQ' != 'Frequency Shifter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_002",
+      "slot": 0,
+      "engine_type": 2,
+      "actual_name": "Shimmer Reverb",
+      "expected_name": "Classic Compressor",
+      "issue": "Engine 2 name mismatch: 'Shimmer Reverb' != 'Classic Compressor'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_002",
+      "slot": 1,
+      "engine_type": 18,
+      "actual_name": "Dimension Expander",
+      "expected_name": "Bit Crusher",
+      "issue": "Engine 18 name mismatch: 'Dimension Expander' != 'Bit Crusher'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_003",
+      "slot": 0,
+      "engine_type": 33,
+      "actual_name": "Bit Crusher",
+      "expected_name": "Intelligent Harmonizer",
+      "issue": "Engine 33 name mismatch: 'Bit Crusher' != 'Intelligent Harmonizer'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_003",
+      "slot": 1,
+      "engine_type": 28,
+      "actual_name": "Ladder Filter",
+      "expected_name": "Harmonic Tremolo",
+      "issue": "Engine 28 name mismatch: 'Ladder Filter' != 'Harmonic Tremolo'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_003",
+      "slot": 2,
+      "engine_type": 5,
+      "actual_name": "Spring Reverb",
+      "expected_name": "Mastering Limiter",
+      "issue": "Engine 5 name mismatch: 'Spring Reverb' != 'Mastering Limiter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_004",
+      "slot": 0,
+      "engine_type": 32,
+      "actual_name": "Harmonic Exciter",
+      "expected_name": "Detune Doubler",
+      "issue": "Engine 32 name mismatch: 'Harmonic Exciter' != 'Detune Doubler'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_004",
+      "slot": 1,
+      "engine_type": 34,
+      "actual_name": "Multiband Saturator",
+      "expected_name": "Tape Echo",
+      "issue": "Engine 34 name mismatch: 'Multiband Saturator' != 'Tape Echo'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_004",
+      "slot": 2,
+      "engine_type": 12,
+      "actual_name": "Analog Phaser",
+      "expected_name": "Envelope Filter",
+      "issue": "Engine 12 name mismatch: 'Analog Phaser' != 'Envelope Filter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_005",
+      "slot": 0,
+      "engine_type": 4,
+      "actual_name": "Convolution Reverb",
+      "expected_name": "Noise Gate",
+      "issue": "Engine 4 name mismatch: 'Convolution Reverb' != 'Noise Gate'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_005",
+      "slot": 1,
+      "engine_type": 17,
+      "actual_name": "Vocal Formant Filter",
+      "expected_name": "Harmonic Exciter",
+      "issue": "Engine 17 name mismatch: 'Vocal Formant Filter' != 'Harmonic Exciter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_005",
+      "slot": 2,
+      "engine_type": 20,
+      "actual_name": "Transient Shaper",
+      "expected_name": "Muff Fuzz",
+      "issue": "Engine 20 name mismatch: 'Transient Shaper' != 'Muff Fuzz'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_006",
+      "slot": 0,
+      "engine_type": 19,
+      "actual_name": "Frequency Shifter",
+      "expected_name": "Multiband Saturator",
+      "issue": "Engine 19 name mismatch: 'Frequency Shifter' != 'Multiband Saturator'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_006",
+      "slot": 1,
+      "engine_type": 11,
+      "actual_name": "Digital Chorus",
+      "expected_name": "Formant Filter",
+      "issue": "Engine 11 name mismatch: 'Digital Chorus' != 'Formant Filter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_006",
+      "slot": 2,
+      "engine_type": 53,
+      "actual_name": "Digital Delay",
+      "expected_name": "Mid-Side Processor",
+      "issue": "Engine 53 name mismatch: 'Digital Delay' != 'Mid-Side Processor'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_007",
+      "slot": 0,
+      "engine_type": 21,
+      "actual_name": "Harmonic Tremolo",
+      "expected_name": "Rodent Distortion",
+      "issue": "Engine 21 name mismatch: 'Harmonic Tremolo' != 'Rodent Distortion'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_007",
+      "slot": 1,
+      "engine_type": 1,
+      "actual_name": "Tape Echo",
+      "expected_name": "Vintage Opto Compressor",
+      "issue": "Engine 1 name mismatch: 'Tape Echo' != 'Vintage Opto Compressor'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_007",
+      "slot": 2,
+      "engine_type": 26,
+      "actual_name": "Vintage Console EQ",
+      "expected_name": "Ring Modulator",
+      "issue": "Engine 26 name mismatch: 'Vintage Console EQ' != 'Ring Modulator'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_008",
+      "slot": 0,
+      "engine_type": 48,
+      "actual_name": "Envelope Filter",
+      "expected_name": "Spectral Gate",
+      "issue": "Engine 48 name mismatch: 'Envelope Filter' != 'Spectral Gate'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_008",
+      "slot": 1,
+      "engine_type": 46,
+      "actual_name": "Spectral Gate",
+      "expected_name": "Dimension Expander",
+      "issue": "Engine 46 name mismatch: 'Spectral Gate' != 'Dimension Expander'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_008",
+      "slot": 2,
+      "engine_type": 31,
+      "actual_name": "Wave Folder",
+      "expected_name": "Pitch Shifter",
+      "issue": "Engine 31 name mismatch: 'Wave Folder' != 'Pitch Shifter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_009",
+      "slot": 0,
+      "engine_type": 23,
+      "actual_name": "Comb Resonator",
+      "expected_name": "Stereo Chorus",
+      "issue": "Engine 23 name mismatch: 'Comb Resonator' != 'Stereo Chorus'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_010",
+      "slot": 0,
+      "engine_type": 42,
+      "actual_name": "Intelligent Harmonizer",
+      "expected_name": "Shimmer Reverb",
+      "issue": "Engine 42 name mismatch: 'Intelligent Harmonizer' != 'Shimmer Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_010",
+      "slot": 1,
+      "engine_type": 39,
+      "actual_name": "Spectral Freeze",
+      "expected_name": "Plate Reverb",
+      "issue": "Engine 39 name mismatch: 'Spectral Freeze' != 'Plate Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_010",
+      "slot": 2,
+      "engine_type": 49,
+      "actual_name": "Feedback Network",
+      "expected_name": "Phased Vocoder",
+      "issue": "Engine 49 name mismatch: 'Feedback Network' != 'Phased Vocoder'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_011",
+      "slot": 0,
+      "engine_type": 16,
+      "actual_name": "Granular Cloud",
+      "expected_name": "Wave Folder",
+      "issue": "Engine 16 name mismatch: 'Granular Cloud' != 'Wave Folder'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_011",
+      "slot": 1,
+      "engine_type": 8,
+      "actual_name": "Magnetic Drum Echo",
+      "expected_name": "Vintage Console EQ",
+      "issue": "Engine 8 name mismatch: 'Magnetic Drum Echo' != 'Vintage Console EQ'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_011",
+      "slot": 2,
+      "engine_type": 6,
+      "actual_name": "Opto Compressor",
+      "expected_name": "Dynamic EQ",
+      "issue": "Engine 6 name mismatch: 'Opto Compressor' != 'Dynamic EQ'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_012",
+      "slot": 0,
+      "engine_type": 20,
+      "actual_name": "Transient Shaper",
+      "expected_name": "Muff Fuzz",
+      "issue": "Engine 20 name mismatch: 'Transient Shaper' != 'Muff Fuzz'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_012",
+      "slot": 1,
+      "engine_type": 29,
+      "actual_name": "State Variable Filter",
+      "expected_name": "Classic Tremolo",
+      "issue": "Engine 29 name mismatch: 'State Variable Filter' != 'Classic Tremolo'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_012",
+      "slot": 2,
+      "engine_type": 7,
+      "actual_name": "VCA Compressor",
+      "expected_name": "Parametric EQ",
+      "issue": "Engine 7 name mismatch: 'VCA Compressor' != 'Parametric EQ'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_013",
+      "slot": 0,
+      "engine_type": 41,
+      "actual_name": "Chaos Generator",
+      "expected_name": "Convolution Reverb",
+      "issue": "Engine 41 name mismatch: 'Chaos Generator' != 'Convolution Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_013",
+      "slot": 1,
+      "engine_type": 40,
+      "actual_name": "Buffer Repeat",
+      "expected_name": "Spring Reverb",
+      "issue": "Engine 40 name mismatch: 'Buffer Repeat' != 'Spring Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_013",
+      "slot": 2,
+      "engine_type": 52,
+      "actual_name": "Resonant Chorus",
+      "expected_name": "Feedback Network",
+      "issue": "Engine 52 name mismatch: 'Resonant Chorus' != 'Feedback Network'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_014",
+      "slot": 0,
+      "engine_type": 15,
+      "actual_name": "Ring Modulator",
+      "expected_name": "Vintage Tube Preamp",
+      "issue": "Engine 15 name mismatch: 'Ring Modulator' != 'Vintage Tube Preamp'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_014",
+      "slot": 1,
+      "engine_type": 28,
+      "actual_name": "Ladder Filter",
+      "expected_name": "Harmonic Tremolo",
+      "issue": "Engine 28 name mismatch: 'Ladder Filter' != 'Harmonic Tremolo'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_014",
+      "slot": 2,
+      "engine_type": 34,
+      "actual_name": "Multiband Saturator",
+      "expected_name": "Tape Echo",
+      "issue": "Engine 34 name mismatch: 'Multiband Saturator' != 'Tape Echo'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_015",
+      "slot": 0,
+      "engine_type": 45,
+      "actual_name": "Phased Vocoder",
+      "expected_name": "Stereo Imager",
+      "issue": "Engine 45 name mismatch: 'Phased Vocoder' != 'Stereo Imager'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_015",
+      "slot": 1,
+      "engine_type": 14,
+      "actual_name": "Pitch Shifter",
+      "expected_name": "Vocal Formant Filter",
+      "issue": "Engine 14 name mismatch: 'Pitch Shifter' != 'Vocal Formant Filter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_015",
+      "slot": 2,
+      "engine_type": 44,
+      "actual_name": "Detune Doubler",
+      "expected_name": "Stereo Widener",
+      "issue": "Engine 44 name mismatch: 'Detune Doubler' != 'Stereo Widener'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_016",
+      "slot": 0,
+      "engine_type": 33,
+      "actual_name": "Bit Crusher",
+      "expected_name": "Intelligent Harmonizer",
+      "issue": "Engine 33 name mismatch: 'Bit Crusher' != 'Intelligent Harmonizer'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_016",
+      "slot": 1,
+      "engine_type": 40,
+      "actual_name": "Buffer Repeat",
+      "expected_name": "Spring Reverb",
+      "issue": "Engine 40 name mismatch: 'Buffer Repeat' != 'Spring Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_016",
+      "slot": 2,
+      "engine_type": 19,
+      "actual_name": "Frequency Shifter",
+      "expected_name": "Multiband Saturator",
+      "issue": "Engine 19 name mismatch: 'Frequency Shifter' != 'Multiband Saturator'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_017",
+      "slot": 0,
+      "engine_type": 6,
+      "actual_name": "Opto Compressor",
+      "expected_name": "Dynamic EQ",
+      "issue": "Engine 6 name mismatch: 'Opto Compressor' != 'Dynamic EQ'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_017",
+      "slot": 1,
+      "engine_type": 32,
+      "actual_name": "Harmonic Exciter",
+      "expected_name": "Detune Doubler",
+      "issue": "Engine 32 name mismatch: 'Harmonic Exciter' != 'Detune Doubler'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_017",
+      "slot": 2,
+      "engine_type": 26,
+      "actual_name": "Vintage Console EQ",
+      "expected_name": "Ring Modulator",
+      "issue": "Engine 26 name mismatch: 'Vintage Console EQ' != 'Ring Modulator'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_018",
+      "slot": 0,
+      "engine_type": 6,
+      "actual_name": "Opto Compressor",
+      "expected_name": "Dynamic EQ",
+      "issue": "Engine 6 name mismatch: 'Opto Compressor' != 'Dynamic EQ'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_018",
+      "slot": 2,
+      "engine_type": 3,
+      "actual_name": "Plate Reverb",
+      "expected_name": "Transient Shaper",
+      "issue": "Engine 3 name mismatch: 'Plate Reverb' != 'Transient Shaper'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_019",
+      "slot": 0,
+      "engine_type": 42,
+      "actual_name": "Intelligent Harmonizer",
+      "expected_name": "Shimmer Reverb",
+      "issue": "Engine 42 name mismatch: 'Intelligent Harmonizer' != 'Shimmer Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_019",
+      "slot": 1,
+      "engine_type": 23,
+      "actual_name": "Comb Resonator",
+      "expected_name": "Stereo Chorus",
+      "issue": "Engine 23 name mismatch: 'Comb Resonator' != 'Stereo Chorus'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_019",
+      "slot": 2,
+      "engine_type": 45,
+      "actual_name": "Phased Vocoder",
+      "expected_name": "Stereo Imager",
+      "issue": "Engine 45 name mismatch: 'Phased Vocoder' != 'Stereo Imager'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_020",
+      "slot": 0,
+      "engine_type": 35,
+      "actual_name": "Muff Fuzz",
+      "expected_name": "Digital Delay",
+      "issue": "Engine 35 name mismatch: 'Muff Fuzz' != 'Digital Delay'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_020",
+      "slot": 1,
+      "engine_type": 5,
+      "actual_name": "Spring Reverb",
+      "expected_name": "Mastering Limiter",
+      "issue": "Engine 5 name mismatch: 'Spring Reverb' != 'Mastering Limiter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_020",
+      "slot": 2,
+      "engine_type": 48,
+      "actual_name": "Envelope Filter",
+      "expected_name": "Spectral Gate",
+      "issue": "Engine 48 name mismatch: 'Envelope Filter' != 'Spectral Gate'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_021",
+      "slot": 0,
+      "engine_type": 9,
+      "actual_name": "Bucket Brigade Delay",
+      "expected_name": "Ladder Filter",
+      "issue": "Engine 9 name mismatch: 'Bucket Brigade Delay' != 'Ladder Filter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_021",
+      "slot": 1,
+      "engine_type": 17,
+      "actual_name": "Vocal Formant Filter",
+      "expected_name": "Harmonic Exciter",
+      "issue": "Engine 17 name mismatch: 'Vocal Formant Filter' != 'Harmonic Exciter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_021",
+      "slot": 2,
+      "engine_type": 24,
+      "actual_name": "Rotary Speaker",
+      "expected_name": "Resonant Chorus",
+      "issue": "Engine 24 name mismatch: 'Rotary Speaker' != 'Resonant Chorus'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_022",
+      "slot": 0,
+      "engine_type": 42,
+      "actual_name": "Intelligent Harmonizer",
+      "expected_name": "Shimmer Reverb",
+      "issue": "Engine 42 name mismatch: 'Intelligent Harmonizer' != 'Shimmer Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_022",
+      "slot": 1,
+      "engine_type": 49,
+      "actual_name": "Feedback Network",
+      "expected_name": "Phased Vocoder",
+      "issue": "Engine 49 name mismatch: 'Feedback Network' != 'Phased Vocoder'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_022",
+      "slot": 2,
+      "engine_type": 46,
+      "actual_name": "Spectral Gate",
+      "expected_name": "Dimension Expander",
+      "issue": "Engine 46 name mismatch: 'Spectral Gate' != 'Dimension Expander'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_023",
+      "slot": 0,
+      "engine_type": 50,
+      "actual_name": "Mastering Limiter",
+      "expected_name": "Granular Cloud",
+      "issue": "Engine 50 name mismatch: 'Mastering Limiter' != 'Granular Cloud'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_023",
+      "slot": 1,
+      "engine_type": 29,
+      "actual_name": "State Variable Filter",
+      "expected_name": "Classic Tremolo",
+      "issue": "Engine 29 name mismatch: 'State Variable Filter' != 'Classic Tremolo'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_023",
+      "slot": 2,
+      "engine_type": 18,
+      "actual_name": "Dimension Expander",
+      "expected_name": "Bit Crusher",
+      "issue": "Engine 18 name mismatch: 'Dimension Expander' != 'Bit Crusher'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_024",
+      "slot": 0,
+      "engine_type": 0,
+      "actual_name": "Vintage Tube",
+      "expected_name": "None",
+      "issue": "Engine 0 name mismatch: 'Vintage Tube' != 'None'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_024",
+      "slot": 1,
+      "engine_type": 27,
+      "actual_name": "Parametric EQ",
+      "expected_name": "Frequency Shifter",
+      "issue": "Engine 27 name mismatch: 'Parametric EQ' != 'Frequency Shifter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_024",
+      "slot": 2,
+      "engine_type": 6,
+      "actual_name": "Opto Compressor",
+      "expected_name": "Dynamic EQ",
+      "issue": "Engine 6 name mismatch: 'Opto Compressor' != 'Dynamic EQ'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_025",
+      "slot": 0,
+      "engine_type": 47,
+      "actual_name": "Noise Gate",
+      "expected_name": "Spectral Freeze",
+      "issue": "Engine 47 name mismatch: 'Noise Gate' != 'Spectral Freeze'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_025",
+      "slot": 1,
+      "engine_type": 16,
+      "actual_name": "Granular Cloud",
+      "expected_name": "Wave Folder",
+      "issue": "Engine 16 name mismatch: 'Granular Cloud' != 'Wave Folder'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_025",
+      "slot": 2,
+      "engine_type": 39,
+      "actual_name": "Spectral Freeze",
+      "expected_name": "Plate Reverb",
+      "issue": "Engine 39 name mismatch: 'Spectral Freeze' != 'Plate Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_026",
+      "slot": 1,
+      "engine_type": 2,
+      "actual_name": "Shimmer Reverb",
+      "expected_name": "Classic Compressor",
+      "issue": "Engine 2 name mismatch: 'Shimmer Reverb' != 'Classic Compressor'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_026",
+      "slot": 3,
+      "engine_type": 40,
+      "actual_name": "Buffer Repeat",
+      "expected_name": "Spring Reverb",
+      "issue": "Engine 40 name mismatch: 'Buffer Repeat' != 'Spring Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_027",
+      "slot": 0,
+      "engine_type": 34,
+      "actual_name": "Multiband Saturator",
+      "expected_name": "Tape Echo",
+      "issue": "Engine 34 name mismatch: 'Multiband Saturator' != 'Tape Echo'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_027",
+      "slot": 1,
+      "engine_type": 31,
+      "actual_name": "Wave Folder",
+      "expected_name": "Pitch Shifter",
+      "issue": "Engine 31 name mismatch: 'Wave Folder' != 'Pitch Shifter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_027",
+      "slot": 2,
+      "engine_type": 17,
+      "actual_name": "Vocal Formant Filter",
+      "expected_name": "Harmonic Exciter",
+      "issue": "Engine 17 name mismatch: 'Vocal Formant Filter' != 'Harmonic Exciter'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_028",
+      "slot": 0,
+      "engine_type": 49,
+      "actual_name": "Feedback Network",
+      "expected_name": "Phased Vocoder",
+      "issue": "Engine 49 name mismatch: 'Feedback Network' != 'Phased Vocoder'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_029",
+      "slot": 0,
+      "engine_type": 19,
+      "actual_name": "Frequency Shifter",
+      "expected_name": "Multiband Saturator",
+      "issue": "Engine 19 name mismatch: 'Frequency Shifter' != 'Multiband Saturator'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_029",
+      "slot": 1,
+      "engine_type": 28,
+      "actual_name": "Ladder Filter",
+      "expected_name": "Harmonic Tremolo",
+      "issue": "Engine 28 name mismatch: 'Ladder Filter' != 'Harmonic Tremolo'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_029",
+      "slot": 2,
+      "engine_type": 2,
+      "actual_name": "Shimmer Reverb",
+      "expected_name": "Classic Compressor",
+      "issue": "Engine 2 name mismatch: 'Shimmer Reverb' != 'Classic Compressor'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_029",
+      "slot": 3,
+      "engine_type": 21,
+      "actual_name": "Harmonic Tremolo",
+      "expected_name": "Rodent Distortion",
+      "issue": "Engine 21 name mismatch: 'Harmonic Tremolo' != 'Rodent Distortion'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_030",
+      "slot": 0,
+      "engine_type": 41,
+      "actual_name": "Chaos Generator",
+      "expected_name": "Convolution Reverb",
+      "issue": "Engine 41 name mismatch: 'Chaos Generator' != 'Convolution Reverb'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_030",
+      "slot": 2,
+      "engine_type": 47,
+      "actual_name": "Noise Gate",
+      "expected_name": "Spectral Freeze",
+      "issue": "Engine 47 name mismatch: 'Noise Gate' != 'Spectral Freeze'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_030",
+      "slot": 3,
+      "engine_type": 15,
+      "actual_name": "Ring Modulator",
+      "expected_name": "Vintage Tube Preamp",
+      "issue": "Engine 15 name mismatch: 'Ring Modulator' != 'Vintage Tube Preamp'"
+    },
+    {
+      "type": "engine_name_mismatch",
+      "severity": "medium",
+      "preset": "GC_030",
+      "slot": 4,
+      "engine_type": 20,
+      "actual_name": "Transient Shaper",
+      "expected_name": "Muff Fuzz",
+      "issue": "Engine 20 name mismatch: 'Transient Shaper' != 'Muff Fuzz'"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_001",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_002",
+      "engine_count": 2,
+      "max_slot": 1,
+      "issue": "Preset uses old format (max 2 engines, slot 1)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_003",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_004",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_005",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_006",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_007",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_008",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_009",
+      "engine_count": 2,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 2 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_010",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_011",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_012",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_013",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_014",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_015",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_016",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_017",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_018",
+      "engine_count": 2,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 2 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_019",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_020",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_021",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_022",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_023",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_024",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_025",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_027",
+      "engine_count": 3,
+      "max_slot": 2,
+      "issue": "Preset uses old format (max 3 engines, slot 2)"
+    },
+    {
+      "type": "old_format_preset",
+      "severity": "info",
+      "preset": "GC_028",
+      "engine_count": 1,
+      "max_slot": 0,
+      "issue": "Preset uses old format (max 1 engines, slot 0)"
+    }
+  ]
+}

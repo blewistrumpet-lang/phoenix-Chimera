@@ -1,6 +1,7 @@
 #pragma once
 #include "EngineBase.h"
-#include "DspEngineUtilities.h"#include <vector>
+#include "DspEngineUtilities.h"
+#include <vector>
 #include <array>
 #include <random>
 #include <complex>

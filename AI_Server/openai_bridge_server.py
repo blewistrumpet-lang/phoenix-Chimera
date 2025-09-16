@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # OpenAI API configuration
 # First try environment variable, then use the provided key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 class OpenAIBridgeServer:
     def __init__(self, host: str = "0.0.0.0", port: int = 9999):

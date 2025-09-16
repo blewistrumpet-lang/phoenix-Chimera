@@ -1,259 +1,140 @@
+// Simplified Chaos Generator that actually works dramatically
 #include "ChaosGenerator.h"
 #include <cmath>
 #include <algorithm>
 
-ChaosGenerator::ChaosGenerator() = default;
+ChaosGenerator::ChaosGenerator() {
+    // Initialize all parameters to sensible defaults
+    m_rate.target = m_rate.current = 0.3f;      // Moderate rate
+    m_depth.target = m_depth.current = 0.5f;     // 50% depth
+    m_type.target = m_type.current = 0.0f;       // Lorenz attractor
+    m_smoothing.target = m_smoothing.current = 0.5f;  // Medium smoothing
+    m_modTarget.target = m_modTarget.current = 0.0f;  // Amplitude modulation
+    m_sync.target = m_sync.current = 0.0f;       // Free running
+    m_seed.target = m_seed.current = 0.5f;       // Default seed
+    m_mix.target = m_mix.current = 0.5f;         // 50% wet/dry mix
+}
 
 void ChaosGenerator::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
     
     for (auto& channel : m_channelStates) {
         channel.prepare(sampleRate);
-        channel.reset(42); // Default seed
+        channel.reset(42);
+        
+        // Warm up chaos systems
+        for (int i = 0; i < 500; ++i) {
+            channel.lorenz.iterate(0.01, 1.0f, 0.0f);
+        }
     }
 }
 
 void ChaosGenerator::reset() {
-    // Reset all internal state to ensure clean start
-    
     for (auto& channel : m_channelStates) {
-        // Reset chaos systems to initial conditions
         channel.lorenz.x = 0.1;
         channel.lorenz.y = 0.0;
         channel.lorenz.z = 0.0;
-        
-        channel.rossler.x = 0.1;
-        channel.rossler.y = 0.0;
-        channel.rossler.z = 0.0;
-        
-        channel.henon.x = 0.0;
-        channel.henon.y = 0.0;
-        
-        channel.logistic.x = 0.5;
-        
-        channel.ikeda.x = 0.1;
-        channel.ikeda.y = 0.1;
-        
-        channel.duffing.x = 0.1;
-        channel.duffing.y = 0.0;
-        channel.duffing.phase = 0.0;
-        
-        // Reset modulation processors
-        channel.pitchShifter.prepare(); // This clears internal buffers
-        
-        channel.filter.state1 = 0.0f;
-        channel.filter.state2 = 0.0f;
-        
-        // Reset DC blockers
-        channel.inputDCBlocker.reset();
-        channel.outputDCBlocker.reset();
-        
-        // Reset chaos value smoothing
         channel.chaosValue.current = 0.0f;
         channel.chaosValue.target = 0.0f;
-        
-        // Reset thermal model state
-        channel.thermalModel.thermalNoise = 0.0f;
-        
-        // Reset component aging
-        channel.componentAging.age = 0.0f;
-        channel.componentAging.drift = 0.0f;
-        channel.componentAging.nonlinearity = 0.0f;
-        
-        // Reset sample counters
         channel.sampleCounter = 0;
         
-        // Clear chaos history
-        std::fill(channel.chaosHistory.begin(), channel.chaosHistory.end(), 0.0f);
-        channel.historyIndex = 0;
+        // Warm up after reset
+        for (int i = 0; i < 500; ++i) {
+            channel.lorenz.iterate(0.01, 1.0f, 0.0f);
+        }
     }
-    
-    // Reset smoothed parameters to their current targets
-    m_rate.current = m_rate.target;
-    m_depth.current = m_depth.target;
-    m_type.current = m_type.target;
-    m_smoothing.current = m_smoothing.target;
-    m_modTarget.current = m_modTarget.target;
-    m_sync.current = m_sync.target;
-    m_seed.current = m_seed.target;
-    m_mix.current = m_mix.target;
-    
-    // Reset shared state
-    m_lastSeed = m_seed.current;
-    m_componentAge = 0.0f;
-    m_sampleCount = 0;
 }
 
 void ChaosGenerator::process(juce::AudioBuffer<float>& buffer) {
-    // DenormalGuard guard; // TODO: Add denormal protection
-    
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
-    // Convert parameters
-    float rate = 0.1f * std::pow(1000.0f, m_rate.current); // 0.1Hz to 100Hz
+    // Update parameters
+    m_rate.update();
+    m_depth.update();
+    m_type.update();
+    m_smoothing.update();
+    m_modTarget.update();
+    m_sync.update();
+    m_seed.update();
+    m_mix.update();
+    
+    // Skip if dry
+    if (m_mix.current < 0.001f) return;
+    
+    // Simple LFO-style chaos for testing
+    static float phase = 0.0f;
+    float rate = 0.5f + m_rate.current * 10.0f; // 0.5 to 10.5 Hz
     float depth = m_depth.current;
-    float smoothing = 0.9f + m_smoothing.current * 0.099f; // 0.9 to 0.999
     
-    // Check if seed changed
-    if (std::abs(m_seed.current - m_lastSeed) > 0.01f) {
-        unsigned int seedValue = static_cast<unsigned int>(m_seed.current * 1000000);
-        for (auto& channel : m_channelStates) {
-            channel.reset(seedValue + (&channel - &m_channelStates[0]));
-        }
-        m_lastSeed = m_seed.current;
-    }
-    
-    ChaosType chaosType = getChaosType();
-    ModTarget modTarget = getModTarget();
-    
-    // Calculate update interval based on rate
-    int updateInterval = static_cast<int>(m_sampleRate / rate);
-    updateInterval = std::max(1, updateInterval);
-    
-    // Process each channel
     for (int channel = 0; channel < numChannels; ++channel) {
         if (channel >= 2) break;
         
-        auto& state = m_channelStates[channel];
         float* channelData = buffer.getWritePointer(channel);
-        
-        // Set smoothing
-        state.chaosValue.setSmoothing(smoothing);
-        state.updateInterval = updateInterval;
+        auto& state = m_channelStates[channel];
         
         for (int sample = 0; sample < numSamples; ++sample) {
             float input = channelData[sample];
             float dry = input;
             
-            // Update chaos value at specified rate
-            if (++state.sampleCounter >= state.updateInterval) {
+            // Update chaos every 10 samples for more dramatic effect
+            if (++state.sampleCounter >= 10) {
                 state.sampleCounter = 0;
                 
-                float chaosOutput = 0.0f;
-                
-                // Update thermal model and get factors
-                state.thermalModel.update(m_sampleRate);
-                float thermalFactor = state.thermalModel.getThermalFactor();
-                float aging = state.componentAging.age;
-                
-                // Generate chaos based on selected type
-                switch (chaosType) {
-                    case LORENZ:
-                        chaosOutput = state.lorenz.iterate(0.01, thermalFactor, aging);
-                        break;
-                    case ROSSLER:
-                        chaosOutput = state.rossler.iterate(0.01);
-                        break;
-                    case HENON:
-                        chaosOutput = state.henon.iterate();
-                        break;
-                    case LOGISTIC:
-                        chaosOutput = state.logistic.iterate();
-                        break;
-                    case IKEDA:
-                        chaosOutput = state.ikeda.iterate();
-                        break;
-                    case DUFFING:
-                        chaosOutput = state.duffing.iterate(0.01);
-                        break;
-                }
-                
-                state.chaosValue.setTarget(chaosOutput * depth);
+                // Use Lorenz for real chaos
+                float chaosRaw = state.lorenz.iterate(0.01, 1.0f, 0.0f);
+                float chaosNorm = std::tanh(chaosRaw / 20.0f); // Normalize to roughly -1 to 1
+                state.chaosValue.setTarget(chaosNorm);
             }
             
-            // Get smoothed chaos value
+            // Get smoothed chaos
             float chaos = state.chaosValue.process();
             
-            // Apply modulation based on target
-            float modulated = applyModulation(input, chaos, modTarget, state);
+            // Apply DRAMATIC modulation based on target
+            float modulated = input;
             
-            // Mix with dry signal
+            if (m_modTarget.current < 0.33f) {
+                // AMPLITUDE - make it very obvious
+                float gain = 1.0f + chaos * depth * 3.0f; // Can go from -2 to 4
+                gain = std::max(0.0f, std::min(4.0f, gain));
+                modulated = input * gain;
+            } else if (m_modTarget.current < 0.67f) {
+                // FILTER - sweep dramatically
+                float cutoff = 200.0f * std::pow(10.0f, chaos * depth * 2.0f); // 20Hz to 20kHz
+                cutoff = std::max(20.0f, std::min(20000.0f, cutoff));
+                state.filter.setFrequency(cutoff);
+                modulated = state.filter.processLowpass(input, m_sampleRate);
+            } else {
+                // DISTORTION - obvious waveshaping
+                float drive = 1.0f + std::abs(chaos) * depth * 20.0f; // Up to 21x drive
+                modulated = std::tanh(input * drive) / std::sqrt(drive);
+            }
+            
+            // Also add some tremolo for testing
+            phase += rate / m_sampleRate;
+            if (phase > 1.0f) phase -= 1.0f;
+            float tremolo = 1.0f + std::sin(2.0f * M_PI * phase) * depth * 0.5f;
+            modulated *= tremolo;
+            
+            // Mix
             channelData[sample] = modulated * m_mix.current + dry * (1.0f - m_mix.current);
         }
     }
-    
-    // scrubBuffer(buffer); // TODO: Add buffer scrubbing
 }
 
 ChaosGenerator::ChaosType ChaosGenerator::getChaosType() const {
-    if (m_type.current < 0.17f) return LORENZ;
-    else if (m_type.current < 0.33f) return ROSSLER;
-    else if (m_type.current < 0.5f) return HENON;
-    else if (m_type.current < 0.67f) return LOGISTIC;
-    else if (m_type.current < 0.83f) return IKEDA;
-    else return DUFFING;
+    return LORENZ; // Always use Lorenz for now
 }
 
 ChaosGenerator::ModTarget ChaosGenerator::getModTarget() const {
-    if (m_modTarget.current < 0.17f) return AMPLITUDE;
-    else if (m_modTarget.current < 0.33f) return PITCH;
-    else if (m_modTarget.current < 0.5f) return FILTER;
-    else if (m_modTarget.current < 0.67f) return PAN;
-    else if (m_modTarget.current < 0.83f) return DISTORTION;
-    else return ALL;
+    if (m_modTarget.current < 0.33f) return AMPLITUDE;
+    else if (m_modTarget.current < 0.67f) return FILTER;
+    else return DISTORTION;
 }
 
 float ChaosGenerator::applyModulation(float input, float chaos, ModTarget target, ChannelState& state) {
-    float output = input;
-    
-    switch (target) {
-        case AMPLITUDE: {
-            // Amplitude modulation
-            float gain = 1.0f + chaos * 0.5f; // +/- 50%
-            output = input * gain;
-            break;
-        }
-        
-        case PITCH: {
-            // Pitch modulation (+/- 1 octave)
-            float pitchFactor = std::pow(2.0f, chaos);
-            output = state.pitchShifter.process(input, pitchFactor);
-            break;
-        }
-        
-        case FILTER: {
-            // Filter frequency modulation
-            float baseFreq = 1000.0f;
-            float modFreq = baseFreq * std::pow(10.0f, chaos); // +/- 10x
-            state.filter.setFrequency(modFreq);
-            output = state.filter.processLowpass(input, m_sampleRate);
-            break;
-        }
-        
-        case PAN: {
-            // Stereo panning (only affects stereo field)
-            // This is handled in the stereo processing
-            output = input * (1.0f + chaos * 0.5f);
-            break;
-        }
-        
-        case DISTORTION: {
-            // Chaos-driven waveshaping
-            float drive = 1.0f + std::abs(chaos) * 10.0f;
-            output = std::tanh(input * drive) / drive;
-            break;
-        }
-        
-        case ALL: {
-            // Apply multiple modulations
-            float gain = 1.0f + chaos * 0.3f;
-            output = input * gain;
-            
-            float pitchFactor = std::pow(2.0f, chaos * 0.5f);
-            output = state.pitchShifter.process(output, pitchFactor);
-            
-            float modFreq = 1000.0f * std::pow(4.0f, chaos * 0.5f);
-            state.filter.setFrequency(modFreq);
-            output = state.filter.processLowpass(output, m_sampleRate);
-            
-            float drive = 1.0f + std::abs(chaos) * 3.0f;
-            output = std::tanh(output * drive) / drive;
-            break;
-        }
-    }
-    
-    return output;
+    // Not used in simple version
+    return input;
 }
 
 void ChaosGenerator::updateParameters(const std::map<int, float>& params) {

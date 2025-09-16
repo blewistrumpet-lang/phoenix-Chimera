@@ -1,0 +1,424 @@
+COMPREHENSIVE REVERB TEST SUITE
+Testing all reverbs with various pitches, volumes, and conditions
+
+======================================================================
+TESTING SpringReverb
+======================================================================
+
+--- Volume Response Test ---
+Testing SpringReverb volume response...
+  Volume 0.001 -> Output peak: 0.001 RMS: 0.000
+  Volume 0.010 -> Output peak: 0.005 RMS: 0.004
+  Volume 0.100 -> Output peak: 0.055 RMS: 0.036
+  Volume 0.300 -> Output peak: 0.168 RMS: 0.109
+  Volume 0.500 -> Output peak: 0.274 RMS: 0.182
+  Volume 0.700 -> Output peak: 0.384 RMS: 0.255
+  Volume 0.900 -> Output peak: 0.496 RMS: 0.327
+  Volume 1.000 -> Output peak: 0.550 RMS: 0.364
+
+--- Frequency Response Test ---
+Testing SpringReverb frequency response...
+   40.000 Hz -> Energy: 0.381788
+  80.000000 Hz -> Energy: 0.329858
+  200.000000 Hz -> Energy: 0.344809
+  440.000000 Hz -> Energy: 0.335525
+  1000.000000 Hz -> Energy: 0.352109
+  2000.000000 Hz -> Energy: 0.342678
+  5000.000000 Hz -> Energy: 0.321070
+  10000.000000 Hz -> Energy: 0.268437
+  15000.000000 Hz -> Energy: 0.248385
+
+--- Parameter Combinations Test ---
+Testing SpringReverb parameter combinations...
+
+--- Complex Audio Test ---
+Testing SpringReverb with complex audio...
+  Peak level: 1.215023
+  Distortion: DETECTED
+
+--- Impulse Response Test ---
+Testing SpringReverb impulse response...
+  Mix=0.000000 -> Incorrect dry signal
+  Mix=0.250000 -> Mixed output (first=0.013381)
+  Mix=0.500000 -> Mixed output (first=0.013633)
+  Mix=0.750000 -> Mixed output (first=0.014227)
+  Mix=1.000000 -> Reverb tail present (energy=0.316969)
+
+--- RESULTS FOR SpringReverb ---
+Volume: PASS ✓ - All volume levels handled correctly
+Frequency: PASS ✓ - All frequencies handled well (balance ratio: 1.536462)
+Parameters: PASS ✓ - All parameter combinations stable
+Complex: FAIL ✗ - Harmonic distortion detected with complex audio
+Impulse: FAIL ✗ - 
+
+Overall: 3/5 tests passed - NEEDS ATTENTION ✗
+
+======================================================================
+TESTING ShimmerReverb
+======================================================================
+
+--- Volume Response Test ---
+Testing ShimmerReverb volume response...
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.700000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.300000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.500000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+  Volume 0.001 -> Output peak: 0.000 RMS: 0.000
+  Volume 0.010 -> Output peak: 0.005 RMS: 0.004
+  Volume 0.100 -> Output peak: 0.050 RMS: 0.035
+  Volume 0.300 -> Output peak: 0.150 RMS: 0.105
+  Volume 0.500 -> Output peak: 0.250 RMS: 0.175
+  Volume 0.700 -> Output peak: 0.350 RMS: 0.246
+  Volume 0.900 -> Output peak: 0.450 RMS: 0.316
+  Volume 1.000 -> Output peak: 0.500 RMS: 0.351
+
+--- Frequency Response Test ---
+Testing ShimmerReverb frequency response...
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.700
+    After setParameter, mix = 0.500
+  Setting param 1 = 0.300
+    After setParameter, mix = 0.500
+  Setting param 2 = 0.500
+    After setParameter, mix = 0.500
+  Setting param 3 = 0.500
+    After setParameter, mix = 0.500
+  Final mix value = 0.500
+   40.000 Hz -> Energy: 0.233269
+  80.000000 Hz -> Energy: 0.177789
+  200.000000 Hz -> Energy: 0.193706
+  440.000000 Hz -> Energy: 0.172738
+  1000.000000 Hz -> Energy: 0.191745
+  2000.000000 Hz -> Energy: 0.217931
+  5000.000000 Hz -> Energy: 0.235808
+  10000.000000 Hz -> Energy: 0.234052
+  15000.000000 Hz -> Energy: 0.231182
+
+--- Parameter Combinations Test ---
+Testing ShimmerReverb parameter combinations...
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.000000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.000000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.000000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.000000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 1.000000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 1.000000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 1.000000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 1.000000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.000000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 1.000000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.000000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 1.000000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 1.000000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.000000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 1.000000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.000000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.500000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.100000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.900000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.200000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.800000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.900000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.100000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.800000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.200000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+
+--- Complex Audio Test ---
+Testing ShimmerReverb with complex audio...
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.300000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.700000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+  Peak level: 0.656093
+  Distortion: None
+
+--- Impulse Response Test ---
+Testing ShimmerReverb impulse response...
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.000000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.300000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.700000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+  Mix=0.000000 -> Incorrect dry signal
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.250000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.300000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.700000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+  Mix=0.250000 -> Mixed output (first=0.022097)
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.300000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.700000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+  Mix=0.500000 -> Mixed output (first=0.022097)
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 0.750000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.300000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.700000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+  Mix=0.750000 -> Mixed output (first=0.022097)
+ShimmerReverb::updateParameters called with 4 params
+  Setting param 0 = 1.000000
+    After setParameter, mix = 0.500000
+  Setting param 1 = 0.300000
+    After setParameter, mix = 0.500000
+  Setting param 2 = 0.500000
+    After setParameter, mix = 0.500000
+  Setting param 3 = 0.700000
+    After setParameter, mix = 0.500000
+  Final mix value = 0.500000
+  Mix=1.000000 -> Reverb tail present (energy=0.042910)
+
+--- RESULTS FOR ShimmerReverb ---
+Volume: PASS ✓ - All volume levels handled correctly
+Frequency: PASS ✓ - All frequencies handled well (balance ratio: 1.364325)
+Parameters: PASS ✓ - All parameter combinations stable
+Complex: PASS ✓ - Complex audio handled correctly
+Impulse: FAIL ✗ - 
+
+Overall: 4/5 tests passed - NEEDS ATTENTION ✗
+
+======================================================================
+TESTING GatedReverb
+======================================================================
+
+--- Volume Response Test ---
+Testing GatedReverb volume response...
+  Volume 0.001 -> Output peak: 0.000 RMS: 0.000
+  Volume 0.010 -> Output peak: 0.005 RMS: 0.004
+  Volume 0.100 -> Output peak: 0.050 RMS: 0.035
+  Volume 0.300 -> Output peak: 0.150 RMS: 0.105
+  Volume 0.500 -> Output peak: 0.250 RMS: 0.175
+  Volume 0.700 -> Output peak: 0.350 RMS: 0.246
+  Volume 0.900 -> Output peak: 0.450 RMS: 0.316
+  Volume 1.000 -> Output peak: 0.500 RMS: 0.351
+
+--- Frequency Response Test ---
+Testing GatedReverb frequency response...
+   40.000 Hz -> Energy: 0.109922
+  80.000000 Hz -> Energy: 0.109534
+  200.000000 Hz -> Energy: 0.107402
+  440.000000 Hz -> Energy: 0.105214
+  1000.000000 Hz -> Energy: 0.105669
+  2000.000000 Hz -> Energy: 0.105901
+  5000.000000 Hz -> Energy: 0.106021
+  10000.000000 Hz -> Energy: 0.106023
+  15000.000000 Hz -> Energy: 0.106030
+
+--- Parameter Combinations Test ---
+Testing GatedReverb parameter combinations...
+
+--- Complex Audio Test ---
+Testing GatedReverb with complex audio...
+  Peak level: 0.623972
+  Distortion: None
+
+--- Impulse Response Test ---
+Testing GatedReverb impulse response...
+  Mix=0.000000 -> Incorrect dry signal
+  Mix=0.250000 -> Mixed output (first=0.022097)
+  Mix=0.500000 -> Mixed output (first=0.022097)
+  Mix=0.750000 -> Mixed output (first=0.022097)
+  Mix=1.000000 -> No reverb tail
+
+--- RESULTS FOR GatedReverb ---
+Volume: PASS ✓ - All volume levels handled correctly
+Frequency: PASS ✓ - All frequencies handled well (balance ratio: 1.043751)
+Parameters: PASS ✓ - All parameter combinations stable
+Complex: PASS ✓ - Complex audio handled correctly
+Impulse: FAIL ✗ - 
+
+Overall: 4/5 tests passed - NEEDS ATTENTION ✗
+
+======================================================================
+TESTING PlateReverb
+======================================================================
+
+--- Volume Response Test ---
+Testing PlateReverb volume response...
+  Volume 0.001 -> Output peak: 0.000 RMS: 0.000
+  Volume 0.010 -> Output peak: 0.005 RMS: 0.004
+  Volume 0.100 -> Output peak: 0.050 RMS: 0.035
+  Volume 0.300 -> Output peak: 0.150 RMS: 0.105
+  Volume 0.500 -> Output peak: 0.250 RMS: 0.175
+  Volume 0.700 -> Output peak: 0.350 RMS: 0.246
+  Volume 0.900 -> Output peak: 0.450 RMS: 0.316
+  Volume 1.000 -> Output peak: 0.500 RMS: 0.351
+
+--- Frequency Response Test ---
+Testing PlateReverb frequency response...
+   40.000 Hz -> Energy: 0.109922
+  80.000000 Hz -> Energy: 0.109534
+  200.000000 Hz -> Energy: 0.107402
+  440.000000 Hz -> Energy: 0.105214
+  1000.000000 Hz -> Energy: 0.105669
+  2000.000000 Hz -> Energy: 0.105901
+  5000.000000 Hz -> Energy: 0.106021
+  10000.000000 Hz -> Energy: 0.106023
+  15000.000000 Hz -> Energy: 0.106030
+
+--- Parameter Combinations Test ---
+Testing PlateReverb parameter combinations...
+
+--- Complex Audio Test ---
+Testing PlateReverb with complex audio...
+  Peak level: 0.680894
+  Distortion: None
+
+--- Impulse Response Test ---
+Testing PlateReverb impulse response...
+  Mix=0.000000 -> Incorrect dry signal
+  Mix=0.250000 -> Mixed output (first=0.013258)
+  Mix=0.500000 -> Mixed output (first=0.013258)
+  Mix=0.750000 -> Mixed output (first=0.013258)
+  Mix=1.000000 -> No reverb tail
+
+--- RESULTS FOR PlateReverb ---
+Volume: PASS ✓ - All volume levels handled correctly
+Frequency: PASS ✓ - All frequencies handled well (balance ratio: 1.043751)
+Parameters: PASS ✓ - All parameter combinations stable
+Complex: PASS ✓ - Complex audio handled correctly
+Impulse: FAIL ✗ - 
+
+Overall: 4/5 tests passed - NEEDS ATTENTION ✗
+
+======================================================================
+TESTING ConvolutionReverb
+======================================================================
+
+--- Volume Response Test ---
+Testing ConvolutionReverb volume response...
+  Volume 0.001 -> Output peak: 0.000 RMS: 0.000
+  Volume 0.010 -> Output peak: 0.003 RMS: 0.002
+  Volume 0.100 -> Output peak: 0.030 RMS: 0.021
+  Volume 0.300 -> Output peak: 0.090 RMS: 0.063
+  Volume 0.500 -> Output peak: 0.150 RMS: 0.105
+  Volume 0.700 -> Output peak: 0.210 RMS: 0.147
+  Volume 0.900 -> Output peak: 0.270 RMS: 0.189
+  Volume 1.000 -> Output peak: 0.300 RMS: 0.210
+
+--- Frequency Response Test ---
+Testing ConvolutionReverb frequency response...
+   40.000 Hz -> Energy: 0.065953
+  80.000000 Hz -> Energy: 0.065720
+  200.000000 Hz -> Energy: 0.064441
+  440.000000 Hz -> Energy: 0.063129
+  1000.000000 Hz -> Energy: 0.063401
+  2000.000000 Hz -> Energy: 0.063540
+  5000.000000 Hz -> Energy: 0.063613
+  10000.000000 Hz -> Energy: 0.063614
+  15000.000000 Hz -> Energy: 0.063618
+
+--- Parameter Combinations Test ---
+Testing ConvolutionReverb parameter combinations...
+
+--- Complex Audio Test ---
+Testing ConvolutionReverb with complex audio...
+  Peak level: 5.066592
+  Distortion: DETECTED
+
+--- Impulse Response Test ---
+Testing ConvolutionReverb impulse response...
+  Mix=0.000000 -> Incorrect dry signal
+  Mix=0.250000 -> Mixed output (first=0.033146)
+  Mix=0.500000 -> Mixed output (first=0.022097)
+  Mix=0.750000 -> Mixed output (first=0.011049)
+  Mix=1.000000 -> Reverb tail present (energy=0.059523)
+
+--- RESULTS FOR ConvolutionReverb ---
+Volume: PASS ✓ - All volume levels handled correctly
+Frequency: PASS ✓ - All frequencies handled well (balance ratio: 1.043091)
+Parameters: PASS ✓ - All parameter combinations stable
+Complex: FAIL ✗ - Harmonic distortion detected with complex audio
+Impulse: FAIL ✗ - 
+
+Overall: 3/5 tests passed - NEEDS ATTENTION ✗
+
+======================================================================
+FINAL SUMMARY
+======================================================================
+All 5 reverb engines have been comprehensively tested with:
+- 8 different volume levels (from -60dB to 0dB)
+- 9 different frequencies (40Hz to 15kHz)
+- Multiple parameter combinations
+- Complex multi-frequency audio
+- Impulse response at various mix levels
+
+Check results above for any issues that need attention.

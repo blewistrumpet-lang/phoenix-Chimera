@@ -416,7 +416,7 @@ struct WaveFolder::Impl {
         // Initialize parameters
         foldAmount.setImmediate(0.5f);
         asymmetry.setImmediate(0.0f);
-        dcOffset.setImmediate(0.0f);
+        dcOffset.setImmediate(0.5f);  // 0.5 = no DC offset (centered)
         preGain.setImmediate(1.0f);
         postGain.setImmediate(1.0f);
         smoothing.setImmediate(0.5f);
@@ -458,25 +458,27 @@ struct WaveFolder::Impl {
     }
     
     ALWAYS_INLINE float processWavefolding(float input, float amount, float asym) noexcept {
+        // Pre-clamp input to prevent extreme values
+        input = std::max(-4.0f, std::min(4.0f, input));
+        
         // Optimized folding with guaranteed termination
-        const float threshold = (1.0f - amount * 0.95f);
-        const float posThresh = threshold * (1.0f + asym);
-        const float negThresh = -threshold * (1.0f - asym);
+        // Adjusted threshold calculation to prevent too-small values
+        const float threshold = std::max(0.1f, 1.0f - amount * 0.9f); // Never go below 0.1
+        const float posThresh = threshold * (1.0f + asym * 0.5f); // Reduce asymmetry effect
+        const float negThresh = -threshold * (1.0f - asym * 0.5f);
         
         float output = input;
         
         // Limit folding iterations for real-time safety
-        for (int i = 0; i < 8 && (output > posThresh || output < negThresh); ++i) {
+        for (int i = 0; i < 4 && (output > posThresh || output < negThresh); ++i) { // Reduced to 4 iterations
             if (output > posThresh) {
                 output = 2.0f * posThresh - output;
-                if (output < negThresh) {
-                    output = 2.0f * negThresh - output;
-                }
+                // Clamp to prevent runaway
+                output = std::max(-2.0f, std::min(2.0f, output));
             } else if (output < negThresh) {
                 output = 2.0f * negThresh - output;
-                if (output > posThresh) {
-                    output = 2.0f * posThresh - output;
-                }
+                // Clamp to prevent runaway
+                output = std::max(-2.0f, std::min(2.0f, output));
             }
         }
         
@@ -523,7 +525,7 @@ struct WaveFolder::Impl {
                 // Update ALL parameters per-sample for click-free automation
                 const float fold = foldAmount.tick();
                 const float asym = asymmetry.tick() * 2.0f - 1.0f;
-                const float dc = dcOffset.tick() * 0.1f;
+                const float dc = (dcOffset.tick() - 0.5f) * 0.1f; // Center at 0.5 = no offset
                 const float preG = preGain.tick();
                 const float postG = postGain.tick();
                 const float smooth = smoothing.tick();
@@ -533,8 +535,9 @@ struct WaveFolder::Impl {
                 float x = ch.oversamplePtr[i];
                 const float dry = x;
                 
-                // Pre-gain and DC offset
+                // Pre-gain and DC offset - CLAMP to prevent extreme values
                 x = flushDenorm(x * preG + dc);
+                x = std::max(-2.0f, std::min(2.0f, x)); // Hard limit before folding
                 
                 // Smooth transitions
                 if (smooth > 0.0f) {
@@ -543,14 +546,16 @@ struct WaveFolder::Impl {
                 
                 // Wave folding (already includes denormal prevention)
                 x = processWavefolding(x, fold, asym);
+                x = std::max(-1.5f, std::min(1.5f, x)); // Hard limit after folding
                 
                 // Harmonic emphasis (already includes denormal prevention)
                 if (harm > 0.0f) {
                     x = ch.harmonicFilter.process(x, harm);
                 }
                 
-                // Post-gain
+                // Post-gain - CLAMP final output
                 x = flushDenorm(x * postG);
+                x = std::max(-1.0f, std::min(1.0f, x)); // Final hard limit
                 
                 // Mix and store
                 ch.processPtr[i] = flushDenorm(dry * (1.0f - mixAmt) + x * mixAmt);
@@ -569,7 +574,7 @@ struct WaveFolder::Impl {
                 // Per-sample parameter updates for smooth automation
                 const float fold = foldAmount.tick();
                 const float asym = asymmetry.tick() * 2.0f - 1.0f;
-                const float dc = dcOffset.tick() * 0.1f;
+                const float dc = (dcOffset.tick() - 0.5f) * 0.1f; // Center at 0.5 = no offset
                 const float preG = preGain.tick();
                 const float postG = postGain.tick();
                 const float smooth = smoothing.tick();
@@ -580,8 +585,9 @@ struct WaveFolder::Impl {
                 float input = ch.inputDC.process(data[i]);
                 const float dry = input;
                 
-                // Pre-gain and DC offset
+                // Pre-gain and DC offset - CLAMP to prevent extreme values
                 float x = flushDenorm(input * preG + dc);
+                x = std::max(-2.0f, std::min(2.0f, x)); // Hard limit before folding
                 
                 // Smooth transitions
                 if (smooth > 0.0f) {
@@ -590,14 +596,16 @@ struct WaveFolder::Impl {
                 
                 // Wave folding (already includes denormal prevention)
                 x = processWavefolding(x, fold, asym);
+                x = std::max(-1.5f, std::min(1.5f, x)); // Hard limit after folding
                 
                 // Harmonic emphasis (already includes denormal prevention)
                 if (harm > 0.0f) {
                     x = ch.harmonicFilter.process(x, harm);
                 }
                 
-                // Post-gain and mix
+                // Post-gain and mix - CLAMP final output
                 x = flushDenorm(x * postG);
+                x = std::max(-1.0f, std::min(1.0f, x)); // Final hard limit
                 float output = flushDenorm(dry * (1.0f - mixAmt) + x * mixAmt);
                 
                 // DC block output with denormal flush
@@ -655,8 +663,8 @@ void WaveFolder::updateParameters(const std::map<int, float>& params) {
             case kFoldAmount: pimpl->foldAmount.setTarget(value); break;
             case kAsymmetry:  pimpl->asymmetry.setTarget(value); break;
             case kDCOffset:   pimpl->dcOffset.setTarget(value); break;
-            case kPreGain:    pimpl->preGain.setTarget(0.1f + value * 3.9f); break;
-            case kPostGain:   pimpl->postGain.setTarget(0.1f + value * 1.9f); break;
+            case kPreGain:    pimpl->preGain.setTarget(1.0f + value * 2.0f); break;  // 1.0 to 3.0 (unity to +9.5dB)
+            case kPostGain:   pimpl->postGain.setTarget(1.0f + value * 0.5f); break;  // 1.0 to 1.5 (unity to +3.5dB)
             case kSmoothing:  pimpl->smoothing.setTarget(value); break;
             case kHarmonics:  pimpl->harmonics.setTarget(value); break;
             case kMix:        pimpl->mix.setTarget(value); break;

@@ -1,0 +1,72 @@
+ENGINE TEST REPORT
+==================
+
+Engine: Rodent Distortion (Index: 4)
+Processing Time: 58 ms
+Quality Score: 29.9/100
+
+WARNINGS:
+  ⚠️ Low SNR with Chirp 100-4000Hz (SNR: -10.531698 dB)
+  ⚠️ High THD with Chirp 100-4000Hz (THD: 32.626171%)
+  ⚠️ Low SNR with Impulse (SNR: -0.411347 dB)
+  ⚠️ Low SNR with Sine 1000Hz (SNR: 2.164331 dB)
+  ⚠️ Low SNR with Sine 440Hz (SNR: -5.761481 dB)
+  ⚠️ High THD with Sine 440Hz (THD: 27.299965%)
+  ⚠️ Low SNR with White Noise (SNR: -7.102530 dB)
+
+SIGNAL TEST RESULTS:
+--------------------
+
+Chirp 100-4000Hz:
+  RMS Level: 0.217
+  Peak Level: 0.632
+  DC Offset: -0.000
+  SNR: -10.532 dB
+  THD: 32.626%
+  Correlation: 0.042
+  Spectral Centroid: 2520.670 Hz
+  Artifact Level: 0.001
+
+Impulse:
+  RMS Level: 0.048
+  Peak Level: 0.414
+  DC Offset: -0.000
+  SNR: -0.411 dB
+  THD: 1.301%
+  Correlation: 0.000
+  Spectral Centroid: 1767.254 Hz
+  Artifact Level: 0.000
+
+Sine 1000Hz:
+  RMS Level: 0.437
+  Peak Level: 0.590
+  DC Offset: -0.001
+  SNR: 2.164 dB
+  THD: 8.592%
+  Correlation: 0.930
+  Spectral Centroid: 1229.759 Hz
+  Artifact Level: 0.000
+
+Sine 440Hz:
+  RMS Level: 0.478
+  Peak Level: 0.584
+  DC Offset: 0.000
+  SNR: -5.761 dB
+  THD: 27.300%
+  Correlation: -0.195
+  Spectral Centroid: 867.935 Hz
+  Artifact Level: 0.000
+
+White Noise:
+  RMS Level: 0.285
+  Peak Level: 0.569
+  DC Offset: 0.001
+  SNR: -7.103 dB
+  THD: 1.126%
+  Correlation: -0.022
+  Spectral Centroid: 1739.231 Hz
+  Artifact Level: 0.000
+
+PARAMETER TEST RESULTS:
+-----------------------
+

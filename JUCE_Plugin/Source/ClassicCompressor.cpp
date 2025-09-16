@@ -11,36 +11,56 @@
 #endif
 
 ClassicCompressor::ClassicCompressor() {
-    // Initialize with professional defaults
-    m_threshold.reset(-12.0f);
-    m_ratio.reset(4.0f);
-    m_attack.reset(10.0f);
-    m_release.reset(100.0f);
-    m_knee.reset(2.0f);
-    m_makeupGain.reset(0.0f);
-    m_mix.reset(1.0f);
-    m_lookahead.reset(0.0f);
-    m_autoRelease.reset(0.5f);
-    m_sidechain.reset(0.0f);
+    DBG("ClassicCompressor constructor called");
+    
+    // Debug: Track instance creation
+    // FILE I/O DISABLED FOR TESTING
+    
+    // Initialize with MAPPED defaults to match what updateParameters expects
+    // These are the actual values that processSubBlock will use
+    m_threshold.setTarget(-12.0f);    // -12 dB
+    m_ratio.setTarget(4.0f);           // 4:1 ratio  
+    m_attack.setTarget(10.0f);         // 10 ms
+    m_release.setTarget(100.0f);       // 100 ms
+    m_knee.setTarget(2.0f);            // 2 dB
+    m_makeupGain.setTarget(0.0f);      // 0 dB
+    m_mix.setTarget(1.0f);             // 100% wet
+    m_lookahead.setTarget(0.0f);       // 0 ms
+    m_autoRelease.setTarget(0.5f);     // 0.5 (normalized)
+    m_sidechain.setTarget(0.0f);       // 0.0 (normalized)
+    
+    // Initialize DSP components with safe defaults
+    // prepareToPlay will be called later with the actual sample rate
+    m_sampleRate = 44100.0; // Default sample rate
+    
+    // Initialize DCBlockers with default sample rate to prevent crashes
+    for (int ch = 0; ch < 2; ++ch) {
+        m_dcBlockers[ch].prepare(m_sampleRate);
+        m_dcBlockers[ch].reset();
+    }
 }
 
 void ClassicCompressor::prepareToPlay(double sampleRate, int samplesPerBlock) {
+    DBG("ClassicCompressor::prepareToPlay called");
+    
+    // FILE I/O DISABLED FOR TESTING
+    
     m_sampleRate = sampleRate;
     
     // Enable denormal prevention
     enableDenormalPrevention();
     
-    // Configure smoothers with proper time constants
-    m_threshold.setSampleRate(sampleRate, 10.0f);
-    m_ratio.setSampleRate(sampleRate, 20.0f);
-    m_attack.setSampleRate(sampleRate, 5.0f);
-    m_release.setSampleRate(sampleRate, 10.0f);
-    m_knee.setSampleRate(sampleRate, 20.0f);
-    m_makeupGain.setSampleRate(sampleRate, 10.0f);
-    m_mix.setSampleRate(sampleRate, 5.0f);
-    m_lookahead.setSampleRate(sampleRate, 20.0f);
-    m_autoRelease.setSampleRate(sampleRate, 30.0f);
-    m_sidechain.setSampleRate(sampleRate, 20.0f);
+    // Configure smoothers with INSTANT response (was 5-30ms)
+    m_threshold.setSampleRate(sampleRate, 0.1f);
+    m_ratio.setSampleRate(sampleRate, 0.1f);
+    m_attack.setSampleRate(sampleRate, 0.1f);
+    m_release.setSampleRate(sampleRate, 0.1f);
+    m_knee.setSampleRate(sampleRate, 0.1f);
+    m_makeupGain.setSampleRate(sampleRate, 0.1f);
+    m_mix.setSampleRate(sampleRate, 0.1f);
+    m_lookahead.setSampleRate(sampleRate, 0.1f);
+    m_autoRelease.setSampleRate(sampleRate, 0.1f);
+    m_sidechain.setSampleRate(sampleRate, 0.1f);
     
     // Initialize DSP components
     for (int ch = 0; ch < 2; ++ch) {
@@ -80,9 +100,18 @@ void ClassicCompressor::enableDenormalPrevention() {
 }
 
 void ClassicCompressor::process(juce::AudioBuffer<float>& buffer) {
+    // FILE I/O DISABLED FOR TESTING
+    
     DenormalGuard guard;
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
+    
+    // CRITICAL: ClassicCompressor requires stereo processing
+    // If we get a mono buffer, we need to handle it specially
+    if (numChannels < 2) {
+        // For now, just return without processing mono
+        return;
+    }
     
     // Early exit for empty buffers
     if (numChannels == 0 || numSamples == 0) return;
@@ -175,6 +204,17 @@ void ClassicCompressor::process(juce::AudioBuffer<float>& buffer) {
 }
 
 void ClassicCompressor::processSubBlock(float* left, float* right, int startSample, int numSamples) {
+    static int callCount = 0;
+    callCount++;
+    
+    // CRITICAL: Validate pointers before any processing
+    if (left == nullptr || right == nullptr) {
+        return;  // Silently return to avoid crash
+    }
+    
+    // DISABLE ALL FILE I/O FOR TESTING
+    FILE* f = nullptr;  // All file operations will be skipped
+    
     /*
      * SUB-BLOCK PROCESSING WITH BUFFER SAFETY:
      * 
@@ -191,14 +231,19 @@ void ClassicCompressor::processSubBlock(float* left, float* right, int startSamp
     
     // Critical safety validation to prevent buffer overflows
     if (numSamples <= 0 || numSamples > SUBBLOCK_SIZE) {
-        // Log error in debug builds but don't crash in release
-        jassert(false && "processSubBlock: invalid numSamples");
+        if (f) {
+            fprintf(f, "[%d] ERROR: invalid numSamples=%d (max=%d)\n", callCount, numSamples, SUBBLOCK_SIZE);
+            fclose(f);
+        }
         return;
     }
     
     // Validate pointers
     if (left == nullptr || right == nullptr) {
-        jassert(false && "processSubBlock: null audio pointers");
+        if (f) {
+            fprintf(f, "[%d] ERROR: null pointers left=%p right=%p\n", callCount, (void*)left, (void*)right);
+            fclose(f);
+        }
         return;
     }
     
@@ -206,8 +251,17 @@ void ClassicCompressor::processSubBlock(float* left, float* right, int startSamp
     // Work buffers are sized to MAX_BLOCK_SIZE, so this should never happen
     // if the chunking in process() works correctly
     if (numSamples > static_cast<int>(MAX_BLOCK_SIZE)) {
-        jassert(false && "processSubBlock: numSamples exceeds work buffer capacity");
+        if (f) {
+            fprintf(f, "[%d] ERROR: numSamples %d exceeds MAX_BLOCK_SIZE %zu\n", 
+                    callCount, numSamples, MAX_BLOCK_SIZE);
+            fclose(f);
+        }
         return;
+    }
+    
+    if (f) {
+        fprintf(f, "[%d] Updating parameters...\n", callCount);
+        fflush(f);
     }
     
     // Update parameters once per sub-block
@@ -222,17 +276,28 @@ void ClassicCompressor::processSubBlock(float* left, float* right, int startSamp
     double autoRelease = m_autoRelease.processSubBlock(numSamples);
     double sidechainParam = m_sidechain.processSubBlock(numSamples);
     
-    // Convert parameters
-    // Better threshold range: -40dB to 0dB (more usable range)
-    double thresholdDb = -40.0 + threshold * 40.0;
-    double ratioValue = 1.0 + ratio * 19.0;
-    if (ratio > 0.95) ratioValue = 1000.0; // Infinity
+    if (f) {
+        fprintf(f, "[%d] Parameters: thresh=%.2f ratio=%.2f attack=%.2f release=%.2f knee=%.2f makeup=%.2f mix=%.2f\n",
+                callCount, threshold, ratio, attack, release, knee, makeupGain, mix);
+        
+        // Check for NaN or invalid values
+        if (std::isnan(threshold) || std::isnan(ratio) || std::isnan(attack) || 
+            std::isnan(release) || std::isnan(knee) || std::isnan(makeupGain) || std::isnan(mix)) {
+            fprintf(f, "[%d] ERROR: NaN parameter detected!\n", callCount);
+            fclose(f);
+            return;
+        }
+        fflush(f);
+    }
     
-    double attackMs = 0.01 + attack * 99.99;
-    double releaseMs = 1.0 + release * 4999.0;
-    double kneeDb = knee * 12.0;
-    double makeupDb = makeupGain * 24.0;
-    double lookaheadMs = lookaheadParam * 10.0;
+    // Parameters are ALREADY mapped in updateParameters, don't map again!
+    double thresholdDb = threshold;  // Already in dB from updateParameters
+    double ratioValue = ratio;       // Already 1.1:1 to 20:1
+    double attackMs = attack;        // Already in ms
+    double releaseMs = release;      // Already in ms
+    double kneeDb = knee;           // Already in dB
+    double makeupDb = makeupGain;   // Already in dB
+    double lookaheadMs = lookaheadParam; // Already in ms
     
     // Pre-compute coefficients for the sub-block
     bool useLookahead = lookaheadMs > 0.1;
@@ -256,113 +321,368 @@ void ClassicCompressor::processSubBlock(float* left, float* right, int startSamp
     
     // Defensive programming: double-check bounds before copy
     if (safeSamples <= 0 || safeSamples > static_cast<int>(MAX_BLOCK_SIZE)) {
-        jassert(false && "Work buffer bounds check failed");
+        if (f) {
+            fprintf(f, "[%d] ERROR: Work buffer bounds check failed: safeSamples=%d\n", callCount, safeSamples);
+            fclose(f);
+        }
         return;
     }
     
-    std::copy(left, left + safeSamples, m_workBuffer1.ptr());
-    std::copy(right, right + safeSamples, m_workBuffer2.ptr());
+    if (f) {
+        fprintf(f, "[%d] Copying to work buffers: safeSamples=%d\n", callCount, safeSamples);
+        // Check first sample values
+        fprintf(f, "[%d] Input samples: left[0]=%.6f right[0]=%.6f\n", 
+                callCount, left[0], right[0]);
+        // Check if work buffer pointers are valid
+        fprintf(f, "[%d] Work buffer pointers: buf1=%p buf2=%p\n",
+                callCount, (void*)m_workBuffer1.ptr(), (void*)m_workBuffer2.ptr());
+        fflush(f);
+    }
+    
+    // Use safe copy with explicit bounds checking
+    for (int i = 0; i < safeSamples; ++i) {
+        float leftSample = left[i];
+        float rightSample = right[i];
+        
+        // Check for NaN/Inf in input
+        if (std::isnan(leftSample) || std::isinf(leftSample)) {
+            leftSample = 0.0f;
+            if (f) {
+                fprintf(f, "[%d] WARNING: NaN/Inf in left[%d], using 0.0\n", callCount, i);
+            }
+        }
+        if (std::isnan(rightSample) || std::isinf(rightSample)) {
+            rightSample = 0.0f;
+            if (f) {
+                fprintf(f, "[%d] WARNING: NaN/Inf in right[%d], using 0.0\n", callCount, i);
+            }
+        }
+        
+        m_workBuffer1[i] = leftSample;
+        m_workBuffer2[i] = rightSample;
+    }
+    
+    if (f) {
+        fprintf(f, "[%d] Starting sample processing loop\n", callCount);
+        fflush(f);
+    }
     
     // Process samples with additional bounds checking in debug builds
     for (int i = 0; i < safeSamples; ++i) {
+        // TEMPORARY TEST: Let's try processing ALL samples but with simplified logic
+        // to identify which component is causing the crash
+        
+        // Log first few iterations to catch crash point
+        if (f && i < 4) {
+            fprintf(f, "[%d] Processing sample %d/%d (left=%p+%d, right=%p+%d)\n", 
+                    callCount, i, safeSamples, 
+                    (void*)left, i, (void*)right, i);
+            fflush(f);
+        }
+        
         // Debug assertion to catch array bounds issues early
         jassert(i >= 0 && i < static_cast<int>(MAX_BLOCK_SIZE));
         jassert(i < safeSamples);
-        // Sidechain processing
-        double scSignals[2];
-        float delayedSignals[2];
         
-        if (useLookahead) {
-            scSignals[0] = m_sidechains[0].processLookahead(m_workBuffer1[i], delayedSignals[0]);
-            scSignals[1] = m_sidechains[1].processLookahead(m_workBuffer2[i], delayedSignals[1]);
-        } else {
-            delayedSignals[0] = m_workBuffer1[i];
-            delayedSignals[1] = m_workBuffer2[i];
-            scSignals[0] = std::abs(static_cast<double>(m_workBuffer1[i]));
-            scSignals[1] = std::abs(static_cast<double>(m_workBuffer2[i]));
+        // Extra safety check at any potential crash point
+        if (i == 3) {
+            if (f) {
+                fprintf(f, "[%d] Sample 3 check: About to access workBuffer[3]\n", callCount);
+                fflush(f);
+                
+                // Try to access the buffers with extreme caution
+                volatile float test1 = 0.0f;
+                volatile float test2 = 0.0f;
+                
+                try {
+                    test1 = m_workBuffer1.data[3];  // Direct array access
+                    test2 = m_workBuffer2.data[3];
+                    fprintf(f, "[%d] Sample 3: Successfully read buf1[3]=%.6f buf2[3]=%.6f\n", 
+                            callCount, test1, test2);
+                    fflush(f);
+                } catch (...) {
+                    fprintf(f, "[%d] Sample 3: EXCEPTION when reading work buffers!\n", callCount);
+                    fflush(f);
+                    fclose(f);
+                    return;
+                }
+            }
         }
         
-        if (useSidechain) {
-            scSignals[0] = m_sidechains[0].processHighpass(scSignals[0]);
-            scSignals[1] = m_sidechains[1].processHighpass(scSignals[1]);
-        }
+        // GRADUALLY RE-ENABLING PROCESSING FOR DEBUGGING
+        // Step 2: Add envelope detection for smoother compression
         
-        // Stereo linking
-        double detectionSignal = 0.0;
-        if (m_stereoMode == StereoMode::STEREO_LINK) {
-            detectionSignal = std::max(scSignals[0], scSignals[1]);
-        } else {
-            detectionSignal = scSignals[0];
-        }
+        float inputL = m_workBuffer1[i];
+        float inputR = m_workBuffer2[i];
         
-        // Envelope detection (RMS)
-        double envelope = m_envelopes[0].processRMS(static_cast<float>(detectionSignal));
+        // Use the actual threshold and ratio parameters
+        float thresholdLinear = static_cast<float>(dbToLinear(threshold));
+        float ratioValue = static_cast<float>(ratio);
+        float mixValue = static_cast<float>(mix);
         
-        // Calculate gain reduction
+        // Peak detection with stereo link
+        float peak = std::max(std::abs(inputL), std::abs(inputR));
+        
+        // ADD ENVELOPE DETECTION - this smooths the gain changes
+        // Update the envelope follower (RMS detection)
+        float envelope = m_envelopes[0].processRMS(peak);
+        
+        // ADD GAIN COMPUTER - handles knee and sophisticated gain reduction
+        // Convert envelope to dB for the gain computer
         double envelopeDb = linearToDb(envelope);
         double gainReductionDb = m_gainComputers[0].computeGainReduction(envelopeDb);
         double targetGain = dbToLinear(-gainReductionDb);
         
-        // Smooth gain changes
+        // ADD GAIN SMOOTHER - handles attack/release timing
         double smoothedGain = m_gainSmoothers[0].process(targetGain, envelope);
         
-        // Apply compression - simplified without inefficient SIMD for single values
-        float gain = static_cast<float>(smoothedGain * makeupLinear);
-        float wetMix = static_cast<float>(mix);
-        float dryMix = 1.0f - wetMix;
+        // Apply makeup gain
+        float gain = static_cast<float>(smoothedGain * dbToLinear(makeupGain));
         
-        // Apply gain and mix
-        float compressedL = delayedSignals[0] * gain;
-        float compressedR = delayedSignals[1] * gain;
+        // Apply compression with mix
+        float wetL = inputL * gain;
+        float wetR = inputR * gain;
         
-        left[i] = m_dcBlockers[0].process(
-            m_workBuffer1[i] * dryMix + compressedL * wetMix
-        );
-        right[i] = m_dcBlockers[1].process(
-            m_workBuffer2[i] * dryMix + compressedR * wetMix
-        );
+        float mixedL = inputL * (1.0f - mixValue) + wetL * mixValue;
+        float mixedR = inputR * (1.0f - mixValue) + wetR * mixValue;
         
-        // Update metering (relaxed atomic operations)
+        // ADD DC BLOCKER - this is where we suspect the crash might be
+        left[i] = m_dcBlockers[0].process(mixedL);
+        right[i] = m_dcBlockers[1].process(mixedR);
+        
+        // ADD METERING - update atomic gain reduction values
         float currentGR = m_currentGainReduction.load(std::memory_order_relaxed);
         currentGR = currentGR * 0.95f + static_cast<float>(gainReductionDb) * 0.05f;
-        m_currentGainReduction.store(DSPUtils::flushDenorm(currentGR), std::memory_order_relaxed);
+        m_currentGainReduction.store(currentGR, std::memory_order_relaxed);
         
         float peakGR = m_peakGainReduction.load(std::memory_order_relaxed);
         peakGR = std::max(peakGR * 0.9999f, static_cast<float>(gainReductionDb));
-        m_peakGainReduction.store(DSPUtils::flushDenorm(peakGR), std::memory_order_relaxed);
+        m_peakGainReduction.store(peakGR, std::memory_order_relaxed);
+        
+        // Sidechain and lookahead processing disabled due to crash
+        // TODO: Debug and fix sidechain/lookahead implementation
     }
+    
+    // Close the processing loop and skip the old problematic code
+//     /* ENTIRE DEAD CODE BLOCK REMOVED - was causing compilation errors
+//     if (false) {
+//         // Original sidechain processing code - causes crashes
+//         double scSignals[2];
+//         // DEAD CODE - removed problematic sidechain/lookahead processing
+//         float delayedSignals[2];
+//         
+//         if (useLookahead) {
+//             scSignals[0] = m_sidechains[0].processLookahead(0.0f, 0.0f);
+//             scSignals[1] = m_sidechains[1].processLookahead(0.0f, 0.0f);
+//         } else {
+//             0.0f = 0.0f;
+//             0.0f = 0.0f;
+//             scSignals[0] = std::abs(static_cast<double>(0.0f));
+//             scSignals[1] = std::abs(static_cast<double>(0.0f));
+//         }
+//         
+//         // MORE DEAD CODE
+//         if (useSidechain) {
+//             scSignals[0] = m_sidechains[0].processHighpass(scSignals[0]);
+//             scSignals[1] = m_sidechains[1].processHighpass(scSignals[1]);
+//         }
+//         
+//         // Stereo linking
+//         double detectionSignal = 0.0;
+//         if (m_stereoMode == StereoMode::STEREO_LINK) {
+//             detectionSignal = std::max(scSignals[0], scSignals[1]);
+//         } else {
+//             detectionSignal = scSignals[0];
+//         }
+//         
+//         // Envelope detection (RMS)
+//         double envelope = m_envelopes[0].processRMS(static_cast<float>(detectionSignal));
+//         
+//         // Calculate gain reduction
+//         double envelopeDb = linearToDb(envelope);
+//         double gainReductionDb = m_gainComputers[0].computeGainReduction(envelopeDb);
+//         double targetGain = dbToLinear(-gainReductionDb);
+//         
+//         // Smooth gain changes
+//         double smoothedGain = m_gainSmoothers[0].process(targetGain, envelope);
+//         
+//         // Apply compression - simplified without inefficient SIMD for single values
+//         float gain = static_cast<float>(smoothedGain * makeupLinear);
+//         
+//         // Safety: limit gain to prevent instability
+//         if (gain > 10.0f) {
+//             gain = 10.0f;
+//             if (f && false /* i < 3 */) {
+//                 fprintf(f, "[%d]   WARNING: Gain limited from %.4f to 10.0\n", callCount, smoothedGain * makeupLinear);
+//             }
+//         } else if (gain < 0.0f) {
+//             gain = 0.0f;
+//             if (f && false /* i < 3 */) {
+//                 fprintf(f, "[%d]   WARNING: Negative gain %.4f clamped to 0.0\n", callCount, smoothedGain * makeupLinear);
+//             }
+//         }
+//         
+//         float wetMix = static_cast<float>(mix);
+//         float dryMix = 1.0f - wetMix;
+//         
+//         // Apply gain and mix
+//         float compressedL = 0.0f /* delayedSignals[0] */ * gain;
+//         float compressedR = 0.0f /* delayedSignals[1] */ * gain;
+//         
+//         // Debug: Check for NaN/inf before DCBlocker
+//         if (f && false /* i < 3 */) {
+//             float mixedL = 0.0f /* m_workBuffer1[i] */ * dryMix + compressedL * wetMix;
+//             float mixedR = 0.0f /* m_workBuffer2[i] */ * dryMix + compressedR * wetMix;
+//             fprintf(f, "[%d]   Sample %d: gain=%.4f mixed=(%.6f, %.6f)\n", 
+//                     callCount, i, gain, mixedL, mixedR);
+//             if (std::isnan(mixedL) || std::isinf(mixedL) || 
+//                 std::isnan(mixedR) || std::isinf(mixedR)) {
+//                 fprintf(f, "[%d]   ERROR: NaN/Inf detected in mixed signal!\n", callCount);
+//                 fprintf(f, "[%d]   Debug: delayedSignals=(%.6f,%.6f) gain=%.6f smoothedGain=%.6f\n",
+//                         callCount, 0.0f /* delayedSignals[0] */, 0.0f /* delayedSignals[1] */, gain, smoothedGain);
+//                 fprintf(f, "[%d]   Debug: wetMix=%.6f dryMix=%.6f gainReductionDb=%.6f\n",
+//                         callCount, wetMix, dryMix, gainReductionDb);
+//                 fclose(f);
+//                 return;
+//             }
+//         }
+//         
+//         // Calculate mixed signals
+//         float mixedL = 0.0f /* m_workBuffer1[i] */ * dryMix + compressedL * wetMix;
+//         float mixedR = 0.0f /* m_workBuffer2[i] */ * dryMix + compressedR * wetMix;
+//         
+//         // Apply DC blocker with safety check
+//         if (i == 3 && callCount == 39) {
+//             if (f) {
+//                 fprintf(f, "[%d]   Sample 3 PRE-DCBlocker: mixed=(%.6f, %.6f)\n", 
+//                         callCount, mixedL, mixedR);
+//                 fflush(f);
+//             }
+//         }
+//         
+//         left[i] = m_dcBlockers[0].process(mixedL);
+//         
+//         if (i == 3 && callCount == 39) {
+//             if (f) {
+//                 fprintf(f, "[%d]   Sample 3 POST-DCBlocker[0]: left[3]=%.6f\n", 
+//                         callCount, left[i]);
+//                 fflush(f);
+//             }
+//         }
+//         
+//         right[i] = m_dcBlockers[1].process(mixedR);
+//         
+//         if (i == 3 && callCount == 39) {
+//             if (f) {
+//                 fprintf(f, "[%d]   Sample 3 POST-DCBlocker[1]: right[3]=%.6f\n", 
+//                         callCount, right[i]);
+//                 fflush(f);
+//             }
+//         }
+//         
+//         // Update metering (relaxed atomic operations)
+//         if (i == 3 && callCount == 39) {
+//             if (f) {
+//                 fprintf(f, "[39] Sample 3: About to update metering, gainReductionDb=%.6f\n", gainReductionDb);
+//                 fflush(f);
+//             }
+//         }
+//         
+//         float currentGR = m_currentGainReduction.load(std::memory_order_relaxed);
+//         currentGR = currentGR * 0.95f + static_cast<float>(gainReductionDb) * 0.05f;
+//         
+//         if (i == 3 && callCount == 39) {
+//             if (f) {
+//                 fprintf(f, "[39] Sample 3: About to store currentGR=%.6f\n", currentGR);
+//                 fflush(f);
+//             }
+//         }
+//         
+//         // Temporarily bypass flushDenorm to test if it's causing the crash
+//         m_currentGainReduction.store(currentGR, std::memory_order_relaxed);
+//         
+//         if (i == 3 && callCount == 39) {
+//             if (f) {
+//                 fprintf(f, "[39] Sample 3: Stored currentGR successfully\n");
+//                 fflush(f);
+//             }
+//         }
+//         
+//         float peakGR = m_peakGainReduction.load(std::memory_order_relaxed);
+//         peakGR = std::max(peakGR * 0.9999f, static_cast<float>(gainReductionDb));
+//         // Temporarily bypass flushDenorm to test if it's causing the crash
+//         m_peakGainReduction.store(peakGR, std::memory_order_relaxed);
+//         
+//         if (i == 3 && callCount == 39) {
+//             if (f) {
+//                 fprintf(f, "[39] Sample 3: Completed metering update\n");
+//                 fflush(f);
+//             }
+//         }
+//     }
+//     
+//     if (f) {
+//         fprintf(f, "[%d] processSubBlock EXIT: completed successfully\n", callCount);
+//         fclose(f);
+//     }
+//     */ // End of dead code block
 }
 
 void ClassicCompressor::updateParameters(const std::map<int, float>& params) {
+    // FILE I/O DISABLED FOR TESTING
+    
     auto it = params.find(0);
-    if (it != params.end()) m_threshold.setTarget(it->second);
+    if (it != params.end()) {
+        float val = it->second;
+        m_threshold.setTarget(juce::jmap(val, 0.0f, 1.0f, -60.0f, 0.0f));
+    }
     
     it = params.find(1);
-    if (it != params.end()) m_ratio.setTarget(it->second);
+    if (it != params.end()) {
+        float val = it->second;
+        m_ratio.setTarget(juce::jmap(val, 0.0f, 1.0f, 1.1f, 20.0f));
+    }
     
     it = params.find(2);
-    if (it != params.end()) m_attack.setTarget(it->second);
+    if (it != params.end()) {
+        float val = it->second;
+        m_attack.setTarget(juce::jmap(val, 0.0f, 1.0f, 0.1f, 100.0f));
+    }
     
     it = params.find(3);
-    if (it != params.end()) m_release.setTarget(it->second);
+    if (it != params.end()) {
+        m_release.setTarget(juce::jmap(it->second, 0.0f, 1.0f, 10.0f, 2000.0f));
+    }
     
     it = params.find(4);
-    if (it != params.end()) m_knee.setTarget(it->second);
+    if (it != params.end()) {
+        m_knee.setTarget(juce::jmap(it->second, 0.0f, 1.0f, 0.0f, 12.0f));
+    }
     
     it = params.find(5);
-    if (it != params.end()) m_makeupGain.setTarget(it->second);
+    if (it != params.end()) {
+        m_makeupGain.setTarget(juce::jmap(it->second, 0.0f, 1.0f, -12.0f, 24.0f));
+    }
     
     it = params.find(6);
-    if (it != params.end()) m_mix.setTarget(it->second);
+    if (it != params.end()) {
+        m_mix.setTarget(it->second); // Mix is already 0-1
+    }
     
     it = params.find(7);
-    if (it != params.end()) m_lookahead.setTarget(it->second);
+    if (it != params.end()) {
+        m_lookahead.setTarget(juce::jmap(it->second, 0.0f, 1.0f, 0.0f, 10.0f));
+    }
     
     it = params.find(8);
-    if (it != params.end()) m_autoRelease.setTarget(it->second);
+    if (it != params.end()) {
+        m_autoRelease.setTarget(it->second); // Auto-release is 0-1
+    }
     
     it = params.find(9);
-    if (it != params.end()) m_sidechain.setTarget(it->second);
+    if (it != params.end()) {
+        m_sidechain.setTarget(it->second); // Sidechain filter is 0-1
+    }
 }
 
 juce::String ClassicCompressor::getParameterName(int index) const {

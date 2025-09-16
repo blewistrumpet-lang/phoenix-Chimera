@@ -12,7 +12,7 @@ PhaseAlign_Platinum::PhaseAlign_Platinum() {
     pLoHz_.target.store(0.25f);  // maps to ~200 Hz default
     pMidHz_.target.store(0.33f); // ~1200 Hz default
     pHiHz_.target.store(0.5f);   // ~6 kHz default
-    pMix_.target.store(1.0f);
+    pMix_.target.store(0.5f);
 
     pAuto_.snap(); pRef_.snap(); pLoDeg_.snap(); pLmDeg_.snap(); pHmDeg_.snap(); pHiDeg_.snap();
     pLoHz_.snap(); pMidHz_.snap(); pHiHz_.snap(); pMix_.snap();

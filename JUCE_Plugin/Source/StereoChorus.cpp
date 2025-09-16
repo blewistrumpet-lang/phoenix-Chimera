@@ -66,6 +66,12 @@ void StereoChorus::process(juce::AudioBuffer<float>& buffer) {
     m_width.update();
     m_mix.update();
     
+    // Early bypass check for mix parameter
+    if (m_mix.current < 0.001f) {
+        // Completely dry - no processing needed, parameters already updated
+        return;
+    }
+    
     // Calculate LFO rate in Hz
     float lfoRate = 0.1f + m_rate.current * 9.9f; // 0.1 to 10 Hz
     float lfoIncrement = lfoRate / m_sampleRate;

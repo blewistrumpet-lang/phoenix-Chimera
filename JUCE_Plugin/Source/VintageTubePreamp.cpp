@@ -150,7 +150,13 @@ void VintageTubePreamp::updateParameters(const std::map<int, float>& params) {
                 m_tubeType->setTarget(value);
                 break;
             case 9:  // Mix
-                m_mix->setTarget(value);
+                if (value < 0.001f) {
+                    // Immediate bypass - reset to achieve instant effect
+                    m_mix->reset(value);
+                } else {
+                    // Normal smoothed transition
+                    m_mix->setTarget(value);
+                }
                 break;
         }
     }

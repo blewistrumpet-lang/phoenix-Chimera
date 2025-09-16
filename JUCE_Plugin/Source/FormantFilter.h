@@ -228,6 +228,7 @@ public:
     juce::String getName() const override { return "Formant Filter Pro"; }
     int getNumParameters() const override { return kNumParams; }
     juce::String getParameterName(int index) const override;
+    juce::String getParameterDisplayString(int index, float value) const;
 
 private:
     struct SmoothParam {
@@ -302,16 +303,16 @@ private:
         double thermalNoise = 0.0;
         double noiseFilter = 0.0;
         static constexpr double DECAY = 0.999;
-        static constexpr double GAIN = 0.001;
+        static constexpr double GAIN = 0.00001;  // Reduced for less noise
         
         void update(double sr) {
             // Pink noise filtering
-            double white = prng.next() * 0.001;
+            double white = prng.next() * 0.00001;  // Reduced from 0.001
             noiseFilter = white * 0.02 + noiseFilter * 0.98;
             
             // Leaky integrator to prevent drift
             thermalNoise = thermalNoise * DECAY + noiseFilter * (GAIN / sr);
-            thermalNoise = std::clamp(thermalNoise, -0.01, 0.01);
+            thermalNoise = std::clamp(thermalNoise, -0.0001, 0.0001);  // Reduced from 0.01
         }
         
         double getFactor() const { return 1.0 + thermalNoise; }

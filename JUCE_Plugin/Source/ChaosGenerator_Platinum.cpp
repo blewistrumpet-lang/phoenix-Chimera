@@ -347,7 +347,7 @@ struct ChaosGenerator_Platinum::Impl {
     float  lastDepth{0.0f};
 
     // Mod target enum mirrors original switch cases
-    enum ModTarget { ModPitch=0, ModFilter, ModAmp, ModPan, ModTargetCount };
+    enum ModTarget { ModPitch=0, ModFilter, ModAmp, ModPan, ModGenerate, ModTargetCount };
 
     void prepare(double sr, int bs) {
         sampleRate = std::max(8000.0, sr);
@@ -485,6 +485,12 @@ struct ChaosGenerator_Platinum::Impl {
                             const float gr = std::clamp(1.0f + pan, 0.0f, 2.0f);
                             wet = dry * (ch==0 ? gl : gr);
                         }
+                        break;
+                    
+                    case ModGenerate:
+                        // Direct audio generation from chaos - works even with silence!
+                        // Add chaos signal to input (allows both generation and processing)
+                        wet = dry + (depth * mod * 0.3f);
                         break;
                 }
 

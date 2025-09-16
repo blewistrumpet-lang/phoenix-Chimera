@@ -1,0 +1,541 @@
+{
+  "manifest_version": "2.0",
+  "description": "Parameter manifest for ChimeraPhoenix - Updated with 1:1 engine mapping",
+  "total_engines": 57,
+  "slots": 6,
+  "params_per_slot": 15,
+  
+  "slot_parameters": {
+    "description": "Each slot has these parameters",
+    "structure": {
+      "slot{N}_engine": "Engine selector (0-56)",
+      "slot{N}_bypass": "Bypass toggle (0.0 or 1.0)",
+      "slot{N}_mix": "Mix level (0.0 to 1.0)",
+      "slot{N}_solo": "Solo toggle (0.0 or 1.0)",
+      "slot{N}_param1-15": "Engine-specific parameters (0.0 to 1.0)"
+    }
+  },
+  
+  "global_limits": {
+    "max_total_gain": 1.0,
+    "max_feedback": 0.75,
+    "min_output_level": 0.1,
+    "max_drive_per_slot": 0.8,
+    "max_mix_per_slot": 1.0,
+    "max_combined_reverb": 1.2,
+    "max_combined_delay": 1.0
+  },
+  
+  "parameter_categories": {
+    "intensity": {
+      "parameters": ["param1", "param3"],
+      "default_range": [0.0, 1.0],
+      "safe_range": [0.0, 0.8],
+      "description": "Drive, gain, and intensity controls"
+    },
+    "tone": {
+      "parameters": ["param2"],
+      "default_range": [0.0, 1.0],
+      "safe_range": [0.1, 0.9],
+      "description": "Tone, frequency, and EQ controls"
+    },
+    "time": {
+      "parameters": ["param1", "param4"],
+      "default_range": [0.0, 1.0],
+      "safe_range": [0.0, 1.0],
+      "description": "Delay time, rate, and tempo controls"
+    },
+    "feedback": {
+      "parameters": ["param2", "param4"],
+      "default_range": [0.0, 1.0],
+      "safe_range": [0.0, 0.75],
+      "description": "Feedback and regeneration controls"
+    },
+    "mix": {
+      "parameters": ["param3", "param10"],
+      "default_range": [0.0, 1.0],
+      "safe_range": [0.0, 1.0],
+      "description": "Wet/dry mix controls"
+    },
+    "modulation": {
+      "parameters": ["param5", "param6"],
+      "default_range": [0.0, 1.0],
+      "safe_range": [0.0, 0.9],
+      "description": "Modulation depth and rate"
+    },
+    "spatial": {
+      "parameters": ["param7", "param8"],
+      "default_range": [0.0, 1.0],
+      "safe_range": [0.0, 1.0],
+      "description": "Stereo width and spatial controls"
+    },
+    "dynamics": {
+      "parameters": ["param1", "param2", "param3", "param4"],
+      "default_range": [0.0, 1.0],
+      "safe_range": [0.0, 1.0],
+      "description": "Threshold, ratio, attack, release"
+    }
+  },
+  
+  "engine_specific_limits": {
+    "0": {
+      "name": "None",
+      "category": "bypass",
+      "description": "No processing"
+    },
+    "1": {
+      "name": "Vintage Opto Compressor",
+      "category": "dynamics",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Threshold"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Ratio"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.01, "name": "Attack"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.1, "name": "Release"},
+      "param5": {"min": 0.0, "max": 1.0, "default": 0.7, "name": "Makeup"}
+    },
+    "2": {
+      "name": "Classic Compressor",
+      "category": "dynamics",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Threshold"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Ratio"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.01, "name": "Attack"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.1, "name": "Release"},
+      "param5": {"min": 0.0, "max": 1.0, "default": 0.7, "name": "Makeup"}
+    },
+    "3": {
+      "name": "Transient Shaper",
+      "category": "dynamics",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Attack"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Sustain"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Output"}
+    },
+    "4": {
+      "name": "Noise Gate",
+      "category": "dynamics",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Threshold"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.01, "name": "Attack"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.1, "name": "Hold"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.1, "name": "Release"}
+    },
+    "5": {
+      "name": "Mastering Limiter",
+      "category": "dynamics",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.9, "name": "Ceiling"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.01, "name": "Release"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Knee"}
+    },
+    "6": {
+      "name": "Dynamic EQ",
+      "category": "eq",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Frequency"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Gain"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Q"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Threshold"}
+    },
+    "7": {
+      "name": "Parametric EQ",
+      "category": "eq",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Low Freq"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Low Gain"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mid Freq"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mid Gain"},
+      "param5": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mid Q"},
+      "param6": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "High Freq"},
+      "param7": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "High Gain"}
+    },
+    "8": {
+      "name": "Vintage Console EQ",
+      "category": "eq",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Low"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Low Mid"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "High Mid"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "High"},
+      "param5": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Drive"}
+    },
+    "9": {
+      "name": "Ladder Filter",
+      "category": "filter",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Cutoff"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Resonance"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Drive"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Envelope"}
+    },
+    "10": {
+      "name": "State Variable Filter",
+      "category": "filter",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Frequency"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Resonance"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Mode"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "11": {
+      "name": "Formant Filter",
+      "category": "filter",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Vowel"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Morph"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Resonance"}
+    },
+    "12": {
+      "name": "Envelope Filter",
+      "category": "filter",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Sensitivity"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Frequency"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Resonance"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.1, "name": "Attack"},
+      "param5": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Release"}
+    },
+    "13": {
+      "name": "Comb Resonator",
+      "category": "filter",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Frequency"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Feedback"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "14": {
+      "name": "Vocal Formant Filter",
+      "category": "filter",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Formant"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Gender"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "15": {
+      "name": "Vintage Tube Preamp",
+      "category": "distortion",
+      "param1": {"min": 0.0, "max": 0.8, "default": 0.3, "name": "Drive"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Tone"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.7, "name": "Output"}
+    },
+    "16": {
+      "name": "Wave Folder",
+      "category": "distortion",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Fold"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Symmetry"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "17": {
+      "name": "Harmonic Exciter",
+      "category": "distortion",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Amount"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.7, "name": "Frequency"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "18": {
+      "name": "Bit Crusher",
+      "category": "distortion",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.8, "name": "Bit Depth"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.8, "name": "Sample Rate"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "19": {
+      "name": "Multiband Saturator",
+      "category": "distortion",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Low Drive"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mid Drive"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "High Drive"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Output"}
+    },
+    "20": {
+      "name": "Muff Fuzz",
+      "category": "distortion",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.7, "name": "Sustain"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Tone"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Volume"}
+    },
+    "21": {
+      "name": "Rodent Distortion",
+      "category": "distortion",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.7, "name": "Distortion"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Filter"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Volume"}
+    },
+    "22": {
+      "name": "K-Style Overdrive",
+      "category": "distortion",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Drive"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Tone"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Level"}
+    },
+    "23": {
+      "name": "Stereo Chorus",
+      "category": "modulation",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Rate"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Depth"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Feedback"}
+    },
+    "24": {
+      "name": "Resonant Chorus",
+      "category": "modulation",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Rate"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Depth"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Resonance"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "25": {
+      "name": "Analog Phaser",
+      "category": "modulation",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Rate"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Depth"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Feedback"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Stages"},
+      "param5": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "26": {
+      "name": "Ring Modulator",
+      "category": "modulation",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Frequency"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Fine Tune"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "27": {
+      "name": "Frequency Shifter",
+      "category": "modulation",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Shift"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Fine"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "28": {
+      "name": "Harmonic Tremolo",
+      "category": "modulation",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Rate"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Depth"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Crossover"}
+    },
+    "29": {
+      "name": "Classic Tremolo",
+      "category": "modulation",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Rate"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Depth"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Shape"}
+    },
+    "30": {
+      "name": "Rotary Speaker",
+      "category": "modulation",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Speed"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Doppler"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Distance"}
+    },
+    "31": {
+      "name": "Pitch Shifter",
+      "category": "pitch",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Pitch"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Fine"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "32": {
+      "name": "Detune Doubler",
+      "category": "pitch",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Detune"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.01, "name": "Delay"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Width"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "33": {
+      "name": "Intelligent Harmonizer",
+      "category": "pitch",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Interval"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Key"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Feedback"}
+    },
+    "34": {
+      "name": "Tape Echo",
+      "category": "delay",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Time"},
+      "param2": {"min": 0.0, "max": 0.75, "default": 0.3, "name": "Feedback"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.2, "name": "Wow"},
+      "param5": {"min": 0.0, "max": 1.0, "default": 0.2, "name": "Flutter"}
+    },
+    "35": {
+      "name": "Digital Delay",
+      "category": "delay",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Time"},
+      "param2": {"min": 0.0, "max": 0.9, "default": 0.3, "name": "Feedback"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Sync"}
+    },
+    "36": {
+      "name": "Magnetic Drum Echo",
+      "category": "delay",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Time"},
+      "param2": {"min": 0.0, "max": 0.7, "default": 0.3, "name": "Feedback"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Saturation"}
+    },
+    "37": {
+      "name": "Bucket Brigade Delay",
+      "category": "delay",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Time"},
+      "param2": {"min": 0.0, "max": 0.75, "default": 0.3, "name": "Feedback"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Modulation"}
+    },
+    "38": {
+      "name": "Buffer Repeat",
+      "category": "delay",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Size"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Pitch"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 1.0, "name": "Mix"}
+    },
+    "39": {
+      "name": "Plate Reverb",
+      "category": "reverb",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Size"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Damping"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.2, "name": "Pre-Delay"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.4, "name": "Mix"}
+    },
+    "40": {
+      "name": "Spring Reverb",
+      "category": "reverb",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Tension"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Damping"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Boing"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.4, "name": "Mix"}
+    },
+    "41": {
+      "name": "Convolution Reverb",
+      "category": "reverb",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "IR Select"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Size"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Pre-Delay"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.4, "name": "Mix"}
+    },
+    "42": {
+      "name": "Shimmer Reverb",
+      "category": "reverb",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Size"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Shimmer"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Damping"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.4, "name": "Mix"}
+    },
+    "43": {
+      "name": "Gated Reverb",
+      "category": "reverb",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Size"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.1, "name": "Gate Time"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Pre-Delay"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "44": {
+      "name": "Stereo Widener",
+      "category": "spatial",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Width"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Bass Mono"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 1.0, "name": "Mix"}
+    },
+    "45": {
+      "name": "Stereo Imager",
+      "category": "spatial",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Width"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Rotation"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Bass Mono"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 1.0, "name": "Mix"}
+    },
+    "46": {
+      "name": "Dimension Expander",
+      "category": "spatial",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Size"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Amount"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "47": {
+      "name": "Spectral Freeze",
+      "category": "special",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Freeze"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Smoothing"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 1.0, "name": "Mix"}
+    },
+    "48": {
+      "name": "Spectral Gate",
+      "category": "special",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Threshold"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Frequency"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Q"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 1.0, "name": "Mix"}
+    },
+    "49": {
+      "name": "Phased Vocoder",
+      "category": "special",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Formant"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Pitch"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Timbre"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "50": {
+      "name": "Granular Cloud",
+      "category": "special",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Grain Size"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Position"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Density"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Pitch"},
+      "param5": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "51": {
+      "name": "Chaos Generator",
+      "category": "special",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Chaos"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Rate"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Smooth"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.3, "name": "Mix"}
+    },
+    "52": {
+      "name": "Feedback Network",
+      "category": "special",
+      "param1": {"min": 0.0, "max": 0.9, "default": 0.5, "name": "Feedback"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Delay"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Filter"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mix"}
+    },
+    "53": {
+      "name": "Mid-Side Processor",
+      "category": "utility",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mid Level"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Side Level"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Mid EQ"},
+      "param4": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Side EQ"}
+    },
+    "54": {
+      "name": "Gain Utility",
+      "category": "utility",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.7, "name": "Gain"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.5, "name": "Pan"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Phase"}
+    },
+    "55": {
+      "name": "Mono Maker",
+      "category": "utility",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.2, "name": "Frequency"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 1.0, "name": "Amount"}
+    },
+    "56": {
+      "name": "Phase Align",
+      "category": "utility",
+      "param1": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Delay"},
+      "param2": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Phase"},
+      "param3": {"min": 0.0, "max": 1.0, "default": 0.0, "name": "Polarity"}
+    }
+  },
+  
+  "validation_rules": [
+    {
+      "rule": "prevent_feedback_explosion",
+      "description": "Limit total feedback across all delay and reverb engines",
+      "condition": "sum(feedback_params) > 2.0",
+      "action": "scale_down"
+    },
+    {
+      "rule": "prevent_distortion_overload",
+      "description": "Limit combined drive/distortion across all slots",
+      "condition": "sum(drive_params) > 3.0",
+      "action": "scale_down"
+    },
+    {
+      "rule": "maintain_headroom",
+      "description": "Ensure output doesn't clip",
+      "condition": "estimated_peak > 0.95",
+      "action": "reduce_output"
+    }
+  ]
+}

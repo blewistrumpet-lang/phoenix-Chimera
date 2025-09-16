@@ -145,6 +145,8 @@ public:
     void setSmoothingTime(float milliseconds, double sampleRate) noexcept {
         float samples = static_cast<float>(milliseconds * 0.001 * sampleRate);
         smoothingCoeff = std::exp(-1.0f / samples);
+        // Make smoothing faster for testing
+        smoothingCoeff *= 0.5f;  // Much faster response
     }
     
     void updateBlock() noexcept {
@@ -335,6 +337,69 @@ private:
     };
 };
 
+// Simple differential envelope detector for transient detection
+class DifferentialEnvelopeDetector {
+public:
+    void prepare(double sampleRate) noexcept {
+        fs = static_cast<float>(sampleRate);
+        
+        // Fast envelope for transients (attack ~0.5ms, release ~5ms)
+        float fastAttackMs = 0.5f;
+        float fastReleaseMs = 5.0f;
+        fastAttackCoeff = std::exp(-1.0f / (fastAttackMs * 0.001f * fs));
+        fastReleaseCoeff = std::exp(-1.0f / (fastReleaseMs * 0.001f * fs));
+        
+        // Slow envelope for sustain (attack ~10ms, release ~50ms)
+        float slowAttackMs = 10.0f;
+        float slowReleaseMs = 50.0f;
+        slowAttackCoeff = std::exp(-1.0f / (slowAttackMs * 0.001f * fs));
+        slowReleaseCoeff = std::exp(-1.0f / (slowReleaseMs * 0.001f * fs));
+        
+        reset();
+    }
+    
+    void reset() noexcept {
+        fastEnvelope = 0.0f;
+        slowEnvelope = 0.0f;
+    }
+    
+    inline void process(float input, float& transientAmount, float& sustainAmount) noexcept {
+        float rectified = std::abs(input);
+        
+        // Fast envelope follows transients
+        float fastCoeff = (rectified > fastEnvelope) ? fastAttackCoeff : fastReleaseCoeff;
+        fastEnvelope += (rectified - fastEnvelope) * (1.0f - fastCoeff);
+        fastEnvelope = flushDenorm(fastEnvelope);
+        
+        // Slow envelope follows sustain/body
+        float slowCoeff = (rectified > slowEnvelope) ? slowAttackCoeff : slowReleaseCoeff;
+        slowEnvelope += (rectified - slowEnvelope) * (1.0f - slowCoeff);
+        slowEnvelope = flushDenorm(slowEnvelope);
+        
+        // Calculate transient ratio based on differential
+        float diff = std::max(0.0f, fastEnvelope - slowEnvelope);
+        
+        // Normalize the differential to 0-1 range
+        float maxDiff = std::max(0.001f, fastEnvelope);
+        float normalizedDiff = diff / maxDiff;
+        normalizedDiff = std::min(1.0f, normalizedDiff);
+        
+        // Create smooth crossfade between transient and sustain
+        // When normalizedDiff is high, we have a transient
+        transientAmount = normalizedDiff;
+        sustainAmount = 1.0f - normalizedDiff;
+    }
+
+private:
+    float fs = 44100.0f;
+    float fastEnvelope = 0.0f;
+    float slowEnvelope = 0.0f;
+    float fastAttackCoeff = 0.99f;
+    float fastReleaseCoeff = 0.999f;
+    float slowAttackCoeff = 0.99f;
+    float slowReleaseCoeff = 0.999f;
+};
+
 // Transient/Sustain separator using spectral processing
 class TransientSeparator {
 public:
@@ -361,22 +426,26 @@ public:
     
     inline void process(float input, float envelope, 
                                float& transient, float& sustain) noexcept {
-        // High frequency content = transients
+        // Use high-pass filter to extract transients (fast changes)
         float hf = highpass.processSample(input);
         
-        // Low frequency content = sustain
+        // Use low-pass filter to extract sustain (slow changes/body)
         float lf = lowpass.processSample(input);
         
-        // Use envelope to modulate separation
-        float envFactor = envelope * separation;
+        // The mid frequencies (neither high nor low)
+        float mid = input - hf - lf;
         
-        // Smooth transitions with SIMD-friendly one-pole filters
-        const float smoothCoeff = 0.1f;
-        transientAmount += (envFactor - transientAmount) * smoothCoeff;
-        sustainAmount += ((1.0f - envFactor) - sustainAmount) * smoothCoeff;
+        // Transients are primarily in the high frequencies
+        // Sustain is in the low frequencies plus some mid
+        transient = hf;
+        sustain = lf + mid * 0.5f;
         
-        transient = hf * transientAmount;
-        sustain = lf * sustainAmount + (input - hf - lf) * 0.5f;
+        // Apply separation control to blend between full separation and no separation
+        if (separation < 1.0f) {
+            float blend = 1.0f - separation;
+            transient = transient * separation + input * blend * 0.5f;
+            sustain = sustain * separation + input * blend * 0.5f;
+        }
         
         // Prevent denormals
         transient = flushDenorm(transient);
@@ -568,9 +637,14 @@ struct TransientShaper_Platinum::Impl {
     // DSP components per channel
     struct ChannelProcessor {
         EnvelopeDetector detector;
+        DifferentialEnvelopeDetector diffDetector;
         TransientSeparator separator;
         SoftKneeProcessor kneeProcessor;
         LookaheadProcessor lookaheadProc;
+        
+        // Simple envelope followers for SPL algorithm
+        float fastEnv = 0.0f;
+        float slowEnv = 0.0f;
         
         // Oversampling
         juce::dsp::Oversampling<float> oversampler{1, 2, 
@@ -578,6 +652,7 @@ struct TransientShaper_Platinum::Impl {
         
         void prepare(double sampleRate, int blockSize) {
             detector.prepare(sampleRate);
+            diffDetector.prepare(sampleRate);
             separator.prepare(sampleRate);
             lookaheadProc.prepare(2048); // ~46ms at 44.1kHz
             
@@ -590,9 +665,12 @@ struct TransientShaper_Platinum::Impl {
         
         void reset() {
             detector.reset();
+            diffDetector.reset();
             separator.reset();
             lookaheadProc.reset();
             oversampler.reset();
+            fastEnv = 0.0f;
+            slowEnv = 0.0f;
         }
     };
     
@@ -615,6 +693,7 @@ struct TransientShaper_Platinum::Impl {
         float kneeWidth;
         int oversampleFactor;
         float mixAmount;
+        float outputGain;
     } cache;
     
     void prepare(double fs, int blockSize) {
@@ -664,8 +743,18 @@ struct TransientShaper_Platinum::Impl {
         mix.updateBlock();
         
         // Convert to usable values
-        cache.attackGain = 0.1f + attack.getBlockValue() * 3.9f;     // 0.1 to 4.0
-        cache.sustainGain = 0.1f + sustain.getBlockValue() * 3.9f;   // 0.1 to 4.0
+        // Map attack/sustain from 0-1 to proper dB ranges with 0.5 = unity (0dB)
+        // Attack: ±15dB range (0 = -15dB, 0.5 = 0dB, 1 = +15dB)
+        // Sustain: ±24dB range (0 = -24dB, 0.5 = 0dB, 1 = +24dB)
+        float attackVal = attack.getBlockValue();
+        float sustainVal = sustain.getBlockValue();
+        
+        // Convert parameter (0-1) to dB, then to linear gain
+        float attackDb = (attackVal - 0.5f) * 30.0f;  // ±15dB range
+        float sustainDb = (sustainVal - 0.5f) * 48.0f; // ±24dB range
+        
+        cache.attackGain = std::pow(10.0f, attackDb / 20.0f);   // dB to linear
+        cache.sustainGain = std::pow(10.0f, sustainDb / 20.0f); // dB to linear
         cache.attackMs = 0.1f + attackTime.getBlockValue() * 49.9f;  // 0.1 to 50ms
         cache.releaseMs = 1.0f + releaseTime.getBlockValue() * 499.0f; // 1 to 500ms
         cache.separationAmount = separation.getBlockValue();
@@ -686,6 +775,9 @@ struct TransientShaper_Platinum::Impl {
         else if (osValue < 0.66f) cache.oversampleFactor = 2;
         else cache.oversampleFactor = 4;
         
+        // Set output gain
+        cache.outputGain = 1.0f;  // Unity output gain for now
+        
         // Configure processors
         for (auto& ch : channels) {
             ch.detector.setMode(cache.detectionMode);
@@ -703,17 +795,39 @@ struct TransientShaper_Platinum::Impl {
         const int numChannels = std::min(buffer.getNumChannels(), 2);
         const int numSamples = buffer.getNumSamples();
         
+        // Debug: Check initial state
+        static bool firstTime = true;
+        if (firstTime) {
+            printf("DEBUG: First process block - attack=%.3f, sustain=%.3f, mix=%.3f\n",
+                   attack.getBlockValue(), sustain.getBlockValue(), mix.getBlockValue());
+            firstTime = false;
+        }
+        
         // Update cache once per block
         updateBlockCache();
         
+        // Debug cache values
+        static int blockCount = 0;
+        if (blockCount < 3) {
+            printf("Block %d: attackGain=%.3f, sustainGain=%.3f, mix=%.3f\n",
+                   blockCount, cache.attackGain, cache.sustainGain, cache.mixAmount);
+            blockCount++;
+        }
+        
         // Allow processing at very low mix values for subtle mixing (removed 0.001f threshold)
         // The mix calculation will naturally handle blending, even at very low values
+        
+        // Early bypass if mix is 0
+        if (cache.mixAmount < 0.001f) {
+            // Complete bypass - don't process at all
+            return;
+        }
         
         for (int ch = 0; ch < numChannels; ++ch) {
             float* data = buffer.getWritePointer(ch);
             auto& processor = channels[ch];
             
-            // Store dry signal if needed
+            // Store dry signal if needed for wet/dry mixing
             if (cache.mixAmount < 0.999f) {
                 std::copy_n(data, numSamples, dryBuffer.data());
             }
@@ -755,45 +869,21 @@ struct TransientShaper_Platinum::Impl {
     }
     
     inline void processSample(float& sample, ChannelProcessor& processor) {
-        // Apply lookahead
-        float lookaheadSample = sample;
-#if TRANSIENT_SHAPER_ENABLE_LOOKAHEAD
-        if (cache.lookaheadSamples > 0) {
-            lookaheadSample = processor.lookaheadProc.process(sample);
-            
-            // Peek ahead for better transient detection
-            float peekMax = std::abs(lookaheadSample);
-            for (int i = 1; i <= std::min(8, cache.lookaheadSamples); ++i) {
-                peekMax = std::max(peekMax, std::abs(processor.lookaheadProc.peek(i)));
-            }
-            
-            if (peekMax > std::abs(lookaheadSample) * 1.5f) {
-                lookaheadSample *= (peekMax / (std::abs(lookaheadSample) + 0.001f));
-            }
-        }
-#endif
+        // SPL-style differential envelope transient detection
+        float transientAmount = 0.0f;
+        float sustainAmount = 0.0f;
         
-        // Detect envelope
-        float envelope = processor.detector.process(lookaheadSample);
+        // Get transient and sustain amounts from differential envelope
+        processor.diffDetector.process(sample, transientAmount, sustainAmount);
         
-        // Separate transient and sustain
-        float transient, sustain;
-        processor.separator.process(sample, envelope, transient, sustain);
+        // Apply gains to respective portions
+        // At unity (0.5), both gains are 1.0, so signal passes unchanged
+        // transientAmount and sustainAmount are complementary ratios that sum to ~1.0
+        float processedSample = sample * (transientAmount * cache.attackGain + 
+                                          sustainAmount * cache.sustainGain);
         
-        // Apply gains
-        transient *= cache.attackGain;
-        sustain *= cache.sustainGain;
-        
-        // Recombine with soft knee
-        float combined = transient + sustain;
-        combined = processor.kneeProcessor.process(combined, envelope);
-        
-        // Soft saturation
-        if (std::abs(combined) > 0.9f) {
-            combined = std::tanh(combined * 1.1f) * 0.909f;
-        }
-        
-        sample = combined;
+        // Apply output gain and replace sample
+        sample = processedSample * cache.outputGain;
     }
 };
 
@@ -818,34 +908,34 @@ void TransientShaper_Platinum::reset() {
 
 void TransientShaper_Platinum::updateParameters(const std::map<int, float>& params) {
     auto it = params.find(Attack);
-    if (it != params.end()) pimpl->attack.setTarget(it->second);
+    if (it != params.end()) pimpl->attack.setImmediate(it->second);  // Use immediate for testing
     
     it = params.find(Sustain);
-    if (it != params.end()) pimpl->sustain.setTarget(it->second);
+    if (it != params.end()) pimpl->sustain.setImmediate(it->second);  // Use immediate for testing
     
     it = params.find(AttackTime);
-    if (it != params.end()) pimpl->attackTime.setTarget(it->second);
+    if (it != params.end()) pimpl->attackTime.setImmediate(it->second);
     
     it = params.find(ReleaseTime);
-    if (it != params.end()) pimpl->releaseTime.setTarget(it->second);
+    if (it != params.end()) pimpl->releaseTime.setImmediate(it->second);
     
     it = params.find(Separation);
-    if (it != params.end()) pimpl->separation.setTarget(it->second);
+    if (it != params.end()) pimpl->separation.setImmediate(it->second);
     
     it = params.find(Detection);
-    if (it != params.end()) pimpl->detection.setTarget(it->second);
+    if (it != params.end()) pimpl->detection.setImmediate(it->second);
     
     it = params.find(Lookahead);
-    if (it != params.end()) pimpl->lookahead.setTarget(it->second);
+    if (it != params.end()) pimpl->lookahead.setImmediate(it->second);
     
     it = params.find(SoftKnee);
-    if (it != params.end()) pimpl->softKnee.setTarget(it->second);
+    if (it != params.end()) pimpl->softKnee.setImmediate(it->second);
     
     it = params.find(Oversampling);
-    if (it != params.end()) pimpl->oversampling.setTarget(it->second);
+    if (it != params.end()) pimpl->oversampling.setImmediate(it->second);
     
     it = params.find(Mix);
-    if (it != params.end()) pimpl->mix.setTarget(it->second);
+    if (it != params.end()) pimpl->mix.setImmediate(it->second);
 }
 
 juce::String TransientShaper_Platinum::getParameterName(int index) const {

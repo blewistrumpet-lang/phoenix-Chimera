@@ -1,4 +1,5 @@
 #include "TapeEcho.h"
+#include "DenormalProtection.h"
 #include <cmath>
 #include <algorithm>
 
@@ -169,6 +170,8 @@ float TapeEcho::DelayLine::readCubic(float delaySamples) const noexcept
 // main processing
 void TapeEcho::process(juce::AudioBuffer<float>& buffer)
 {
+    DenormalProtection::DenormalGuard guard; // Prevent denormal CPU spikes
+    
     const int nCh = std::min(buffer.getNumChannels(), kMaxChannels);
     const int n   = buffer.getNumSamples();
     if (nCh <= 0 || n <= 0) return;

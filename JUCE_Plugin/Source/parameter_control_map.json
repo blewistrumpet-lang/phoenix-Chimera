@@ -1,0 +1,747 @@
+{
+  "engines": {
+    "0": {
+      "name": "None",
+      "parameters": []
+    },
+    "1": {
+      "name": "VintageOptoCompressor",
+      "parameters": [
+        {"index": 0, "name": "Gain", "control": "rotary"},
+        {"index": 1, "name": "Peak Reduction", "control": "rotary"},
+        {"index": 2, "name": "HF Emphasis", "control": "rotary"},
+        {"index": 3, "name": "Output", "control": "rotary"},
+        {"index": 4, "name": "Mix", "control": "slider"},
+        {"index": 5, "name": "Knee", "control": "rotary"},
+        {"index": 6, "name": "Harmonics", "control": "rotary"},
+        {"index": 7, "name": "Stereo Link", "control": "slider"}
+      ]
+    },
+    "2": {
+      "name": "ClassicCompressor",
+      "parameters": [
+        {"index": 0, "name": "Threshold", "control": "rotary"},
+        {"index": 1, "name": "Ratio", "control": "rotary"},
+        {"index": 2, "name": "Attack", "control": "slider"},
+        {"index": 3, "name": "Release", "control": "slider"},
+        {"index": 4, "name": "Knee", "control": "rotary"},
+        {"index": 5, "name": "Makeup", "control": "rotary"},
+        {"index": 6, "name": "Mix", "control": "slider"},
+        {"index": 7, "name": "Lookahead", "control": "slider"},
+        {"index": 8, "name": "Auto Release", "control": "toggle"},
+        {"index": 9, "name": "Sidechain", "control": "toggle"}
+      ]
+    },
+    "3": {
+      "name": "TransientShaper",
+      "parameters": [
+        {"index": 0, "name": "Attack", "control": "rotary"},
+        {"index": 1, "name": "Sustain", "control": "rotary"},
+        {"index": 2, "name": "Attack Time", "control": "slider"},
+        {"index": 3, "name": "Release Time", "control": "slider"},
+        {"index": 4, "name": "Separation", "control": "rotary"},
+        {"index": 5, "name": "Detection", "control": "stepped"},
+        {"index": 6, "name": "Lookahead", "control": "slider"},
+        {"index": 7, "name": "Soft Knee", "control": "rotary"},
+        {"index": 8, "name": "Oversampling", "control": "stepped"},
+        {"index": 9, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "4": {
+      "name": "NoiseGate",
+      "parameters": [
+        {"index": 0, "name": "Threshold", "control": "rotary"},
+        {"index": 1, "name": "Range", "control": "rotary"},
+        {"index": 2, "name": "Attack", "control": "slider"},
+        {"index": 3, "name": "Hold", "control": "slider"},
+        {"index": 4, "name": "Release", "control": "slider"},
+        {"index": 5, "name": "Hysteresis", "control": "rotary"},
+        {"index": 6, "name": "SC Filter", "control": "rotary"},
+        {"index": 7, "name": "Lookahead", "control": "slider"}
+      ]
+    },
+    "5": {
+      "name": "MasteringLimiter",
+      "parameters": [
+        {"index": 0, "name": "Threshold", "control": "rotary"},
+        {"index": 1, "name": "Ceiling", "control": "rotary"},
+        {"index": 2, "name": "Release", "control": "slider"},
+        {"index": 3, "name": "Lookahead", "control": "slider"},
+        {"index": 4, "name": "Knee", "control": "rotary"},
+        {"index": 5, "name": "Makeup", "control": "rotary"},
+        {"index": 6, "name": "Saturation", "control": "rotary"},
+        {"index": 7, "name": "Stereo Link", "control": "toggle"},
+        {"index": 8, "name": "True Peak", "control": "toggle"},
+        {"index": 9, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "6": {
+      "name": "DynamicEQ",
+      "parameters": [
+        {"index": 0, "name": "Frequency", "control": "rotary"},
+        {"index": 1, "name": "Threshold", "control": "rotary"},
+        {"index": 2, "name": "Ratio", "control": "rotary"},
+        {"index": 3, "name": "Attack", "control": "slider"},
+        {"index": 4, "name": "Release", "control": "slider"},
+        {"index": 5, "name": "Gain", "control": "rotary"},
+        {"index": 6, "name": "Mix", "control": "slider"},
+        {"index": 7, "name": "Mode", "control": "stepped"}
+      ]
+    },
+    "7": {
+      "name": "ParametricEQ",
+      "parameters": [
+        {"index": 0, "name": "Band 1 Freq", "control": "rotary"},
+        {"index": 1, "name": "Band 1 Gain", "control": "rotary"},
+        {"index": 2, "name": "Band 1 Q", "control": "rotary"},
+        {"index": 3, "name": "Band 2 Freq", "control": "rotary"},
+        {"index": 4, "name": "Band 2 Gain", "control": "rotary"},
+        {"index": 5, "name": "Band 2 Q", "control": "rotary"},
+        {"index": 6, "name": "Band 3 Freq", "control": "rotary"},
+        {"index": 7, "name": "Band 3 Gain", "control": "rotary"},
+        {"index": 8, "name": "Band 3 Q", "control": "rotary"},
+        {"index": 9, "name": "Band 4 Freq", "control": "rotary"},
+        {"index": 10, "name": "Band 4 Gain", "control": "rotary"},
+        {"index": 11, "name": "Band 4 Q", "control": "rotary"},
+        {"index": 12, "name": "Output Trim", "control": "rotary"},
+        {"index": 13, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "8": {
+      "name": "VintageConsoleEQ",
+      "parameters": [
+        {"index": 0, "name": "Low Shelf Freq", "control": "stepped"},
+        {"index": 1, "name": "Low Shelf Gain", "control": "rotary"},
+        {"index": 2, "name": "Low-Mid Freq", "control": "stepped"},
+        {"index": 3, "name": "Low-Mid Gain", "control": "rotary"},
+        {"index": 4, "name": "High-Mid Freq", "control": "stepped"},
+        {"index": 5, "name": "High-Mid Gain", "control": "rotary"},
+        {"index": 6, "name": "High Shelf Freq", "control": "stepped"},
+        {"index": 7, "name": "High Shelf Gain", "control": "rotary"},
+        {"index": 8, "name": "Drive", "control": "rotary"},
+        {"index": 9, "name": "Console Type", "control": "stepped"},
+        {"index": 10, "name": "Q Character", "control": "rotary"},
+        {"index": 11, "name": "Vintage Noise", "control": "toggle"},
+        {"index": 12, "name": "Output Trim", "control": "rotary"}
+      ]
+    },
+    "9": {
+      "name": "LadderFilter",
+      "parameters": [
+        {"index": 0, "name": "Cutoff", "control": "rotary"},
+        {"index": 1, "name": "Resonance", "control": "rotary"},
+        {"index": 2, "name": "Drive", "control": "rotary"},
+        {"index": 3, "name": "Filter Type", "control": "stepped"},
+        {"index": 4, "name": "Asymmetry", "control": "rotary"},
+        {"index": 5, "name": "Vintage Mode", "control": "toggle"},
+        {"index": 6, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "10": {
+      "name": "StateVariableFilter",
+      "parameters": [
+        {"index": 0, "name": "Frequency", "control": "rotary"},
+        {"index": 1, "name": "Resonance", "control": "rotary"},
+        {"index": 2, "name": "Drive", "control": "rotary"},
+        {"index": 3, "name": "Filter Type", "control": "stepped"},
+        {"index": 4, "name": "Slope", "control": "stepped"},
+        {"index": 5, "name": "Envelope", "control": "rotary"},
+        {"index": 6, "name": "Env Attack", "control": "slider"},
+        {"index": 7, "name": "Env Release", "control": "slider"},
+        {"index": 8, "name": "Analog", "control": "rotary"},
+        {"index": 9, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "11": {
+      "name": "FormantFilter",
+      "parameters": [
+        {"index": 0, "name": "Vowel", "control": "stepped"},
+        {"index": 1, "name": "Shift", "control": "rotary"},
+        {"index": 2, "name": "Resonance", "control": "rotary"},
+        {"index": 3, "name": "Morph", "control": "rotary"},
+        {"index": 4, "name": "Drive", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "12": {
+      "name": "EnvelopeFilter",
+      "parameters": [
+        {"index": 0, "name": "Sensitivity", "control": "rotary"},
+        {"index": 1, "name": "Attack", "control": "slider"},
+        {"index": 2, "name": "Release", "control": "slider"},
+        {"index": 3, "name": "Range", "control": "rotary"},
+        {"index": 4, "name": "Resonance", "control": "rotary"},
+        {"index": 5, "name": "Filter", "control": "stepped"},
+        {"index": 6, "name": "Direction", "control": "stepped"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "13": {
+      "name": "CombResonator",
+      "parameters": [
+        {"index": 0, "name": "Root Freq", "control": "rotary"},
+        {"index": 1, "name": "Resonance", "control": "rotary"},
+        {"index": 2, "name": "Harmonic Spread", "control": "rotary"},
+        {"index": 3, "name": "Decay Time", "control": "slider"},
+        {"index": 4, "name": "Damping", "control": "rotary"},
+        {"index": 5, "name": "Mod Depth", "control": "rotary"},
+        {"index": 6, "name": "Stereo Width", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "14": {
+      "name": "VocalFormantFilter",
+      "parameters": [
+        {"index": 0, "name": "Vowel 1", "control": "stepped"},
+        {"index": 1, "name": "Vowel 2", "control": "stepped"},
+        {"index": 2, "name": "Morph", "control": "rotary"},
+        {"index": 3, "name": "Resonance", "control": "rotary"},
+        {"index": 4, "name": "Brightness", "control": "rotary"},
+        {"index": 5, "name": "Mod Rate", "control": "rotary"},
+        {"index": 6, "name": "Mod Depth", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "15": {
+      "name": "VintageTubePreamp",
+      "parameters": [
+        {"index": 0, "name": "Bypass", "control": "toggle"},
+        {"index": 1, "name": "Voicing", "control": "stepped"},
+        {"index": 2, "name": "Input Trim", "control": "rotary"},
+        {"index": 3, "name": "Output Trim", "control": "rotary"},
+        {"index": 4, "name": "Drive", "control": "rotary"},
+        {"index": 5, "name": "Bright", "control": "rotary"},
+        {"index": 6, "name": "Bass", "control": "rotary"},
+        {"index": 7, "name": "Mid", "control": "rotary"},
+        {"index": 8, "name": "Treble", "control": "rotary"},
+        {"index": 9, "name": "Presence", "control": "rotary"},
+        {"index": 10, "name": "Microphonics", "control": "rotary"},
+        {"index": 11, "name": "Ghost Notes", "control": "rotary"},
+        {"index": 12, "name": "Noise", "control": "rotary"},
+        {"index": 13, "name": "Oversampling", "control": "stepped"}
+      ]
+    },
+    "16": {
+      "name": "WaveFolder",
+      "parameters": [
+        {"index": 0, "name": "Fold", "control": "rotary"},
+        {"index": 1, "name": "Asymmetry", "control": "rotary"},
+        {"index": 2, "name": "DC Offset", "control": "rotary"},
+        {"index": 3, "name": "Pre Gain", "control": "rotary"},
+        {"index": 4, "name": "Post Gain", "control": "rotary"},
+        {"index": 5, "name": "Smoothing", "control": "rotary"},
+        {"index": 6, "name": "Harmonics", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "17": {
+      "name": "HarmonicExciter",
+      "parameters": [
+        {"index": 0, "name": "Frequency", "control": "rotary"},
+        {"index": 1, "name": "Drive", "control": "rotary"},
+        {"index": 2, "name": "Harmonics", "control": "rotary"},
+        {"index": 3, "name": "Clarity", "control": "rotary"},
+        {"index": 4, "name": "Warmth", "control": "rotary"},
+        {"index": 5, "name": "Presence", "control": "rotary"},
+        {"index": 6, "name": "Color", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "18": {
+      "name": "BitCrusher",
+      "parameters": [
+        {"index": 0, "name": "Bits", "control": "stepped"},
+        {"index": 1, "name": "Downsample", "control": "stepped"},
+        {"index": 2, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "19": {
+      "name": "MultibandSaturator",
+      "parameters": [
+        {"index": 0, "name": "Low Drive", "control": "rotary"},
+        {"index": 1, "name": "Mid Drive", "control": "rotary"},
+        {"index": 2, "name": "High Drive", "control": "rotary"},
+        {"index": 3, "name": "Saturation Type", "control": "stepped"},
+        {"index": 4, "name": "Harmonic Character", "control": "rotary"},
+        {"index": 5, "name": "Output Gain", "control": "rotary"},
+        {"index": 6, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "20": {
+      "name": "MuffFuzz",
+      "parameters": [
+        {"index": 0, "name": "Sustain", "control": "rotary"},
+        {"index": 1, "name": "Tone", "control": "rotary"},
+        {"index": 2, "name": "Volume", "control": "rotary"},
+        {"index": 3, "name": "Gate", "control": "rotary"},
+        {"index": 4, "name": "Mids", "control": "rotary"},
+        {"index": 5, "name": "Variant", "control": "stepped"},
+        {"index": 6, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "21": {
+      "name": "RodentDistortion",
+      "parameters": [
+        {"index": 0, "name": "Gain", "control": "rotary"},
+        {"index": 1, "name": "Filter", "control": "rotary"},
+        {"index": 2, "name": "Clipping", "control": "rotary"},
+        {"index": 3, "name": "Tone", "control": "rotary"},
+        {"index": 4, "name": "Output", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "rotary"},
+        {"index": 6, "name": "Mode", "control": "stepped"},
+        {"index": 7, "name": "Presence", "control": "rotary"}
+      ]
+    },
+    "22": {
+      "name": "KStyleOverdrive",
+      "parameters": [
+        {"index": 0, "name": "Drive", "control": "rotary"},
+        {"index": 1, "name": "Tone", "control": "rotary"},
+        {"index": 2, "name": "Level", "control": "rotary"},
+        {"index": 3, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "23": {
+      "name": "StereoChorus",
+      "parameters": [
+        {"index": 0, "name": "Rate", "control": "rotary"},
+        {"index": 1, "name": "Depth", "control": "rotary"},
+        {"index": 2, "name": "Feedback", "control": "rotary"},
+        {"index": 3, "name": "Delay", "control": "slider"},
+        {"index": 4, "name": "Width", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "24": {
+      "name": "ResonantChorus",
+      "parameters": [
+        {"index": 0, "name": "Rate", "control": "rotary"},
+        {"index": 1, "name": "Depth", "control": "rotary"},
+        {"index": 2, "name": "Resonance", "control": "rotary"},
+        {"index": 3, "name": "Filter Freq", "control": "rotary"},
+        {"index": 4, "name": "Voices", "control": "stepped"},
+        {"index": 5, "name": "Spread", "control": "rotary"},
+        {"index": 6, "name": "Feedback", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "25": {
+      "name": "AnalogPhaser",
+      "parameters": [
+        {"index": 0, "name": "Rate", "control": "rotary"},
+        {"index": 1, "name": "Depth", "control": "rotary"},
+        {"index": 2, "name": "Feedback", "control": "rotary"},
+        {"index": 3, "name": "Stages", "control": "stepped"},
+        {"index": 4, "name": "Stereo Spread", "control": "rotary"},
+        {"index": 5, "name": "Center Freq", "control": "rotary"},
+        {"index": 6, "name": "Resonance", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "26": {
+      "name": "RingModulator",
+      "parameters": [
+        {"index": 0, "name": "Carrier Frequency", "control": "rotary"},
+        {"index": 1, "name": "Ring Amount", "control": "rotary"},
+        {"index": 2, "name": "Frequency Shift", "control": "rotary"},
+        {"index": 3, "name": "Feedback", "control": "rotary"},
+        {"index": 4, "name": "Pulse Width", "control": "rotary"},
+        {"index": 5, "name": "Phase Modulation", "control": "rotary"},
+        {"index": 6, "name": "Harmonic Stretch", "control": "rotary"},
+        {"index": 7, "name": "Spectral Tilt", "control": "rotary"},
+        {"index": 8, "name": "Resonance", "control": "rotary"},
+        {"index": 9, "name": "Shimmer", "control": "rotary"},
+        {"index": 10, "name": "Thermal Drift", "control": "rotary"},
+        {"index": 11, "name": "Pitch Tracking", "control": "rotary"}
+      ]
+    },
+    "27": {
+      "name": "FrequencyShifter",
+      "parameters": [
+        {"index": 0, "name": "Shift", "control": "rotary"},
+        {"index": 1, "name": "Feedback", "control": "rotary"},
+        {"index": 2, "name": "Mix", "control": "rotary"},
+        {"index": 3, "name": "Spread", "control": "rotary"},
+        {"index": 4, "name": "Resonance", "control": "rotary"},
+        {"index": 5, "name": "Mod Depth", "control": "rotary"},
+        {"index": 6, "name": "Mod Rate", "control": "rotary"},
+        {"index": 7, "name": "Direction", "control": "stepped"}
+      ]
+    },
+    "28": {
+      "name": "HarmonicTremolo",
+      "parameters": [
+        {"index": 0, "name": "Rate", "control": "rotary"},
+        {"index": 1, "name": "Depth", "control": "rotary"},
+        {"index": 2, "name": "Harmonics", "control": "rotary"},
+        {"index": 3, "name": "Stereo Phase", "control": "rotary"}
+      ]
+    },
+    "29": {
+      "name": "ClassicTremolo",
+      "parameters": [
+        {"index": 0, "name": "Rate", "control": "rotary"},
+        {"index": 1, "name": "Depth", "control": "rotary"},
+        {"index": 2, "name": "Shape", "control": "stepped"},
+        {"index": 3, "name": "Stereo", "control": "rotary"},
+        {"index": 4, "name": "Type", "control": "stepped"},
+        {"index": 5, "name": "Symmetry", "control": "rotary"},
+        {"index": 6, "name": "Volume", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "30": {
+      "name": "RotarySpeaker",
+      "parameters": [
+        {"index": 0, "name": "Speed", "control": "rotary"},
+        {"index": 1, "name": "Acceleration", "control": "rotary"},
+        {"index": 2, "name": "Drive", "control": "rotary"},
+        {"index": 3, "name": "Mic Distance", "control": "rotary"},
+        {"index": 4, "name": "Stereo Width", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "31": {
+      "name": "PitchShifter",
+      "parameters": [
+        {"index": 0, "name": "Pitch", "control": "rotary"},
+        {"index": 1, "name": "Fine Tune", "control": "rotary"},
+        {"index": 2, "name": "Formant", "control": "rotary"},
+        {"index": 3, "name": "Mix", "control": "slider"},
+        {"index": 4, "name": "Size", "control": "slider"},
+        {"index": 5, "name": "Feedback", "control": "slider"},
+        {"index": 6, "name": "Quality", "control": "stepped"}
+      ]
+    },
+    "32": {
+      "name": "DetuneDoubler",
+      "parameters": [
+        {"index": 0, "name": "Detune", "control": "rotary"},
+        {"index": 1, "name": "Delay", "control": "slider"},
+        {"index": 2, "name": "Width", "control": "rotary"},
+        {"index": 3, "name": "Mix", "control": "slider"},
+        {"index": 4, "name": "Voices", "control": "stepped"}
+      ]
+    },
+    "33": {
+      "name": "IntelligentHarmonizer",
+      "parameters": [
+        {"index": 0, "name": "Interval", "control": "stepped"},
+        {"index": 1, "name": "Scale", "control": "stepped"},
+        {"index": 2, "name": "Key", "control": "stepped"},
+        {"index": 3, "name": "Mix", "control": "slider"},
+        {"index": 4, "name": "Formant", "control": "rotary"},
+        {"index": 5, "name": "Pan", "control": "rotary"},
+        {"index": 6, "name": "Delay", "control": "slider"}
+      ]
+    },
+    "34": {
+      "name": "TapeEcho",
+      "parameters": [
+        {"index": 0, "name": "Delay Time", "control": "slider"},
+        {"index": 1, "name": "Feedback", "control": "slider"},
+        {"index": 2, "name": "Wow", "control": "rotary"},
+        {"index": 3, "name": "Flutter", "control": "rotary"},
+        {"index": 4, "name": "Saturation", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "slider"},
+        {"index": 6, "name": "Filter", "control": "rotary"},
+        {"index": 7, "name": "Age", "control": "rotary"}
+      ]
+    },
+    "35": {
+      "name": "DigitalDelay",
+      "parameters": [
+        {"index": 0, "name": "Delay Time", "control": "slider"},
+        {"index": 1, "name": "Feedback", "control": "slider"},
+        {"index": 2, "name": "Mix", "control": "slider"},
+        {"index": 3, "name": "Filter", "control": "rotary"},
+        {"index": 4, "name": "Modulation", "control": "rotary"},
+        {"index": 5, "name": "Sync", "control": "toggle"},
+        {"index": 6, "name": "Ping Pong", "control": "toggle"}
+      ]
+    },
+    "36": {
+      "name": "MagneticDrumEcho",
+      "parameters": [
+        {"index": 0, "name": "Delay Time", "control": "slider"},
+        {"index": 1, "name": "Feedback", "control": "slider"},
+        {"index": 2, "name": "Drum Speed", "control": "rotary"},
+        {"index": 3, "name": "Head Spacing", "control": "rotary"},
+        {"index": 4, "name": "Saturation", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "slider"},
+        {"index": 6, "name": "Wear", "control": "rotary"}
+      ]
+    },
+    "37": {
+      "name": "BucketBrigadeDelay",
+      "parameters": [
+        {"index": 0, "name": "Delay Time", "control": "slider"},
+        {"index": 1, "name": "Feedback", "control": "slider"},
+        {"index": 2, "name": "Clock Noise", "control": "rotary"},
+        {"index": 3, "name": "Filter", "control": "rotary"},
+        {"index": 4, "name": "Companding", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "38": {
+      "name": "BufferRepeat",
+      "parameters": [
+        {"index": 0, "name": "Size", "control": "slider"},
+        {"index": 1, "name": "Speed", "control": "rotary"},
+        {"index": 2, "name": "Trigger", "control": "toggle"},
+        {"index": 3, "name": "Gate", "control": "toggle"},
+        {"index": 4, "name": "Reverse", "control": "toggle"},
+        {"index": 5, "name": "Pitch", "control": "rotary"},
+        {"index": 6, "name": "Filter", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "39": {
+      "name": "PlateReverb",
+      "parameters": [
+        {"index": 0, "name": "Size", "control": "slider"},
+        {"index": 1, "name": "Decay", "control": "slider"},
+        {"index": 2, "name": "Damping", "control": "rotary"},
+        {"index": 3, "name": "Predelay", "control": "slider"},
+        {"index": 4, "name": "Low Cut", "control": "rotary"},
+        {"index": 5, "name": "High Cut", "control": "rotary"},
+        {"index": 6, "name": "Mix", "control": "slider"},
+        {"index": 7, "name": "Early/Late", "control": "rotary"}
+      ]
+    },
+    "40": {
+      "name": "SpringReverb",
+      "parameters": [
+        {"index": 0, "name": "Springs", "control": "stepped"},
+        {"index": 1, "name": "Tension", "control": "rotary"},
+        {"index": 2, "name": "Decay", "control": "slider"},
+        {"index": 3, "name": "Twang", "control": "rotary"},
+        {"index": 4, "name": "Drip", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "slider"},
+        {"index": 6, "name": "Bass", "control": "rotary"},
+        {"index": 7, "name": "Treble", "control": "rotary"}
+      ]
+    },
+    "41": {
+      "name": "ConvolutionReverb",
+      "parameters": [
+        {"index": 0, "name": "IR Select", "control": "stepped"},
+        {"index": 1, "name": "Size", "control": "slider"},
+        {"index": 2, "name": "Predelay", "control": "slider"},
+        {"index": 3, "name": "Damping", "control": "rotary"},
+        {"index": 4, "name": "Low Cut", "control": "rotary"},
+        {"index": 5, "name": "High Cut", "control": "rotary"},
+        {"index": 6, "name": "Mix", "control": "slider"},
+        {"index": 7, "name": "Width", "control": "rotary"}
+      ]
+    },
+    "42": {
+      "name": "ShimmerReverb",
+      "parameters": [
+        {"index": 0, "name": "Size", "control": "slider"},
+        {"index": 1, "name": "Decay", "control": "slider"},
+        {"index": 2, "name": "Shimmer", "control": "rotary"},
+        {"index": 3, "name": "Pitch", "control": "rotary"},
+        {"index": 4, "name": "Feedback", "control": "slider"},
+        {"index": 5, "name": "Low Cut", "control": "rotary"},
+        {"index": 6, "name": "High Cut", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "43": {
+      "name": "GatedReverb",
+      "parameters": [
+        {"index": 0, "name": "Size", "control": "slider"},
+        {"index": 1, "name": "Gate Time", "control": "slider"},
+        {"index": 2, "name": "Gate Thresh", "control": "rotary"},
+        {"index": 3, "name": "Predelay", "control": "slider"},
+        {"index": 4, "name": "Damping", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "slider"},
+        {"index": 6, "name": "Attack", "control": "slider"},
+        {"index": 7, "name": "Release", "control": "slider"}
+      ]
+    },
+    "44": {
+      "name": "StereoWidener",
+      "parameters": [
+        {"index": 0, "name": "Width", "control": "rotary"},
+        {"index": 1, "name": "Bass Mono", "control": "toggle"},
+        {"index": 2, "name": "Frequency", "control": "rotary"},
+        {"index": 3, "name": "Delay", "control": "slider"},
+        {"index": 4, "name": "Pan", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "45": {
+      "name": "StereoImager",
+      "parameters": [
+        {"index": 0, "name": "Width", "control": "rotary"},
+        {"index": 1, "name": "Rotation", "control": "rotary"},
+        {"index": 2, "name": "Center", "control": "rotary"},
+        {"index": 3, "name": "Low Width", "control": "rotary"},
+        {"index": 4, "name": "Mid Width", "control": "rotary"},
+        {"index": 5, "name": "High Width", "control": "rotary"},
+        {"index": 6, "name": "Low Freq", "control": "rotary"},
+        {"index": 7, "name": "High Freq", "control": "rotary"}
+      ]
+    },
+    "46": {
+      "name": "DimensionExpander",
+      "parameters": [
+        {"index": 0, "name": "Size", "control": "slider"},
+        {"index": 1, "name": "Width", "control": "rotary"},
+        {"index": 2, "name": "Depth", "control": "rotary"},
+        {"index": 3, "name": "Height", "control": "rotary"},
+        {"index": 4, "name": "Diffusion", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "47": {
+      "name": "SpectralFreeze",
+      "parameters": [
+        {"index": 0, "name": "Freeze", "control": "toggle"},
+        {"index": 1, "name": "Threshold", "control": "rotary"},
+        {"index": 2, "name": "Attack", "control": "slider"},
+        {"index": 3, "name": "Release", "control": "slider"},
+        {"index": 4, "name": "Spectral Blur", "control": "rotary"},
+        {"index": 5, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "48": {
+      "name": "SpectralGate",
+      "parameters": [
+        {"index": 0, "name": "Threshold", "control": "rotary"},
+        {"index": 1, "name": "Ratio", "control": "rotary"},
+        {"index": 2, "name": "Attack", "control": "slider"},
+        {"index": 3, "name": "Release", "control": "slider"},
+        {"index": 4, "name": "Frequency", "control": "rotary"},
+        {"index": 5, "name": "Bandwidth", "control": "rotary"},
+        {"index": 6, "name": "Mix", "control": "slider"}
+      ]
+    },
+    "49": {
+      "name": "PhasedVocoder",
+      "parameters": [
+        {"index": 0, "name": "Stretch", "control": "slider"},
+        {"index": 1, "name": "Pitch", "control": "rotary"},
+        {"index": 2, "name": "Smear", "control": "slider"},
+        {"index": 3, "name": "Transient", "control": "slider"},
+        {"index": 4, "name": "Phase", "control": "slider"},
+        {"index": 5, "name": "Gate", "control": "slider"},
+        {"index": 6, "name": "Mix", "control": "rotary"},
+        {"index": 7, "name": "Freeze", "control": "toggle"},
+        {"index": 8, "name": "Attack", "control": "slider"},
+        {"index": 9, "name": "Release", "control": "slider"}
+      ]
+    },
+    "50": {
+      "name": "GranularCloud",
+      "parameters": [
+        {"index": 0, "name": "Grain Size", "control": "slider"},
+        {"index": 1, "name": "Density", "control": "slider"},
+        {"index": 2, "name": "Pitch Scatter", "control": "rotary"},
+        {"index": 3, "name": "Position", "control": "slider"},
+        {"index": 4, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "51": {
+      "name": "ChaosGenerator",
+      "parameters": [
+        {"index": 0, "name": "Rate", "control": "rotary"},
+        {"index": 1, "name": "Depth", "control": "rotary"},
+        {"index": 2, "name": "Type", "control": "stepped"},
+        {"index": 3, "name": "Smoothing", "control": "slider"},
+        {"index": 4, "name": "Target", "control": "stepped"},
+        {"index": 5, "name": "Sync", "control": "toggle"},
+        {"index": 6, "name": "Seed", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "52": {
+      "name": "FeedbackNetwork",
+      "parameters": [
+        {"index": 0, "name": "Delay Time", "control": "slider"},
+        {"index": 1, "name": "Feedback", "control": "slider"},
+        {"index": 2, "name": "Crossfeed", "control": "slider"},
+        {"index": 3, "name": "Diffusion", "control": "slider"},
+        {"index": 4, "name": "Modulation", "control": "slider"},
+        {"index": 5, "name": "Freeze", "control": "toggle"},
+        {"index": 6, "name": "Shimmer", "control": "rotary"},
+        {"index": 7, "name": "Mix", "control": "rotary"}
+      ]
+    },
+    "53": {
+      "name": "MidSideProcessor",
+      "parameters": [
+        {"index": 0, "name": "Mid Gain", "control": "rotary"},
+        {"index": 1, "name": "Side Gain", "control": "rotary"},
+        {"index": 2, "name": "Width", "control": "rotary"},
+        {"index": 3, "name": "Mid Low", "control": "rotary"},
+        {"index": 4, "name": "Mid High", "control": "rotary"},
+        {"index": 5, "name": "Side Low", "control": "rotary"},
+        {"index": 6, "name": "Side High", "control": "rotary"},
+        {"index": 7, "name": "Bass Mono", "control": "toggle"},
+        {"index": 8, "name": "Solo Mode", "control": "stepped"},
+        {"index": 9, "name": "Presence", "control": "rotary"}
+      ]
+    },
+    "54": {
+      "name": "GainUtility",
+      "parameters": [
+        {"index": 0, "name": "Gain", "control": "rotary"},
+        {"index": 1, "name": "Left Gain", "control": "rotary"},
+        {"index": 2, "name": "Right Gain", "control": "rotary"},
+        {"index": 3, "name": "Mid Gain", "control": "rotary"},
+        {"index": 4, "name": "Side Gain", "control": "rotary"},
+        {"index": 5, "name": "Mode", "control": "stepped"},
+        {"index": 6, "name": "Phase L", "control": "toggle"},
+        {"index": 7, "name": "Phase R", "control": "toggle"},
+        {"index": 8, "name": "Channel Swap", "control": "toggle"},
+        {"index": 9, "name": "Auto Gain", "control": "toggle"}
+      ]
+    },
+    "55": {
+      "name": "MonoMaker",
+      "parameters": [
+        {"index": 0, "name": "Frequency", "control": "rotary"},
+        {"index": 1, "name": "Slope", "control": "stepped"},
+        {"index": 2, "name": "Mode", "control": "stepped"},
+        {"index": 3, "name": "Bass Mono", "control": "toggle"},
+        {"index": 4, "name": "Preserve Phase", "control": "toggle"},
+        {"index": 5, "name": "DC Filter", "control": "toggle"},
+        {"index": 6, "name": "Width Above", "control": "rotary"},
+        {"index": 7, "name": "Output Gain", "control": "rotary"}
+      ]
+    },
+    "56": {
+      "name": "PhaseAlign",
+      "parameters": [
+        {"index": 0, "name": "Delay", "control": "slider"},
+        {"index": 1, "name": "Phase", "control": "rotary"},
+        {"index": 2, "name": "Frequency", "control": "rotary"},
+        {"index": 3, "name": "All Pass", "control": "toggle"},
+        {"index": 4, "name": "Polarity", "control": "toggle"},
+        {"index": 5, "name": "Link", "control": "toggle"},
+        {"index": 6, "name": "Auto", "control": "toggle"}
+      ]
+    }
+  },
+  "control_types": {
+    "rotary": {
+      "description": "Continuous rotary encoder for parameters like frequency, gain, drive, mix",
+      "range": "0.0 to 1.0 continuous"
+    },
+    "slider": {
+      "description": "Linear fader for time-based parameters like delay, attack, release, decay",
+      "range": "0.0 to 1.0 continuous"
+    },
+    "stepped": {
+      "description": "Discrete stepped encoder for modes, types, waveforms, scales",
+      "range": "Integer values representing discrete choices"
+    },
+    "toggle": {
+      "description": "On/off switch for binary parameters like bypass, enable, sync",
+      "range": "0 or 1"
+    }
+  }
+}

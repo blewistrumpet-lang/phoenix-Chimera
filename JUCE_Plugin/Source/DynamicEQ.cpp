@@ -17,15 +17,15 @@ DynamicEQ::DynamicEQ() {
 void DynamicEQ::prepareToPlay(double sampleRate, int samplesPerBlock) {
     m_sampleRate = sampleRate;
     
-    // Set parameter smoothing times
-    m_frequency.setSmoothingTime(50.0f, sampleRate);
-    m_threshold.setSmoothingTime(100.0f, sampleRate);
-    m_ratio.setSmoothingTime(200.0f, sampleRate);
-    m_attack.setSmoothingTime(150.0f, sampleRate);
-    m_release.setSmoothingTime(250.0f, sampleRate);
-    m_gain.setSmoothingTime(50.0f, sampleRate);
-    m_mix.setSmoothingTime(30.0f, sampleRate);
-    m_mode.setSmoothingTime(500.0f, sampleRate);
+    // Set parameter smoothing times - MUCH faster for responsive control
+    m_frequency.setSmoothingTime(0.5f, sampleRate);    // Was 50ms, now 0.5ms
+    m_threshold.setSmoothingTime(1.0f, sampleRate);    // Was 100ms, now 1ms
+    m_ratio.setSmoothingTime(2.0f, sampleRate);        // Was 200ms, now 2ms
+    m_attack.setSmoothingTime(1.5f, sampleRate);       // Was 150ms, now 1.5ms
+    m_release.setSmoothingTime(2.5f, sampleRate);      // Was 250ms, now 2.5ms
+    m_gain.setSmoothingTime(0.5f, sampleRate);         // Was 50ms, now 0.5ms
+    m_mix.setSmoothingTime(0.3f, sampleRate);          // Was 30ms, now 0.3ms
+    m_mode.setSmoothingTime(5.0f, sampleRate);         // Was 500ms, now 5ms (mode changes can be slightly slower)
     
     // Initialize DC blockers
     for (auto& blocker : m_dcBlockers) {
@@ -53,25 +53,39 @@ void DynamicEQ::process(juce::AudioBuffer<float>& buffer) {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     
+    // Early bypass check for mix parameter
+    m_mix.update();
+    if (m_mix.current < 0.001f) {
+        // Completely dry - no processing needed, just update parameters for smooth operation
+        m_frequency.update();
+        m_threshold.update();
+        m_ratio.update();
+        m_attack.update();
+        m_release.update();
+        m_gain.update();
+        return;
+    }
+    
     // Update thermal modeling and component aging
     m_thermalModel.update(m_sampleRate);
     updateComponentAging(m_sampleRate);
+    
+    // Update smoothed parameters once per block (more efficient)
+    for (int i = 0; i < numSamples; ++i) {
+        m_frequency.update();
+        m_threshold.update();
+        m_ratio.update();
+        m_attack.update();
+        m_release.update();
+        m_gain.update();
+        m_mode.update();
+    }
     
     for (int channel = 0; channel < numChannels && channel < 2; ++channel) {
         auto& state = m_channelStates[channel];
         float* channelData = buffer.getWritePointer(channel);
         
         for (int sample = 0; sample < numSamples; ++sample) {
-            // Update smoothed parameters
-            m_frequency.update();
-            m_threshold.update();
-            m_ratio.update();
-            m_attack.update();
-            m_release.update();
-            m_gain.update();
-            m_mix.update();
-            m_mode.update();
-            
             float input = channelData[sample];
             float drySignal = input;
             
@@ -79,9 +93,9 @@ void DynamicEQ::process(juce::AudioBuffer<float>& buffer) {
             input = m_dcBlockers[channel].process(input);
             
             // Calculate frequency from parameter (20Hz to 20kHz)
-            // Use exponential scaling but limit the range
+            // Use exponential scaling with safer range
             float freqParam = std::min(0.95f, m_frequency.current); // Cap at 0.95 to prevent extreme values
-            float freq = 20.0f * std::pow(500.0f, freqParam); // Reduced from 1000.0f to 500.0f for safety
+            float freq = 20.0f * std::pow(200.0f, freqParam); // Further reduced to 200.0f for more stable scaling
             
             // Clamp frequency to safe range (avoid Nyquist issues)
             freq = std::max(20.0f, std::min(freq, static_cast<float>(m_sampleRate * 0.45f)));
@@ -144,8 +158,8 @@ void DynamicEQ::process(juce::AudioBuffer<float>& buffer) {
             // Downsample back to original rate
             float output = state.oversampler.downsample(processedOversampledOutput);
             
-            // Final analog saturation for warmth
-            output = applyAnalogSaturation(output * 0.5f) * 2.0f;
+            // Final analog saturation for warmth (removed excessive gain)
+            output = applyAnalogSaturation(output * 0.7f);
             
             // Mix with dry signal
             channelData[sample] = drySignal * (1.0f - m_mix.current) + output * m_mix.current;
@@ -184,7 +198,17 @@ void DynamicEQ::updateParameters(const std::map<int, float>& params) {
     if (params.count(3)) m_attack.target = params.at(3);
     if (params.count(4)) m_release.target = params.at(4);
     if (params.count(5)) m_gain.target = params.at(5);
-    if (params.count(6)) m_mix.target = params.at(6);
+    if (params.count(6)) {
+        float mixValue = params.at(6);
+        if (mixValue < 0.001f) {
+            // Immediate bypass - set both target and current for instant effect
+            m_mix.target = mixValue;
+            m_mix.current = mixValue;
+        } else {
+            // Normal smoothed transition
+            m_mix.target = mixValue;
+        }
+    }
     if (params.count(7)) m_mode.target = params.at(7);
 }
 

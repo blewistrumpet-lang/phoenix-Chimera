@@ -96,7 +96,7 @@ async def quick_api_test():
         import os
         
         # Get API key
-        api_key = os.getenv("OPENAI_API_KEY", "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")
+        api_key = os.getenv("OPENAI_API_KEY")
         
         # Create client
         client = OpenAI(api_key=api_key)

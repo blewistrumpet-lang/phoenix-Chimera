@@ -110,6 +110,12 @@ void DetuneDoubler::processStereo(float* left, float* right, int numSamples) {
         float thickness = m_thicknessParam->getNextValue();
         float mix = m_mixParam->getNextValue();
         
+        // Early bypass check for mix parameter  
+        if (mix < 0.001f) {
+            // Completely dry - just pass through the signal
+            continue;
+        }
+        
         // Store dry signal
         float dryL = left[i];
         float dryR = right[i];
@@ -203,7 +209,16 @@ void DetuneDoubler::updateParameters(const std::map<int, float>& params) {
     if (it != params.end()) m_thicknessParam->setTargetValue(clamp01(it->second));
     
     it = params.find(4);
-    if (it != params.end()) m_mixParam->setTargetValue(clamp01(it->second));
+    if (it != params.end()) {
+        float mixValue = clamp01(it->second);
+        if (mixValue < 0.001f) {
+            // Immediate bypass - reset to achieve instant effect
+            m_mixParam->reset(mixValue);
+        } else {
+            // Normal smoothed transition
+            m_mixParam->setTargetValue(mixValue);
+        }
+    }
 }
 
 juce::String DetuneDoubler::getParameterName(int index) const {

@@ -32,7 +32,7 @@ void FeedbackNetwork::updateParameters(const std::map<int, float>& params) {
     modulationDepth = std::clamp(get(kModulation, 0.0f), 0.0f, 0.05f);
     freeze          = std::clamp(get(kFreeze, 0.0f), 0.0f, 1.0f);
     shimmer         = std::clamp(get(kShimmer, 0.0f), 0.0f, 1.0f);
-    mix             = std::clamp(get(kMix, 1.0f), 0.0f, 1.0f);
+    mix             = std::clamp(get(kMix, 0.5f), 0.0f, 1.0f);  // Default to 50% mix instead of 100%
 }
 
 void FeedbackNetwork::process(juce::AudioBuffer<float>& buffer) {
@@ -67,9 +67,11 @@ void FeedbackNetwork::process(juce::AudioBuffer<float>& buffer) {
             inL = inL + diffusion * (dr - inL);
             inR = inR + diffusion * (dl - inR);
 
+            // Write to delay lines - include both input and feedback
             delayL.write(sanitize(inL + dl * feedback));
             delayR.write(sanitize(inR + dr * feedback));
 
+            // Mix output
             left[n]  = DSPUtils::flushDenorm((1.0f - mix) * left[n]  + mix * dl);
             if (right) right[n] = DSPUtils::flushDenorm((1.0f - mix) * right[n] + mix * dr);
         }

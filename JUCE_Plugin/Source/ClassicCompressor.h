@@ -78,6 +78,7 @@ private:
         
     public:
         void setSampleRate(double sr, float smoothingMs = 20.0f) {
+            if (sr <= 0.0) sr = 44100.0; // Prevent divide by zero
             double tau = smoothingMs * 0.001;
             m_smoothingCoeff = std::exp(-1.0 / (tau * sr));
         }

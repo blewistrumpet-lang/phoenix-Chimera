@@ -56,13 +56,24 @@ void ResonantChorus::process(juce::AudioBuffer<float>& buffer) {
     
     if (numChannels == 0 || numSamples == 0) return;
     
+    // Early bypass check for mix parameter
+    float currentMix = m_mixParam.process(m_mixTarget);
+    if (currentMix < 0.001f) {
+        // Completely dry - no processing needed, just update parameters for smooth operation
+        m_rateParam.process(m_rateTarget);
+        m_depthParam.process(m_depthTarget);
+        m_resonanceParam.process(m_resonanceTarget);
+        m_widthParam.process(m_widthTarget);
+        return;
+    }
+    
     // Process each sample
     for (int sample = 0; sample < numSamples; ++sample) {
         // Get smoothed parameter values (using current target values)
         float rate = m_rateParam.process(m_rateTarget);           // 0.1 - 1.5 Hz
         float depth = m_depthParam.process(m_depthTarget);         // 0.2 - 0.6 samples modulation
         float resonance = m_resonanceParam.process(m_resonanceTarget); // 0.5 - 1.0 Q
-        float mix = m_mixParam.process(m_mixTarget);             // 0.0 - 1.0 dry/wet
+        float mix = currentMix;                                  // Use pre-calculated mix value
         float width = m_widthParam.process(m_widthTarget);         // 0.0 - 1.5 stereo width
         
         // Map parameters to proper ranges

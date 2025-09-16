@@ -1,0 +1,43 @@
+# Makefile for Direct Distortion Engine Test
+# Tests engines with direct header includes
+
+CXX = clang++
+CXXFLAGS = -std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable
+
+# Include paths
+INCLUDES = -IJUCE_Plugin/Source \
+           -I.
+
+# Source files
+SOURCES = test_distortion_direct.cpp
+
+# Target
+TARGET = test_distortion_direct
+
+# Build rule
+$(TARGET): $(SOURCES)
+	@echo "Building Direct Distortion Test..."
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(TARGET) $(SOURCES)
+	@echo "Build complete: $(TARGET)"
+
+# Clean rule
+clean:
+	rm -f $(TARGET)
+
+# Test rule
+test: $(TARGET)
+	@echo "Running Direct Distortion Test..."
+	./$(TARGET)
+
+# Help
+help:
+	@echo "Direct Distortion Engine Test"
+	@echo ""
+	@echo "Targets:"
+	@echo "  build     - Build the test executable"
+	@echo "  test      - Build and run the test"
+	@echo "  clean     - Remove built files"
+	@echo "  help      - Show this help"
+
+.PHONY: clean test help
+.DEFAULT_GOAL := $(TARGET)

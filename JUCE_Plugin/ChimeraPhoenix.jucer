@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="xK9mN3" name="ChimeraPhoenix" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              companyName="Chimera Audio" pluginFormats="buildAU,buildVST3"
+              companyName="Chimera Audio" pluginFormats="buildAU,buildVST3,buildStandalone"
               pluginManufacturerCode="Chim" pluginCode="Chmr" pluginChannelConfigs="{2,2}"
               pluginCharacteristicsValue="pluginWantsMidiIn">
   <MAINGROUP id="VJhK9W" name="ChimeraPhoenix">
@@ -14,6 +14,118 @@
       <FILE id="lAXnvN" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="OwzXnH" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="SkW001" name="SkunkworksLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/SkunkworksLookAndFeel.cpp"/>
+      <FILE id="SkW002" name="SkunkworksLookAndFeel.h" compile="0" resource="0" 
+            file="Source/SkunkworksLookAndFeel.h"/>
+      <FILE id="SkW003" name="ChimeraSlotComponent.cpp" compile="1" resource="0"
+            file="Source/ChimeraSlotComponent.cpp"/>
+      <FILE id="SkW004" name="ChimeraSlotComponent.h" compile="0" resource="0"
+            file="Source/ChimeraSlotComponent.h"/>
+      <FILE id="SkW005" name="CommandTerminal.cpp" compile="1" resource="0"
+            file="Source/CommandTerminal.cpp"/>
+      <FILE id="SkW006" name="CommandTerminal.h" compile="0" resource="0"
+            file="Source/CommandTerminal.h"/>
+      <FILE id="SkW007" name="PluginEditorSkunkworks.cpp" compile="1" resource="0"
+            file="Source/PluginEditorSkunkworks.cpp"/>
+      <FILE id="SkW008" name="PluginEditorSkunkworks.h" compile="0" resource="0"
+            file="Source/PluginEditorSkunkworks.h"/>
+      <FILE id="Art001" name="ArtisticLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/ArtisticLookAndFeel.cpp"/>
+      <FILE id="Art002" name="ArtisticLookAndFeel.h" compile="0" resource="0"
+            file="Source/ArtisticLookAndFeel.h"/>
+      <FILE id="Art003" name="PluginEditorRefined.cpp" compile="1" resource="0"
+            file="Source/PluginEditorRefined.cpp"/>
+      <FILE id="Art004" name="PluginEditorRefined.h" compile="0" resource="0"
+            file="Source/PluginEditorRefined.h"/>
+      <FILE id="Nex001" name="NexusLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/NexusLookAndFeel.cpp"/>
+      <FILE id="Nex002" name="NexusLookAndFeel.h" compile="0" resource="0"
+            file="Source/NexusLookAndFeel.h"/>
+      <FILE id="Nex003" name="PluginEditorNexus.cpp" compile="0" resource="0"
+            file="Source/PluginEditorNexus.cpp"/>
+      <FILE id="Nex004" name="PluginEditorNexus.h" compile="0" resource="0"
+            file="Source/PluginEditorNexus.h"/>
+      <FILE id="Eng001" name="EngineLibrary.h" compile="0" resource="0"
+            file="Source/EngineLibrary.h"/>
+      <FILE id="NexFinal001" name="NexusLookAndFeel_Final.cpp" compile="1" resource="0"
+            file="Source/NexusLookAndFeel_Final.cpp"/>
+      <FILE id="NexFinal002" name="NexusLookAndFeel_Final.h" compile="0" resource="0"
+            file="Source/NexusLookAndFeel_Final.h"/>
+      <FILE id="NexFinal003" name="PluginEditorNexus_Final.cpp" compile="1" resource="0"
+            file="Source/PluginEditorNexus_Final.cpp"/>
+      <FILE id="NexFinal004" name="PluginEditorNexus_Final.h" compile="0" resource="0"
+            file="Source/PluginEditorNexus_Final.h"/>
+      <FILE id="NexDyn001" name="NexusLookAndFeelDynamic.cpp" compile="1" resource="0"
+            file="Source/NexusLookAndFeelDynamic.cpp"/>
+      <FILE id="NexDyn002" name="NexusLookAndFeelDynamic.h" compile="0" resource="0"
+            file="Source/NexusLookAndFeelDynamic.h"/>
+      <FILE id="NexDyn003" name="PluginEditorNexusDynamic.cpp" compile="1" resource="0"
+            file="Source/PluginEditorNexusDynamic.cpp"/>
+      <FILE id="NexDyn004" name="PluginEditorNexusDynamic.h" compile="0" resource="0"
+            file="Source/PluginEditorNexusDynamic.h"/>
+      <FILE id="NexMin001" name="PluginEditorNexusDynamicMinimal.cpp" compile="1" resource="0"
+            file="Source/PluginEditorNexusDynamicMinimal.cpp"/>
+      <FILE id="NexMin002" name="PluginEditorNexusDynamicMinimal.h" compile="0" resource="0"
+            file="Source/PluginEditorNexusDynamicMinimal.h"/>
+      <FILE id="NexSafe001" name="PluginEditorNexusDynamicSafe.cpp" compile="1" resource="0"
+            file="Source/PluginEditorNexusDynamicSafe.cpp"/>
+      <FILE id="NexSafe002" name="PluginEditorNexusDynamicSafe.h" compile="0" resource="0"
+            file="Source/PluginEditorNexusDynamicSafe.h"/>
+      <FILE id="SlotComp001" name="SlotComponent.cpp" compile="1" resource="0"
+            file="Source/SlotComponent.cpp"/>
+      <FILE id="SlotComp002" name="SlotComponent.h" compile="0" resource="0"
+            file="Source/SlotComponent.h"/>
+      <FILE id="ParamCtrl001" name="ParameterControlMap.h" compile="0" resource="0"
+            file="Source/ParameterControlMap.h"/>
+      <FILE id="ParamFmt001" name="ParameterFormatter.h" compile="0" resource="0"
+            file="Source/ParameterFormatter.h"/>
+      <FILE id="ParamFmt002" name="ParameterFormatter.cpp" compile="1" resource="0"
+            file="Source/ParameterFormatter.cpp"/>
+      <FILE id="StaticUI001" name="PluginEditorNexusStatic.cpp" compile="1" resource="0"
+            file="Source/PluginEditorNexusStatic.cpp"/>
+      <FILE id="StaticUI002" name="PluginEditorNexusStatic.h" compile="0" resource="0"
+            file="Source/PluginEditorNexusStatic.h"/>
+      <FILE id="BasicUI001" name="PluginEditorBasic.cpp" compile="1" resource="0"
+            file="Source/PluginEditorBasic.cpp"/>
+      <FILE id="BasicUI002" name="PluginEditorBasic.h" compile="0" resource="0"
+            file="Source/PluginEditorBasic.h"/>
+      <FILE id="BasicSel001" name="PluginEditorBasicWithSelectors.cpp" compile="1" resource="0"
+            file="Source/PluginEditorBasicWithSelectors.cpp"/>
+      <FILE id="BasicSel002" name="PluginEditorBasicWithSelectors.h" compile="0" resource="0"
+            file="Source/PluginEditorBasicWithSelectors.h"/>
+      <FILE id="OneAttach001" name="PluginEditorWithOneAttachment.cpp" compile="1" resource="0"
+            file="Source/PluginEditorWithOneAttachment.cpp"/>
+      <FILE id="OneAttach002" name="PluginEditorWithOneAttachment.h" compile="0" resource="0"
+            file="Source/PluginEditorWithOneAttachment.h"/>
+      <FILE id="AllAttach001" name="PluginEditorWithAllAttachments.cpp" compile="1" resource="0"
+            file="Source/PluginEditorWithAllAttachments.cpp"/>
+      <FILE id="AllAttach002" name="PluginEditorWithAllAttachments.h" compile="0" resource="0"
+            file="Source/PluginEditorWithAllAttachments.h"/>
+      <FILE id="StaticDyn001" name="PluginEditorStaticWithDynamic.cpp" compile="1" resource="0"
+            file="Source/PluginEditorStaticWithDynamic.cpp"/>
+      <FILE id="StaticDyn002" name="PluginEditorStaticWithDynamic.h" compile="0" resource="0"
+            file="Source/PluginEditorStaticWithDynamic.h"/>
+      <FILE id="SimpleFinal001" name="PluginEditorSimpleFinal.cpp" compile="1" resource="0"
+            file="Source/PluginEditorSimpleFinal.cpp"/>
+      <FILE id="SimpleFinal002" name="PluginEditorSimpleFinal.h" compile="0" resource="0"
+            file="Source/PluginEditorSimpleFinal.h"/>
+      <FILE id="Complete001" name="PluginEditorComplete.cpp" compile="1" resource="0"
+            file="Source/PluginEditorComplete.cpp"/>
+      <FILE id="Complete002" name="PluginEditorComplete.h" compile="0" resource="0"
+            file="Source/PluginEditorComplete.h"/>
+      <FILE id="TestBypass001" name="PluginEditorTestBypass.cpp" compile="1" resource="0"
+            file="Source/PluginEditorTestBypass.cpp"/>
+      <FILE id="TestBypass002" name="PluginEditorTestBypass.h" compile="0" resource="0"
+            file="Source/PluginEditorTestBypass.h"/>
+      <FILE id="Working001" name="PluginEditorWorking.cpp" compile="1" resource="0"
+            file="Source/PluginEditorWorking.cpp"/>
+      <FILE id="Working002" name="PluginEditorWorking.h" compile="0" resource="0"
+            file="Source/PluginEditorWorking.h"/>
+      <FILE id="Full001" name="PluginEditorFull.cpp" compile="1" resource="0"
+            file="Source/PluginEditorFull.cpp"/>
+      <FILE id="Full002" name="PluginEditorFull.h" compile="0" resource="0"
+            file="Source/PluginEditorFull.h"/>
       <FILE id="fKj3mP" name="EngineBase.h" compile="0" resource="0" file="Source/EngineBase.h"/>
       <FILE id="qR4tYu" name="ParameterDefinitions.h" compile="0" resource="0"
             file="Source/ParameterDefinitions.h"/>
@@ -24,6 +136,13 @@
       <FILE id="uDpAr1" name="UnifiedDefaultParameters.h" compile="0" resource="0" file="Source/UnifiedDefaultParameters.h"/>
       <FILE id="uDpAr2" name="UnifiedDefaultParameters.cpp" compile="1" resource="0" file="Source/UnifiedDefaultParameters.cpp"/>
       <FILE id="eTyPe1" name="EngineTypes.h" compile="0" resource="0" file="Source/EngineTypes.h"/>
+      <FILE id="tRiN01" name="TrinityNetworkClient.h" compile="0" resource="0" file="Source/TrinityNetworkClient.h"/>
+      <FILE id="tRiN02" name="TrinityNetworkClient.cpp" compile="1" resource="0" file="Source/TrinityNetworkClient.cpp"/>
+      <FILE id="tRiN03" name="TrinityProtocol.h" compile="0" resource="0" file="Source/TrinityProtocol.h"/>
+      <FILE id="tRiN04" name="TrinityTextBox.h" compile="0" resource="0" file="Source/TrinityTextBox.h"/>
+      <FILE id="tRiN05" name="TrinityTextBox.cpp" compile="1" resource="0" file="Source/TrinityTextBox.cpp"/>
+      <FILE id="tRiN06" name="TrinityManager.h" compile="0" resource="0" file="Source/TrinityManager.h"/>
+      <FILE id="tRiN07" name="TrinityManager.cpp" compile="1" resource="0" file="Source/TrinityManager.cpp"/>
     </GROUP>
     <GROUP id="{7A3E5F1B-8C6D-9F0A-0D3E-4F6B8D0E1G2H}" name="Engines">
       <FILE id="jK8mN9" name="KStyleOverdrive.h" compile="0" resource="0"
@@ -113,6 +232,10 @@
       <FILE id="nO2pQ3" name="PitchShifter.h" compile="0" resource="0" file="Source/PitchShifter.h"/>
       <FILE id="rS4tU5" name="PitchShifter.cpp" compile="1" resource="0"
             file="Source/PitchShifter.cpp"/>
+      <FILE id="xF1gH2" name="IPitchShiftStrategy.h" compile="0" resource="0" file="Source/IPitchShiftStrategy.h"/>
+      <FILE id="yI3jK4" name="SimplePitchShift.h" compile="0" resource="0" file="Source/SimplePitchShift.h"/>
+      <FILE id="zL5mN6" name="PitchShiftFactory.cpp" compile="1" resource="0"
+            file="Source/PitchShiftFactory.cpp"/>
       <FILE id="vW6xY7" name="PhasedVocoder.h" compile="0" resource="0" file="Source/PhasedVocoder.h"/>
       <FILE id="zA8bC9" name="PhasedVocoder.cpp" compile="1" resource="0"
             file="Source/PhasedVocoder.cpp"/>
@@ -268,10 +391,6 @@
             file="Source/SpectralGate_Platinum.h"/>
       <FILE id="sG1pL2" name="SpectralGate_Platinum.cpp" compile="1" resource="0"
             file="Source/SpectralGate_Platinum.cpp"/>
-      <FILE id="sR3pL4" name="SpringReverb_Platinum.h" compile="0" resource="0"
-            file="Source/SpringReverb_Platinum.h"/>
-      <FILE id="sR5pL6" name="SpringReverb_Platinum.cpp" compile="1" resource="0"
-            file="Source/SpringReverb_Platinum.cpp"/>
       <FILE id="tS7pL8" name="TransientShaper_Platinum.h" compile="0" resource="0"
             file="Source/TransientShaper_Platinum.h"/>
       <FILE id="tS9pL0" name="TransientShaper_Platinum.cpp" compile="1" resource="0"
@@ -307,13 +426,23 @@
       <FILE id="pR7uE8" name="PlatinumRingModulator.cpp" compile="1" resource="0"
             file="Source/PlatinumRingModulator.cpp"/>
     </GROUP>
+    <GROUP id="{RESOURCES}" name="Resources">
+      <FILE id="IR001" name="ConcertHall.wav" compile="0" resource="1"
+            file="Resources/ConcertHall.wav"/>
+      <FILE id="IR002" name="EMTPlate.wav" compile="0" resource="1"
+            file="Resources/EMTPlate.wav"/>
+      <FILE id="IR003" name="Stairwell.wav" compile="0" resource="1"
+            file="Resources/Stairwell.wav"/>
+      <FILE id="IR004" name="CloudChamber.wav" compile="0" resource="1"
+            file="Resources/CloudChamber.wav"/>
+    </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="ChimeraPhoenix"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="ChimeraPhoenix"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="ChimeraPhoenix" defines="USE_DYNAMIC_NEXUS=1"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="ChimeraPhoenix" defines="USE_DYNAMIC_NEXUS=1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="../JUCE/modules"/>

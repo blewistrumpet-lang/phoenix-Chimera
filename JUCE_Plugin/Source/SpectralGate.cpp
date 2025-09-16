@@ -72,6 +72,16 @@ void SpectralGate::process(juce::AudioBuffer<float>& buffer) {
     juce::AudioBuffer<float> dryBuffer(numChannels, numSamples);
     dryBuffer.makeCopyOf(buffer);
     
+    // Early bypass check for mix parameter
+    const float mixValue = m_mix.getNextValue();
+    if (mixValue < 0.001f) {
+        // Completely dry - advance remaining mix parameter calls for smooth operation
+        for (int i = 1; i < numSamples; ++i) {
+            m_mix.getNextValue();
+        }
+        return;
+    }
+    
     for (int ch = 0; ch < numChannels; ++ch) {
         auto* channelData = buffer.getWritePointer(ch);
         auto& channel = m_channels[ch];
@@ -99,7 +109,6 @@ void SpectralGate::process(juce::AudioBuffer<float>& buffer) {
     }
     
     // Apply dry/wet mix
-    const float mixValue = m_mix.getNextValue();
     const float wetGain = mixValue;
     const float dryGain = 1.0f - mixValue;
     

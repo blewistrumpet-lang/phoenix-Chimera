@@ -96,6 +96,9 @@ private:
         enum ClockState { IDLE, PHASE1, DEAD_TIME, PHASE2 } clockState = IDLE;
         static constexpr double DEAD_TIME_RATIO = 0.05;  // 5% dead time
         
+        // Circular buffer write position
+        int writeIndex = 0;
+        
         // Charge transfer characteristics (atomic for thread safety)
         std::atomic<double> transferEfficiency{0.997};
         std::atomic<double> chargeLeakage{0.00001};

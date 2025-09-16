@@ -11,7 +11,7 @@ class VintageOptoCompressor_Platinum : public EngineBase
 {
 public:
     VintageOptoCompressor_Platinum();
-    ~VintageOptoCompressor_Platinum() override = default;
+    ~VintageOptoCompressor_Platinum() override;
 
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void process(juce::AudioBuffer<float>& buffer) override;
@@ -55,13 +55,21 @@ private:
 
     struct Smoothed {
         std::atomic<float> target{0.f};
-        float current = 0.f, coeff = 0.f;
+        float current = 0.f, coeff = 0.0f; // Start with no smoothing (instant response)
         void setTau(float seconds, float fs) {
             seconds = std::max(1.0e-4f, seconds);
             coeff = std::exp(-1.0f / (seconds * fs));
         }
-        float next() { const float t = target.load(std::memory_order_relaxed);
-                       current = t + (current - t) * coeff; return current; }
+        float next() { 
+            const float t = target.load(std::memory_order_relaxed);
+            // If coeff is 0 (not initialized), just return target directly
+            if (coeff == 0.0f) {
+                current = t;
+            } else {
+                current = t + (current - t) * coeff;
+            }
+            return current; 
+        }
         void snap()  { current = target.load(std::memory_order_relaxed); }
     };
 

@@ -32,7 +32,7 @@ public:
     void reset() override;
     void updateParameters(const std::map<int, float>& params) override;
     juce::String getName() const override { return "Parametric EQ Studio"; }
-    int getNumParameters() const override { return 30; } // 6 bands * 4 params + 6 global
+    int getNumParameters() const override { return 15; } // Standardized to match plugin architecture
 
     // Parameter names for host
     juce::String getParameterName(int index) const override;

@@ -145,7 +145,11 @@ class Alchemist:
         Generate a creative name for the preset based on its characteristics and vibe
         """
         try:
-            # Get the vibe from Visionary's analysis
+            # First check if a creative name was provided by Visionary
+            if "creative_name" in preset and preset["creative_name"]:
+                return preset["creative_name"]
+            
+            # Otherwise, get the vibe from Visionary's analysis
             vibe = preset.get("vibe", "").lower()
             parameters = preset.get("parameters", {})
             active_engines = []

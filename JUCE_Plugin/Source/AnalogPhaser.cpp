@@ -275,6 +275,12 @@ void AnalogPhaser::process(juce::AudioBuffer<float>& buffer)
     pimpl->stages.next(); // updates internal current
     pimpl->updateBlockParams();
 
+    // Early bypass check for mix parameter
+    if (mix < 0.001f) {
+        // Completely dry - no processing needed, parameters already updated
+        return;
+    }
+
     auto* Lr = buffer.getReadPointer(0);
     auto* Rr = (nCh > 1 ? buffer.getReadPointer(1) : Lr);
     auto* Lw = buffer.getWritePointer(0);

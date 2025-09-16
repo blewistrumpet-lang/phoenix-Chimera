@@ -1,13 +1,19 @@
 #include "PitchShifter.h"
 #include <cmath>
 #include <algorithm>
+#include <cstdio>
 
 PitchShifter::PitchShifter() {
     // Initialize with sensible defaults
     modeParam.set(0.0f);      // Start in Gender mode
     control1Param.set(0.5f);   // Neutral position
     control2Param.set(0.5f);   // Neutral position
-    control3Param.set(1.0f);   // Full mix for immediate effect
+    control3Param.set(0.5f);   // 50% mix for unity gain
+    
+    // Create pitch shifters immediately (beta uses Simple)
+    for (auto& shifter : pitchShifters) {
+        shifter = PitchShiftFactory::create(PitchShiftFactory::Algorithm::Simple);
+    }
     
     reset();
 }
@@ -18,11 +24,13 @@ void PitchShifter::prepareToPlay(double sr, int samplesPerBlock) {
     sampleRate = sr;
     currentBlockSize = samplesPerBlock;
     
-    // Initialize Signalsmith stretchers for each channel
-    for (auto& stretcher : stretchers) {
-        stretcher.presetCheaper(1, (float)sampleRate);
-        stretcher.reset();
-        stretcher.setTransposeFactor(1.0f);
+    // Initialize pitch shifters if not already created
+    for (int i = 0; i < 2; ++i) {
+        if (!pitchShifters[i]) {
+            pitchShifters[i] = PitchShiftFactory::create(PitchShiftFactory::Algorithm::Simple);
+        }
+        pitchShifters[i]->prepare(sampleRate, samplesPerBlock);
+        // Don't reset here - that would clear the buffer!
     }
     
     // Set appropriate smoothing speeds
@@ -40,8 +48,8 @@ void PitchShifter::reset() {
     alienProcessor.pitchAccumulation = 1.0f;
     alienProcessor.lfoPhase = 0.0f;
     
-    for (auto& stretcher : stretchers) {
-        stretcher.reset();
+    for (auto& shifter : pitchShifters) {
+        if (shifter) shifter->reset();
     }
     
     for (auto& detector : transientDetectors) {
@@ -78,27 +86,47 @@ void PitchShifter::process(juce::AudioBuffer<float>& buffer) {
                 
                 genderProcessor.process(formantRatio, pitchRatio, control1, control2, control3);
                 
-                // Apply pitch/formant shifting if needed
-                if (std::abs(pitchRatio - 1.0f) > 0.001f || std::abs(formantRatio - 1.0f) > 0.001f) {
-                    stretchers[ch].setTransposeFactor(pitchRatio / formantRatio);
+                // Check if we need any processing
+                bool needsProcessing = (std::abs(pitchRatio - 1.0f) > 0.001f || 
+                                       std::abs(formantRatio - 1.0f) > 0.001f);
+                
+                
+                if (needsProcessing) {
+                    // Apply pitch/formant shifting using SMBPitchShift
+                    // TEMPORARY: Just test with formant ratio to see if pitch shifting works
+                    // TODO: Implement proper formant-preserving pitch shift
+                    float effectiveRatio = formantRatio;
                     
+                    // Apply pitch shifting using SMBPitchShift
                     std::vector<float> tempOutput(numSamples);
-                    const float* inputChannels[1] = { channelData };
-                    float* outputChannels[1] = { tempOutput.data() };
                     
-                    stretchers[ch].process(inputChannels, numSamples, outputChannels, numSamples);
+                    if (pitchShifters[ch]) {
+                        // Process the entire block at once
+                        pitchShifters[ch]->process(channelData, tempOutput.data(), numSamples, effectiveRatio);
+                    } else {
+                        // Pitch shifter is null! Just copy input
+                        for (int i = 0; i < numSamples; ++i) {
+                            tempOutput[i] = channelData[i];
+                        }
+                    }
                     
                     // Apply formant compensation
                     float compensation = genderProcessor.calculateCompensation(formantRatio);
                     for (int i = 0; i < numSamples; ++i) {
                         channelData[i] = tempOutput[i] * compensation;
                     }
-                }
-                
-                // Mix with dry (control3 is intensity in Gender mode)
-                float wetAmount = control3;
-                for (int i = 0; i < numSamples; ++i) {
-                    channelData[i] = dry[i] * (1.0f - wetAmount) + channelData[i] * wetAmount;
+                    
+                    // Mix with dry (control3 is intensity in Gender mode)
+                    float wetAmount = control3;
+                    for (int i = 0; i < numSamples; ++i) {
+                        channelData[i] = dry[i] * (1.0f - wetAmount) + channelData[i] * wetAmount;
+                    }
+                } else {
+                    // For unity processing, always pass through dry signal
+                    // No matter what control3 is
+                    for (int i = 0; i < numSamples; ++i) {
+                        channelData[i] = dry[i];
+                    }
                 }
                 break;
             }
@@ -129,13 +157,13 @@ void PitchShifter::process(juce::AudioBuffer<float>& buffer) {
                 
                 // Apply alien transformation
                 if (std::abs(pitchRatio - 1.0f) > 0.001f || std::abs(formantRatio - 1.0f) > 0.001f) {
-                    stretchers[ch].setTransposeFactor(pitchRatio / formantRatio);
+                    // Use the actual pitch ratio for alien voices
+                    float effectiveRatio = pitchRatio;
                     
                     std::vector<float> tempOutput(numSamples);
-                    const float* inputChannels[1] = { channelData };
-                    float* outputChannels[1] = { tempOutput.data() };
-                    
-                    stretchers[ch].process(inputChannels, numSamples, outputChannels, numSamples);
+                    if (pitchShifters[ch]) {
+                        pitchShifters[ch]->process(channelData, tempOutput.data(), numSamples, effectiveRatio);
+                    }
                     std::copy(tempOutput.begin(), tempOutput.end(), channelData);
                 }
                 
@@ -296,9 +324,17 @@ juce::String PitchShifter::getModeParameterDisplay(int paramIndex, float value) 
 
 void PitchShifter::GenderProcessor::process(float& formantRatio, float& pitchRatio, 
                                            float control1, float control2, float control3) {
+    // Initialize ratios to unity
+    formantRatio = 1.0f;
+    pitchRatio = 1.0f;
+    
     // Gender (control1): -100% male to +100% female
     float gender = (control1 - 0.5f) * 2.0f;
     formantRatio = std::pow(2.0f, gender * 0.5f); // ±0.5 octave formant shift
+    
+    // Since we only have simple pitch shifting, don't compensate
+    // This will change both pitch and formants together (acceptable for beta)
+    pitchRatio = 1.0f;
     
     // Age (control2): affects both pitch and formant
     float age = control2;

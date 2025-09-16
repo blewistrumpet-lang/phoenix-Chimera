@@ -1841,15 +1841,15 @@ void initializeAllEngineMetadata() {
             "drums", "synthesizer", "samples", "any", "electronic"
         })
         .setTechnicalProps(0.1f, 0)
-        .addParameter("Bit Depth", 8.0f, 1.0f, 16.0f, "bits", "stepped", {
-            {"1-2", "extreme crush, almost noise"},
-            {"2-4", "heavy distortion"},
-            {"4-6", "crunchy, lofi"},
-            {"6-8", "retro digital"},
-            {"8-12", "subtle grit"},
-            {"12-16", "clean, full quality"}
+        .addParameter("Bits", 0.0f, 0.0f, 1.0f, "bits", "linear", {
+            {"0", "24-bit (bypass)"},
+            {"0-20", "16-bit (subtle)"},
+            {"20-40", "12-bit (moderate)"},
+            {"40-60", "8-bit (retro)"},
+            {"60-80", "4-bit (heavy)"},
+            {"80-100", "1-bit (extreme)"}
         })
-        .addParameter("Sample Rate", 0.5f, 0.0f, 1.0f, "x", "logarithmic", {
+        .addParameter("Downsample", 0.0f, 0.0f, 1.0f, "x", "logarithmic", {
             {"0-10", "extreme aliasing, 1-2kHz"},
             {"10-25", "heavy aliasing, 2-5kHz"},
             {"25-40", "noticeable, 5-10kHz"},
@@ -1857,14 +1857,34 @@ void initializeAllEngineMetadata() {
             {"60-80", "subtle, 20-30kHz"},
             {"80-100", "clean, 30-44kHz"}
         })
-        .addParameter("Filter", 0.7f, 0.0f, 1.0f, "Hz", "logarithmic", {
-            {"0-20", "very dark, 500Hz"},
-            {"20-40", "dark, 1-2kHz"},
-            {"40-60", "warm, 2-5kHz"},
-            {"60-80", "bright, 5-10kHz"},
-            {"80-100", "full range"}
+        .addParameter("Aliasing", 0.0f, 0.0f, 1.0f, "", "linear", {
+            {"0-30", "anti-aliased"},
+            {"30-70", "neutral"},
+            {"70-100", "intentional aliasing"}
         })
-        .addParameter("Mix", 0.6f, 0.0f, 1.0f, "%", "linear", ParamRanges::MIX_RANGES)
+        .addParameter("Jitter", 0.0f, 0.0f, 1.0f, "%", "linear", {
+            {"0", "no jitter"},
+            {"0-30", "subtle timing variation"},
+            {"30-70", "moderate jitter"},
+            {"70-100", "extreme jitter"}
+        })
+        .addParameter("DC Offset", 0.5f, 0.0f, 1.0f, "", "linear", {
+            {"0", "-100% DC offset"},
+            {"50", "no DC offset"},
+            {"100", "+100% DC offset"}
+        })
+        .addParameter("Gate", 0.0f, 0.0f, 1.0f, "dB", "linear", {
+            {"0", "no gating"},
+            {"0-30", "subtle gate"},
+            {"30-70", "moderate gate"},
+            {"70-100", "aggressive gate"}
+        })
+        .addParameter("Dither", 0.0f, 0.0f, 1.0f, "", "linear", {
+            {"0", "no dither"},
+            {"0-50", "TPDF dither"},
+            {"50-100", "noise-shaped dither"}
+        })
+        .addParameter("Mix", 0.5f, 0.0f, 1.0f, "%", "linear", ParamRanges::MIX_RANGES)
         .setTriggerWords({
             "bit crush", "lofi", "8-bit", "digital", "crush", "degrade",
             "retro", "video game", "chiptune", "glitch"

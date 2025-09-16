@@ -139,7 +139,13 @@ void VintageOptoCompressor::process(juce::AudioBuffer<float>& buffer) {
         
         for (int sample = 0; sample < numSamples; ++sample) {
             float input = channelData[sample];
-            float dry = input;
+            float dry = input;  // Capture dry signal BEFORE any processing
+            
+            // Early bypass check - if mix is 0, skip all processing
+            if (m_mix.current < 0.001f) {
+                channelData[sample] = dry;
+                continue;
+            }
             
             // Apply DC blocking with bounds check
             if (isChannelValid(channel, static_cast<int>(m_dcBlockers.size()))) {
@@ -155,7 +161,7 @@ void VintageOptoCompressor::process(juce::AudioBuffer<float>& buffer) {
             // Tube stage on input (subtle) with aging
             if (m_harmonics.current > 0.01f) {
                 float ageBoost = 1.0f + (m_componentAge / 8760.0f) * 0.1f; // Slight increase over years
-                input = state.tubeStage.process(input, m_harmonics.current * 0.3f * ageBoost, this);
+                input = state.tubeStage.process(input, m_harmonics.current * 0.1f * ageBoost, this);
             }
             
             // Apply pre-emphasis if enabled
@@ -199,11 +205,10 @@ void VintageOptoCompressor::process(juce::AudioBuffer<float>& buffer) {
                 compressed = state.deEmphasis.processDeEmphasis(compressed);
             }
             
-            // Output tube stage (more pronounced) with aging and warmth
+            // Output tube stage (more pronounced) with aging
             if (m_harmonics.current > 0.01f) {
                 float ageBoost = 1.0f + (m_componentAge / 8760.0f) * 0.15f;
-                compressed = state.tubeStage.process(compressed, m_harmonics.current * 0.5f * ageBoost, this);
-                compressed = applyVintageWarmth(compressed, 0.1f);
+                compressed = state.tubeStage.process(compressed, m_harmonics.current * 0.15f * ageBoost, this);
             }
             
             // Apply output gain
@@ -212,10 +217,8 @@ void VintageOptoCompressor::process(juce::AudioBuffer<float>& buffer) {
             // Mix with dry signal
             float output = compressed * m_mix.current + dry * (1.0f - m_mix.current);
             
-            // Soft clipping to prevent overload with NaN protection
-            if (std::abs(output) > 0.95f) {
-                output = safeFloat(std::tanh(safeFloat(output * 0.9f)) * 1.05f);
-            }
+            // Safety limit without clipping
+            output = safeFloat(output);
             
             // Final safety check
             output = safeFloat(output);
@@ -253,7 +256,13 @@ void VintageOptoCompressor::updateParameters(const std::map<int, float>& params)
     if (params.count(1)) m_peakReduction.target = params.at(1);
     if (params.count(2)) m_emphasis.target = params.at(2);
     if (params.count(3)) m_outputGain.target = params.at(3);
-    if (params.count(4)) m_mix.target = params.at(4);
+    if (params.count(4)) {
+        m_mix.target = params.at(4);
+        // For bypass (mix=0), set immediately to avoid smoothing delay
+        if (params.at(4) < 0.001f) {
+            m_mix.current = 0.0f;
+        }
+    }
     if (params.count(5)) m_knee.target = params.at(5);
     if (params.count(6)) m_harmonics.target = params.at(6);
     if (params.count(7)) m_stereoLink.target = params.at(7);
@@ -292,11 +301,11 @@ float VintageOptoCompressor::applyVintageWarmth(float input, float amount) {
     float thermal = m_thermalModel.getThermalFactor();
     float driven = safeFloat(input * (1.0f + amount * thermal));
     
-    // Asymmetric saturation for vintage character
+    // Balanced saturation for vintage character
     if (driven > 0.0f) {
-        return safeFloat(std::tanh(safeFloat(driven * 0.7f)) / 0.7f);
+        return safeFloat(std::tanh(safeFloat(driven * 0.85f)) / 0.85f);
     } else {
-        return safeFloat(std::tanh(safeFloat(driven * 0.9f)) / 0.9f);
+        return safeFloat(std::tanh(safeFloat(driven * 0.85f)) / 0.85f);
     }
 }
 

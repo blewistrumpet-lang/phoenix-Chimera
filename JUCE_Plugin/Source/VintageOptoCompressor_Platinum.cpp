@@ -18,6 +18,13 @@ VintageOptoCompressor_Platinum::kParameterNames = {
 };
 
 VintageOptoCompressor_Platinum::VintageOptoCompressor_Platinum() {
+    // DEBUG: Track instance creation
+    FILE* f = fopen("/tmp/opto_lifecycle.txt", "a");
+    if (f) {
+        fprintf(f, "VintageOptoCompressor CREATED: instance=%p\n", (void*)this);
+        fclose(f);
+    }
+    
     // musical defaults
     pGain_.target.store(0.5f);          // -12..+12dB -> 0dB
     pPeakReduction_.target.store(0.5f); // threshold-ish middle
@@ -36,19 +43,38 @@ VintageOptoCompressor_Platinum::VintageOptoCompressor_Platinum() {
    #endif
 }
 
+VintageOptoCompressor_Platinum::~VintageOptoCompressor_Platinum() {
+    // DEBUG: Track instance destruction
+    FILE* f = fopen("/tmp/opto_lifecycle.txt", "a");
+    if (f) {
+        fprintf(f, "VintageOptoCompressor DESTROYED: instance=%p\n", (void*)this);
+        fclose(f);
+    }
+}
+
 void VintageOptoCompressor_Platinum::prepareToPlay(double fs, int /*samplesPerBlock*/) {
+    DBG("VintageOpto prepareToPlay called with fs=" + juce::String(fs));
+    
+    // Debug: Log to file to confirm prepareToPlay is called
+    FILE* f = fopen("/tmp/opto_debug.txt", "a");
+    if (f) {
+        fprintf(f, "prepareToPlay called! fs=%.1f\n", fs);
+        fclose(f);
+    }
+    
     sampleRate_ = std::max(8000.0, fs);
     const float ffs = (float) sampleRate_;
 
-    // UI smoothers
-    pGain_.setTau(0.02f, ffs);
-    pPeakReduction_.setTau(0.02f, ffs);
-    pEmph_.setTau(0.05f, ffs);
-    pOut_.setTau(0.02f, ffs);
-    pMix_.setTau(0.02f, ffs);
-    pKnee_.setTau(0.05f, ffs);
-    pHarm_.setTau(0.05f, ffs);
-    pLink_.setTau(0.05f, ffs);
+    // UI smoothers - DISABLED for instant response
+    // Setting tau to 0.0001 gives nearly instant response
+    pGain_.setTau(0.0001f, ffs);
+    pPeakReduction_.setTau(0.0001f, ffs);
+    pEmph_.setTau(0.0001f, ffs);
+    pOut_.setTau(0.0001f, ffs);
+    pMix_.setTau(0.0001f, ffs);
+    pKnee_.setTau(0.0001f, ffs);
+    pHarm_.setTau(0.0001f, ffs);
+    pLink_.setTau(0.0001f, ffs);
 
     // sidechain: HP + LP (we'll blend for tilt)
     scHP_.set(120.0f, 0.707f, ffs);
@@ -58,6 +84,13 @@ void VintageOptoCompressor_Platinum::prepareToPlay(double fs, int /*samplesPerBl
     envAtk_.setTau(0.005f, ffs);
     envRel_.setTau(0.200f, ffs);
     env_ = 0.0f;
+    
+    // Debug: Log envelope coefficients
+    FILE* f2 = fopen("/tmp/opto_debug.txt", "a");
+    if (f2) {
+        fprintf(f2, "Envelope setup: atk.a=%.6f rel.a=%.6f\n", envAtk_.a, envRel_.a);
+        fclose(f2);
+    }
 
     // GR smoothing in dB (~10ms)
     grSmooth_.setTau(0.010f, ffs);
@@ -75,9 +108,35 @@ void VintageOptoCompressor_Platinum::reset() {
 }
 
 void VintageOptoCompressor_Platinum::updateParameters(const std::map<int, float>& params) {
+    // Debug: Write to file every time parameters change with STACK TRACE
+    static int updateCounter = 0;
+    static std::map<int, float> lastParams;
+    
+    bool changed = false;
+    for (const auto& p : params) {
+        if (lastParams[p.first] != p.second) {
+            changed = true;
+            lastParams[p.first] = p.second;
+        }
+    }
+    
+    if (changed || ++updateCounter % 100 == 0) {
+        FILE* f = fopen("/tmp/opto_debug.txt", "a");
+        if (f) {
+            // Add instance address to identify WHICH VintageOpto this is
+            fprintf(f, "VintageOpto [%p] params: ", (void*)this);
+            for (const auto& p : params) {
+                fprintf(f, "[%d]=%.3f ", p.first, p.second);
+            }
+            fprintf(f, "\n");
+            fclose(f);
+        }
+    }
+    
     auto set = [&](int idx, Smoothed& p, float def){
         auto it = params.find(idx);
-        p.target.store(it == params.end() ? def : clamp01(it->second), std::memory_order_relaxed);
+        float newVal = it == params.end() ? def : clamp01(it->second);
+        p.target.store(newVal, std::memory_order_relaxed);
     };
     set(kParamGain,         pGain_,         0.5f);
     set(kParamPeakReduction,pPeakReduction_,0.5f);
@@ -106,7 +165,7 @@ inline float VintageOptoCompressor_Platinum::detectMono(float L, float R) noexce
 inline float VintageOptoCompressor_Platinum::gainReductionDB(float envLin, float peakRed, float ratio, float kneeDB) noexcept {
     // Map params to curve
     const float thr = juce::jmap(peakRed, 0.0f, 1.0f, 0.0f, -36.0f);         // threshold dB
-    const float r   = juce::jmap(ratio,   0.0f, 1.0f, 2.0f,  8.0f);          // 2:1 .. 8:1
+    const float r   = juce::jmap(peakRed, 0.0f, 1.0f, 2.0f,  8.0f);          // 2:1 .. 8:1 (controlled by peak reduction)
     const float xDB = toDB(envLin);
     const float tDB = thr;
     const float k   = juce::jlimit(0.0f, 18.0f, kneeDB);
@@ -124,11 +183,33 @@ inline float VintageOptoCompressor_Platinum::gainReductionDB(float envLin, float
         const float full = (1.0f - 1.0f/r) * (xDB - (tDB - 0.5f*k));
         grDB = -full * x * x;
     }
+    
+    // Debug: Log GR calculation details occasionally
+    static int grCalcCounter = 0;
+    if (++grCalcCounter % 1000 == 0 && envLin > 0.001f) {
+        FILE* f = fopen("/tmp/opto_dsp_debug.txt", "a");
+        if (f) {
+            fprintf(f, "GR calc: envLin=%.4f xDB=%.1f thr=%.1f over=%.1f ratio=%.1f grDB=%.1f\n",
+                envLin, xDB, thr, over, r, grDB);
+            fclose(f);
+        }
+    }
 
     return juce::jlimit(-48.0f, 0.0f, grDB);
 }
 
 void VintageOptoCompressor_Platinum::process(juce::AudioBuffer<float>& buffer) {
+    // DEBUG: Log EVERY process call
+    static int processCallCount = 0;
+    if (++processCallCount % 100 == 0) {
+        FILE* f = fopen("/tmp/opto_process_calls.txt", "a");
+        if (f) {
+            fprintf(f, "process() called #%d: channels=%d samples=%d instance=%p\n", 
+                processCallCount, buffer.getNumChannels(), buffer.getNumSamples(), (void*)this);
+            fclose(f);
+        }
+    }
+    
     DenormalGuard guard;
     const auto t0 = std::chrono::high_resolution_clock::now();
 
@@ -144,6 +225,23 @@ void VintageOptoCompressor_Platinum::process(juce::AudioBuffer<float>& buffer) {
     const float kneeDB  = juce::jmap(pKnee_.next(), 0.f, 1.f, 0.f, 12.f);
     const float harmon  = pHarm_.next();
     const float link    = pLink_.next();
+    
+    // Debug output every 100 blocks
+    static int blockCounter = 0;
+    if (++blockCounter % 100 == 0) {
+        DBG("VintageOpto - inGain: " + juce::String(inGain) + 
+            ", peakRed: " + juce::String(peakRed) + 
+            ", mix: " + juce::String(mix));
+        
+        // Debug gains to file
+        FILE* f = fopen("/tmp/opto_gains.txt", "a");
+        if (f) {
+            fprintf(f, "Gains: pGain=%.3f inGain=%.3f (%.1fdB) pOut=%.3f outGain=%.3f (%.1fdB)\n",
+                pGain_.current, inGain, 20.0f*std::log10(inGain),
+                pOut_.current, outGain, 20.0f*std::log10(outGain));
+            fclose(f);
+        }
+    }
 
     scTilt_ = juce::jmap(pEmph_.next(), 0.f, 1.f, -1.f, +1.f);
 
@@ -158,9 +256,18 @@ void VintageOptoCompressor_Platinum::process(juce::AudioBuffer<float>& buffer) {
     auto* Lr = buffer.getReadPointer(0);
     auto* Rr = (nCh > 1) ? buffer.getReadPointer(1) : Lr;
 
+    // Debug: Track if we're actually processing audio
+    static int processCounter = 0;
+    static bool hasSignal = false;
+    
     for (int i = 0; i < n; ++i) {
         float xL = Lr[i] * inGain;
         float xR = Rr[i] * inGain;
+        
+        // Check if we have signal
+        if (std::abs(xL) > 0.001f || std::abs(xR) > 0.001f) {
+            hasSignal = true;
+        }
 
         // Per-channel detect, then stereo link (link=1 → max/mono; link=0 → per-channel)
         const float dL = detectMono(xL, xL);
@@ -175,9 +282,21 @@ void VintageOptoCompressor_Platinum::process(juce::AudioBuffer<float>& buffer) {
         env_ = a * env_ + (1.0f - a) * det;
 
         // Gain reduction (dB), smooth in dB, then convert to linear
-        const float grDB = gainReductionDB(env_, peakRed, /*ratio*/ juce::jmap(peakRed,0.f,1.f,2.f,6.f), kneeDB);
+        // Pass peakRed directly - gainReductionDB will map it to ratio internally
+        const float grDB = gainReductionDB(env_, peakRed, peakRed, kneeDB);
         const float smoothedGRDB = grSmooth_.process(grDB);
         const float grLin = fromDB(smoothedGRDB);
+        
+        // Debug: Log compression values every 100 samples if we have signal
+        if (++processCounter % 100 == 0 && hasSignal) {
+            FILE* f = fopen("/tmp/opto_dsp_debug.txt", "a");
+            if (f) {
+                fprintf(f, "DSP: xL=%.3f xR=%.3f det=%.3f env=%.3f grDB=%.3f grLin=%.3f a=%.5f\n",
+                    xL, xR, det, env_, grDB, grLin, a);
+                fclose(f);
+            }
+            hasSignal = false;
+        }
 
         float yL = xL * grLin;
         float yR = xR * grLin;

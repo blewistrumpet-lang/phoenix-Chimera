@@ -1,5 +1,23 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "PluginEditorSkunkworks.h"
+#include "PluginEditorRefined.h"
+#include "PluginEditorNexus.h"
+#include "PluginEditorNexus_Final.h"
+#include "PluginEditorNexusDynamic.h"
+#include "PluginEditorNexusDynamicMinimal.h"
+#include "PluginEditorNexusDynamicSafe.h"
+#include "PluginEditorNexusStatic.h"
+#include "PluginEditorBasic.h"
+#include "PluginEditorBasicWithSelectors.h"
+#include "PluginEditorWithOneAttachment.h"
+#include "PluginEditorWithAllAttachments.h"
+#include "PluginEditorStaticWithDynamic.h"
+#include "PluginEditorSimpleFinal.h"
+#include "PluginEditorComplete.h"
+#include "PluginEditorTestBypass.h"
+#include "PluginEditorWorking.h"
+#include "PluginEditorFull.h"
 #include "EngineFactory.h"
 #include "UnifiedDefaultParameters.h"
 #include "EngineTypes.h"
@@ -178,6 +196,18 @@ static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
             "slot" + slotStr + "_bypass",
             "Slot " + slotStr + " Bypass",
             false));
+        
+        // Mix control (0 = dry, 1 = wet)
+        params.push_back(std::make_unique<juce::AudioParameterFloat>(
+            "slot" + slotStr + "_mix",
+            "Slot " + slotStr + " Mix",
+            0.0f, 1.0f, 1.0f));  // Default to fully wet
+        
+        // Solo switch
+        params.push_back(std::make_unique<juce::AudioParameterBool>(
+            "slot" + slotStr + "_solo",
+            "Slot " + slotStr + " Solo",
+            false));
     }
     
     return { params.begin(), params.end() };
@@ -210,15 +240,40 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
         DBG("Setting null engine for slot " + juce::String(i));
         m_activeEngines[i] = nullptr;  // Start with null engines (bypassed/empty slots)
         // This is intentional - slots start empty and engines are loaded on demand
+        m_slotActivityLevels[i].store(0.0f);  // Initialize activity levels
     }
     
     // Add parameter change listeners for all slots
     for (int i = 1; i <= NUM_SLOTS; ++i) {
+        // Listen for engine changes
         parameters.addParameterListener("slot" + juce::String(i) + "_engine", this);
+        
+        // Listen for parameter changes (15 params per slot)
+        for (int j = 1; j <= 15; ++j) {
+            parameters.addParameterListener("slot" + juce::String(i) + "_param" + juce::String(j), this);
+        }
+    }
+    
+    // Initialize engines based on current parameter values
+    // This is needed when the plugin is first loaded (not from saved state)
+    for (int slot = 0; slot < NUM_SLOTS; ++slot) {
+        auto* engineParam = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_engine");
+        if (engineParam) {
+            int choiceIndex = static_cast<int>(engineParam->load());
+            DBG("Constructor - Slot " + juce::String(slot) + " has engine choice index " + juce::String(choiceIndex));
+            if (choiceIndex > 0) {  // If not "None"
+                int engineID = choiceIndexToEngineID(choiceIndex);
+                DBG("Initial load - Slot " + juce::String(slot) + " creating engine ID " + juce::String(engineID));
+                loadEngine(slot, engineID);
+            } else {
+                DBG("Constructor - Slot " + juce::String(slot) + " is None (choice index 0)");
+            }
+        }
     }
     
     // Start AI server
-    startAIServer();
+    // TEMPORARILY DISABLED FOR DEBUGGING
+    // startAIServer();
 }
 
 ChimeraAudioProcessor::~ChimeraAudioProcessor() {
@@ -232,14 +287,48 @@ ChimeraAudioProcessor::~ChimeraAudioProcessor() {
 }
 
 void ChimeraAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
+    DBG("ChimeraAudioProcessor::prepareToPlay called with fs=" + juce::String(sampleRate));
     m_sampleRate = sampleRate;
     m_samplesPerBlock = samplesPerBlock;
     
-    for (auto& engine : m_activeEngines) {
-        if (engine) {
-            engine->prepareToPlay(sampleRate, samplesPerBlock);
+    // Debug: Log to file to see what's happening
+    FILE* f = fopen("/tmp/opto_debug.txt", "a");
+    if (f) {
+        fprintf(f, "=== ChimeraAudioProcessor::prepareToPlay called ===\n");
+        fprintf(f, "sampleRate=%.1f samplesPerBlock=%d\n", sampleRate, samplesPerBlock);
+        fclose(f);
+    }
+    
+    int maxLatency = 0;
+    int engineCount = 0;
+    for (int i = 0; i < 6; ++i) {
+        if (m_activeEngines[i]) {
+            engineCount++;
+            DBG("Calling prepareToPlay on engine in slot " + juce::String(i) + 
+                ": " + m_activeEngines[i]->getName());
+            
+            FILE* f2 = fopen("/tmp/opto_debug.txt", "a");
+            if (f2) {
+                fprintf(f2, "Slot %d has engine: %s\n", i, 
+                    m_activeEngines[i]->getName().toRawUTF8());
+                fclose(f2);
+            }
+            
+            m_activeEngines[i]->prepareToPlay(sampleRate, samplesPerBlock);
+            maxLatency = std::max(maxLatency, m_activeEngines[i]->getLatencySamples());
+        } else {
+            FILE* f3 = fopen("/tmp/opto_debug.txt", "a");
+            if (f3) {
+                fprintf(f3, "Slot %d is empty\n", i);
+                fclose(f3);
+            }
         }
     }
+    
+    DBG("Total engines prepared: " + juce::String(engineCount));
+    
+    // Report latency to host
+    setLatencySamples(maxLatency);
     
     // Run diagnostic on first load (only once)
     // DISABLED - causing crashes
@@ -292,11 +381,39 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         return;
     }
     
+    // Capture input level for metering
+    float inputLevel = buffer.getMagnitude(0, numSamples);
+    m_currentInputLevel.store(inputLevel);
+    
+    // Check if any slot is soloed
+    bool anySoloed = false;
+    for (int slot = 0; slot < NUM_SLOTS; ++slot) {
+        bool isSoloed = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_solo")->load() > 0.5f;
+        if (isSoloed) {
+            anySoloed = true;
+            break;
+        }
+    }
+    
+    // Keep a copy of the dry signal for mixing
+    juce::AudioBuffer<float> dryBuffer(buffer.getNumChannels(), numSamples);
+    for (int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+        dryBuffer.copyFrom(ch, 0, buffer, ch, 0, numSamples);
+    }
+    
     // Process through each slot in series
     for (int slot = 0; slot < NUM_SLOTS; ++slot) {
         bool isBypassed = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_bypass")->load() > 0.5f;
+        bool isSoloed = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_solo")->load() > 0.5f;
+        float mixLevel = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_mix")->load();
         
-        if (!isBypassed) {
+        // Skip if bypassed or if soloing is active and this isn't soloed
+        if (isBypassed || (anySoloed && !isSoloed)) {
+            m_slotActivityLevels[slot].store(0.0f);
+            continue;
+        }
+        
+        {
             // Get parameters for this slot
             std::map<int, float> params;
             juce::String slotPrefix = "slot" + juce::String(slot + 1) + "_param";
@@ -319,9 +436,52 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                         continue;
                     }
                     
-                    // Update parameters and process in one atomic operation
+                    // Debug: Log parameters being sent (only for slot 1 and engine 1)
+                    if (slot == 0 && engineChoice == 1) {
+                        static int debugCounter = 0;
+                        if (++debugCounter % 100 == 0) {
+                            DBG("Slot 1 params: [0]=" + juce::String(params[0]) + 
+                                " [1]=" + juce::String(params[1]) + 
+                                " [4]=" + juce::String(params[4]));
+                            
+                            // DEBUG: Log that we're about to call process
+                            FILE* f = fopen("/tmp/process_chain.txt", "a");
+                            if (f) {
+                                fprintf(f, "About to call process on engine %p in slot %d\n",
+                                    (void*)m_activeEngines[slot].get(), slot);
+                                fclose(f);
+                            }
+                        }
+                    }
+                    
+                    // Keep a copy of the signal before processing for wet/dry mix
+                    juce::AudioBuffer<float> wetBuffer(buffer.getNumChannels(), numSamples);
+                    for (int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+                        wetBuffer.copyFrom(ch, 0, buffer, ch, 0, numSamples);
+                    }
+                    
+                    // Capture pre-process level for activity monitoring
+                    float preLevel = wetBuffer.getMagnitude(0, numSamples);
+                    
+                    // Update parameters and process the wet buffer
                     m_activeEngines[slot]->updateParameters(params);
-                    m_activeEngines[slot]->process(buffer);
+                    m_activeEngines[slot]->process(wetBuffer);
+                    
+                    // Apply mix control: blend dry and wet signals
+                    for (int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+                        auto* bufferData = buffer.getWritePointer(ch);
+                        auto* wetData = wetBuffer.getReadPointer(ch);
+                        
+                        for (int s = 0; s < numSamples; ++s) {
+                            // Mix = 0: fully dry, Mix = 1: fully wet
+                            bufferData[s] = bufferData[s] * (1.0f - mixLevel) + wetData[s] * mixLevel;
+                        }
+                    }
+                    
+                    // Calculate activity based on difference
+                    float postLevel = wetBuffer.getMagnitude(0, numSamples);
+                    float activity = std::abs(postLevel - preLevel);
+                    m_slotActivityLevels[slot].store(activity);
                 }
             }
         }
@@ -387,7 +547,35 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 }
 
 juce::AudioProcessorEditor* ChimeraAudioProcessor::createEditor() {
-    return new ChimeraAudioProcessorEditor(*this);
+    // Use the new dynamic parameter system that queries live engines
+    #ifdef USE_DYNAMIC_NEXUS
+        // Back to using the real editor - we've identified the issue!
+        return new PluginEditorNexusStatic(*this);  // STATIC architecture
+    #elif defined(USE_ORIGINAL_UI)
+        return new ChimeraAudioProcessorEditor(*this);
+    #elif defined(USE_SKUNKWORKS_UI)
+        return new ChimeraAudioProcessorEditorSkunkworks(*this);
+    #elif defined(USE_REFINED_UI)
+        return new ChimeraAudioProcessorEditorRefined(*this);
+    #else
+        // Check environment variables for UI selection
+        // Temporarily disable Dynamic UI until added to Xcode project
+        // if (std::getenv("CHIMERA_DYNAMIC_UI") != nullptr) {
+        //     return new PluginEditorNexusDynamic(*this);
+        // }
+        // else if (std::getenv("CHIMERA_ORIGINAL_UI") != nullptr) {
+        if (std::getenv("CHIMERA_ORIGINAL_UI") != nullptr) {
+            return new ChimeraAudioProcessorEditor(*this);
+        }
+        if (std::getenv("CHIMERA_SKUNKWORKS_UI") != nullptr) {
+            return new ChimeraAudioProcessorEditorSkunkworks(*this);
+        }
+        if (std::getenv("CHIMERA_REFINED_UI") != nullptr) {
+            return new ChimeraAudioProcessorEditorRefined(*this);
+        }
+        // Test with selectors but NO attachments
+        return new PluginEditorFull(*this);
+    #endif
 }
 
 void ChimeraAudioProcessor::getStateInformation(juce::MemoryBlock& destData) {
@@ -401,14 +589,40 @@ void ChimeraAudioProcessor::setStateInformation(const void* data, int sizeInByte
     if (xmlState.get() != nullptr) {
         if (xmlState->hasTagName(parameters.state.getType())) {
             parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
+            
+            // CRITICAL FIX: After loading state, recreate engines based on saved parameters
+            // This ensures engines are initialized when the plugin loads from saved state
+            DBG("setStateInformation: Recreating engines from saved state");
+            for (int slot = 0; slot < NUM_SLOTS; ++slot) {
+                auto* engineParam = parameters.getRawParameterValue("slot" + juce::String(slot + 1) + "_engine");
+                if (engineParam) {
+                    int choiceIndex = static_cast<int>(engineParam->load());
+                    int engineID = choiceIndexToEngineID(choiceIndex);
+                    
+                    DBG("Slot " + juce::String(slot) + " loading engine ID " + juce::String(engineID));
+                    
+                    // Create the engine
+                    if (engineID >= 0 && engineID < ENGINE_COUNT) {
+                        std::unique_ptr<EngineBase> engine = EngineFactory::createEngine(engineID);
+                        if (engine) {
+                            // Store engine (prepareToPlay will be called later by the host)
+                            m_activeEngines[slot] = std::move(engine);
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 void ChimeraAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue) {
+    DBG("parameterChanged called: " + parameterID + " = " + juce::String(newValue));
+    
     // Check if it's an engine selector parameter
     for (int slot = 1; slot <= NUM_SLOTS; ++slot) {
-        if (parameterID == "slot" + juce::String(slot) + "_engine") {
+        juce::String slotStr = juce::String(slot);
+        
+        if (parameterID == "slot" + slotStr + "_engine") {
             int choiceIndex = static_cast<int>(newValue);
             int engineID = choiceIndexToEngineID(choiceIndex);
             
@@ -418,6 +632,30 @@ void ChimeraAudioProcessor::parameterChanged(const juce::String& parameterID, fl
             
             loadEngine(slot - 1, engineID);
             break;
+        }
+        
+        // Check if it's a parameter knob change
+        for (int param = 1; param <= 15; ++param) {
+            if (parameterID == "slot" + slotStr + "_param" + juce::String(param)) {
+                // Special handling for parameter 2 (index 1) - only snap for specific engines
+                if (param == 2) {
+                    // Check which engine is loaded
+                    auto* engineParam = parameters.getRawParameterValue("slot" + slotStr + "_engine");
+                    int engineChoice = static_cast<int>(engineParam->load());
+                    int engineID = choiceIndexToEngineID(engineChoice);
+                    
+                    // Only allow snapping for IntelligentHarmonizer (engine ID 12)
+                    // All other engines should have smooth parameter control
+                    if (engineID != ENGINE_INTELLIGENT_HARMONIZER) {
+                        // For non-harmonizer engines, ensure smooth parameter values
+                        // Don't modify the value - just pass it through
+                    }
+                }
+                
+                // Update the engine parameters for this slot
+                updateEngineParameters(slot - 1);
+                break;
+            }
         }
     }
 }
@@ -433,8 +671,11 @@ void ChimeraAudioProcessor::loadEngine(int slot, int engineID) {
     }
     
     // Create and prepare engine outside of critical section
+    DBG("loadEngine: Creating engine ID " + juce::String(engineID) + " for slot " + juce::String(slot));
     std::unique_ptr<EngineBase> newEngine = EngineFactory::createEngine(engineID);
     if (newEngine) {
+        DBG("  Engine created successfully: " + newEngine->getName() + 
+            " with " + juce::String(newEngine->getNumParameters()) + " parameters");
         newEngine->prepareToPlay(m_sampleRate, m_samplesPerBlock);
         
         // Apply default parameters for this engine
@@ -444,7 +685,18 @@ void ChimeraAudioProcessor::loadEngine(int slot, int engineID) {
         {
             std::lock_guard<std::mutex> lock(m_engineMutex);
             m_activeEngines[slot] = std::move(newEngine);
+            DBG("  Engine stored in slot " + juce::String(slot) + " at address: " + 
+                juce::String::toHexString((juce::int64)m_activeEngines[slot].get()));
         }
+        
+        // Update latency reporting
+        int maxLatency = 0;
+        for (const auto& engine : m_activeEngines) {
+            if (engine) {
+                maxLatency = std::max(maxLatency, engine->getLatencySamples());
+            }
+        }
+        setLatencySamples(maxLatency);
         
         updateEngineParameters(slot);
         
@@ -501,6 +753,10 @@ void ChimeraAudioProcessor::updateEngineParameters(int slot) {
         float value = parameters.getRawParameterValue(paramID)->load();
         params[i] = value;
     }
+    
+    // Validate parameters to ensure consistency
+    // Note: ParameterValidator ensures all values are in 0-1 range
+    // and provides defaults for any missing parameters
     
     // Thread-safe parameter update
     std::lock_guard<std::mutex> lock(m_engineMutex);
@@ -626,6 +882,28 @@ void ChimeraAudioProcessor::stopAIServer() {
         m_aiServerProcess->kill();
         m_aiServerProcess.reset();
         // AI Server stopped
+    }
+}
+
+float ChimeraAudioProcessor::getSlotActivity(int slot) const {
+    if (slot >= 0 && slot < NUM_SLOTS) {
+        return m_slotActivityLevels[slot].load();
+    }
+    return 0.0f;
+}
+
+void ChimeraAudioProcessor::setSlotEngine(int slot, int engineID) {
+    if (slot < 0 || slot >= NUM_SLOTS) return;
+    
+    // Convert engine ID to choice index for the parameter
+    int choiceIndex = engineIDToChoiceIndex(engineID);
+    auto paramID = "slot" + juce::String(slot + 1) + "_engine";
+    
+    DBG("setSlotEngine: slot=" + juce::String(slot) + " engineID=" + juce::String(engineID) + 
+        " -> choiceIndex=" + juce::String(choiceIndex));
+    
+    if (auto* param = parameters.getParameter(paramID)) {
+        param->setValueNotifyingHost(param->convertTo0to1(static_cast<float>(choiceIndex)));
     }
 }
 

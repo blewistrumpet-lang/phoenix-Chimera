@@ -91,15 +91,23 @@ private:
                 compressionMemory *= memoryDecay;
             }
             
-            // Convert brightness to resistance (inverse relationship)
-            // Typical LDR: 10k ohms in light, 1M ohms in dark
-            resistance = 10000.0f + (990000.0f * (1.0f - brightness));
+            // Exponential resistance model for realistic LDR behavior
+            // R = R_dark * exp(-k * brightness) where k controls sensitivity
+            const float R_dark = 1000000.0f;  // 1M ohms in darkness
+            const float R_light = 10000.0f;   // 10k ohms in bright light
+            const float k = std::log(R_dark / R_light);  // Natural log for exponential curve
+            resistance = R_dark * std::exp(-k * brightness);
         }
         
         float getGainReduction() {
+            // Square root VCA law for more musical compression curve
             // Voltage divider ratio simulating the T4 opto cell
             float ratio = 100000.0f / (100000.0f + resistance);
-            return 1.0f - ratio;  // Invert for gain reduction
+            float gainFactor = 1.0f - ratio;  // Linear gain reduction
+            
+            // Apply square root law: G = sqrt(1 - gainReduction)
+            // This provides a more musical compression curve
+            return 1.0f - std::sqrt(std::max(0.0f, gainFactor));
         }
     };
     
@@ -171,12 +179,14 @@ private:
         }
     };
     
-    // Peak detector with RMS characteristics
+    // Peak detector with RMS characteristics and program-dependent release
     struct PeakDetector {
         static constexpr int RMS_WINDOW = 128;
         std::array<float, RMS_WINDOW> buffer;
         int index = 0;
         float sum = 0.0f;
+        float peakHold = 0.0f;
+        float peakHistory = 0.0f;  // Program-dependent release memory
         
         float detect(float input) {
             // Remove old value from sum
@@ -190,14 +200,31 @@ private:
             // Advance index
             index = (index + 1) % RMS_WINDOW;
             
-            // Return RMS value
-            return std::sqrt(sum / RMS_WINDOW);
+            // Calculate RMS value
+            float rms = std::sqrt(sum / RMS_WINDOW);
+            
+            // Program-dependent release: slower release for sustained signals
+            float instantPeak = std::abs(input);
+            if (instantPeak > peakHold) {
+                peakHold = instantPeak;
+                peakHistory = std::max(peakHistory, instantPeak * 0.8f);
+            } else {
+                // Release rate depends on signal history
+                float releaseRate = 0.9999f - (peakHistory * 0.0001f);  // Slower for louder signals
+                peakHold *= releaseRate;
+                peakHistory *= 0.99999f;  // Very slow decay of history
+            }
+            
+            // Combine RMS with peak hold for program-dependent behavior
+            return rms * 0.7f + peakHold * 0.3f;
         }
         
         void reset() {
             buffer.fill(0.0f);
             sum = 0.0f;
             index = 0;
+            peakHold = 0.0f;
+            peakHistory = 0.0f;
         }
     };
     

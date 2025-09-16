@@ -45,12 +45,12 @@
 #include "NoiseGate_Platinum.h"
 #include "VintageOptoCompressor_Platinum.h"
 #include "SpectralGate_Platinum.h"
-#include "ChaosGenerator_Platinum.h"
+#include "ChaosGenerator.h"
 #include "BufferRepeat_Platinum.h"
 #include "VintageConsoleEQ_Studio.h"
 #include "MidSideProcessor_Platinum.h"
 #include "VintageTubePreamp_Studio.h"
-#include "SpringReverb_Platinum.h"
+#include "SpringReverb.h"
 #include "ResonantChorus_Platinum.h"
 #include "GainUtility_Platinum.h"
 #include "MonoMaker_Platinum.h"
@@ -190,7 +190,7 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
             return std::make_unique<PlateReverb>();
             
         case 40: // ENGINE_SPRING_REVERB
-            return std::make_unique<SpringReverb_Platinum>();
+            return std::make_unique<SpringReverb>();
             
         case 41: // ENGINE_CONVOLUTION_REVERB
             return std::make_unique<ConvolutionReverb>();
@@ -224,7 +224,7 @@ std::unique_ptr<EngineBase> EngineFactory::createEngine(int engineID) {
             return std::make_unique<GranularCloud>();
             
         case 51: // ENGINE_CHAOS_GENERATOR
-            return std::make_unique<ChaosGenerator_Platinum>();
+            return std::make_unique<ChaosGenerator>();
             
         case 52: // ENGINE_FEEDBACK_NETWORK
             return std::make_unique<FeedbackNetwork>();

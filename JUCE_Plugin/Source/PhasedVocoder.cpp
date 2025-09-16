@@ -421,6 +421,15 @@ void PhasedVocoder::process(juce::AudioBuffer<float>& buffer) {
     const float freeze = pimpl->params.freeze.load(std::memory_order_relaxed);
     const bool shouldFreeze = freeze > 0.5f;
     
+    // Early bypass check for mix parameter
+    if (smoothMix < 0.001f) {
+        // Completely dry - no processing needed, just advance smoothers for smooth operation
+        for (int i = 1; i < numSamples; ++i) { // Skip first since we already called tick()
+            pimpl->mixSmoother->tick();
+        }
+        return;
+    }
+    
     for (int ch = 0; ch < numChannels && ch < pimpl->channelStates.size(); ++ch) {
         auto& state = *pimpl->channelStates[ch];
         float* channelData = buffer.getWritePointer(ch);

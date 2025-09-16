@@ -76,28 +76,45 @@ static constexpr ParameterInfo tape_echo_params[] = {
     {"Mix", 0.35f, 0.0f, 1.0f, "Dry/wet balance", "percent", 0.5f},
 };
 
-// Shimmer Reverb parameters
+// Shimmer Reverb parameters (10 total)
 static constexpr ParameterInfo shimmer_reverb_params[] = {
-    {"Size", 0.5f, 0.0f, 1.0f, "Room size", "percent", 0.5f},
-    {"Shimmer", 0.3f, 0.0f, 1.0f, "Octave-up shimmer amount", "percent", 0.5f},
-    {"Damping", 0.5f, 0.0f, 1.0f, "High frequency damping", "percent", 0.5f},
     {"Mix", 0.3f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
+    {"Pitch Shift", 0.5f, 0.0f, 1.0f, "Pitch shift amount", "semitones", 0.5f},
+    {"Shimmer", 0.3f, 0.0f, 1.0f, "Octave-up shimmer amount", "percent", 0.5f},
+    {"Size", 0.5f, 0.0f, 1.0f, "Room size", "percent", 0.5f},
+    {"Damping", 0.5f, 0.0f, 1.0f, "High frequency damping", "percent", 0.5f},
+    {"Feedback", 0.5f, 0.0f, 1.0f, "Feedback amount", "percent", 0.5f},
+    {"Pre-Delay", 0.0f, 0.0f, 1.0f, "Pre-delay time", "ms", 0.5f},
+    {"Modulation", 0.3f, 0.0f, 1.0f, "Modulation depth", "percent", 0.5f},
+    {"Low Cut", 0.0f, 0.0f, 1.0f, "Low cut filter", "Hz", 0.5f},
+    {"High Cut", 1.0f, 0.0f, 1.0f, "High cut filter", "Hz", 0.5f},
 };
 
-// Plate Reverb parameters
+// Plate Reverb parameters (10 total)
 static constexpr ParameterInfo plate_reverb_params[] = {
+    {"Mix", 0.3f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
     {"Size", 0.5f, 0.0f, 1.0f, "Plate size", "percent", 0.5f},
     {"Damping", 0.5f, 0.0f, 1.0f, "High frequency damping", "percent", 0.5f},
-    {"Predelay", 0.0f, 0.0f, 1.0f, "Pre-delay time up to 100ms", "ms", 0.5f},
-    {"Mix", 0.3f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
+    {"Pre-Delay", 0.0f, 0.0f, 1.0f, "Pre-delay time up to 100ms", "ms", 0.5f},
+    {"Width", 1.0f, 0.0f, 1.0f, "Stereo width", "percent", 0.5f},
+    {"Freeze", 0.0f, 0.0f, 1.0f, "Freeze reverb tail", "toggle", 0.5f},
+    {"Low Cut", 0.0f, 0.0f, 1.0f, "Low cut filter", "Hz", 0.5f},
+    {"High Cut", 1.0f, 0.0f, 1.0f, "High cut filter", "Hz", 0.5f},
+    {"Early Reflections", 0.5f, 0.0f, 1.0f, "Early reflections level", "percent", 0.5f},
+    {"Diffusion", 0.5f, 0.0f, 1.0f, "Diffusion amount", "percent", 0.5f},
 };
 
-// Spring Reverb parameters
+// Spring Reverb parameters (9 total)
 static constexpr ParameterInfo spring_reverb_params[] = {
-    {"Springs", 0.5f, 0.0f, 1.0f, "Number of springs", "percent", 0.5f},
-    {"Decay", 0.5f, 0.0f, 1.0f, "Decay time", "percent", 0.5f},
-    {"Tone", 0.5f, 0.0f, 1.0f, "Tone control", "percent", 0.5f},
     {"Mix", 0.3f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
+    {"Tension", 0.5f, 0.0f, 1.0f, "Spring tension", "percent", 0.5f},
+    {"Damping", 0.5f, 0.0f, 1.0f, "High frequency damping", "percent", 0.5f},
+    {"Decay", 0.5f, 0.0f, 1.0f, "Decay time", "percent", 0.5f},
+    {"Pre-Delay", 0.0f, 0.0f, 1.0f, "Pre-delay time", "ms", 0.5f},
+    {"Drive", 0.0f, 0.0f, 1.0f, "Input drive", "percent", 0.5f},
+    {"Chirp", 0.5f, 0.0f, 1.0f, "Spring chirp amount", "percent", 0.5f},
+    {"Low Cut", 0.0f, 0.0f, 1.0f, "Low cut filter", "Hz", 0.5f},
+    {"High Cut", 1.0f, 0.0f, 1.0f, "High cut filter", "Hz", 0.5f},
 };
 
 // Vintage Opto parameters
@@ -267,12 +284,32 @@ static constexpr ParameterInfo intelligent_harmonizer_params[] = {
     {"Mix", 0.5f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
 };
 
-// Gated Reverb parameters
+// Gated Reverb parameters (10 total)
 static constexpr ParameterInfo gated_reverb_params[] = {
-    {"Size", 0.5f, 0.0f, 1.0f, "Room size", "percent", 0.5f},
-    {"Gate Time", 0.3f, 0.0f, 1.0f, "Gate duration", "ms", 0.5f},
-    {"Damping", 0.5f, 0.0f, 1.0f, "High frequency damping", "percent", 0.5f},
     {"Mix", 0.3f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
+    {"Threshold", 0.5f, 0.0f, 1.0f, "Gate threshold", "dB", 0.5f},
+    {"Hold", 0.3f, 0.0f, 1.0f, "Gate hold time", "ms", 0.5f},
+    {"Release", 0.5f, 0.0f, 1.0f, "Gate release time", "ms", 0.5f},
+    {"Attack", 0.1f, 0.0f, 1.0f, "Gate attack time", "ms", 0.5f},
+    {"Size", 0.5f, 0.0f, 1.0f, "Room size", "percent", 0.5f},
+    {"Damping", 0.5f, 0.0f, 1.0f, "High frequency damping", "percent", 0.5f},
+    {"Pre-Delay", 0.0f, 0.0f, 1.0f, "Pre-delay time", "ms", 0.5f},
+    {"Low Cut", 0.0f, 0.0f, 1.0f, "Low cut filter", "Hz", 0.5f},
+    {"High Cut", 1.0f, 0.0f, 1.0f, "High cut filter", "Hz", 0.5f},
+};
+
+// Convolution Reverb parameters (10 total)
+static constexpr ParameterInfo convolution_reverb_params[] = {
+    {"Mix", 0.3f, 0.0f, 1.0f, "Dry/wet mix", "percent", 0.5f},
+    {"IR Select", 0.0f, 0.0f, 1.0f, "Impulse response selection", "index", 0.5f},
+    {"Size", 0.5f, 0.0f, 1.0f, "IR size scaling", "percent", 0.5f},
+    {"Pre-Delay", 0.0f, 0.0f, 1.0f, "Pre-delay time", "ms", 0.5f},
+    {"Damping", 0.5f, 0.0f, 1.0f, "High frequency damping", "percent", 0.5f},
+    {"Reverse", 0.0f, 0.0f, 1.0f, "Reverse impulse response", "toggle", 0.5f},
+    {"Early/Late", 0.5f, 0.0f, 1.0f, "Early vs late reflections", "percent", 0.5f},
+    {"Low Cut", 0.0f, 0.0f, 1.0f, "Low cut filter", "Hz", 0.5f},
+    {"High Cut", 1.0f, 0.0f, 1.0f, "High cut filter", "Hz", 0.5f},
+    {"Width", 1.0f, 0.0f, 1.0f, "Stereo width", "percent", 0.5f},
 };
 
 // Detune Doubler parameters
@@ -458,32 +495,33 @@ static constexpr ParameterInfo phase_align_params[] = {
 
 // Complete engine database
 static constexpr EngineInfo engineDatabase[] = {
-    {"k_style", "K-Style Overdrive", 38, "ENGINE_K_STYLE", 0, "Distortion", 4, k_style_params},
-    {"vintage_tube", "Vintage Tube Preamp", 0, "ENGINE_VINTAGE_TUBE", 48, "Saturation", 10, vintage_tube_params},
-    {"tape_echo", "Tape Echo", 1, "ENGINE_TAPE_ECHO", 16, "Delay", 5, tape_echo_params},
-    {"shimmer_reverb", "Shimmer Reverb", 2, "ENGINE_SHIMMER_REVERB", 13, "Reverb", 4, shimmer_reverb_params},
-    {"plate_reverb", "Plate Reverb", 3, "ENGINE_PLATE_REVERB", 10, "Reverb", 4, plate_reverb_params},
-    {"spring_reverb", "Spring Reverb", 5, "ENGINE_SPRING_REVERB", 49, "Reverb", 4, spring_reverb_params},
-    {"opto_compressor", "Vintage Opto", 6, "ENGINE_OPTO_COMPRESSOR", 42, "Dynamics", 4, opto_compressor_params},
-    {"classic_compressor", "Classic Compressor", 7, "ENGINE_VCA_COMPRESSOR", 7, "Dynamics", 7, classic_compressor_params},
-    {"stereo_chorus", "Stereo Chorus", 11, "ENGINE_DIGITAL_CHORUS", 15, "Modulation", 4, stereo_chorus_params},
-    {"digital_delay", "Digital Delay", 53, "ENGINE_DIGITAL_DELAY", 17, "Delay", 4, digital_delay_params},
-    {"classic_tremolo", "Classic Tremolo", 22, "ENGINE_CLASSIC_TREMOLO", 8, "Modulation", 8, classic_tremolo_params},
-    {"harmonic_tremolo", "Harmonic Tremolo", 21, "ENGINE_HARMONIC_TREMOLO", 20, "Modulation", 4, harmonic_tremolo_params},
-    {"dimension_expander", "Dimension Expander", 18, "ENGINE_DIMENSION_EXPANDER", 22, "Spatial", 3, dimension_expander_params},
-    {"harmonic_exciter", "Harmonic Exciter", 32, "ENGINE_HARMONIC_EXCITER", 36, "Enhancement", 3, harmonic_exciter_params},
+    {"k_style", "K-Style Overdrive", 22, "ENGINE_K_STYLE", 0, "Distortion", 4, k_style_params},
+    {"vintage_tube", "Vintage Tube Preamp", 15, "ENGINE_VINTAGE_TUBE", 48, "Saturation", 10, vintage_tube_params},
+    {"tape_echo", "Tape Echo", 34, "ENGINE_TAPE_ECHO", 16, "Delay", 5, tape_echo_params},
+    {"shimmer_reverb", "Shimmer Reverb", 42, "ENGINE_SHIMMER_REVERB", 13, "Reverb", 10, shimmer_reverb_params},
+    {"plate_reverb", "Plate Reverb", 39, "ENGINE_PLATE_REVERB", 10, "Reverb", 10, plate_reverb_params},
+    {"spring_reverb", "Spring Reverb", 40, "ENGINE_SPRING_REVERB", 49, "Reverb", 9, spring_reverb_params},
+    {"opto_compressor", "Vintage Opto", 1, "ENGINE_OPTO_COMPRESSOR", 42, "Dynamics", 4, opto_compressor_params},
+    {"classic_compressor", "Classic Compressor", 2, "ENGINE_VCA_COMPRESSOR", 7, "Dynamics", 7, classic_compressor_params},
+    {"stereo_chorus", "Stereo Chorus", 23, "ENGINE_DIGITAL_CHORUS", 15, "Modulation", 4, stereo_chorus_params},
+    {"digital_delay", "Digital Delay", 35, "ENGINE_DIGITAL_DELAY", 17, "Delay", 4, digital_delay_params},
+    {"classic_tremolo", "Classic Tremolo", 29, "ENGINE_CLASSIC_TREMOLO", 8, "Modulation", 8, classic_tremolo_params},
+    {"harmonic_tremolo", "Harmonic Tremolo", 28, "ENGINE_HARMONIC_TREMOLO", 20, "Modulation", 4, harmonic_tremolo_params},
+    {"dimension_expander", "Dimension Expander", 46, "ENGINE_DIMENSION_EXPANDER", 22, "Spatial", 3, dimension_expander_params},
+    {"harmonic_exciter", "Harmonic Exciter", 17, "ENGINE_HARMONIC_EXCITER", 36, "Enhancement", 3, harmonic_exciter_params},
     {"mid_side_processor", "Mid/Side Processor", 53, "ENGINE_MID_SIDE_PROCESSOR", 47, "Spatial", 10, mid_side_processor_params},
-    {"vintage_console_eq", "Vintage Console EQ", 26, "ENGINE_VINTAGE_CONSOLE_EQ", 46, "EQ", 5, vintage_console_eq_params},
-    {"parametric_eq", "Parametric EQ", 27, "ENGINE_PARAMETRIC_EQ", 39, "EQ", 9, parametric_eq_params},
-    {"transient_shaper", "Transient Shaper", 20, "ENGINE_TRANSIENT_SHAPER", 28, "Dynamics", 3, transient_shaper_params},
-    {"pitch_shifter", "Pitch Shifter", 14, "ENGINE_PITCH_SHIFTER", 31, "Pitch", 3, pitch_shifter_params},
-    {"spectral_freeze", "Spectral Freeze", 39, "ENGINE_SPECTRAL_FREEZE", 33, "Spectral", 3, spectral_freeze_params},
-    {"granular_cloud", "Granular Cloud", 16, "ENGINE_GRANULAR_CLOUD", 34, "Texture", 5, granular_cloud_params},
-    {"buffer_repeat", "Buffer Repeat", 40, "ENGINE_BUFFER_REPEAT", 45, "Glitch", 4, buffer_repeat_params},
-    {"chaos_generator", "Chaos Generator", 41, "ENGINE_CHAOS_GENERATOR", 44, "Experimental", 8, chaos_generator_params},
-    {"intelligent_harmonizer", "Intelligent Harmonizer", 42, "ENGINE_INTELLIGENT_HARMONIZER", 38, "Pitch", 8, intelligent_harmonizer_params},
-    {"gated_reverb", "Gated Reverb", 43, "ENGINE_GATED_REVERB", 35, "Reverb", 4, gated_reverb_params},
-    {"detune_doubler", "Detune Doubler", 44, "ENGINE_DETUNE_DOUBLER", 12, "Pitch", 5, detune_doubler_params},
+    {"vintage_console_eq", "Vintage Console EQ", 8, "ENGINE_VINTAGE_CONSOLE_EQ", 46, "EQ", 5, vintage_console_eq_params},
+    {"parametric_eq", "Parametric EQ", 7, "ENGINE_PARAMETRIC_EQ", 39, "EQ", 9, parametric_eq_params},
+    {"transient_shaper", "Transient Shaper", 3, "ENGINE_TRANSIENT_SHAPER", 28, "Dynamics", 3, transient_shaper_params},
+    {"pitch_shifter", "Pitch Shifter", 31, "ENGINE_PITCH_SHIFTER", 31, "Pitch", 3, pitch_shifter_params},
+    {"spectral_freeze", "Spectral Freeze", 47, "ENGINE_SPECTRAL_FREEZE", 33, "Spectral", 3, spectral_freeze_params},
+    {"granular_cloud", "Granular Cloud", 50, "ENGINE_GRANULAR_CLOUD", 34, "Texture", 5, granular_cloud_params},
+    {"buffer_repeat", "Buffer Repeat", 38, "ENGINE_BUFFER_REPEAT", 45, "Glitch", 4, buffer_repeat_params},
+    {"chaos_generator", "Chaos Generator", 51, "ENGINE_CHAOS_GENERATOR", 44, "Experimental", 8, chaos_generator_params},
+    {"intelligent_harmonizer", "Intelligent Harmonizer", 33, "ENGINE_INTELLIGENT_HARMONIZER", 38, "Pitch", 8, intelligent_harmonizer_params},
+    {"gated_reverb", "Gated Reverb", 43, "ENGINE_GATED_REVERB", 35, "Reverb", 10, gated_reverb_params},
+    {"convolution_reverb", "Convolution Reverb", 41, "ENGINE_CONVOLUTION_REVERB", 41, "Reverb", 10, convolution_reverb_params},
+    {"detune_doubler", "Detune Doubler", 32, "ENGINE_DETUNE_DOUBLER", 12, "Pitch", 5, detune_doubler_params},
     {"phased_vocoder", "Phased Vocoder", 49, "ENGINE_PHASED_VOCODER", 30, "Spectral", 4, phased_vocoder_params},
     {"spectral_gate", "Spectral Gate", 48, "ENGINE_SPECTRAL_GATE", 43, "Dynamics", 8, spectral_gate_params},
     {"noise_gate", "Noise Gate", 4, "ENGINE_NOISE_GATE", 41, "Dynamics", 5, noise_gate_params},
@@ -494,10 +532,10 @@ static constexpr EngineInfo engineDatabase[] = {
     {"resonant_chorus", "Resonant Chorus", 24, "ENGINE_RESONANT_CHORUS", 50, "Modulation", 4, resonant_chorus_params},
     {"dynamic_eq", "Dynamic EQ", 6, "ENGINE_DYNAMIC_EQ", 52, "EQ", 8, dynamic_eq_params},
     {"stereo_imager", "Stereo Imager", 45, "ENGINE_STEREO_IMAGER", 53, "Spatial", 4, stereo_imager_params},
-    {"rodent_distortion", "Rodent Distortion", 36, "ENGINE_RODENT_DISTORTION", 2, "Distortion", 8, rodent_distortion_params},
-    {"muff_fuzz", "Muff Fuzz", 35, "ENGINE_MUFF_FUZZ", 3, "Distortion", 7, muff_fuzz_params},
+    {"rodent_distortion", "Rodent Distortion", 21, "ENGINE_RODENT_DISTORTION", 2, "Distortion", 8, rodent_distortion_params},
+    {"muff_fuzz", "Muff Fuzz", 20, "ENGINE_MUFF_FUZZ", 3, "Distortion", 7, muff_fuzz_params},
     {"rotary_speaker", "Rotary Speaker", 30, "ENGINE_ROTARY_SPEAKER", 54, "Modulation", 6, rotary_speaker_params},
-    {"comb_resonator", "Comb Resonator", 23, "ENGINE_COMB_RESONATOR", 9, "Filter", 3, comb_resonator_params},
+    {"comb_resonator", "Comb Resonator", 13, "ENGINE_COMB_RESONATOR", 9, "Filter", 3, comb_resonator_params},
     {"ladder_filter", "Ladder Filter Pro", 9, "ENGINE_LADDER_FILTER", 55, "Filter", 7, ladder_filter_params},
     {"gain_utility", "Gain Utility", 54, "ENGINE_GAIN_UTILITY", 53, "Utility", 10, gain_utility_params},
     {"mono_maker", "Mono Maker", 55, "ENGINE_MONO_MAKER", 54, "Utility", 8, mono_maker_params},

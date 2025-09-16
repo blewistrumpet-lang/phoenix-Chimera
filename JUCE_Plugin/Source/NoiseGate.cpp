@@ -92,20 +92,21 @@ void NoiseGate::process(juce::AudioBuffer<float>& buffer) {
     m_sidechain.update();
     m_lookahead.update();
     
-    // Convert smoothed parameters to actual values
+    // Convert smoothed parameters to actual values with proper scaling
     float thresholdDb = -60.0f + m_threshold.current * 60.0f;  // -60 to 0 dB
     float thresholdLinear = dbToLinear(thresholdDb);
     
-    // Inverted range: 0.0 = no gating (0dB), 1.0 = max gating (-40dB)
-    float rangeDb = -40.0f * m_range.current;  // Now intuitive: higher value = more gating
+    // Range: proper dB scaling for gate reduction
+    float rangeDb = -60.0f + (1.0f - m_range.current) * 60.0f;  // -60dB (full gate) to 0dB (no gate)
     float rangeLinear = dbToLinear(rangeDb);
     
-    float attackMs = 0.1f + m_attack.current * 99.9f;  // 0.1 to 100ms
-    float holdMs = m_hold.current * 500.0f;  // 0 to 500ms
-    float releaseMs = 1.0f + m_release.current * 999.0f;  // 1 to 1000ms
+    // Exponential scaling for attack/release times for better control
+    float attackMs = 0.1f * std::exp(m_attack.current * 6.9f);  // 0.1ms to 100ms exponential
+    float releaseMs = 1.0f * std::exp(m_release.current * 6.9f);  // 1ms to 1000ms exponential
+    float holdMs = m_hold.current * m_hold.current * 500.0f;  // 0 to 500ms with square law
     
-    float hysteresisDb = m_hysteresis.current * 10.0f;  // 0 to 10dB
-    float hysteresisLinear = dbToLinear(hysteresisDb);
+    // Hysteresis as linear fraction (not dB)
+    float hysteresisLinear = m_hysteresis.current * 0.5f;  // 0 to 50% hysteresis
     
     float sidechainFreq = 20.0f + m_sidechain.current * 480.0f;  // 20-500Hz
     int lookaheadSamples = static_cast<int>(m_lookahead.current * 10.0f * 0.001f * m_sampleRate);  // 0-10ms
@@ -161,7 +162,7 @@ void NoiseGate::process(juce::AudioBuffer<float>& buffer) {
             // Apply thermal and aging compensation
             float thermalDrift = state.thermalModel.getTemperatureDrift();
             float agingFactor = state.componentAging.getAgingFactor();
-            input *= (1.0f + thermalDrift * 0.5f) * agingFactor;
+            input *= agingFactor;
             
             // Write to lookahead buffer
             state.lookaheadBuffer.write(input);
@@ -180,12 +181,16 @@ void NoiseGate::process(juce::AudioBuffer<float>& buffer) {
                 }
             }
             
-            // Update envelope follower with thermal compensation
-            float compensatedThreshold = thresholdLinear * (1.0f + thermalDrift);
+            // Update envelope follower
             float envelope = state.envelopeFollower.processRMS(detection);
             
-            // Advanced gate logic with confidence and thermal compensation
-            processAdvancedGateLogic(state, envelope, compensatedThreshold, hysteresisLinear, holdSamples, m_sampleRate);
+            // Validate parameters
+            if (!std::isfinite(envelope) || envelope < 0.0f) {
+                envelope = 0.0f;
+            }
+            
+            // Advanced gate logic with simplified threshold
+            processAdvancedGateLogic(state, envelope, thresholdLinear, hysteresisLinear, holdSamples, m_sampleRate);
             
             // Update current gain with adaptive transitions
             state.updateGain();
@@ -216,23 +221,13 @@ void NoiseGate::process(juce::AudioBuffer<float>& buffer) {
 
 void NoiseGate::processAdvancedGateLogic(ChannelState& state, float envelope, float threshold, 
                                        float hysteresis, int holdSamples, double sampleRate) {
-    // Update gate confidence based on signal characteristics
-    float signalRatio = envelope / (threshold + 0.00001f);
-    float confidenceTarget = (signalRatio > 1.2f) ? 1.0f : (signalRatio < 0.8f) ? 0.0f : 0.5f;
-    state.gateConfidence = state.gateConfidence * 0.99f + confidenceTarget * 0.01f;
-    
-    // Adaptive threshold based on confidence and signal analysis
-    float adaptiveThreshold = threshold;
-    if (state.transientDetected > 0.7f) {
-        adaptiveThreshold *= 0.8f; // Lower threshold for transients
-    }
-    if (state.sustainDetected > 0.7f && state.gateConfidence > 0.8f) {
-        adaptiveThreshold *= 1.1f; // Higher threshold for sustained signals
-    }
+    // Simplified gate logic without confidence metrics
+    float openThreshold = threshold;
+    float closeThreshold = threshold * (1.0f - hysteresis);
     
     switch (state.state) {
         case CLOSED:
-            if (envelope > adaptiveThreshold && state.gateConfidence > 0.3f) {
+            if (envelope > openThreshold) {
                 state.state = OPENING;
                 state.targetGain = 1.0f;
             }
@@ -242,14 +237,14 @@ void NoiseGate::processAdvancedGateLogic(ChannelState& state, float envelope, fl
             if (state.currentGain >= 0.99f) {
                 state.state = OPEN;
                 state.holdCounter = holdSamples;
-            } else if (envelope < adaptiveThreshold * (1.0f - hysteresis) && state.gateConfidence < 0.3f) {
+            } else if (envelope < closeThreshold) {
                 state.state = CLOSING;
                 state.targetGain = 0.0f;
             }
             break;
             
         case OPEN:
-            if (envelope < adaptiveThreshold * (1.0f - hysteresis) && state.gateConfidence < 0.5f) {
+            if (envelope < closeThreshold) {
                 state.state = HOLDING;
             }
             break;
@@ -257,7 +252,7 @@ void NoiseGate::processAdvancedGateLogic(ChannelState& state, float envelope, fl
         case HOLDING:
             if (state.holdCounter > 0) {
                 state.holdCounter--;
-                if (envelope > adaptiveThreshold || state.gateConfidence > 0.7f) {
+                if (envelope > openThreshold) {
                     state.state = OPEN;
                     state.holdCounter = holdSamples;
                 }
@@ -270,7 +265,7 @@ void NoiseGate::processAdvancedGateLogic(ChannelState& state, float envelope, fl
         case CLOSING:
             if (state.currentGain <= 0.01f) {
                 state.state = CLOSED;
-            } else if (envelope > adaptiveThreshold && state.gateConfidence > 0.4f) {
+            } else if (envelope > openThreshold) {
                 state.state = OPENING;
                 state.targetGain = 1.0f;
             }

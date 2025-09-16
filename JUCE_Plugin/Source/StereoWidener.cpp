@@ -13,7 +13,7 @@ StereoWidener::StereoWidener() {
     m_delayTime.reset(0.3f);      // ~10ms default
     m_delayGain.reset(0.2f);      // 20% default
     m_correlation.reset(0.8f);    // 80% correlation default
-    m_mix.reset(1.0f);            // 100% wet default
+    m_mix.reset(0.5f);            // 50% wet default for unity gain
 }
 
 void StereoWidener::prepareToPlay(double sampleRate, int samplesPerBlock) {

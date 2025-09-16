@@ -125,7 +125,7 @@ class Oracle:
             slot_info = next((s for s in blueprint.get("slots", []) if s.get("slot") == slot), None)
             if slot_info:
                 engine_id = slot_info.get("engine_id", -1)
-                preset["parameters"][f"slot{slot}_engine"] = engine_id + 1 if engine_id >= 0 else 0
+                preset["parameters"][f"slot{slot}_engine"] = engine_id if engine_id >= 0 else 0
                 preset["parameters"][f"slot{slot}_bypass"] = 0.0 if engine_id >= 0 else 1.0
             else:
                 preset["parameters"][f"slot{slot}_engine"] = 0

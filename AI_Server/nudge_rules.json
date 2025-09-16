@@ -1,65 +1,401 @@
 {
-  "keyword_rules": {
-    "dark": {
-      "slot1_param2": -0.2,
-      "slot2_param1": 0.1
+  "version": "2.0",
+  "description": "Sophisticated nudge rules for Trinity Pipeline Calculator",
+  
+  "parameter_roles": {
+    "intensity": {
+      "patterns": ["param1", "param3"],
+      "keywords": ["drive", "gain", "amount", "depth", "strength"],
+      "description": "Controls that affect signal intensity and saturation"
     },
-    "bright": {
-      "slot1_param2": 0.2,
-      "slot2_param2": -0.1
+    "tone": {
+      "patterns": ["param2"],
+      "keywords": ["frequency", "tone", "brightness", "color", "eq", "filter"],
+      "description": "Frequency and tonal shaping controls"
     },
-    "aggressive": {
-      "slot1_param1": 0.3,
-      "slot1_param3": 0.1
+    "time": {
+      "patterns": ["param1", "param4"],
+      "keywords": ["delay", "time", "rate", "speed", "tempo", "sync"],
+      "description": "Time-based parameters"
     },
-    "subtle": {
-      "slot1_param1": -0.2,
-      "slot2_param3": -0.1
+    "feedback": {
+      "patterns": ["param2", "param4"],
+      "keywords": ["feedback", "regeneration", "repeat", "echo"],
+      "description": "Feedback and regeneration controls"
     },
-    "warm": {
-      "slot1_param1": 0.1,
-      "slot1_param2": -0.1
+    "mix": {
+      "patterns": ["param3", "param10"],
+      "keywords": ["mix", "blend", "wet", "dry", "balance"],
+      "description": "Wet/dry mix controls"
     },
-    "vintage": {
-      "slot2_param4": 0.2,
-      "slot2_param5": 0.1
+    "modulation": {
+      "patterns": ["param5", "param6"],
+      "keywords": ["depth", "rate", "phase", "lfo", "modulation"],
+      "description": "Modulation controls"
     },
-    "modern": {
-      "slot2_param4": -0.1,
-      "slot2_param5": -0.1
+    "spatial": {
+      "patterns": ["param7", "param8"],
+      "keywords": ["width", "stereo", "pan", "spread", "space"],
+      "description": "Spatial and stereo controls"
     },
-    "spacious": {
-      "slot2_param1": 0.2,
-      "slot2_param3": 0.1
-    },
-    "tight": {
-      "slot2_param1": -0.2,
-      "slot2_param2": 0.1
+    "dynamics": {
+      "patterns": ["param1", "param2", "param3", "param4"],
+      "keywords": ["threshold", "ratio", "attack", "release", "knee"],
+      "description": "Dynamics processing controls"
     }
   },
+  
+  "context_modifiers": {
+    "vintage": {
+      "weight": 1.0,
+      "modifiers": {
+        "warmth": 0.15,
+        "saturation": 0.1,
+        "high_rolloff": -0.1,
+        "wow_flutter": 0.15,
+        "analog_character": 0.2
+      },
+      "affected_engines": ["all"],
+      "description": "Vintage, analog, warm character"
+    },
+    "modern": {
+      "weight": 1.0,
+      "modifiers": {
+        "clarity": 0.15,
+        "precision": 0.1,
+        "digital_character": 0.1,
+        "transparency": 0.15,
+        "definition": 0.1
+      },
+      "affected_engines": ["all"],
+      "description": "Modern, digital, pristine character"
+    },
+    "aggressive": {
+      "weight": 1.2,
+      "modifiers": {
+        "drive": 0.25,
+        "attack": 0.15,
+        "presence": 0.2,
+        "compression": 0.15,
+        "edge": 0.2
+      },
+      "affected_engines": ["distortion", "dynamics"],
+      "description": "Aggressive, powerful, in-your-face"
+    },
+    "subtle": {
+      "weight": 0.8,
+      "modifiers": {
+        "mix": -0.2,
+        "intensity": -0.15,
+        "transparency": 0.1,
+        "smoothness": 0.1
+      },
+      "affected_engines": ["all"],
+      "description": "Subtle, transparent, gentle processing"
+    },
+    "spacious": {
+      "weight": 1.0,
+      "modifiers": {
+        "reverb": 0.2,
+        "width": 0.15,
+        "depth": 0.1,
+        "decay": 0.15,
+        "diffusion": 0.1
+      },
+      "affected_engines": ["reverb", "delay", "spatial"],
+      "description": "Spacious, ambient, wide soundstage"
+    },
+    "tight": {
+      "weight": 1.0,
+      "modifiers": {
+        "gate": 0.15,
+        "damping": 0.1,
+        "focus": 0.2,
+        "attack": -0.1,
+        "release": -0.15
+      },
+      "affected_engines": ["dynamics", "reverb"],
+      "description": "Tight, controlled, focused sound"
+    },
+    "warm": {
+      "weight": 0.9,
+      "modifiers": {
+        "low_mids": 0.1,
+        "harmonics": 0.15,
+        "smoothness": 0.1,
+        "high_cut": -0.05,
+        "tube_character": 0.15
+      },
+      "affected_engines": ["distortion", "eq"],
+      "description": "Warm, smooth, pleasing harmonics"
+    },
+    "bright": {
+      "weight": 0.9,
+      "modifiers": {
+        "highs": 0.15,
+        "air": 0.1,
+        "sparkle": 0.1,
+        "presence": 0.15,
+        "clarity": 0.1
+      },
+      "affected_engines": ["eq", "distortion"],
+      "description": "Bright, airy, sparkly top end"
+    },
+    "dark": {
+      "weight": 0.9,
+      "modifiers": {
+        "high_cut": -0.2,
+        "low_boost": 0.1,
+        "murky": 0.1,
+        "shadow": 0.15
+      },
+      "affected_engines": ["eq", "filter"],
+      "description": "Dark, moody, rolled-off highs"
+    },
+    "punchy": {
+      "weight": 1.1,
+      "modifiers": {
+        "transient": 0.2,
+        "attack": 0.15,
+        "impact": 0.15,
+        "compression": 0.1,
+        "punch": 0.2
+      },
+      "affected_engines": ["dynamics", "distortion"],
+      "description": "Punchy, impactful, strong transients"
+    },
+    "smooth": {
+      "weight": 0.9,
+      "modifiers": {
+        "compression": 0.1,
+        "saturation": 0.05,
+        "glue": 0.1,
+        "cohesion": 0.1,
+        "polish": 0.1
+      },
+      "affected_engines": ["dynamics", "distortion"],
+      "description": "Smooth, polished, cohesive sound"
+    },
+    "ethereal": {
+      "weight": 1.0,
+      "modifiers": {
+        "reverb": 0.25,
+        "shimmer": 0.2,
+        "modulation": 0.15,
+        "diffusion": 0.2,
+        "dreaminess": 0.25
+      },
+      "affected_engines": ["reverb", "modulation", "delay"],
+      "description": "Ethereal, dreamy, otherworldly"
+    },
+    "gritty": {
+      "weight": 1.1,
+      "modifiers": {
+        "distortion": 0.2,
+        "saturation": 0.15,
+        "dirt": 0.2,
+        "grain": 0.15,
+        "texture": 0.2
+      },
+      "affected_engines": ["distortion", "bitcrusher"],
+      "description": "Gritty, dirty, textured sound"
+    },
+    "clean": {
+      "weight": 0.8,
+      "modifiers": {
+        "transparency": 0.2,
+        "clarity": 0.15,
+        "pristine": 0.15,
+        "definition": 0.1
+      },
+      "affected_engines": ["eq", "dynamics"],
+      "description": "Clean, transparent, uncolored"
+    },
+    "lush": {
+      "weight": 1.0,
+      "modifiers": {
+        "reverb": 0.15,
+        "chorus": 0.1,
+        "richness": 0.15,
+        "density": 0.1,
+        "fullness": 0.15
+      },
+      "affected_engines": ["reverb", "modulation"],
+      "description": "Lush, rich, full sound"
+    }
+  },
+  
   "engine_specific_rules": {
     "0": {
-      "description": "K-Style Overdrive",
+      "name": "Vintage Tube Saturation",
+      "category": "distortion",
+      "character_responses": {
+        "warm": {"param1": 0.1, "param2": -0.05, "param3": 0.05},
+        "aggressive": {"param1": 0.2, "param2": 0.1, "param3": 0.1},
+        "subtle": {"param1": -0.1, "param2": 0.0, "param3": -0.05},
+        "vintage": {"param1": 0.15, "param2": -0.1, "param3": 0.05}
+      },
       "default_adjustments": {
-        "slot1_param1": 0.0,
-        "slot1_param2": 0.0,
-        "slot1_param3": 0.0
+        "param1": 0.0,
+        "param2": 0.0,
+        "param3": 0.0
       }
     },
     "1": {
-      "description": "Tape Echo",
+      "name": "Tape Echo",
+      "category": "delay",
+      "character_responses": {
+        "vintage": {"param1": 0.1, "param2": 0.05, "param4": 0.2, "param5": 0.15},
+        "spacious": {"param1": 0.2, "param2": 0.1, "param3": 0.1},
+        "rhythmic": {"param1": 0.0, "param2": -0.05, "param3": 0.05},
+        "ambient": {"param1": 0.3, "param2": 0.15, "param3": 0.15}
+      },
       "default_adjustments": {
-        "slot2_param1": 0.0,
-        "slot2_param2": 0.0,
-        "slot2_param3": 0.0
+        "param1": 0.0,
+        "param2": 0.0,
+        "param3": 0.0,
+        "param4": 0.0,
+        "param5": 0.0
       }
     },
     "2": {
-      "description": "Plate Reverb",
+      "name": "Plate Reverb",
+      "category": "reverb",
+      "character_responses": {
+        "spacious": {"param1": 0.2, "param2": -0.1, "param3": 0.1, "param4": 0.15},
+        "tight": {"param1": -0.2, "param2": 0.15, "param3": -0.05, "param4": -0.1},
+        "metallic": {"param1": 0.1, "param2": -0.15, "param3": 0.0, "param4": 0.1},
+        "ethereal": {"param1": 0.25, "param2": -0.05, "param3": 0.15, "param4": 0.2}
+      },
       "default_adjustments": {
-        "slot2_param1": 0.0,
-        "slot2_param2": 0.0,
-        "slot2_param3": 0.0
+        "param1": 0.0,
+        "param2": 0.0,
+        "param3": 0.0,
+        "param4": 0.0
+      }
+    },
+    "3": {
+      "name": "Classic Compressor",
+      "category": "dynamics",
+      "character_responses": {
+        "punchy": {"param1": 0.15, "param2": 0.2, "param3": -0.1, "param4": -0.05},
+        "smooth": {"param1": 0.05, "param2": 0.1, "param3": 0.05, "param4": 0.1},
+        "aggressive": {"param1": 0.2, "param2": 0.25, "param3": -0.15, "param4": -0.1},
+        "transparent": {"param1": -0.05, "param2": 0.05, "param3": 0.0, "param4": 0.05}
+      },
+      "default_adjustments": {
+        "param1": 0.0,
+        "param2": 0.0,
+        "param3": 0.0,
+        "param4": 0.0,
+        "param5": 0.0
+      }
+    },
+    "4": {
+      "name": "Parametric EQ",
+      "category": "eq",
+      "character_responses": {
+        "bright": {"param2": 0.15, "param5": 0.1, "param8": 0.15},
+        "warm": {"param2": -0.1, "param3": 0.1, "param4": 0.05},
+        "scooped": {"param3": -0.15, "param4": -0.1, "param2": 0.1, "param8": 0.1},
+        "balanced": {"param2": 0.0, "param5": 0.0, "param8": 0.0}
+      },
+      "default_adjustments": {
+        "param1": 0.0,
+        "param2": 0.0,
+        "param3": 0.0,
+        "param4": 0.0,
+        "param5": 0.0,
+        "param6": 0.0,
+        "param7": 0.0,
+        "param8": 0.0,
+        "param9": 0.0
+      }
+    },
+    "5": {
+      "name": "Analog Chorus",
+      "category": "modulation",
+      "character_responses": {
+        "lush": {"param1": 0.15, "param2": 0.1, "param3": 0.15},
+        "subtle": {"param1": -0.1, "param2": -0.05, "param3": -0.1},
+        "wide": {"param1": 0.1, "param2": 0.15, "param7": 0.2, "param8": 0.15},
+        "vintage": {"param1": 0.1, "param2": 0.05, "param3": 0.1}
+      },
+      "default_adjustments": {
+        "param1": 0.0,
+        "param2": 0.0,
+        "param3": 0.0,
+        "param4": 0.0,
+        "param5": 0.0
+      }
+    }
+  },
+  
+  "composite_rules": {
+    "vintage_warmth": {
+      "keywords": ["vintage", "warm"],
+      "combined_weight": 1.1,
+      "special_adjustments": {
+        "harmonics": 0.2,
+        "saturation": 0.15,
+        "high_rolloff": -0.15
+      }
+    },
+    "aggressive_metal": {
+      "keywords": ["aggressive", "metal", "heavy"],
+      "combined_weight": 1.3,
+      "special_adjustments": {
+        "drive": 0.3,
+        "gate": 0.2,
+        "compression": 0.25,
+        "scooped_mids": -0.2
+      }
+    },
+    "ambient_space": {
+      "keywords": ["ambient", "spacious", "ethereal"],
+      "combined_weight": 1.2,
+      "special_adjustments": {
+        "reverb": 0.3,
+        "delay": 0.2,
+        "modulation": 0.15,
+        "diffusion": 0.25
+      }
+    },
+    "clean_modern": {
+      "keywords": ["clean", "modern", "pristine"],
+      "combined_weight": 0.9,
+      "special_adjustments": {
+        "transparency": 0.25,
+        "definition": 0.2,
+        "minimal_coloration": -0.15
+      }
+    }
+  },
+  
+  "adaptive_rules": {
+    "frequency_balance": {
+      "description": "Adjust parameters to maintain frequency balance",
+      "condition": "frequency_analysis",
+      "actions": {
+        "low_heavy": {"high_boost": 0.1, "low_cut": 0.05},
+        "high_heavy": {"low_boost": 0.05, "high_cut": 0.1},
+        "mid_scooped": {"mid_boost": 0.1}
+      }
+    },
+    "dynamic_range": {
+      "description": "Maintain appropriate dynamic range",
+      "condition": "dynamics_analysis",
+      "actions": {
+        "over_compressed": {"ratio_reduction": -0.1, "threshold_increase": 0.1},
+        "too_dynamic": {"gentle_compression": 0.05}
+      }
+    },
+    "spatial_coherence": {
+      "description": "Ensure spatial effects work together",
+      "condition": "spatial_analysis",
+      "actions": {
+        "conflicting_spaces": {"reduce_conflicts": -0.1},
+        "mono_collapse": {"enhance_stereo": 0.15}
       }
     }
   }

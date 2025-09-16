@@ -1,6 +1,7 @@
 // DigitalDelay.cpp
 #include "DigitalDelay.h"
 #include "DspEngineUtilities.h"
+#include "DenormalProtection.h"
 #include <cstring>
 #include <algorithm>
 
@@ -84,7 +85,7 @@ void DigitalDelay::reset() {
 }
 
 void DigitalDelay::process(juce::AudioBuffer<float>& buffer) {
-    DenormalGuard guard;
+    DenormalProtection::DenormalGuard guard;
     
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();

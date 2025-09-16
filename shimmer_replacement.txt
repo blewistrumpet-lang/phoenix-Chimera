@@ -1,0 +1,79 @@
+// Simple pitch shifter for shimmer (beta quality, zero latency)
+class SimpleShimmerPitch {
+public:
+    SimpleShimmerPitch() {
+        bufferSize = 8192;
+        delayBuffer.resize(bufferSize, 0.0f);
+        reset();
+    }
+    
+    void prepare(double sampleRate, int maxBlockSize) {
+        sr = sampleRate;
+        blockSize = maxBlockSize;
+        reset();
+    }
+    
+    void setPitchShift(float pitchParam) {
+        // Convert to pitch ratio: 12 semitones = 2.0 ratio (octave up)
+        float semitones = 12.0f + pitchParam * 7.0f; // 12-19 semitones range
+        pitchRatio = std::pow(2.0f, semitones / 12.0f);
+        currentPitchParam = pitchParam;
+    }
+    
+    void processBlock(const float* input, float* output, int numSamples, float shimmerAmount) {
+        if (shimmerAmount < 0.01f || numSamples == 0) {
+            std::fill(output, output + numSamples, 0.0f);
+            return;
+        }
+        
+        // Simple pitch shifting using circular buffer
+        for (int i = 0; i < numSamples; ++i) {
+            // Write to circular buffer
+            delayBuffer[writePos] = input[i];
+            writePos = (writePos + 1) % bufferSize;
+            
+            // Calculate distance between read and write
+            float distance = writePos - readPos;
+            if (distance < 0) distance += bufferSize;
+            
+            // Keep read position in safe range
+            if (distance < 128 || distance > bufferSize - 512) {
+                readPos = writePos - bufferSize/2;
+                if (readPos < 0) readPos += bufferSize;
+            }
+            
+            // Read with linear interpolation
+            int idx0 = (int)readPos;
+            float frac = readPos - idx0;
+            idx0 = idx0 % bufferSize;
+            int idx1 = (idx0 + 1) % bufferSize;
+            
+            float sample = delayBuffer[idx0] * (1.0f - frac) + delayBuffer[idx1] * frac;
+            output[i] = sample * shimmerAmount;
+            
+            // Advance read position based on pitch ratio
+            readPos += pitchRatio;
+            while (readPos >= bufferSize) readPos -= bufferSize;
+        }
+    }
+    
+    void reset() {
+        std::fill(delayBuffer.begin(), delayBuffer.end(), 0.0f);
+        writePos = 0;
+        readPos = bufferSize - 2048;
+        pitchRatio = 2.0f; // Default octave up
+        currentPitchParam = 0.0f;
+    }
+    
+private:
+    std::vector<float> delayBuffer;
+    int bufferSize;
+    int writePos = 0;
+    float readPos = 0;
+    float pitchRatio = 2.0f;
+    float currentPitchParam = 0.0f;
+    double sr = 48000;
+    int blockSize = 512;
+};
+
+static SimpleShimmerPitch g_simpleShimmer;

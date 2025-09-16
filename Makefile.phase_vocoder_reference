@@ -1,0 +1,115 @@
+# Makefile for Phase Vocoder Reference Implementation
+# Team C: Reference Implementation for algorithm validation
+
+CXX = clang++
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -I. -IJUCE_Plugin/JuceLibraryCode
+
+# JUCE configuration
+JUCE_DIR = JUCE_Plugin/JuceLibraryCode
+JUCE_INCLUDES = -I$(JUCE_DIR) -IJUCE/modules -DJUCE_STANDALONE_APPLICATION=1 \
+                -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1
+
+# Source files
+REFERENCE_SOURCES = JUCE_Plugin/Source/PhasedVocoder_Reference.cpp \
+                   test_phase_vocoder_reference.cpp
+
+# JUCE core files (minimal set for our reference)
+JUCE_SOURCES = $(JUCE_DIR)/include_juce_core.cpp \
+               $(JUCE_DIR)/include_juce_audio_basics.cpp \
+               $(JUCE_DIR)/include_juce_dsp.cpp
+
+# Output
+TARGET = test_phase_vocoder_reference
+
+# Platform-specific settings
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+    # macOS
+    CXXFLAGS += -mmacosx-version-min=10.15
+    LDFLAGS = -framework Accelerate -framework AudioToolbox -framework CoreFoundation \
+              -framework Foundation
+endif
+
+# Build targets
+.PHONY: all clean test reference
+
+all: $(TARGET)
+
+# Build the reference implementation test
+$(TARGET): $(REFERENCE_SOURCES) $(JUCE_SOURCES)
+	@echo "Building Phase Vocoder Reference Implementation..."
+	$(CXX) $(CXXFLAGS) $(JUCE_INCLUDES) -o $(TARGET) $(REFERENCE_SOURCES) $(JUCE_SOURCES) $(LDFLAGS)
+	@echo "Build complete: $(TARGET)"
+
+# Quick reference build (minimal dependencies)
+reference: JUCE_Plugin/Source/PhasedVocoder_Reference.cpp
+	@echo "Building reference implementation only..."
+	$(CXX) $(CXXFLAGS) $(JUCE_INCLUDES) -c JUCE_Plugin/Source/PhasedVocoder_Reference.cpp -o PhasedVocoder_Reference.o
+	@echo "Reference object built: PhasedVocoder_Reference.o"
+
+# Run tests
+test: $(TARGET)
+	@echo "Running Phase Vocoder Reference Tests..."
+	./$(TARGET)
+	@echo "Tests completed."
+
+# Documentation target
+docs:
+	@echo "Phase Vocoder Reference Implementation Documentation:"
+	@echo "- Implementation: JUCE_Plugin/Source/PhasedVocoder_Reference.{h,cpp}"
+	@echo "- Tests: test_phase_vocoder_reference.cpp"
+	@echo "- Documentation: PHASE_VOCODER_REFERENCE_IMPLEMENTATION.md"
+	@echo ""
+	@echo "Key Parameters:"
+	@echo "- FFT_SIZE: 2048 samples"
+	@echo "- HOP_SIZE: 512 samples (75% overlap)"
+	@echo "- Window: Hann window"
+	@echo "- Scaling: 1/(FFT_SIZE * 1.5) for proper normalization"
+
+# Analysis target
+analysis:
+	@echo "Phase Vocoder Reference Analysis:"
+	@echo "==================================="
+	@wc -l JUCE_Plugin/Source/PhasedVocoder_Reference.{h,cpp}
+	@echo ""
+	@echo "Core Methods:"
+	@grep -n "void.*Frame" JUCE_Plugin/Source/PhasedVocoder_Reference.cpp || true
+	@echo ""
+	@echo "Parameters:"
+	@grep -n "ParamID::" JUCE_Plugin/Source/PhasedVocoder_Reference.h || true
+
+# Validation target
+validate: $(TARGET)
+	@echo "Validating Phase Vocoder Reference Implementation..."
+	@echo "1. Building test suite..."
+	@$(MAKE) -f Makefile.phase_vocoder_reference $(TARGET) > /dev/null
+	@echo "2. Running basic validation..."
+	@./$(TARGET) | grep -E "(PASSED|FAILED|Test Results)"
+	@echo "3. Checking output files..."
+	@ls -la $(TARGET) JUCE_Plugin/Source/PhasedVocoder_Reference.* 2>/dev/null || echo "Files missing"
+	@echo "Validation complete."
+
+# Clean build artifacts
+clean:
+	rm -f $(TARGET) *.o
+	@echo "Clean complete."
+
+# Help
+help:
+	@echo "Phase Vocoder Reference Implementation Build System"
+	@echo "=================================================="
+	@echo ""
+	@echo "Targets:"
+	@echo "  all        - Build complete test suite"
+	@echo "  reference  - Build reference implementation only"
+	@echo "  test       - Build and run tests"
+	@echo "  docs       - Show documentation info"
+	@echo "  analysis   - Show code analysis"
+	@echo "  validate   - Complete validation suite"
+	@echo "  clean      - Remove build artifacts"
+	@echo "  help       - Show this help"
+	@echo ""
+	@echo "Files:"
+	@echo "  Implementation: PhasedVocoder_Reference.{h,cpp}"
+	@echo "  Tests: test_phase_vocoder_reference.cpp"
+	@echo "  Documentation: PHASE_VOCODER_REFERENCE_IMPLEMENTATION.md"

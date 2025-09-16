@@ -1,0 +1,119 @@
+name: Parameter System Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'JUCE_Plugin/Source/*.cpp'
+      - 'JUCE_Plugin/Source/*.h'
+      - 'AI_Server/*.py'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-parameters:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Build Environment
+      run: |
+        brew install cmake
+        
+    - name: Build Parameter Validator
+      run: |
+        cd JUCE_Plugin
+        mkdir -p build
+        cd build
+        cmake ..
+        make parameter_validator
+        
+    - name: Run Parameter Validation
+      id: validation
+      run: |
+        cd JUCE_Plugin/build
+        ./parameter_validator --json > validation_report.json
+        ./parameter_validator --markdown > validation_report.md
+        
+        # Check if validation passed
+        if ./parameter_validator --check; then
+          echo "✅ Parameter validation PASSED"
+          echo "validation_passed=true" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Parameter validation FAILED"
+          echo "validation_passed=false" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+        
+    - name: Check Cross-System Consistency
+      run: |
+        python3 JUCE_Plugin/Tools/check_parameter_consistency.py \
+          --cpp JUCE_Plugin/Source \
+          --python AI_Server \
+          --report consistency_report.md
+          
+    - name: Upload Validation Reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: parameter-validation-reports
+        path: |
+          JUCE_Plugin/build/validation_report.*
+          consistency_report.md
+          
+    - name: Comment PR with Results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('JUCE_Plugin/build/validation_report.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '## Parameter Validation Report\n\n' + report
+          });
+          
+    - name: Check for Unmigrated Engines
+      run: |
+        cd JUCE_Plugin
+        python3 Tools/migrate_parameters.py --report > migration_status.md
+        
+        # Count unmigrated engines
+        unmigrated=$(grep -c "•" migration_status.md | head -1)
+        
+        if [ "$unmigrated" -gt "0" ]; then
+          echo "⚠️ Warning: $unmigrated engines still need migration"
+          cat migration_status.md
+        fi
+        
+    - name: Generate Parameter Documentation
+      if: success() && github.ref == 'refs/heads/main'
+      run: |
+        cd JUCE_Plugin
+        python3 Tools/generate_parameter_docs.py \
+          --format markdown \
+          --output ../docs/PARAMETER_REFERENCE.md
+          
+        python3 Tools/generate_parameter_docs.py \
+          --format json \
+          --output ../AI_Server/parameter_definitions.json
+          
+    - name: Commit Documentation Updates
+      if: success() && github.ref == 'refs/heads/main'
+      run: |
+        git config --global user.name 'Parameter Bot'
+        git config --global user.email 'bot@chimera-phoenix.com'
+        
+        git add docs/PARAMETER_REFERENCE.md
+        git add AI_Server/parameter_definitions.json
+        
+        if git diff --staged --quiet; then
+          echo "No documentation changes needed"
+        else
+          git commit -m "🤖 Auto-update parameter documentation"
+          git push
+        fi

@@ -1,0 +1,1832 @@
+[
+  {
+    "id": "GC_0001",
+    "creative_name": "Crystalline Formant Web",
+    "category": "Experimental",
+    "description": "Formant-shaped feedback network",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0002",
+    "creative_name": "Fractal Spectral Resonance",
+    "category": "Experimental",
+    "description": "Resonant spectral sweeps",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0003",
+    "creative_name": "Rhythmic Chaos Storm",
+    "category": "Textural",
+    "description": "Chaotic rhythmic patterns",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0004",
+    "creative_name": "Harmonic Web Particles",
+    "category": "Rhythmic",
+    "description": "Complex harmonic textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0005",
+    "creative_name": "Chaos Field Flux",
+    "category": "Textural",
+    "description": "Chaotic stereo movement",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0006",
+    "creative_name": "Vocal Formant Destruction Echo",
+    "category": "Experimental",
+    "description": "Vocal formants destroyed and reconstructed",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0007",
+    "creative_name": "Spectral Freeze Stutter Horizon",
+    "category": "Harmonic",
+    "description": "Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0008",
+    "creative_name": "Spectral Freeze Stutter Cascade",
+    "category": "Textural",
+    "description": "Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0009",
+    "creative_name": "Chaotic Spectral Morphing Dreams",
+    "category": "Experimental",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0010",
+    "creative_name": "Harmonic Web Waves",
+    "category": "Experimental",
+    "description": "Complex harmonic textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0011",
+    "creative_name": "Nebula Chaos Field",
+    "category": "Lo-Fi",
+    "description": "Chaotic stereo movement",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0012",
+    "creative_name": "Chaotic Spectral Morphing Horizon",
+    "category": "Lo-Fi",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0013",
+    "creative_name": "Fractal Chaotic Spectral Morphing",
+    "category": "Experimental",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0014",
+    "creative_name": "Chromatic Granular Feedback Madness",
+    "category": "Experimental",
+    "description": "Dense granular texture with metallic feedback",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0015",
+    "creative_name": "Prismatic Chaotic Spectral Morphing",
+    "category": "Ambient",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0016",
+    "creative_name": "Formant Web Storm",
+    "category": "Experimental",
+    "description": "Formant-shaped feedback network",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0017",
+    "creative_name": "Spectral Resonance Dreams",
+    "category": "Experimental",
+    "description": "Resonant spectral sweeps",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0018",
+    "creative_name": "Morphing Formant Web",
+    "category": "Ambient",
+    "description": "Formant-shaped feedback network",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0019",
+    "creative_name": "Formant Web Flux",
+    "category": "Ambient",
+    "description": "Formant-shaped feedback network",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0020",
+    "creative_name": "Harmonic Chaos Spiral Storm",
+    "category": "Lo-Fi",
+    "description": "Harmonized chaos with unstable pitch",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0021",
+    "creative_name": "Harmonic Web Vortex",
+    "category": "Textural",
+    "description": "Complex harmonic textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0022",
+    "creative_name": "Fractal Granular Feedback Madness",
+    "category": "Glitch",
+    "description": "Dense granular texture with metallic feedback",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0023",
+    "creative_name": "Harmonic Chaos Spiral Echo",
+    "category": "Glitch",
+    "description": "Harmonized chaos with unstable pitch",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0024",
+    "creative_name": "Spectral Freeze Stutter Cascade",
+    "category": "Harmonic",
+    "description": "Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0025",
+    "creative_name": "Chaotic Spectral Morphing Cascade",
+    "category": "Glitch",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0026",
+    "creative_name": "Quantum Resonant Modulation",
+    "category": "Spatial",
+    "description": "Resonant filtering with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0027",
+    "creative_name": "Granular Feedback Madness Horizon",
+    "category": "Experimental",
+    "description": "Dense granular texture with metallic feedback",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0028",
+    "creative_name": "Kaleidoscope Harmonic Web",
+    "category": "Glitch",
+    "description": "Complex harmonic textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0029",
+    "creative_name": "Ethereal Chaotic Spectral Morphing",
+    "category": "Experimental",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0030",
+    "creative_name": "Harmonic Web Flux",
+    "category": "Ambient",
+    "description": "Complex harmonic textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0031",
+    "creative_name": "Nebula Lo-Fi Degradation",
+    "category": "Spatial",
+    "description": "Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0032",
+    "creative_name": "Fractal Granular Feedback Madness",
+    "category": "Spatial",
+    "description": "Dense granular texture with metallic feedback",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0033",
+    "creative_name": "Pitch Spiral Flux",
+    "category": "Experimental",
+    "description": "Ascending pitch spirals with granular texture",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0034",
+    "creative_name": "Fractal Chaos Field",
+    "category": "Glitch",
+    "description": "Chaotic stereo movement",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0035",
+    "creative_name": "Chaotic Spectral Morphing Flux",
+    "category": "Rhythmic",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0036",
+    "creative_name": "Ethereal Resonant Modulation",
+    "category": "Experimental",
+    "description": "Resonant filtering with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0037",
+    "creative_name": "Quantum Ambient Drift",
+    "category": "Ambient",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0038",
+    "creative_name": "Lo-Fi Degradation Horizon",
+    "category": "Glitch",
+    "description": "Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0039",
+    "creative_name": "Fractal Pitch Spiral",
+    "category": "Spatial",
+    "description": "Ascending pitch spirals with granular texture",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0040",
+    "creative_name": "Pitch Spiral Cascade",
+    "category": "Harmonic",
+    "description": "Ascending pitch spirals with granular texture",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0041",
+    "creative_name": "Resonant Modulation Cascade",
+    "category": "Ambient",
+    "description": "Resonant filtering with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0042",
+    "creative_name": "Spectral Resonance Dreams",
+    "category": "Harmonic",
+    "description": "Resonant spectral sweeps",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0043",
+    "creative_name": "Chromatic Chaos Field",
+    "category": "Experimental",
+    "description": "Chaotic stereo movement",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0044",
+    "creative_name": "Astral Lo-Fi Degradation",
+    "category": "Experimental",
+    "description": "Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0045",
+    "creative_name": "Chaotic Spectral Morphing Dreams",
+    "category": "Experimental",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0046",
+    "creative_name": "Fractal Resonant Modulation",
+    "category": "Glitch",
+    "description": "Resonant filtering with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0047",
+    "creative_name": "Quantum Formant Web",
+    "category": "Glitch",
+    "description": "Formant-shaped feedback network",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0048",
+    "creative_name": "Resonant Modulation Particles",
+    "category": "Harmonic",
+    "description": "Resonant filtering with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0049",
+    "creative_name": "Rhythmic Chaos Flux",
+    "category": "Ambient",
+    "description": "Chaotic rhythmic patterns",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0050",
+    "creative_name": "Astral Chaotic Spectral Morphing",
+    "category": "Experimental",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional"
+    ]
+  },
+  {
+    "id": "GC_0051",
+    "creative_name": "Engineering Test 1 Cascade",
+    "category": "Experimental",
+    "description": "Systematic exploration of SpectralFreeze",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0052",
+    "creative_name": "Engineering Test 2 Meditation",
+    "category": "Ambient",
+    "description": "Systematic exploration of GranularCloud",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0053",
+    "creative_name": "Morphing Engineering Test 3",
+    "category": "Experimental",
+    "description": "Systematic exploration of ChaosGenerator",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0054",
+    "creative_name": "Engineering Test 4 Horizon",
+    "category": "Glitch",
+    "description": "Systematic exploration of DimensionExpander",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0055",
+    "creative_name": "Engineering Test 5 Flux",
+    "category": "Glitch",
+    "description": "Systematic exploration of BucketBrigadeDelay",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0056",
+    "creative_name": "Engineering Test 6 Flux",
+    "category": "Experimental",
+    "description": "Systematic exploration of SpectralFreeze",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0057",
+    "creative_name": "Engineering Test 7 Echo",
+    "category": "Ambient",
+    "description": "Systematic exploration of GranularCloud",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0058",
+    "creative_name": "Engineering Test 8 Storm",
+    "category": "Experimental",
+    "description": "Systematic exploration of ChaosGenerator",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0059",
+    "creative_name": "Kaleidoscope Engineering Test 9",
+    "category": "Ambient",
+    "description": "Systematic exploration of DimensionExpander",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0060",
+    "creative_name": "Chromatic Engineering Test 10",
+    "category": "Experimental",
+    "description": "Systematic exploration of BucketBrigadeDelay",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0061",
+    "creative_name": "Ethereal Engineering Test 11",
+    "category": "Ambient",
+    "description": "Systematic exploration of SpectralFreeze",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0062",
+    "creative_name": "Prismatic Engineering Test 12",
+    "category": "Glitch",
+    "description": "Systematic exploration of GranularCloud",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0063",
+    "creative_name": "Engineering Test 13 Particles",
+    "category": "Experimental",
+    "description": "Systematic exploration of ChaosGenerator",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0064",
+    "creative_name": "Morphing Engineering Test 14",
+    "category": "Experimental",
+    "description": "Systematic exploration of DimensionExpander",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0065",
+    "creative_name": "Engineering Test 15 Dreams",
+    "category": "Experimental",
+    "description": "Systematic exploration of BucketBrigadeDelay",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0066",
+    "creative_name": "Engineering Test 16 Cascade",
+    "category": "Experimental",
+    "description": "Systematic exploration of SpectralFreeze",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0067",
+    "creative_name": "Fractal Engineering Test 17",
+    "category": "Experimental",
+    "description": "Systematic exploration of GranularCloud",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0068",
+    "creative_name": "Nebula Engineering Test 18",
+    "category": "Textural",
+    "description": "Systematic exploration of ChaosGenerator",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0069",
+    "creative_name": "Engineering Test 19 Flux",
+    "category": "Textural",
+    "description": "Systematic exploration of DimensionExpander",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0070",
+    "creative_name": "Engineering Test 20 Dreams",
+    "category": "Experimental",
+    "description": "Systematic exploration of BucketBrigadeDelay",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0071",
+    "creative_name": "Engineering Test 21 Vortex",
+    "category": "Rhythmic",
+    "description": "Systematic exploration of SpectralFreeze",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0072",
+    "creative_name": "Astral Engineering Test 22",
+    "category": "Harmonic",
+    "description": "Systematic exploration of GranularCloud",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0073",
+    "creative_name": "Astral Engineering Test 23",
+    "category": "Experimental",
+    "description": "Systematic exploration of ChaosGenerator",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0074",
+    "creative_name": "Engineering Test 24 Storm",
+    "category": "Glitch",
+    "description": "Systematic exploration of DimensionExpander",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0075",
+    "creative_name": "Ethereal Engineering Test 25",
+    "category": "Glitch",
+    "description": "Systematic exploration of BucketBrigadeDelay",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0076",
+    "creative_name": "Astral Engineering Test 26",
+    "category": "Experimental",
+    "description": "Systematic exploration of SpectralFreeze",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0077",
+    "creative_name": "Chromatic Engineering Test 27",
+    "category": "Spatial",
+    "description": "Systematic exploration of GranularCloud",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0078",
+    "creative_name": "Chromatic Engineering Test 28",
+    "category": "Spatial",
+    "description": "Systematic exploration of ChaosGenerator",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0079",
+    "creative_name": "Engineering Test 29 Vortex",
+    "category": "Textural",
+    "description": "Systematic exploration of DimensionExpander",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0080",
+    "creative_name": "Kaleidoscope Engineering Test 30",
+    "category": "Lo-Fi",
+    "description": "Systematic exploration of BucketBrigadeDelay",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "systematic"
+    ]
+  },
+  {
+    "id": "GC_0081",
+    "creative_name": "Nebula Ambient Drift",
+    "category": "Experimental",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "ambient",
+      "tension",
+      "atmospheric"
+    ]
+  },
+  {
+    "id": "GC_0082",
+    "creative_name": "Ethereal Glitch Matrix",
+    "category": "Lo-Fi",
+    "description": "Micro-stutters with digital artifacts",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "glitch",
+      "idm",
+      "experimental"
+    ]
+  },
+  {
+    "id": "GC_0083",
+    "creative_name": "Astral Ambient Drift",
+    "category": "Rhythmic",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "drone",
+      "meditation",
+      "soundscape"
+    ]
+  },
+  {
+    "id": "GC_0084",
+    "creative_name": "Ambient Drift Dreams",
+    "category": "Experimental",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "harsh",
+      "metallic",
+      "aggressive"
+    ]
+  },
+  {
+    "id": "GC_0085",
+    "creative_name": "Chromatic Ambient Drift",
+    "category": "Ambient",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "trippy",
+      "morphing",
+      "colorful"
+    ]
+  },
+  {
+    "id": "GC_0086",
+    "creative_name": "Kaleidoscope Ambient Drift",
+    "category": "Experimental",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "ambient",
+      "tension",
+      "atmospheric"
+    ]
+  },
+  {
+    "id": "GC_0087",
+    "creative_name": "Prismatic Glitch Matrix",
+    "category": "Experimental",
+    "description": "Micro-stutters with digital artifacts",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "glitch",
+      "idm",
+      "experimental"
+    ]
+  },
+  {
+    "id": "GC_0088",
+    "creative_name": "Ambient Drift Waves",
+    "category": "Ambient",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "drone",
+      "meditation",
+      "soundscape"
+    ]
+  },
+  {
+    "id": "GC_0089",
+    "creative_name": "Lo-Fi Degradation Waves",
+    "category": "Experimental",
+    "description": "Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "harsh",
+      "metallic",
+      "aggressive"
+    ]
+  },
+  {
+    "id": "GC_0090",
+    "creative_name": "Lo-Fi Degradation Horizon",
+    "category": "Ambient",
+    "description": "Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "trippy",
+      "morphing",
+      "colorful"
+    ]
+  },
+  {
+    "id": "GC_0091",
+    "creative_name": "Kaleidoscope Ambient Drift",
+    "category": "Glitch",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "ambient",
+      "tension",
+      "atmospheric"
+    ]
+  },
+  {
+    "id": "GC_0092",
+    "creative_name": "Spectral Freeze Stutter Waves",
+    "category": "Experimental",
+    "description": "Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "glitch",
+      "idm",
+      "experimental"
+    ]
+  },
+  {
+    "id": "GC_0093",
+    "creative_name": "Ethereal Ambient Drift",
+    "category": "Rhythmic",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "drone",
+      "meditation",
+      "soundscape"
+    ]
+  },
+  {
+    "id": "GC_0094",
+    "creative_name": "Chromatic Spectral Freeze Stutter",
+    "category": "Spatial",
+    "description": "Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "harsh",
+      "metallic",
+      "aggressive"
+    ]
+  },
+  {
+    "id": "GC_0095",
+    "creative_name": "Spectral Freeze Stutter Particles",
+    "category": "Glitch",
+    "description": "Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "trippy",
+      "morphing",
+      "colorful"
+    ]
+  },
+  {
+    "id": "GC_0096",
+    "creative_name": "Ambient Drift Horizon",
+    "category": "Spatial",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "ambient",
+      "tension",
+      "atmospheric"
+    ]
+  },
+  {
+    "id": "GC_0097",
+    "creative_name": "Spectral Freeze Stutter Echo",
+    "category": "Experimental",
+    "description": "Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "glitch",
+      "idm",
+      "experimental"
+    ]
+  },
+  {
+    "id": "GC_0098",
+    "creative_name": "Morphing Ambient Drift",
+    "category": "Spatial",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "drone",
+      "meditation",
+      "soundscape"
+    ]
+  },
+  {
+    "id": "GC_0099",
+    "creative_name": "Astral Chaos Field",
+    "category": "Experimental",
+    "description": "Chaotic stereo movement",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "harsh",
+      "metallic",
+      "aggressive"
+    ]
+  },
+  {
+    "id": "GC_0100",
+    "creative_name": "Fractal Vocal Formant Destruction",
+    "category": "Experimental",
+    "description": "Vocal formants destroyed and reconstructed",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "trippy",
+      "morphing",
+      "colorful"
+    ]
+  },
+  {
+    "id": "GC_0101",
+    "creative_name": "Chromatic Ambient Drift",
+    "category": "Experimental",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "ambient",
+      "tension",
+      "atmospheric"
+    ]
+  },
+  {
+    "id": "GC_0102",
+    "creative_name": "Nebula Glitch Matrix",
+    "category": "Glitch",
+    "description": "Micro-stutters with digital artifacts",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "glitch",
+      "idm",
+      "experimental"
+    ]
+  },
+  {
+    "id": "GC_0103",
+    "creative_name": "Kaleidoscope Ambient Drift",
+    "category": "Experimental",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "drone",
+      "meditation",
+      "soundscape"
+    ]
+  },
+  {
+    "id": "GC_0104",
+    "creative_name": "Chaotic Spectral Morphing Dreams",
+    "category": "Spatial",
+    "description": "Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "harsh",
+      "metallic",
+      "aggressive"
+    ]
+  },
+  {
+    "id": "GC_0105",
+    "creative_name": "Pitch Spiral Flux",
+    "category": "Harmonic",
+    "description": "Ascending pitch spirals with granular texture",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "trippy",
+      "morphing",
+      "colorful"
+    ]
+  },
+  {
+    "id": "GC_0106",
+    "creative_name": "Quantum Ambient Drift",
+    "category": "Experimental",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "ambient",
+      "tension",
+      "atmospheric"
+    ]
+  },
+  {
+    "id": "GC_0107",
+    "creative_name": "Glitch Matrix Storm",
+    "category": "Glitch",
+    "description": "Micro-stutters with digital artifacts",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "glitch",
+      "idm",
+      "experimental"
+    ]
+  },
+  {
+    "id": "GC_0108",
+    "creative_name": "Morphing Ambient Drift",
+    "category": "Experimental",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "drone",
+      "meditation",
+      "soundscape"
+    ]
+  },
+  {
+    "id": "GC_0109",
+    "creative_name": "Spectral Freeze Stutter Storm",
+    "category": "Ambient",
+    "description": "Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "harsh",
+      "metallic",
+      "aggressive"
+    ]
+  },
+  {
+    "id": "GC_0110",
+    "creative_name": "Kaleidoscope Granular Feedback Madness",
+    "category": "Spatial",
+    "description": "Dense granular texture with metallic feedback",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "trippy",
+      "morphing",
+      "colorful"
+    ]
+  },
+  {
+    "id": "GC_0111",
+    "creative_name": "Ambient Drift Vortex",
+    "category": "Glitch",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "ambient",
+      "tension",
+      "atmospheric"
+    ]
+  },
+  {
+    "id": "GC_0112",
+    "creative_name": "Astral Spectral Freeze Stutter",
+    "category": "Experimental",
+    "description": "Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "glitch",
+      "idm",
+      "experimental"
+    ]
+  },
+  {
+    "id": "GC_0113",
+    "creative_name": "Ambient Drift Horizon",
+    "category": "Glitch",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "drone",
+      "meditation",
+      "soundscape"
+    ]
+  },
+  {
+    "id": "GC_0114",
+    "creative_name": "Formant Web Horizon",
+    "category": "Ambient",
+    "description": "Formant-shaped feedback network",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "harsh",
+      "metallic",
+      "aggressive"
+    ]
+  },
+  {
+    "id": "GC_0115",
+    "creative_name": "Prismatic Harmonic Web",
+    "category": "Lo-Fi",
+    "description": "Complex harmonic textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "trippy",
+      "morphing",
+      "colorful"
+    ]
+  },
+  {
+    "id": "GC_0116",
+    "creative_name": "Ambient Drift Waves",
+    "category": "Spatial",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "ambient",
+      "tension",
+      "atmospheric"
+    ]
+  },
+  {
+    "id": "GC_0117",
+    "creative_name": "Glitch Matrix Horizon",
+    "category": "Ambient",
+    "description": "Micro-stutters with digital artifacts",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "glitch",
+      "idm",
+      "experimental"
+    ]
+  },
+  {
+    "id": "GC_0118",
+    "creative_name": "Fractal Ambient Drift",
+    "category": "Experimental",
+    "description": "Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "drone",
+      "meditation",
+      "soundscape"
+    ]
+  },
+  {
+    "id": "GC_0119",
+    "creative_name": "Glitch Matrix Horizon",
+    "category": "Lo-Fi",
+    "description": "Micro-stutters with digital artifacts",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "harsh",
+      "metallic",
+      "aggressive"
+    ]
+  },
+  {
+    "id": "GC_0120",
+    "creative_name": "Quantum Vocal Formant Destruction",
+    "category": "Experimental",
+    "description": "Vocal formants destroyed and reconstructed",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "trippy",
+      "morphing",
+      "colorful"
+    ]
+  },
+  {
+    "id": "GC_0121",
+    "creative_name": "Quantum Formant Web + Resonant Modulation",
+    "category": "Glitch",
+    "description": "Hybrid: Formant-shaped feedback network meets Resonant filtering with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0122",
+    "creative_name": "Glitch Matrix + Formant Web Storm",
+    "category": "Experimental",
+    "description": "Hybrid: Micro-stutters with digital artifacts meets Formant-shaped feedback network",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0123",
+    "creative_name": "Spectral Freeze Stutter + Spectral Freeze Stutter Flux",
+    "category": "Experimental",
+    "description": "Hybrid: Frozen spectral content with chaotic amplitude meets Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0124",
+    "creative_name": "Quantum Pitch Spiral + Formant Web",
+    "category": "Experimental",
+    "description": "Hybrid: Ascending pitch spirals with granular texture meets Formant-shaped feedback network",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0125",
+    "creative_name": "Chaotic Spectral Morphing + Harmonic Web Horizon",
+    "category": "Ambient",
+    "description": "Hybrid: Constantly evolving spectral content with chaotic modulation meets Complex harmonic textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0126",
+    "creative_name": "Ethereal Ambient Drift + Spectral Resonance",
+    "category": "Spatial",
+    "description": "Hybrid: Slowly evolving ambient textures meets Resonant spectral sweeps",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0127",
+    "creative_name": "Chromatic Chaotic Spectral Morphing + Lo-Fi Degradation",
+    "category": "Ambient",
+    "description": "Hybrid: Constantly evolving spectral content with chaotic modulation meets Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0128",
+    "creative_name": "Morphing Harmonic Chaos Spiral + Harmonic Web",
+    "category": "Lo-Fi",
+    "description": "Hybrid: Harmonized chaos with unstable pitch meets Complex harmonic textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0129",
+    "creative_name": "Harmonic Web + Harmonic Web Flux",
+    "category": "Lo-Fi",
+    "description": "Hybrid: Complex harmonic textures meets Complex harmonic textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0130",
+    "creative_name": "Chromatic Chaos Field + Lo-Fi Degradation",
+    "category": "Lo-Fi",
+    "description": "Hybrid: Chaotic stereo movement meets Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0131",
+    "creative_name": "Resonant Modulation + Chaos Field Particles",
+    "category": "Experimental",
+    "description": "Hybrid: Resonant filtering with chaotic modulation meets Chaotic stereo movement",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0132",
+    "creative_name": "Harmonic Chaos Spiral + Granular Feedback Madness Particles",
+    "category": "Experimental",
+    "description": "Hybrid: Harmonized chaos with unstable pitch meets Dense granular texture with metallic feedback",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0133",
+    "creative_name": "Spectral Resonance + Granular Feedback Madness Cascade",
+    "category": "Ambient",
+    "description": "Hybrid: Resonant spectral sweeps meets Dense granular texture with metallic feedback",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0134",
+    "creative_name": "Harmonic Chaos Spiral + Ambient Drift Echo",
+    "category": "Ambient",
+    "description": "Hybrid: Harmonized chaos with unstable pitch meets Slowly evolving ambient textures",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0135",
+    "creative_name": "Vocal Formant Destruction + Lo-Fi Degradation Meditation",
+    "category": "Spatial",
+    "description": "Hybrid: Vocal formants destroyed and reconstructed meets Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0136",
+    "creative_name": "Astral Lo-Fi Degradation + Lo-Fi Degradation",
+    "category": "Lo-Fi",
+    "description": "Hybrid: Heavy degradation with vintage character meets Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0137",
+    "creative_name": "Quantum Harmonic Web + Spectral Resonance",
+    "category": "Glitch",
+    "description": "Hybrid: Complex harmonic textures meets Resonant spectral sweeps",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0138",
+    "creative_name": "Formant Web + Chaotic Spectral Morphing Storm",
+    "category": "Ambient",
+    "description": "Hybrid: Formant-shaped feedback network meets Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0139",
+    "creative_name": "Astral Harmonic Chaos Spiral + Spectral Freeze Stutter",
+    "category": "Textural",
+    "description": "Hybrid: Harmonized chaos with unstable pitch meets Frozen spectral content with chaotic amplitude",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0140",
+    "creative_name": "Harmonic Chaos Spiral + Harmonic Chaos Spiral Waves",
+    "category": "Spatial",
+    "description": "Hybrid: Harmonized chaos with unstable pitch meets Harmonized chaos with unstable pitch",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0141",
+    "creative_name": "Formant Web + Chaotic Spectral Morphing Echo",
+    "category": "Glitch",
+    "description": "Hybrid: Formant-shaped feedback network meets Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0142",
+    "creative_name": "Nebula Harmonic Web + Resonant Modulation",
+    "category": "Experimental",
+    "description": "Hybrid: Complex harmonic textures meets Resonant filtering with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0143",
+    "creative_name": "Harmonic Chaos Spiral + Granular Feedback Madness Vortex",
+    "category": "Spatial",
+    "description": "Hybrid: Harmonized chaos with unstable pitch meets Dense granular texture with metallic feedback",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0144",
+    "creative_name": "Quantum Spectral Resonance + Pitch Spiral",
+    "category": "Spatial",
+    "description": "Hybrid: Resonant spectral sweeps meets Ascending pitch spirals with granular texture",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0145",
+    "creative_name": "Astral Harmonic Web + Chaotic Spectral Morphing",
+    "category": "Glitch",
+    "description": "Hybrid: Complex harmonic textures meets Constantly evolving spectral content with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0146",
+    "creative_name": "Glitch Matrix + Rhythmic Chaos Echo",
+    "category": "Experimental",
+    "description": "Hybrid: Micro-stutters with digital artifacts meets Chaotic rhythmic patterns",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0147",
+    "creative_name": "Crystalline Spectral Freeze Stutter + Lo-Fi Degradation",
+    "category": "Lo-Fi",
+    "description": "Hybrid: Frozen spectral content with chaotic amplitude meets Heavy degradation with vintage character",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0148",
+    "creative_name": "Spectral Resonance + Rhythmic Chaos Flux",
+    "category": "Glitch",
+    "description": "Hybrid: Resonant spectral sweeps meets Chaotic rhythmic patterns",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0149",
+    "creative_name": "Quantum Chaos Field + Resonant Modulation",
+    "category": "Experimental",
+    "description": "Hybrid: Chaotic stereo movement meets Resonant filtering with chaotic modulation",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  },
+  {
+    "id": "GC_0150",
+    "creative_name": "Formant Web + Chaos Field Waves",
+    "category": "Experimental",
+    "description": "Hybrid: Formant-shaped feedback network meets Chaotic stereo movement",
+    "tags": [
+      "experimental",
+      "creative",
+      "unconventional",
+      "hybrid"
+    ]
+  }
+]

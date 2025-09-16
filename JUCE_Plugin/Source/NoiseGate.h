@@ -156,21 +156,18 @@ private:
         }
         
         float processRMS(float input) {
-            // Update spectral energy (high frequency content)
-            float highFreqContent = std::abs(input - lastSample);
-            spectralEnergy = spectralEnergy * 0.99f + highFreqContent * 0.01f;
+            // Simple RMS calculation without spectral weighting
             lastSample = input;
             
-            // Update RMS buffer with spectral weighting
+            // Update RMS buffer - pure RMS without frequency weighting
             float oldValue = rmsBuffer[rmsIndex];
-            float spectralWeight = 1.0f + spectralEnergy * 0.5f;
-            float newValue = (input * input) * spectralWeight;
+            float newValue = input * input;
             rmsBuffer[rmsIndex] = newValue;
             rmsSum = rmsSum - oldValue + newValue;
             rmsIndex = (rmsIndex + 1) % RMS_WINDOW_SIZE;
             
-            // Calculate weighted RMS
-            float rms = std::sqrt(rmsSum / (RMS_WINDOW_SIZE * spectralWeight));
+            // Calculate pure RMS
+            float rms = std::sqrt(rmsSum / RMS_WINDOW_SIZE);
             
             // Apply envelope smoothing
             return processPeak(rms);
@@ -287,24 +284,13 @@ private:
         }
         
         void updateGain() {
-            // Adaptive gain rate based on signal characteristics
-            float adaptiveAttackRate = attackRate;
-            float adaptiveReleaseRate = releaseRate;
-            
-            // Faster attack for transients
-            if (transientDetected > 0.5f) {
-                adaptiveAttackRate = fastAttackRate;
-            }
-            
-            // Slower release for sustained signals
-            if (sustainDetected > 0.5f) {
-                adaptiveReleaseRate = slowReleaseRate;
-            }
-            
+            // Simplified gain smoothing without adaptive rates
             if (currentGain < targetGain) {
-                currentGain += (targetGain - currentGain) * adaptiveAttackRate;
+                // Attack phase - use attack rate
+                currentGain += (targetGain - currentGain) * attackRate;
             } else {
-                currentGain += (targetGain - currentGain) * adaptiveReleaseRate;
+                // Release phase - use release rate  
+                currentGain += (targetGain - currentGain) * releaseRate;
             }
             
             // Clamp to valid range

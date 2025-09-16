@@ -16,18 +16,18 @@ VintageConsoleEQ::VintageConsoleEQ() {
     m_vintage.setImmediate(0.5f);      // Moderate vintage character
     m_mix.setImmediate(1.0f);          // 100% wet by default
     
-    // Set smoothing rates
-    m_lowGain.setSmoothingRate(0.995f);
-    m_lowFreq.setSmoothingRate(0.998f);
-    m_midGain.setSmoothingRate(0.995f);
-    m_midFreq.setSmoothingRate(0.998f);
-    m_midQ.setSmoothingRate(0.997f);
-    m_highGain.setSmoothingRate(0.995f);
-    m_highFreq.setSmoothingRate(0.998f);
-    m_drive.setSmoothingRate(0.99f);
+    // Set smoothing rates - use instant response (0.99 = ~0.1ms smoothing)
+    m_lowGain.setSmoothingRate(0.99f);     // Near-instant but avoids zipper noise
+    m_lowFreq.setSmoothingRate(0.99f);     
+    m_midGain.setSmoothingRate(0.99f);     
+    m_midFreq.setSmoothingRate(0.99f);     
+    m_midQ.setSmoothingRate(0.99f);        
+    m_highGain.setSmoothingRate(0.99f);    
+    m_highFreq.setSmoothingRate(0.99f);    
+    m_drive.setSmoothingRate(0.99f);       
     m_consoleType.setSmoothingRate(0.95f);  // Slower for type changes
-    m_vintage.setSmoothingRate(0.995f);
-    m_mix.setSmoothingRate(0.995f);
+    m_vintage.setSmoothingRate(0.99f);     
+    m_mix.setSmoothingRate(0.99f);
 }
 
 void VintageConsoleEQ::prepareToPlay(double sampleRate, int samplesPerBlock) {

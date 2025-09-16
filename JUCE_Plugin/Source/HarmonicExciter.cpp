@@ -98,9 +98,9 @@ void HarmonicExciter::process(juce::AudioBuffer<float>& buffer) {
     
     // Calculate frequency-dependent drive amounts with thermal modulation
     float targetFreq = (1000.0f + m_frequency.current * 9000.0f) * thermalFactor; // 1kHz to 10kHz
-    float lowDrive = m_drive.current * (1.0f - m_frequency.current) * 0.5f;
+    float lowDrive = m_drive.current * (1.0f - m_frequency.current * 0.5f);  // More low drive
     float midDrive = m_drive.current * thermalFactor;
-    float highDrive = m_drive.current * (0.5f + m_frequency.current * 0.5f) * thermalFactor;
+    float highDrive = m_drive.current * (0.7f + m_frequency.current * 0.3f) * thermalFactor;
     
     for (int channel = 0; channel < numChannels; ++channel) {
         if (channel >= 2) break;
@@ -121,71 +121,62 @@ void HarmonicExciter::process(juce::AudioBuffer<float>& buffer) {
             float mid = state.midBand.processLowpass(midInput);
             float high = state.midBand.processHighpass(midInput);
             
-            // Process each band with harmonic generation
+            // Process each band with harmonic generation - FIXED FOR STUDIO QUALITY
             float processedLow = low;
             float processedMid = mid;
             float processedHigh = high;
             
-            // Low band - subtle warmth with aging and thermal effects
+            // Low band - subtle warmth WITHOUT excessive aging effects
             if (lowDrive > 0.01f) {
-                processedLow = state.lowGen.processWithAging(low, lowDrive * 0.3f, m_color.current, m_componentAge);
-                processedLow = processWarmthFilterWithAging(processedLow, state.warmthState, m_componentAge, thermalFactor);
-                
-                // Add thermal noise to low frequencies
-                processedLow += state.thermalNoise * m_thermalModel.dist(m_thermalModel.rng) * 0.3f;
+                // Soft saturation for low frequencies
+                processedLow = std::tanh(low * (1.0f + lowDrive * 2.0f));
+                processedLow = processWarmthFilter(processedLow, state.warmthState);
+            } else {
+                processedLow = low;  // Pass through if no drive
             }
             
-            // Mid band - main harmonic generation with aging and thermal effects
+            // Mid band - main harmonic generation SIMPLIFIED
             if (midDrive > 0.01f) {
-                // Pre-emphasis for better harmonic generation, modulated by thermal factor
-                float emphasized = mid * (1.0f + m_harmonics.current * thermalFactor);
-                processedMid = state.midGen.processWithAging(emphasized, midDrive, m_color.current, m_componentAge);
+                // Pre-emphasis for better harmonic generation
+                float emphasized = mid * (1.0f + m_harmonics.current);
                 
-                // Phase alignment for clarity (degraded by aging)
+                // Simple harmonic generation with soft clipping
+                processedMid = state.midGen.process(emphasized, midDrive * 2.0f, m_color.current);
+                
+                // Phase alignment for clarity
                 if (m_clarity.current > 0.5f) {
                     state.phaseHistory[state.phaseIndex] = processedMid;
                     state.phaseIndex = (state.phaseIndex + 1) % 4;
                     
-                    // Simple phase linearization (less effective with aging)
+                    // Simple phase linearization
                     float sum = 0.0f;
-                    float clarityFactor = m_clarity.current * (1.0f - m_componentAge * 0.3f);
                     for (int i = 0; i < 4; ++i) {
-                        sum += state.phaseHistory[i] * (1.0f - i * 0.25f) * clarityFactor;
+                        sum += state.phaseHistory[i] * (1.0f - i * 0.25f);
                     }
-                    processedMid = sum * 0.4f;
+                    processedMid = sum * 0.4f + processedMid * (1.0f - 0.4f * m_clarity.current);
                 }
-                
-                // Add component drift to mid frequencies
-                processedMid *= (1.0f + state.componentDrift);
+            } else {
+                processedMid = mid;  // Pass through if no drive
             }
             
-            // High band - presence and air with aging and thermal effects
+            // High band - presence and air SIMPLIFIED
             if (highDrive > 0.01f) {
-                // Enhance transients in high frequencies (reduced by aging)
+                // Enhance transients in high frequencies
                 float transient = high - state.highGen.lastSample;
                 state.highGen.lastSample = high;
                 
-                processedHigh = state.highGen.processWithAging(high, highDrive * 1.2f, m_color.current, m_componentAge);
-                float transientAmount = m_presence.current * 0.5f * (1.0f - m_componentAge * 0.2f);
-                processedHigh += transient * transientAmount;
+                // Harmonic generation with normal drive
+                processedHigh = state.highGen.process(high, highDrive, m_color.current);
+                processedHigh += transient * m_presence.current * 0.5f;
                 
-                // Presence filter with aging and thermal effects
-                processedHigh = processPresenceFilterWithAging(processedHigh, state.presenceState, m_componentAge, thermalFactor);
-                
-                // Add subtle high frequency roll-off due to aging
-                if (m_componentAge > 0.1f) {
-                    static float hfRolloff = 0.0f;
-                    float cutoff = 0.2f * (1.0f - m_componentAge * 0.4f);
-                    hfRolloff += (processedHigh - hfRolloff) * cutoff;
-                    processedHigh = processedHigh * 0.8f + hfRolloff * 0.2f;
-                }
+                // Presence filter
+                processedHigh = processPresenceFilter(processedHigh, state.presenceState);
+            } else {
+                processedHigh = high;  // Pass through if no drive
             }
             
-            // Recombine bands
+            // Recombine bands with unity gain
             float excited = processedLow + processedMid + processedHigh;
-            
-            // Add overall component noise
-            excited += state.noiseLevel * m_thermalModel.dist(m_thermalModel.rng) * 2.0f;
             
             // DC blocker
             excited = processDCBlocker(excited, state.dcBlockerState);
@@ -193,12 +184,8 @@ void HarmonicExciter::process(juce::AudioBuffer<float>& buffer) {
             // DC block output
             excited = m_outputDCBlockers[channel].process(excited);
             
-            // Soft limiting to prevent harshness (varies with aging)
-            float limitThreshold = 0.95f * (1.0f - m_componentAge * 0.1f);
-            if (std::abs(excited) > limitThreshold) {
-                float saturation = 0.8f + m_componentAge * 0.2f; // More saturation with age
-                excited = std::tanh(excited * saturation) * (1.25f / saturation);
-            }
+            // Soft limiting to prevent clipping
+            excited = std::tanh(excited * 0.7f) * 1.43f;
             
             // Mix with dry signal
             channelData[sample] = drySignal * (1.0f - m_mix.current) + excited * m_mix.current;
@@ -208,7 +195,7 @@ void HarmonicExciter::process(juce::AudioBuffer<float>& buffer) {
 
 float HarmonicExciter::processPresenceFilter(float input, float& state) {
     // High shelf at ~8kHz for air
-    float freq = 8000.0f / m_sampleRate;
+    float freq = 8000.0f / std::max(8000.0, m_sampleRate);
     float gain = 1.0f + m_presence.current * 0.5f;
     
     float w = 2.0f * std::sin(M_PI * freq);
@@ -238,7 +225,7 @@ float HarmonicExciter::processPresenceFilterWithAging(float input, float& state,
 
 float HarmonicExciter::processWarmthFilter(float input, float& state) {
     // Low shelf at ~100Hz for warmth
-    float freq = 100.0f / m_sampleRate;
+    float freq = 100.0f / std::max(8000.0, m_sampleRate);
     float gain = 1.0f + m_warmth.current * 0.3f;
     
     float w = 2.0f * std::sin(M_PI * freq);

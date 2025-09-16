@@ -1003,16 +1003,16 @@ NoiseGate_Platinum::~NoiseGate_Platinum() = default;
 void NoiseGate_Platinum::prepareToPlay(double sampleRate, int samplesPerBlock) {
     pimpl->sampleRate = sampleRate;
     
-    // Configure smoothing
-    const float smoothingMs = 20.0f;
+    // Configure smoothing - FAST response for instant parameter changes
+    const float smoothingMs = 0.1f; // Was 20.0f - now nearly instant
     pimpl->threshold.setSmoothingTime(smoothingMs, sampleRate);
-    pimpl->range.setSmoothingTime(smoothingMs * 2, sampleRate);
-    pimpl->attack.setSmoothingTime(smoothingMs * 0.5f, sampleRate);
+    pimpl->range.setSmoothingTime(smoothingMs, sampleRate);
+    pimpl->attack.setSmoothingTime(smoothingMs, sampleRate);
     pimpl->hold.setSmoothingTime(smoothingMs, sampleRate);
-    pimpl->release.setSmoothingTime(smoothingMs * 2, sampleRate);
+    pimpl->release.setSmoothingTime(smoothingMs, sampleRate);
     pimpl->hysteresis.setSmoothingTime(smoothingMs, sampleRate);
     pimpl->sidechainFreq.setSmoothingTime(smoothingMs, sampleRate);
-    pimpl->lookaheadTime.setSmoothingTime(smoothingMs * 0.5f, sampleRate);
+    pimpl->lookaheadTime.setSmoothingTime(smoothingMs, sampleRate);
     
     // Prepare channels
     const int maxLookahead = static_cast<int>(0.01 * sampleRate); // 10ms max

@@ -95,7 +95,7 @@ private:
 class LinkwitzRileyFilter {
 public:
     void setFrequency(float freq, double sampleRate) noexcept {
-        float omega = 2.0f * M_PI * freq / sampleRate;
+        float omega = 2.0f * M_PI * freq / std::max(8000.0, sampleRate);
         float cosOmega = std::cos(omega);
         float sinOmega = std::sin(omega);
         float q = 0.7071f; // Butterworth Q
@@ -180,7 +180,8 @@ class HarmonicGenerator {
 public:
     ALWAYS_INLINE float processTube(float input, float drive) noexcept {
         // Tube-style saturation (even harmonics)
-        float biased = input + drive * 0.1f; // Asymmetric bias
+        // Only apply bias when actually driving to avoid DC offset
+        float biased = drive > 0.01f ? input + drive * 0.1f : input;
         float saturated = std::tanh(biased * (1.0f + drive * 3.0f));
         
         // Add 2nd harmonic emphasis
@@ -249,11 +250,26 @@ struct HarmonicExciter_Platinum::Impl {
     SmoothParam color;
     SmoothParam mix;
     
+    // Constructor to initialize default values
+    Impl() {
+        // Set sensible defaults
+        frequency.setImmediate(0.5f);  // Mid frequency
+        drive.setImmediate(0.5f);      // Moderate drive for initial effect
+        harmonics.setImmediate(0.5f);  // Balanced harmonics
+        clarity.setImmediate(0.5f);    // Moderate clarity
+        warmth.setImmediate(0.0f);     // No warmth by default
+        presence.setImmediate(0.0f);   // No presence by default
+        color.setImmediate(0.5f);      // Balanced color
+        mix.setImmediate(1.0f);        // Full wet for testing
+    }
+    
     // DSP components per channel
     struct ChannelProcessor {
-        // Three-band crossover
-        LinkwitzRileyFilter lowCrossover1, lowCrossover2;   // 4th order @ 800Hz
-        LinkwitzRileyFilter highCrossover1, highCrossover2; // 4th order @ 5kHz
+        // Three-band crossover with separate filters for proper Linkwitz-Riley
+        LinkwitzRileyFilter lowCrossover1, lowCrossover2;   // 4th order @ 800Hz (lowpass path)
+        LinkwitzRileyFilter lowCrossoverHP1, lowCrossoverHP2; // 4th order @ 800Hz (highpass path)
+        LinkwitzRileyFilter highCrossover1, highCrossover2; // 4th order @ 5kHz (lowpass path)
+        LinkwitzRileyFilter highCrossoverHP1, highCrossoverHP2; // 4th order @ 5kHz (highpass path)
         
         // Harmonic generators for each band
         HarmonicGenerator lowGen, midGen, highGen;
@@ -275,7 +291,7 @@ struct HarmonicExciter_Platinum::Impl {
         // Oversampling per band (optional)
         struct BandOversampler {
             static constexpr int OS_FACTOR = 2;
-            std::array<float, 512 * OS_FACTOR> buffer; // Pre-allocated
+            std::array<float, 8192 * OS_FACTOR> buffer; // Increased to handle large buffers
             
             // Simple 2x oversampling with linear interpolation
             void upsample(const float* input, float* output, int numSamples) noexcept {
@@ -296,17 +312,21 @@ struct HarmonicExciter_Platinum::Impl {
         BandOversampler lowOversampler, midOversampler, highOversampler;
         
         // Crossover state buffers for block processing
-        static constexpr int MAX_BLOCK_SIZE = 2048;
+        static constexpr int MAX_BLOCK_SIZE = 8192;
         alignas(32) std::array<float, MAX_BLOCK_SIZE> lowBuffer;
         alignas(32) std::array<float, MAX_BLOCK_SIZE> midBuffer;
         alignas(32) std::array<float, MAX_BLOCK_SIZE> highBuffer;
         
         void prepare(double sampleRate) {
-            // Setup crossover frequencies
+            // Setup crossover frequencies for all filter pairs
             lowCrossover1.setFrequency(800.0f, sampleRate);
             lowCrossover2.setFrequency(800.0f, sampleRate);
+            lowCrossoverHP1.setFrequency(800.0f, sampleRate);
+            lowCrossoverHP2.setFrequency(800.0f, sampleRate);
             highCrossover1.setFrequency(5000.0f, sampleRate);
             highCrossover2.setFrequency(5000.0f, sampleRate);
+            highCrossoverHP1.setFrequency(5000.0f, sampleRate);
+            highCrossoverHP2.setFrequency(5000.0f, sampleRate);
             
             // Setup DC blockers
             dcBlockerIn.setSampleRate(sampleRate);
@@ -318,8 +338,12 @@ struct HarmonicExciter_Platinum::Impl {
         void reset() {
             lowCrossover1.reset();
             lowCrossover2.reset();
+            lowCrossoverHP1.reset();
+            lowCrossoverHP2.reset();
             highCrossover1.reset();
             highCrossover2.reset();
+            highCrossoverHP1.reset();
+            highCrossoverHP2.reset();
             lowGen.reset();
             midGen.reset();
             highGen.reset();
@@ -474,6 +498,15 @@ struct HarmonicExciter_Platinum::Impl {
     }
     
     void processCrossoverSplit(float* data, ChannelProcessor& processor, int numSamples) {
+        // Only bypass if mix is truly zero (allow drive to be 0 for clean boost with EQ)
+        if (cache.mixAmt < 0.001f) {
+            // Just fill buffers with zeros to avoid processing
+            std::fill(processor.lowBuffer.begin(), processor.lowBuffer.begin() + numSamples, 0.0f);
+            std::fill(processor.midBuffer.begin(), processor.midBuffer.begin() + numSamples, 0.0f);
+            std::fill(processor.highBuffer.begin(), processor.highBuffer.begin() + numSamples, 0.0f);
+            return;
+        }
+        
         // DC block input first
         for (int i = 0; i < numSamples; ++i) {
             data[i] = processor.dcBlockerIn.process(data[i]);
@@ -487,27 +520,24 @@ struct HarmonicExciter_Platinum::Impl {
         }
 #endif
         
-        // Standard crossover splitting
+        // Simplified crossover - use 2nd order Butterworth for stability
+        // This avoids the filter state corruption issue with improper 4th order implementation
         for (int i = 0; i < numSamples; ++i) {
             float input = data[i];
             
-            // First stage - split low from mid+high
-            float low1 = processor.lowCrossover1.processLowpass(input);
-            float low = processor.lowCrossover2.processLowpass(low1);
+            // First crossover at 800Hz - split low from mid+high
+            float low = processor.lowCrossover1.processLowpass(input);
             processor.lowBuffer[i] = low;
             
-            float high1 = processor.lowCrossover1.processHighpass(input, low1);
-            float high1_2 = processor.lowCrossover2.processHighpass(high1, 
-                processor.lowCrossover2.processLowpass(high1));
+            // Get mid+high as complement (perfect reconstruction)
+            float midHigh = input - low;
             
-            // Second stage - split mid from high
-            float mid1 = processor.highCrossover1.processLowpass(high1_2);
-            float mid = processor.highCrossover2.processLowpass(mid1);
+            // Second crossover at 5kHz - split mid from high
+            float mid = processor.highCrossover1.processLowpass(midHigh);
             processor.midBuffer[i] = mid;
             
-            float high2 = processor.highCrossover1.processHighpass(high1_2, mid1);
-            float high = processor.highCrossover2.processHighpass(high2,
-                processor.highCrossover2.processLowpass(high2));
+            // Get high as complement
+            float high = midHigh - mid;
             processor.highBuffer[i] = high;
         }
     }
@@ -618,8 +648,8 @@ struct HarmonicExciter_Platinum::Impl {
         for (int i = 0; i < numSamples; ++i) {
             float dry = data[i];
             
-            // Recombine
-            float excited = processor.lowBuffer[i] + processor.midBuffer[i] + processor.highBuffer[i];
+            // Recombine with proper gain compensation for 3-band sum
+            float excited = (processor.lowBuffer[i] + processor.midBuffer[i] + processor.highBuffer[i]) * 0.577f;
             
             // DC block output
             excited = processor.dcBlockerOut.process(excited);

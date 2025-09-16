@@ -204,11 +204,26 @@ void SpectralFreeze::process(juce::AudioBuffer<float>& buffer) {
     // Update active channel count
     m_activeChannels = std::min(numChannels, MAX_CHANNELS);
     
+    // Early bypass check for freeze amount (mix parameter)
+    m_freezeAmount.update();
+    if (m_freezeAmount.current < 0.001f) {
+        // Completely dry - no processing needed, just update parameters for smooth operation
+        for (int i = 0; i < numSamples; ++i) {
+            m_spectralSmear.update();
+            m_spectralShift.update();
+            m_resonance.update();
+            m_decay.update();
+            m_brightness.update();
+            m_density.update();
+            m_shimmer.update();
+        }
+        return;
+    }
+    
     for (int sample = 0; sample < numSamples; ++sample) {
         // Sub-block parameter smoothing
         bool updateParams = false;
         if (m_smoothCounter >= SMOOTH_INTERVAL) {
-            m_freezeAmount.update();
             m_spectralSmear.update();
             m_spectralShift.update();
             m_resonance.update();

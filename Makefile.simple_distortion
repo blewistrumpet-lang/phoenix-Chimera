@@ -1,0 +1,39 @@
+# Simple Makefile for Distortion Engine Test
+# Basic test without JUCE complications
+
+CXX = clang++
+CXXFLAGS = -std=c++17 -O2 -Wall -Wextra
+
+# Source files
+SOURCES = test_distortion_simple.cpp
+
+# Target
+TARGET = test_distortion_simple
+
+# Build rule
+$(TARGET): $(SOURCES)
+	@echo "Building Simple Distortion Test..."
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SOURCES)
+	@echo "Build complete: $(TARGET)"
+
+# Clean rule
+clean:
+	rm -f $(TARGET)
+
+# Test rule
+test: $(TARGET)
+	@echo "Running Simple Distortion Test..."
+	./$(TARGET)
+
+# Help
+help:
+	@echo "Simple Distortion Engine Test"
+	@echo ""
+	@echo "Targets:"
+	@echo "  build     - Build the test executable"
+	@echo "  test      - Build and run the test" 
+	@echo "  clean     - Remove built files"
+	@echo "  help      - Show this help"
+
+.PHONY: clean test help
+.DEFAULT_GOAL := $(TARGET)
