@@ -127,21 +127,21 @@ Return ONLY valid JSON with specific engine IDs from the catalog."""
             logger.warning("⚠️ No OpenAI client available - using fallback generation")
             return self.create_intelligent_fallback(prompt)
         
-        logger.info(f"   Using model: gpt-3.5-turbo")
+        logger.info(f"   Using model: gpt-4")
         logger.info(f"   API client configured: {self.client is not None}")
-        
+
         try:
             # Analyze prompt for context
             context = self.analyze_prompt_context(prompt)
             logger.info(f"   Context analyzed: {context.get('character', 'unknown')}")
-            
+
             # Build specific prompt with relevant engine info
             generation_prompt = self.build_generation_prompt(prompt, context)
             logger.info(f"   Prompt built, calling OpenAI...")
-            
-            # Generate with GPT-3.5-turbo for faster responses
+
+            # Generate with GPT-4 for superior creative intelligence
             response = await self.client.chat.completions.create(
-                model="gpt-3.5-turbo",  # Much faster than GPT-4
+                model="gpt-4",  # Superior creative intelligence for engine selection
                 messages=[
                     {"role": "system", "content": self.create_system_prompt()},
                     {"role": "user", "content": generation_prompt}

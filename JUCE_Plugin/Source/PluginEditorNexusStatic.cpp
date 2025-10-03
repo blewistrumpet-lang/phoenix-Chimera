@@ -282,6 +282,12 @@ void PluginEditorNexusStatic::parameterChanged(const juce::String& parameterID, 
         juce::String engineParam = "slot" + juce::String(i + 1) + "_engine";
         if (parameterID == engineParam)
         {
+            // Skip engine updates during Trinity preset application to prevent double-load
+            if (isApplyingTrinityPreset) {
+                DBG("Skipping engine update for slot " + juce::String(i) + " during Trinity preset application");
+                break;
+            }
+
             // Engine changed - schedule an update after a brief delay
             // to allow the processor to create the engine first
             const int slotToUpdate = i;
@@ -558,12 +564,28 @@ void PluginEditorNexusStatic::applyTrinityPresetFromParameters(const juce::var& 
         juce::String engineParam = "slot" + juce::String(slot + 1) + "_engine";
         if (params.hasProperty(engineParam)) {
             float engineId = params.getProperty(engineParam, 0.0f);
+            int engineIdInt = static_cast<int>(engineId);
+
+            DBG("Trinity: Loading engine " << engineIdInt << " into slot " << slot);
+
             if (auto* param = valueTree.getParameter(engineParam)) {
                 // Convert engine ID to normalized value (0-1 range)
                 // Engine IDs are 0-56, and AudioParameterChoice expects normalized values
                 float normalizedValue = param->convertTo0to1(engineId);
                 param->setValueNotifyingHost(normalizedValue);
                 DBG("Set " << engineParam << " engineId=" << engineId << " normalized=" << normalizedValue);
+            }
+
+            // CRITICAL FIX: Directly call loadEngine() to ensure engine is created
+            // Don't rely solely on parameter notification which may not fire
+            audioProcessor.loadEngine(slot, engineIdInt);
+
+            // Verify engine was created
+            auto& engine = audioProcessor.getEngine(slot);
+            if (engine) {
+                DBG("✅ Engine loaded successfully: " << engine->getName());
+            } else {
+                DBG("❌ ERROR: Engine failed to load in slot " << slot);
             }
         }
         
@@ -640,9 +662,17 @@ void PluginEditorNexusStatic::applyTrinityParameterSuggestions(const juce::Array
 
 void PluginEditorNexusStatic::applyTrinityPreset(const juce::var& presetData) {
     if (!presetData.isObject()) return;
-    
+
+    isApplyingTrinityPreset = true;  // Prevent re-entrant engine loads
     DBG("Applying Trinity preset...");
-    
+
+    // Extract and display preset name
+    if (presetData.hasProperty("name")) {
+        currentPresetName = presetData["name"].toString();
+        presetNameLabel.setText(currentPresetName, juce::dontSendNotification);
+        DBG("Trinity preset name: " << currentPresetName);
+    }
+
     // Parse preset data and apply to plugin
     if (presetData.hasProperty("slots")) {
         juce::var slotsData = presetData.getProperty("slots", juce::var());
@@ -655,26 +685,41 @@ void PluginEditorNexusStatic::applyTrinityPreset(const juce::var& presetData) {
                     // Apply engine selection
                     if (slotData.hasProperty("engine_id")) {
                         int engineId = slotData.getProperty("engine_id", 0);
+
+                        DBG("Trinity: Setting engine " << engineId << " for slot " << i);
+
+                        // Set the parameter - engine will be loaded by updateSlotEngine() after flag is cleared
                         audioProcessor.setSlotEngine(i, engineId);
                     }
                     
                     // Apply parameters
                     if (slotData.hasProperty("parameters")) {
                         juce::var paramsData = slotData.getProperty("parameters", juce::var());
-                        
+
                         if (paramsData.isArray()) {
                             for (int p = 0; p < paramsData.size(); ++p) {
                                 juce::var paramData = paramsData[p];
-                                
+
+                                // Handle both object format {name, value} and simple array format [val1, val2, ...]
                                 if (paramData.isObject()) {
                                     juce::String paramName = paramData.getProperty("name", "").toString();
                                     float value = paramData.getProperty("value", 0.5f);
-                                    
+
                                     juce::String fullParamName = "slot" + juce::String(i + 1) + "_" + paramName;
                                     auto* param = audioProcessor.getValueTreeState().getParameter(fullParamName);
-                                    
+
                                     if (param) {
                                         param->setValueNotifyingHost(value);
+                                    }
+                                } else {
+                                    // Simple array format: parameters are indexed param1, param2, etc.
+                                    float value = static_cast<float>(paramData);
+                                    juce::String fullParamName = "slot" + juce::String(i + 1) + "_param" + juce::String(p + 1);
+                                    auto* param = audioProcessor.getValueTreeState().getParameter(fullParamName);
+
+                                    if (param) {
+                                        param->setValueNotifyingHost(value);
+                                        DBG("Applied param " << fullParamName << " = " << value);
                                     }
                                 }
                             }
@@ -695,6 +740,13 @@ void PluginEditorNexusStatic::applyTrinityPreset(const juce::var& presetData) {
         }
     }
     
+    isApplyingTrinityPreset = false;  // Re-enable normal engine loads
+
+    // Force UI update for all slots after preset loads
+    for (int i = 0; i < 6; ++i) {
+        updateSlotEngine(i);
+    }
+
     // Update UI and send new state to Trinity
     repaint();
     juce::Timer::callAfterDelay(1000, [this]() {
@@ -717,16 +769,25 @@ void PluginEditorNexusStatic::trinityConnectionStateChanged(TrinityNetworkClient
 }
 
 void PluginEditorNexusStatic::trinityMessageReceived(const TrinityNetworkClient::TrinityResponse& response) {
+    DBG("=== TRINITY RESPONSE RECEIVED ===");
+    DBG("Response type: " + response.type);
+    DBG("Response success: " + juce::String(response.success ? "true" : "false"));
+    DBG("Response message: " + (response.message.isEmpty() ? juce::String("(empty)") : response.message));
+
     juce::MessageManager::callAsync([this, response]() {
+        DBG("=== TRINITY CALLBACK EXECUTING ===");
         // Re-enable text box when we receive any response
         trinityTextBox->setEnabled(true);
         
         if (!response.success) {
-            // Show error message
-            trinityTextBox->showResponse("❌ Error: " + response.message, true);
-            juce::Timer::callAfterDelay(3000, [this]() {
-                trinityTextBox->clearResponse();
-            });
+            // Only show error if there's an actual error message
+            // Ignore empty/unknown responses (likely polling/status checks)
+            if (!response.message.isEmpty() && response.type != "unknown") {
+                trinityTextBox->showResponse("❌ Error: " + response.message, true);
+                juce::Timer::callAfterDelay(3000, [this]() {
+                    trinityTextBox->clearResponse();
+                });
+            }
             return;
         }
         
@@ -739,15 +800,33 @@ void PluginEditorNexusStatic::trinityMessageReceived(const TrinityNetworkClient:
             }
         }
         else if (response.type == "preset") {
+            DBG("=== PRESET RESPONSE DETECTED ===");
+            DBG("Response data isObject: " + juce::String(response.data.isObject() ? "YES" : "NO"));
+            DBG("Response data isVoid: " + juce::String(response.data.isVoid() ? "YES" : "NO"));
+
+            if (response.data.isObject()) {
+                DBG("Response data JSON: " + juce::JSON::toString(response.data));
+            }
+
             // Apply preset data
             if (TrinityProtocol::hasPresetData(response.data)) {
+                DBG("✅ hasPresetData returned TRUE - extracting preset...");
                 auto presetData = TrinityProtocol::getPresetData(response.data);
+                DBG("Preset data extracted, calling applyTrinityPreset()");
                 applyTrinityPreset(presetData);
+            } else {
+                DBG("❌ hasPresetData returned FALSE - cannot extract preset!");
+                if (response.data.isObject()) {
+                    juce::var testData = response.data.getProperty("data", juce::var());
+                    DBG("Testing: response.data.data exists? " + juce::String(testData.isVoid() ? "NO" : "YES"));
+                    juce::var testPreset = response.data.getProperty("preset", juce::var());
+                    DBG("Testing: response.data.preset exists? " + juce::String(testPreset.isVoid() ? "NO" : "YES"));
+                }
             }
         }
         else if (response.type == "response") {
             // Handle general AI responses
-            DBG("Trinity response: " << response.message);
+            DBG("Trinity response: " << (response.message.isEmpty() ? juce::String("(empty)") : response.message));
             
             // Show the creative preset name to the user in the Trinity text box
             if (response.message.isNotEmpty()) {
