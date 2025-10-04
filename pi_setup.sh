@@ -4,11 +4,15 @@
 
 set -e
 
+# Get the directory where this script is located (MUST BE FIRST before any cd commands!)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 echo "🔧 ChimeraPhoenix Raspberry Pi 5 Setup"
 echo "======================================"
 echo ""
 echo "Hardware: Raspberry Pi 5 (8GB)"
 echo "Target: Standalone audio application"
+echo "Script location: $SCRIPT_DIR"
 echo ""
 
 # Color codes for output
@@ -88,9 +92,6 @@ else
 fi
 
 PROJUCER="$HOME/JUCE/extras/Projucer/Builds/LinuxMakefile/build/Projucer"
-
-# Get the directory where this script is located
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo ""
 echo -e "${BLUE}🔨 Step 6: Generate Linux Makefile for ChimeraPhoenix${NC}"
