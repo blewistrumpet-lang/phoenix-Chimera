@@ -89,9 +89,12 @@ fi
 
 PROJUCER="$HOME/JUCE/extras/Projucer/Builds/LinuxMakefile/build/Projucer"
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 echo ""
 echo -e "${BLUE}🔨 Step 6: Generate Linux Makefile for ChimeraPhoenix${NC}"
-cd ~/ChimeraPhoenix/JUCE_Plugin
+cd "$SCRIPT_DIR/JUCE_Plugin"
 
 # Use Projucer to resave and generate Linux build files
 $PROJUCER --resave ChimeraPhoenix.jucer
@@ -118,8 +121,9 @@ if [ -d "Builds/LinuxMakefile" ]; then
         # Make executable
         chmod +x build/ChimeraPhoenix
 
-        # Create launcher script
-        cat > ~/chimera_run.sh <<'LAUNCHER'
+        # Create launcher script with correct path
+        BUILD_PATH="$(pwd)/build"
+        cat > ~/chimera_run.sh <<LAUNCHER
 #!/bin/bash
 # ChimeraPhoenix Launcher
 
@@ -132,7 +136,7 @@ fi
 
 # Launch ChimeraPhoenix
 echo "Launching ChimeraPhoenix..."
-cd ~/ChimeraPhoenix/JUCE_Plugin/Builds/LinuxMakefile/build
+cd "$BUILD_PATH"
 ./ChimeraPhoenix
 LAUNCHER
 
@@ -145,7 +149,7 @@ LAUNCHER
         echo "   ~/chimera_run.sh"
         echo ""
         echo "Or manually:"
-        echo "   cd ~/ChimeraPhoenix/JUCE_Plugin/Builds/LinuxMakefile/build"
+        echo "   cd $BUILD_PATH"
         echo "   ./ChimeraPhoenix"
         echo ""
     else
@@ -170,7 +174,7 @@ echo "   The Pi will connect to http://YOUR_MAC_IP:8000"
 echo "   No additional setup needed on Pi"
 echo ""
 echo "Option B - Run on Pi (requires API key on Pi):"
-echo "   cd ~/ChimeraPhoenix/AI_Server"
+echo "   cd $SCRIPT_DIR/AI_Server"
 echo "   pip3 install -r requirements.txt"
 echo "   # Set your OpenAI API key"
 echo "   python3 server_trinity_complete.py"
