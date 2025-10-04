@@ -1,0 +1,80 @@
+{
+  "id": "GC_017",
+  "name": "Velvet Hammer",
+  "technicalHint": "Vintage Opto Compressor + Harmonic Exciter + Vintage Console EQ",
+  "category": "Studio Essentials",
+  "subcategory": "Mix Enhancement",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 6,
+      "typeName": "Opto Compressor",
+      "mix": 1.0,
+      "params": [
+        0.528,
+        0.382,
+        0.25,
+        0.708,
+        0.854,
+        0.618,
+        0.764
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 32,
+      "typeName": "Harmonic Exciter",
+      "mix": 0.472,
+      "params": [
+        0.618,
+        0.764,
+        0.382,
+        0.708,
+        0.528,
+        0.618,
+        0.854
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 26,
+      "typeName": "Vintage Console EQ",
+      "mix": 1.0,
+      "params": [
+        0.1,
+        0.583,
+        0.35,
+        0.444,
+        0.65,
+        0.611,
+        0.9
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.708,
+    "density": 0.764,
+    "movement": 0.236,
+    "space": 0.472,
+    "aggression": 0.382,
+    "vintage": 0.854
+  },
+  "keywords": [
+    "velvet",
+    "hammer",
+    "smooth",
+    "powerful",
+    "opto",
+    "compressor",
+    "harmonic",
+    "exciter",
+    "vintage",
+    "console",
+    "warm",
+    "professional",
+    "studio",
+    "mix",
+    "master"
+  ],
+  "cpuTier": "LIGHT"
+}

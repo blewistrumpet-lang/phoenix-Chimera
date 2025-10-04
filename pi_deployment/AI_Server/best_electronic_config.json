@@ -1,0 +1,30 @@
+{
+  "visionary": {
+    "temperature": 0.8,
+    "use_cloud": false,
+    "keyword_weight": 0.8533996816523124,
+    "creativity_bias": 0.8793563888760695,
+    "experimental_bonus": 0.0
+  },
+  "oracle": {
+    "engine_weight": 14.923029339068046,
+    "vibe_weight": 0.5,
+    "search_k": 10,
+    "similarity_threshold": 0.23978174217703743,
+    "prefer_experimental": true
+  },
+  "calculator": {
+    "nudge_intensity": 0.7343607929151832,
+    "keyword_sensitivity": 0.8357412380890334,
+    "harmonic_balance": 0.36422423536879,
+    "parameter_range": 0.30778345790682765,
+    "preserve_extremes": true,
+    "genre_bias": "electronic"
+  },
+  "alchemist": {
+    "validation_strictness": 0.33541311128883644,
+    "name_creativity": 0.9,
+    "safety_threshold": 0.7359813248384475,
+    "max_effects": 5
+  }
+}

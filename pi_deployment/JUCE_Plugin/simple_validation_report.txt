@@ -1,0 +1,102 @@
+CHIMERA PHOENIX SIMPLE VALIDATION REPORT
+Generated: Mon Aug 18 22:43:39 2025
+
+ENGINE STATUS BREAKDOWN:
+========================
+Engine  0 - None                      | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 1  - Opto Compressor           | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 2  - VCA Compressor            | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 3  - Transient Shaper          | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 4  - Noise Gate                | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 5  - Mastering Limiter         | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 6  - Dynamic EQ                | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 7  - Parametric EQ             | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 8  - Vintage Console EQ        | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 9  - Ladder Filter             | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 10 - State Variable Filter     | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 11 - Formant Filter            | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 12 - Envelope Filter           | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 13 - Comb Resonator            | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 14 - Vocal Formant Filter      | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 15 - Vintage Tube              | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 16 - Wave Folder               | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 17 - Harmonic Exciter          | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 18 - Bit Crusher               | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 19 - Multiband Saturator       | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 20 - Muff Fuzz                 | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 21 - Rodent Distortion         | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 22 - K-Style Overdrive         | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 23 - Digital Chorus            | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 24 - Resonant Chorus           | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 25 - Analog Phaser             | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 26 - Ring Modulator            | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 27 - Frequency Shifter         | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 28 - Harmonic Tremolo          | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 29 - Classic Tremolo           | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 30 - Rotary Speaker            | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 31 - Pitch Shifter             | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 32 - Detune Doubler            | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 33 - Intelligent Harmonizer    | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 34 - Tape Echo                 | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 35 - Digital Delay             | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 36 - Magnetic Drum Echo        | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 37 - Bucket Brigade Delay      | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 38 - Buffer Repeat             | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 39 - Plate Reverb              | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 40 - Spring Reverb             | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 41 - Convolution Reverb        | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 42 - Shimmer Reverb            | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 43 - Gated Reverb              | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 44 - Stereo Widener            | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 45 - Stereo Imager             | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 46 - Dimension Expander        | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 47 - Spectral Freeze           | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database; Spectral Freeze: Window validation fix applied
+Engine 48 - Spectral Gate             | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+    Notes: Mix parameter index expectation: 7; Spectral Gate: Parameter mapping fix verified (4→8)
+Engine 49 - Phased Vocoder            | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+    Notes: Mix parameter index expectation: 3; Phased Vocoder: Mix parameter fix verified
+Engine 50 - Granular Cloud            | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 51 - Chaos Generator           | Arch: PASS | DB: FAIL | Mix: PASS | Fix: PASS | Overall: PASS (75.0%)
+    Notes: Missing from parameter database
+Engine 52 - Feedback Network          | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+Engine 53 - Mid-Side Processor        | Arch: PASS | DB: FAIL | Mix: PASS | Fix: FAIL | Overall: FAIL (50.0%)
+    Notes: Parameter count mismatch: expected 10 got 4; Mix parameter index expectation: 9; Mid-Side Processor: Parameter count fix failed
+Engine 54 - Gain Utility              | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+    Notes: Mix parameter index expectation: 9; Gain Utility: Parameter count fix verified (4→10)
+Engine 55 - Mono Maker                | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+    Notes: Mix parameter index expectation: 7; Mono Maker: Parameter count fix verified (3→8)
+Engine 56 - Phase Align               | Arch: PASS | DB: PASS | Mix: PASS | Fix: PASS | Overall: PASS (100.0%)
+    Notes: Mix parameter index expectation: 3; Phase Align: Stereo requirement documented
+
+SUMMARY:
+========
+Passed: 56/57 engines
+Warnings: 0/57 engines
+Failed: 1/57 engines
+Production Readiness: 98.2%
+
+RECENT FIXES STATUS:
+===================
+Spectral Freeze: VERIFIED
+Phased Vocoder: VERIFIED
+Mid-Side Processor: FAILED
+Gain Utility: VERIFIED
+Mono Maker: VERIFIED
+Phase Align: VERIFIED
+Spectral Gate: VERIFIED

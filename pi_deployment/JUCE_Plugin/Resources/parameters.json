@@ -1,0 +1,4309 @@
+[
+  {
+    "parameter_id": "INPUT_GAIN_DB",
+    "primitive": "*global*",
+    "description": "Controls the input level to the current primitive. Affects headroom and distortion characteristics.",
+    "range_type": "normalized_0_1",
+    "notes": "Maps logarithmically from -20dB to +20dB. Used to adjust input before processing.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "OUTPUT_GAIN_DB",
+    "primitive": "*global*",
+    "description": "Controls the output level from the current primitive. Used for level matching after processing.",
+    "range_type": "normalized_0_1",
+    "notes": "Maps logarithmically from -20dB to +20dB.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "MIX",
+    "primitive": "*global*",
+    "description": "Blends dry and wet signal. Controls the prominence of the effect.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = dry only, 1.0 = wet only.",
+    "shared": true,
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "BYPASS",
+    "primitive": "*global*",
+    "description": "Bypasses the entire primitive. Signal passes through unprocessed.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = active, 1.0 = bypassed.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "character.ENGINE_SELECTOR",
+    "primitive": "character",
+    "description": "Selects which character engine is active: 0=K-Style Overdrive, 1=Rodent Distortion, 2=Fuzz Face, 3=Muff Fuzz, 4=VCA Compressor, 5=Optical Compressor, 6=BitCrusher.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter that determines which character engine processes the signal.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "character.DRIVE",
+    "primitive": "character",
+    "description": "Amount of saturation and harmonic distortion added by the overdrive engine.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = no drive, 1.0 = full saturation. Shared by K-Style Overdrive, Rodent Distortion, Fuzz Face, and Muff Fuzz engines.",
+    "shared": false,
+    "engine_applicability": [
+      "kstyle_overdrive",
+      "rodent_distortion",
+      "fuzz_face",
+      "muff_fuzz"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "character.TONE",
+    "primitive": "character",
+    "description": "Adjusts the tonal balance between bass and treble in the overdrive circuit.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = brighter tone, 1.0 = warmer/more mid-heavy tone. Only applies to K-Style Overdrive.",
+    "shared": false,
+    "engine_applicability": [
+      "kstyle_overdrive"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.KSTYLE_CHARACTER",
+    "primitive": "character",
+    "description": "Adjusts the signature Klon-style midrange hump characteristic.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = flat response, 1.0 = full Klon-style mid boost.",
+    "shared": false,
+    "engine_applicability": [
+      "kstyle_overdrive"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.FUZZ_BIAS",
+    "primitive": "character",
+    "description": "Adjusts the bias point of the fuzz circuit, affecting symmetry and warmth.",
+    "range_type": "normalized_0_1",
+    "notes": "Lower values create more asymmetrical distortion, higher values produce cleaner tones.",
+    "shared": false,
+    "engine_applicability": [
+      "fuzz_face",
+      "muff_fuzz"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.FUZZ_STABILITY",
+    "primitive": "character",
+    "description": "Controls the stability of the fuzz circuit, reducing sputtering and noise.",
+    "range_type": "normalized_0_1",
+    "notes": "Higher values increase circuit stability at the expense of dynamic responsiveness.",
+    "shared": false,
+    "engine_applicability": [
+      "fuzz_face",
+      "muff_fuzz"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.MUFF_TONE_BYPASS",
+    "primitive": "character",
+    "description": "Bypasses the tone stack in the Muff Fuzz engine when set to 1.0.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = tone stack active, 1.0 = bypassed.",
+    "shared": false,
+    "engine_applicability": [
+      "muff_fuzz"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "character.THRESHOLD_DB",
+    "primitive": "character",
+    "description": "Sets the compression threshold in decibels. Lower values trigger compression at lower signal levels.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by VCA and Optical Compressor engines. Maps to -60dB to 0dB range.",
+    "shared": false,
+    "engine_applicability": [
+      "vca_compressor",
+      "optical_compressor"
+    ],
+    "default_value": 0.8
+  },
+  {
+    "parameter_id": "character.RATIO",
+    "primitive": "character",
+    "description": "Compression ratio. Higher values provide more aggressive compression.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by VCA and Optical Compressor engines. Maps to 1:1 to 20:1.",
+    "shared": false,
+    "engine_applicability": [
+      "vca_compressor",
+      "optical_compressor"
+    ],
+    "default_value": 0.2
+  },
+  {
+    "parameter_id": "character.ATTACK_MS",
+    "primitive": "character",
+    "description": "Attack time in milliseconds. Faster attacks reduce transients more aggressively.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by VCA and Optical Compressor engines. Maps to 1ms to 1000ms.",
+    "shared": false,
+    "engine_applicability": [
+      "vca_compressor",
+      "optical_compressor"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "character.RELEASE_MS",
+    "primitive": "character",
+    "description": "Release time in milliseconds. Faster releases provide more pumping effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by VCA and Optical Compressor engines. Maps to 10ms to 1000ms.",
+    "shared": false,
+    "engine_applicability": [
+      "vca_compressor",
+      "optical_compressor"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.KNEE",
+    "primitive": "character",
+    "description": "Controls the compression knee characteristic. Higher values provide softer, more musical compression.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by VCA and Optical Compressor engines. 0.0 = hard knee, 1.0 = soft knee.",
+    "shared": false,
+    "engine_applicability": [
+      "vca_compressor",
+      "optical_compressor"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.OPTO_MODE",
+    "primitive": "character",
+    "description": "Selects the optical compressor mode. Different modes emulate various optical cell responses.",
+    "range_type": "normalized_0_1",
+    "notes": "Optical Compressor engine only. Emulates different optical cell behaviors.",
+    "shared": false,
+    "engine_applicability": [
+      "optical_compressor"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.BIT_CRUSHER_SAMPLERATE",
+    "primitive": "character",
+    "description": "Controls the sample rate reduction amount. Lower values create more aliasing and digital artifacts.",
+    "range_type": "normalized_0_1",
+    "notes": "BitCrusher engine only. 0.0 = maximum reduction, 1.0 = no reduction.",
+    "shared": false,
+    "engine_applicability": [
+      "bit_crusher"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "character.BIT_CRUSHER_BITDEPTH",
+    "primitive": "character",
+    "description": "Controls the bit depth of the BitCrusher. Lower values create more quantization distortion.",
+    "range_type": "normalized_0_1",
+    "notes": "BitCrusher engine only. 0.0 = 1-bit, 1.0 = full resolution.",
+    "shared": false,
+    "engine_applicability": [
+      "bit_crusher"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "character.BIT_CRUSHER_ALIASING",
+    "primitive": "character",
+    "description": "Controls the amount of aliasing. Inverse of the old filter parameter.",
+    "range_type": "normalized_0_1",
+    "notes": "BitCrusher engine only. 0.0 = no aliasing (full filtering), 1.0 = full aliasing (no filtering).",
+    "shared": false,
+    "engine_applicability": [
+      "bit_crusher"
+    ],
+    "default_value": 0.5,
+    "display_name": "Aliasing"
+  },
+  {
+    "parameter_id": "character.BIT_CRUSHER_MIX",
+    "primitive": "character",
+    "description": "Blends between original and BitCrushed signal.",
+    "range_type": "normalized_0_1",
+    "notes": "BitCrusher engine only. 0.0 = no effect, 1.0 = full BitCrush.",
+    "shared": false,
+    "engine_applicability": [
+      "bit_crusher"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "character.BIT_CRUSHER_JITTER",
+    "primitive": "character",
+    "description": "Adds random timing variations to the sample rate reduction for a more organic digital distortion.",
+    "range_type": "normalized_0_1",
+    "notes": "BitCrusher engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "bit_crusher"
+    ],
+    "default_value": 0.0,
+    "display_name": "Jitter"
+  },
+  {
+    "parameter_id": "character.BIT_CRUSHER_DCOFFSET",
+    "primitive": "character",
+    "description": "Adds DC offset to the signal, creating asymmetric distortion and harmonic coloration.",
+    "range_type": "normalized_0_1",
+    "notes": "BitCrusher engine only. 0.5 = no offset, 0.0 = negative offset, 1.0 = positive offset.",
+    "shared": false,
+    "engine_applicability": [
+      "bit_crusher"
+    ],
+    "default_value": 0.5,
+    "display_name": "DC Offset"
+  },
+  {
+    "parameter_id": "character.BIT_CRUSHER_GATETHRESHOLD",
+    "primitive": "character",
+    "description": "Sets the threshold below which the signal is gated to silence, reducing noise.",
+    "range_type": "normalized_0_1",
+    "notes": "BitCrusher engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "bit_crusher"
+    ],
+    "default_value": 0.0,
+    "display_name": "Gate Threshold"
+  },
+  {
+    "parameter_id": "character.BIT_CRUSHER_DITHER",
+    "primitive": "character",
+    "description": "Adds TPDF dithering noise with noise shaping to reduce quantization artifacts.",
+    "range_type": "normalized_0_1",
+    "notes": "BitCrusher engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "bit_crusher"
+    ],
+    "default_value": 0.0,
+    "display_name": "Dither"
+  },
+  {
+    "parameter_id": "echo.ENGINE_SELECTOR",
+    "primitive": "echo",
+    "description": "Selects which echo engine is active: 0=Tape Echo, 1=Digital Delay, 2=Modulated Delay.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter that determines which echo engine processes the signal.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "echo.INPUT_GAIN_DB",
+    "primitive": "echo",
+    "description": "Controls the input level to the echo engine in decibels. Affects saturation and headroom.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "echo.OUTPUT_GAIN_DB",
+    "primitive": "echo",
+    "description": "Controls the output level from the echo engine in decibels. Used for level matching.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "echo.MIX",
+    "primitive": "echo",
+    "description": "Blends between dry (0.0) and wet (1.0) signal. Controls the prominence of the echo effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = fully dry, 1.0 = fully wet.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "echo.BYPASS",
+    "primitive": "echo",
+    "description": "Bypasses the entire echo primitive when set to 1.0. Signal passes through unprocessed.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = active, 1.0 = bypassed.",
+    "shared": true,
+    "default_value": 1.0
+  },
+  {
+    "parameter_id": "echo.DELAY_TIME_MS",
+    "primitive": "echo",
+    "description": "Sets the delay time in milliseconds. Mapped logarithmically where 0.0 is shortest and 1.0 is longest.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all echo engines. Typical range 1ms to 2000ms.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo",
+      "digital_delay",
+      "modulated_delay"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "echo.FEEDBACK",
+    "primitive": "echo",
+    "description": "Controls the amount of delayed signal fed back into the delay line. Higher values create more repeats.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all echo engines. Values near 1.0 approach self-oscillation.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo",
+      "digital_delay",
+      "modulated_delay"
+    ],
+    "default_value": 0.2
+  },
+  {
+    "parameter_id": "echo.STEREO_WIDTH",
+    "primitive": "echo",
+    "description": "Controls the stereo spread of the echo effect. Higher values create wider stereo imaging.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all echo engines. 0.0 = mono, 1.0 = maximum width.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo",
+      "digital_delay",
+      "modulated_delay"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "echo.TEMPO_SYNC_MODE",
+    "primitive": "echo",
+    "description": "Enables tempo synchronization for the echo effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all echo engines. 0.0 = free running, 1.0 = tempo sync.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo",
+      "digital_delay",
+      "modulated_delay"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "echo.NOTE_DIVISION",
+    "primitive": "echo",
+    "description": "Sets the note division for tempo-synchronized delays.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all echo engines. Maps to different note divisions.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo",
+      "digital_delay",
+      "modulated_delay"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "echo.PING_PONG",
+    "primitive": "echo",
+    "description": "Enables ping-pong delay mode for stereo bouncing echoes.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all echo engines. 0.0 = standard delay, 1.0 = ping-pong.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo",
+      "digital_delay",
+      "modulated_delay"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "echo.TAPE_AGE",
+    "primitive": "echo",
+    "description": "Simulates tape aging characteristics in the Tape Echo engine.",
+    "range_type": "normalized_0_1",
+    "notes": "Tape Echo engine only. 0.0 = new tape, 1.0 = old tape.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "echo.TAPE_FLUTTER",
+    "primitive": "echo",
+    "description": "Controls wow and flutter amount in the Tape Echo engine.",
+    "range_type": "normalized_0_1",
+    "notes": "Tape Echo engine only. 0.0 = no flutter, 1.0 = maximum flutter.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "echo.TAPE_SATURATION",
+    "primitive": "echo",
+    "description": "Controls tape saturation amount in the Tape Echo engine.",
+    "range_type": "normalized_0_1",
+    "notes": "Tape Echo engine only. 0.0 = clean, 1.0 = saturated.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo"
+    ],
+    "default_value": 0.2
+  },
+  {
+    "parameter_id": "echo.BBD_CLOCK_NOISE",
+    "primitive": "echo",
+    "description": "Simulates BBD clock noise in analog delay emulation.",
+    "range_type": "normalized_0_1",
+    "notes": "Digital Delay engine only. 0.0 = no noise, 1.0 = maximum noise.",
+    "shared": false,
+    "engine_applicability": [
+      "digital_delay"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "echo.BBD_COMPANDING",
+    "primitive": "echo",
+    "description": "Simulates BBD companding artifacts in analog delay emulation.",
+    "range_type": "normalized_0_1",
+    "notes": "Digital Delay engine only. 0.0 = no companding, 1.0 = full companding.",
+    "shared": false,
+    "engine_applicability": [
+      "digital_delay"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "echo.FILTER_CUTOFF_HZ",
+    "primitive": "echo",
+    "description": "Controls the filter cutoff frequency in the echo feedback path.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all echo engines. Maps logarithmically from 20Hz to 20kHz.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo",
+      "digital_delay",
+      "modulated_delay"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "echo.FILTER_RESONANCE",
+    "primitive": "echo",
+    "description": "Controls the filter resonance in the echo feedback path.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all echo engines. 0.0 = no resonance, 1.0 = self-oscillation.",
+    "shared": false,
+    "engine_applicability": [
+      "tape_echo",
+      "digital_delay",
+      "modulated_delay"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "echo.MODULATION_RATE_HZ",
+    "primitive": "echo",
+    "description": "Controls the modulation rate in Hertz. Determines how fast the LFO moves.",
+    "range_type": "normalized_0_1",
+    "notes": "Modulated Delay engine only. Maps logarithmically from 0.1Hz to 20Hz.",
+    "shared": false,
+    "engine_applicability": [
+      "modulated_delay"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "echo.MODULATION_DEPTH",
+    "primitive": "echo",
+    "description": "Controls the depth of delay time modulation. Higher values create more pronounced pitch shifting.",
+    "range_type": "normalized_0_1",
+    "notes": "Modulated Delay engine only. 0.0 = no modulation, 1.0 = maximum depth.",
+    "shared": false,
+    "engine_applicability": [
+      "modulated_delay"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "ambience.ENGINE_SELECTOR",
+    "primitive": "ambience",
+    "description": "Selects which ambience engine is active: 0=Spring Reverb, 1=Plate Reverb, 2=Hall Reverb, 3=Shimmer Reverb.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter that determines which ambience engine processes the signal.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "ambience.INPUT_GAIN_DB",
+    "primitive": "ambience",
+    "description": "Controls the input level to the ambience engine in decibels. Affects reverb intensity.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "ambience.OUTPUT_GAIN_DB",
+    "primitive": "ambience",
+    "description": "Controls the output level from the ambience engine in decibels. Used for level matching.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "ambience.MIX",
+    "primitive": "ambience",
+    "description": "Blends between dry (0.0) and wet (1.0) signal. Controls the prominence of the reverb effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = fully dry, 1.0 = fully wet.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "ambience.BYPASS",
+    "primitive": "ambience",
+    "description": "Bypasses the entire ambience primitive when set to 1.0. Signal passes through unprocessed.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = active, 1.0 = bypassed.",
+    "shared": true,
+    "default_value": 1.0
+  },
+  {
+    "parameter_id": "ambience.DECAY_SECONDS",
+    "primitive": "ambience",
+    "description": "Controls the reverb decay time in seconds. Longer values create more spacious sounds.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by Hall and Shimmer Reverb engines. Maps logarithmically from 0.1 seconds to 10 seconds.",
+    "shared": false,
+    "engine_applicability": [
+      "hall_reverb",
+      "shimmer_reverb"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "ambience.PRE_DELAY_MS",
+    "primitive": "ambience",
+    "description": "Controls the pre-delay time in milliseconds. Adds space between direct sound and reverb.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all reverb engines. Maps logarithmically from 1ms to 100ms.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb",
+      "plate_reverb",
+      "hall_reverb",
+      "shimmer_reverb"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "ambience.TONE_DAMPING",
+    "primitive": "ambience",
+    "description": "Controls high-frequency damping in the reverb tail. Higher values create darker reverbs.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all reverb engines. 0.0 = no damping, 1.0 = full damping.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb",
+      "plate_reverb",
+      "hall_reverb",
+      "shimmer_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "ambience.SIZE",
+    "primitive": "ambience",
+    "description": "Controls the physical size of the simulated room or space.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all reverb engines. 0.0 = small room, 1.0 = large hall.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb",
+      "plate_reverb",
+      "hall_reverb",
+      "shimmer_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "ambience.SPRING_DRIP",
+    "primitive": "ambience",
+    "description": "Controls the drip-like behavior of spring reverb. Simulates mechanical resonance.",
+    "range_type": "normalized_0_1",
+    "notes": "Spring Reverb engine only. 0.0 = minimal drip, 1.0 = maximum drip.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "ambience.SPRING_COUNT",
+    "primitive": "ambience",
+    "description": "Controls the number of virtual springs in the Spring Reverb simulation.",
+    "range_type": "normalized_0_1",
+    "notes": "Spring Reverb engine only. 0.0 = one spring, 1.0 = multiple springs.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "ambience.SPRING_TENSION",
+    "primitive": "ambience",
+    "description": "Controls the tension of the springs in the Spring Reverb simulation.",
+    "range_type": "normalized_0_1",
+    "notes": "Spring Reverb engine only. 0.0 = loose, 1.0 = tight.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "ambience.SHIMMER_PITCH_MIX",
+    "primitive": "ambience",
+    "description": "Controls the mix of pitch-shifted harmonics in the Shimmer Reverb.",
+    "range_type": "normalized_0_1",
+    "notes": "Shimmer Reverb engine only. 0.0 = no shimmer, 1.0 = full shimmer.",
+    "shared": false,
+    "engine_applicability": [
+      "shimmer_reverb"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "ambience.SHIMMER_INTERVAL",
+    "primitive": "ambience",
+    "description": "Controls the interval between base and shimmer frequencies. Higher values create wider harmonics.",
+    "range_type": "normalized_0_1",
+    "notes": "Shimmer Reverb engine only. 0.0 = octave up, 1.0 = fifth up.",
+    "shared": false,
+    "engine_applicability": [
+      "shimmer_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "ambience.FREEZE",
+    "primitive": "ambience",
+    "description": "Freezes the reverb tail, creating infinite sustain.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all reverb engines. 0.0 = normal decay, 1.0 = freeze.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb",
+      "plate_reverb",
+      "hall_reverb",
+      "shimmer_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "ambience.DIFFUSION",
+    "primitive": "ambience",
+    "description": "Controls the diffusion of the reverb tail. Higher values create denser tails.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all reverb engines. 0.0 = sparse, 1.0 = dense.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb",
+      "plate_reverb",
+      "hall_reverb",
+      "shimmer_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "ambience.MODULATION",
+    "primitive": "ambience",
+    "description": "Controls the amount of modulation applied to the reverb tail.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all reverb engines. 0.0 = no modulation, 1.0 = full modulation.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb",
+      "plate_reverb",
+      "hall_reverb",
+      "shimmer_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "ambience.STEREO_WIDTH",
+    "primitive": "ambience",
+    "description": "Controls the stereo spread of the reverb effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all reverb engines. 0.0 = mono, 1.0 = wide stereo.",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb",
+      "plate_reverb",
+      "hall_reverb",
+      "shimmer_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.ENGINE_SELECTOR",
+    "primitive": "sculptor",
+    "description": "Selects which sculptor engine is active: 0=State Variable Filter, 1=Ladder Filter, 2=Formant Filter.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter that determines which sculptor engine processes the signal.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.INPUT_GAIN",
+    "primitive": "sculptor",
+    "description": "Controls the input level to the sculptor engine in decibels. Affects filtering headroom.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "sculptor.OUTPUT_GAIN",
+    "primitive": "sculptor",
+    "description": "Controls the output level from the sculptor engine in decibels. Used for level matching.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "sculptor.MIX",
+    "primitive": "sculptor",
+    "description": "Blends between dry (0.0) and wet (1.0) signal. Allows parallel filtering effects.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = fully dry, 1.0 = fully wet.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.BYPASS",
+    "primitive": "sculptor",
+    "description": "Bypasses the entire sculptor primitive when set to 1.0. Signal passes through unprocessed.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = active, 1.0 = bypassed.",
+    "shared": true,
+    "default_value": 1.0
+  },
+  {
+    "parameter_id": "sculptor.CUTOFF_FREQUENCY",
+    "primitive": "sculptor",
+    "description": "Sets the cutoff frequency for the filter in Hertz.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by State Variable and Ladder Filters. Maps logarithmically from 20Hz to 20kHz.",
+    "shared": false,
+    "engine_applicability": [
+      "state_variable_filter",
+      "ladder_filter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.RESONANCE",
+    "primitive": "sculptor",
+    "description": "Controls filter resonance or Q factor. Higher values create more pronounced filtering effects.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by State Variable, Ladder, and Formant Filter engines. 0.0 = no resonance, 1.0 = self-oscillation.",
+    "shared": false,
+    "engine_applicability": [
+      "state_variable_filter",
+      "ladder_filter",
+      "formant_filter"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "sculptor.FILTER_TYPE",
+    "primitive": "sculptor",
+    "description": "Selects the filter type: 0=Lowpass, 1=Highpass, 2=Bandpass, 3=Notch.",
+    "range_type": "normalized_0_1",
+    "notes": "State Variable Filter engine only. Selects filter mode.",
+    "shared": false,
+    "engine_applicability": [
+      "state_variable_filter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.SVF_LOWPASS_MIX",
+    "primitive": "sculptor",
+    "description": "Controls the mix of the lowpass component in the State Variable Filter.",
+    "range_type": "normalized_0_1",
+    "notes": "State Variable Filter engine only. 0.0 = no LPF, 1.0 = full LPF.",
+    "shared": false,
+    "engine_applicability": [
+      "state_variable_filter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.SVF_BANDPASS_MIX",
+    "primitive": "sculptor",
+    "description": "Controls the mix of the bandpass component in the State Variable Filter.",
+    "range_type": "normalized_0_1",
+    "notes": "State Variable Filter engine only. 0.0 = no BPF, 1.0 = full BPF.",
+    "shared": false,
+    "engine_applicability": [
+      "state_variable_filter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.SVF_HIGHPASS_MIX",
+    "primitive": "sculptor",
+    "description": "Controls the mix of the highpass component in the State Variable Filter.",
+    "range_type": "normalized_0_1",
+    "notes": "State Variable Filter engine only. 0.0 = no HPF, 1.0 = full HPF.",
+    "shared": false,
+    "engine_applicability": [
+      "state_variable_filter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.SVF_NOTCH_MIX",
+    "primitive": "sculptor",
+    "description": "Controls the mix of the notch component in the State Variable Filter.",
+    "range_type": "normalized_0_1",
+    "notes": "State Variable Filter engine only. 0.0 = no Notch, 1.0 = full Notch.",
+    "shared": false,
+    "engine_applicability": [
+      "state_variable_filter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.LADDER_DRIVE",
+    "primitive": "sculptor",
+    "description": "Controls the saturation and distortion level in the Ladder Filter.",
+    "range_type": "normalized_0_1",
+    "notes": "Ladder Filter engine only. 0.0 = clean, 1.0 = saturated.",
+    "shared": false,
+    "engine_applicability": [
+      "ladder_filter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.LADDER_COMPENSATION",
+    "primitive": "sculptor",
+    "description": "Controls gain compensation in the Ladder Filter to maintain consistent levels at high resonance.",
+    "range_type": "normalized_0_1",
+    "notes": "Ladder Filter engine only. 0.0 = no compensation, 1.0 = full compensation.",
+    "shared": false,
+    "engine_applicability": [
+      "ladder_filter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.FORMANT_VOWEL",
+    "primitive": "sculptor",
+    "description": "Selects the vowel sound for the Formant Filter. Maps to different vowel formant frequencies.",
+    "range_type": "normalized_0_1",
+    "notes": "Formant Filter engine only. Morphs between A, E, I, O, U vowel sounds.",
+    "shared": false,
+    "engine_applicability": [
+      "formant_filter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.FORMANT_MORPH",
+    "primitive": "sculptor",
+    "description": "Controls morphing between vowel sounds in the Formant Filter. Creates vocal-like sweeps.",
+    "range_type": "normalized_0_1",
+    "notes": "Formant Filter engine only. 0.0 = static vowel, 1.0 = continuous morphing.",
+    "shared": false,
+    "engine_applicability": [
+      "formant_filter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.COMB_PITCH",
+    "primitive": "sculptor",
+    "description": "Sets the fundamental frequency of the Comb Filter. Determines the harmonic spacing.",
+    "range_type": "normalized_0_1",
+    "notes": "Comb Filter engine only. Maps logarithmically from 20Hz to 20kHz.",
+    "shared": false,
+    "engine_applicability": [
+      "comb_filter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.COMB_FEEDBACK",
+    "primitive": "sculptor",
+    "description": "Controls the feedback amount in the Comb Filter. Higher values create denser harmonics.",
+    "range_type": "normalized_0_1",
+    "notes": "Comb Filter engine only. 0.0 = no feedback, 1.0 = maximum feedback.",
+    "shared": false,
+    "engine_applicability": [
+      "comb_filter"
+    ],
+    "default_value": 0.2
+  },
+  {
+    "parameter_id": "sculptor.COMB_POLARITY",
+    "primitive": "sculptor",
+    "description": "Inverts the polarity of the Comb Filter's feedback signal.",
+    "range_type": "normalized_0_1",
+    "notes": "Comb Filter engine only. 0.0 = positive feedback, 1.0 = inverted feedback.",
+    "shared": false,
+    "engine_applicability": [
+      "comb_filter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.EQ_BANDWIDTH",
+    "primitive": "sculptor",
+    "description": "Controls the bandwidth of the EQ section. Wider bandwidth affects more frequencies.",
+    "range_type": "normalized_0_1",
+    "notes": "EQ Section engine only. 0.0 = narrow, 1.0 = wide.",
+    "shared": false,
+    "engine_applicability": [
+      "eq_section"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "sculptor.FORMANT_FILTER_VOWEL",
+    "primitive": "sculptor",
+    "description": "Morphs between different vowel formant shapes (A, E, I, O, U).",
+    "range_type": "normalized_0_1",
+    "notes": "FormantFilter engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "formant_filter"
+    ],
+    "default_value": 0.0,
+    "display_name": "Vowel"
+  },
+  {
+    "parameter_id": "harmonizer.ENGINE_SELECTOR",
+    "primitive": "harmonizer",
+    "description": "Selects which harmonizer engine is active: 0=Doubler, 1=Polyphonic Harmonizer, 2=Glitch Octave.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter that determines which harmonizer engine processes the signal.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "harmonizer.INPUT_GAIN_DB",
+    "primitive": "harmonizer",
+    "description": "Controls the input level to the harmonizer engine in decibels. Affects saturation and headroom.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "harmonizer.OUTPUT_GAIN_DB",
+    "primitive": "harmonizer",
+    "description": "Controls the output level from the harmonizer engine in decibels. Used for level matching.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "harmonizer.MIX",
+    "primitive": "harmonizer",
+    "description": "Blends between dry (0.0) and wet (1.0) signal. Controls the prominence of the harmonizer effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = fully dry, 1.0 = fully wet.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "harmonizer.BYPASS",
+    "primitive": "harmonizer",
+    "description": "Bypasses the entire harmonizer primitive when set to 1.0. Signal passes through unprocessed.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = active, 1.0 = bypassed.",
+    "shared": true,
+    "default_value": 1.0
+  },
+  {
+    "parameter_id": "harmonizer.DOUBLER_DELAY_MS",
+    "primitive": "harmonizer",
+    "description": "Delay applied to the doubler effect. Creates subtle timing differences for natural width.",
+    "range_type": "normalized_0_1",
+    "notes": "Doubler engine only. Maps linearly from 0ms to 100ms.",
+    "shared": false,
+    "engine_applicability": [
+      "doubler"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "harmonizer.DOUBLER_MOD_RATE_HZ",
+    "primitive": "harmonizer",
+    "description": "Modulation rate for the doubler effect. Affects stereo width and variation.",
+    "range_type": "normalized_0_1",
+    "notes": "Doubler engine only. Maps logarithmically from 0.1Hz to 20Hz.",
+    "shared": false,
+    "engine_applicability": [
+      "doubler"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "harmonizer.DOUBLER_STEREO_WIDTH",
+    "primitive": "harmonizer",
+    "description": "Controls the stereo spread of the doubler effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Doubler engine only. 0.0 = mono, 1.0 = maximum width.",
+    "shared": false,
+    "engine_applicability": [
+      "doubler"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.HARMONIZER_INTERVAL_1",
+    "primitive": "harmonizer",
+    "description": "First interval for the polyphonic harmonizer. Sets the first harmony note.",
+    "range_type": "normalized_0_1",
+    "notes": "Polyphonic Harmonizer engine only. Maps to different intervals (e.g., major third, perfect fifth).",
+    "shared": false,
+    "engine_applicability": [
+      "polyphonic_harmonizer"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.HARMONIZER_INTERVAL_2",
+    "primitive": "harmonizer",
+    "description": "Second interval for the polyphonic harmonizer. Sets the second harmony note.",
+    "range_type": "normalized_0_1",
+    "notes": "Polyphonic Harmonizer engine only. Maps to different intervals (e.g., minor seventh, major sixth).",
+    "shared": false,
+    "engine_applicability": [
+      "polyphonic_harmonizer"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.HARMONIZER_FORMANT_PRESERVE",
+    "primitive": "harmonizer",
+    "description": "Preserves formants during pitch shifting. Helps retain vocal character.",
+    "range_type": "normalized_0_1",
+    "notes": "Polyphonic Harmonizer engine only. 0.0 = no preservation, 1.0 = full preservation.",
+    "shared": false,
+    "engine_applicability": [
+      "polyphonic_harmonizer"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.HARMONIZER_SMOOTHING_MS",
+    "primitive": "harmonizer",
+    "description": "Controls pitch tracking smoothing time in milliseconds. Affects tracking responsiveness vs stability.",
+    "range_type": "normalized_0_1",
+    "notes": "Polyphonic Harmonizer engine only. Maps from 1ms to 100ms.",
+    "shared": false,
+    "engine_applicability": [
+      "polyphonic_harmonizer"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.GLITCH_OCTAVE_DIRECTION",
+    "primitive": "harmonizer",
+    "description": "Controls the octave direction for the Glitch Octave effect. 0.0 = down, 0.5 = both, 1.0 = up.",
+    "range_type": "normalized_0_1",
+    "notes": "Glitch Octave engine only. Determines octave shift direction.",
+    "shared": false,
+    "engine_applicability": [
+      "glitch_octave"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.GLITCH_INTENSITY",
+    "primitive": "harmonizer",
+    "description": "Controls the intensity of the glitch effect. Higher values create more pronounced glitches.",
+    "range_type": "normalized_0_1",
+    "notes": "Glitch Octave engine only. 0.0 = no glitch, 1.0 = full glitch.",
+    "shared": false,
+    "engine_applicability": [
+      "glitch_octave"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.GLITCH_STUTTER_RATE_HZ",
+    "primitive": "harmonizer",
+    "description": "Controls the stutter rate in Hertz. Determines how often the glitch repeats.",
+    "range_type": "normalized_0_1",
+    "notes": "Glitch Octave engine only. Maps logarithmically from 0.1Hz to 20Hz.",
+    "shared": false,
+    "engine_applicability": [
+      "glitch_octave"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "harmonizer.GLITCH_TONE_BITCRUSH",
+    "primitive": "harmonizer",
+    "description": "Applies bitcrushing to the glitched signal. Creates digital artifacts.",
+    "range_type": "normalized_0_1",
+    "notes": "Glitch Octave engine only. 0.0 = no bitcrush, 1.0 = full bitcrush.",
+    "shared": false,
+    "engine_applicability": [
+      "glitch_octave"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.GLITCH_FREEZE_PROB",
+    "primitive": "harmonizer",
+    "description": "Probability of freezing the glitched signal. Creates random pauses.",
+    "range_type": "normalized_0_1",
+    "notes": "Glitch Octave engine only. 0.0 = never freeze, 1.0 = always freeze.",
+    "shared": false,
+    "engine_applicability": [
+      "glitch_octave"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.GLITCH_REVERSE_PROB",
+    "primitive": "harmonizer",
+    "description": "Probability of reversing the glitched signal. Creates backward playback effects.",
+    "range_type": "normalized_0_1",
+    "notes": "Glitch Octave engine only. 0.0 = never reverse, 1.0 = always reverse.",
+    "shared": false,
+    "engine_applicability": [
+      "glitch_octave"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_TIMESTRETCH",
+    "primitive": "harmonizer",
+    "description": "Controls time stretching factor without affecting pitch. Allows extreme slow-down or speed-up.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only. 0.0 = 25% speed, 0.5 = normal speed, 1.0 = 400% speed.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 0.5,
+    "display_name": "Time Stretch"
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_PITCHSHIFT",
+    "primitive": "harmonizer",
+    "description": "Controls pitch shifting in semitones while preserving timing.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only. 0.0 = -12 semitones, 0.5 = no shift, 1.0 = +12 semitones.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 0.5,
+    "display_name": "Pitch Shift"
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_SPECTRALSMEAR",
+    "primitive": "harmonizer",
+    "description": "Smears spectral bins across frequencies for ethereal, reverb-like effects.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 0.0,
+    "display_name": "Spectral Smear"
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_TRANSIENTPRESERVE",
+    "primitive": "harmonizer",
+    "description": "Preserves transient attacks while processing steady-state portions.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 0.0,
+    "display_name": "Transient Preserve"
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_PHASERESET",
+    "primitive": "harmonizer",
+    "description": "Resets phase relationships for robotic vocoder effects.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 0.0,
+    "display_name": "Phase Reset"
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_SPECTRALGATE",
+    "primitive": "harmonizer",
+    "description": "Gates spectral bins below threshold for noise reduction or creative effects.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 0.0,
+    "display_name": "Spectral Gate"
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_MIX",
+    "primitive": "harmonizer",
+    "description": "Blends between dry and processed signal.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_FREEZE",
+    "primitive": "harmonizer",
+    "description": "Freezes spectral content for infinite sustain effects.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 0.0,
+    "display_name": "Freeze"
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_TRANSIENTATTACK",
+    "primitive": "harmonizer",
+    "description": "Controls transient detection attack time in milliseconds.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only. 0.0 = 0.1ms, 1.0 = 10ms.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 0.3,
+    "display_name": "Transient Attack"
+  },
+  {
+    "parameter_id": "harmonizer.PHASED_VOCODER_TRANSIENTRELEASE",
+    "primitive": "harmonizer",
+    "description": "Controls transient detection release time in milliseconds.",
+    "range_type": "normalized_0_1",
+    "notes": "PhasedVocoder engine only. 0.0 = 1ms, 1.0 = 100ms.",
+    "shared": false,
+    "engine_applicability": [
+      "phased_vocoder"
+    ],
+    "default_value": 0.3,
+    "display_name": "Transient Release"
+  },
+  {
+    "parameter_id": "harmonizer.FREQUENCY_SHIFTER_SHIFT",
+    "primitive": "harmonizer",
+    "description": "Frequency shift amount in Hz. Center is no shift, left is down, right is up.",
+    "range_type": "normalized_0_1",
+    "notes": "FrequencyShifter engine only. 0.0 = -1000Hz, 0.5 = 0Hz, 1.0 = +1000Hz.",
+    "shared": false,
+    "engine_applicability": [
+      "frequency_shifter"
+    ],
+    "default_value": 0.5,
+    "display_name": "Shift Amount"
+  },
+  {
+    "parameter_id": "harmonizer.FREQUENCY_SHIFTER_FEEDBACK",
+    "primitive": "harmonizer",
+    "description": "Feedback amount for resonant and evolving textures.",
+    "range_type": "normalized_0_1",
+    "notes": "FrequencyShifter engine only. Can create metallic resonances at high values.",
+    "shared": false,
+    "engine_applicability": [
+      "frequency_shifter"
+    ],
+    "default_value": 0.0,
+    "display_name": "Feedback"
+  },
+  {
+    "parameter_id": "harmonizer.FREQUENCY_SHIFTER_MIX",
+    "primitive": "harmonizer",
+    "description": "Blend between dry and frequency-shifted signal.",
+    "range_type": "normalized_0_1",
+    "notes": "FrequencyShifter engine only. 0.0 = dry, 1.0 = wet.",
+    "shared": false,
+    "engine_applicability": [
+      "frequency_shifter"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "harmonizer.FREQUENCY_SHIFTER_SPREAD",
+    "primitive": "harmonizer",
+    "description": "Stereo spread by offsetting shift amount between channels.",
+    "range_type": "normalized_0_1",
+    "notes": "FrequencyShifter engine only. Creates wide stereo effects.",
+    "shared": false,
+    "engine_applicability": [
+      "frequency_shifter"
+    ],
+    "default_value": 0.0,
+    "display_name": "Spread"
+  },
+  {
+    "parameter_id": "harmonizer.FREQUENCY_SHIFTER_RESONANCE",
+    "primitive": "harmonizer",
+    "description": "Resonant filter at the shift frequency for bell-like tones.",
+    "range_type": "normalized_0_1",
+    "notes": "FrequencyShifter engine only. Adds harmonic emphasis.",
+    "shared": false,
+    "engine_applicability": [
+      "frequency_shifter"
+    ],
+    "default_value": 0.0,
+    "display_name": "Resonance"
+  },
+  {
+    "parameter_id": "harmonizer.FREQUENCY_SHIFTER_MOD_DEPTH",
+    "primitive": "harmonizer",
+    "description": "Modulation depth for animated frequency shifting.",
+    "range_type": "normalized_0_1",
+    "notes": "FrequencyShifter engine only. Creates chorus and vibrato effects.",
+    "shared": false,
+    "engine_applicability": [
+      "frequency_shifter"
+    ],
+    "default_value": 0.0,
+    "display_name": "Mod Depth"
+  },
+  {
+    "parameter_id": "harmonizer.FREQUENCY_SHIFTER_MOD_RATE",
+    "primitive": "harmonizer",
+    "description": "Modulation rate in Hz for frequency shift animation.",
+    "range_type": "normalized_0_1",
+    "notes": "FrequencyShifter engine only. 0.0 = 0Hz, 1.0 = 10Hz.",
+    "shared": false,
+    "engine_applicability": [
+      "frequency_shifter"
+    ],
+    "default_value": 0.0,
+    "display_name": "Mod Rate"
+  },
+  {
+    "parameter_id": "harmonizer.FREQUENCY_SHIFTER_DIRECTION",
+    "primitive": "harmonizer",
+    "description": "Output mode: lower sideband, upper sideband, or ring modulation.",
+    "range_type": "normalized_0_1",
+    "notes": "FrequencyShifter engine only. 0.0 = lower, 0.5 = ring mod, 1.0 = upper.",
+    "shared": false,
+    "engine_applicability": [
+      "frequency_shifter"
+    ],
+    "default_value": 0.5,
+    "display_name": "Direction"
+  },
+  {
+    "parameter_id": "movement.ENGINE_SELECTOR",
+    "primitive": "movement",
+    "description": "Selects which movement engine is active: 0=Tremolo, 1=Rotary Speaker, 2=Harmonic Tremolo.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter that determines which movement engine processes the signal.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "movement.INPUT_GAIN_DB",
+    "primitive": "movement",
+    "description": "Controls the input level to the movement engine in decibels. Affects modulation depth.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "movement.OUTPUT_GAIN_DB",
+    "primitive": "movement",
+    "description": "Controls the output level from the movement engine in decibels. Used for level matching.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "movement.MIX",
+    "primitive": "movement",
+    "description": "Blends between dry (0.0) and wet (1.0) signal. Controls the prominence of the movement effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = fully dry, 1.0 = fully wet.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "movement.BYPASS",
+    "primitive": "movement",
+    "description": "Bypasses the entire movement primitive when set to 1.0. Signal passes through unprocessed.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = active, 1.0 = bypassed.",
+    "shared": true,
+    "default_value": 1.0
+  },
+  {
+    "parameter_id": "movement.RATE_HZ",
+    "primitive": "movement",
+    "description": "Modulation rate in Hertz. Controls how fast the LFO moves.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all movement engines. Maps logarithmically from 0.1Hz to 20Hz.",
+    "shared": false,
+    "engine_applicability": [
+      "tremolo",
+      "rotary_speaker",
+      "harmonic_tremolo"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "movement.DEPTH",
+    "primitive": "movement",
+    "description": "Modulation depth. Higher values create more pronounced amplitude variation.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all movement engines. 0.0 = no modulation, 1.0 = maximum depth.",
+    "shared": false,
+    "engine_applicability": [
+      "tremolo",
+      "rotary_speaker",
+      "harmonic_tremolo"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "movement.TEMPO_SYNC_MODE",
+    "primitive": "movement",
+    "description": "Enables tempo-synchronized modulation. Rate is tied to host DAW tempo.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all movement engines. 0.0 = free running, 1.0 = tempo sync.",
+    "shared": false,
+    "engine_applicability": [
+      "tremolo",
+      "rotary_speaker",
+      "harmonic_tremolo"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "movement.NOTE_DIVISION",
+    "primitive": "movement",
+    "description": "Note division for tempo-synchronized modulation. Sets how many notes per beat.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all movement engines. 0.0 = whole note, 1.0 = sixteenth note.",
+    "shared": false,
+    "engine_applicability": [
+      "tremolo",
+      "rotary_speaker",
+      "harmonic_tremolo"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "movement.TREMOLO_WAVEFORM",
+    "primitive": "movement",
+    "description": "Selects the waveform shape for the tremolo LFO. Options include sine, triangle, square, etc.",
+    "range_type": "normalized_0_1",
+    "notes": "Tremolo engine only. Selects waveform type.",
+    "shared": false,
+    "engine_applicability": [
+      "tremolo"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "movement.STEREO_WIDTH",
+    "primitive": "movement",
+    "description": "Controls the stereo spread of the movement effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all movement engines. 0.0 = mono, 1.0 = wide stereo.",
+    "shared": false,
+    "engine_applicability": [
+      "tremolo",
+      "rotary_speaker",
+      "harmonic_tremolo"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "movement.HARMONIC_CROSSOVER_HZ",
+    "primitive": "movement",
+    "description": "Crossover frequency for harmonic tremolo. Separates low and high frequencies for independent modulation.",
+    "range_type": "normalized_0_1",
+    "notes": "Harmonic Tremolo engine only. Maps logarithmically from 20Hz to 20kHz.",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_tremolo"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "movement.ROTARY_SPEED_TOGGLE",
+    "primitive": "movement",
+    "description": "Switches between slow and fast speed settings for the rotary speaker simulation.",
+    "range_type": "normalized_0_1",
+    "notes": "Rotary Speaker engine only. 0.0 = slow speed, 1.0 = fast speed.",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "movement.ROTARY_ACCELERATION",
+    "primitive": "movement",
+    "description": "Controls the acceleration of the rotary motor. Higher values simulate faster startup.",
+    "range_type": "normalized_0_1",
+    "notes": "Rotary Speaker engine only. 0.0 = instant start, 1.0 = gradual start.",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker"
+    ],
+    "default_value": 0.2
+  },
+  {
+    "parameter_id": "movement.ROTARY_HORN_DRUM_BALANCE",
+    "primitive": "movement",
+    "description": "Balances the horn and drum elements in the rotary speaker simulation.",
+    "range_type": "normalized_0_1",
+    "notes": "Rotary Speaker engine only. 0.0 = all horn, 1.0 = all drum.",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.ENGINE_SELECTOR",
+    "primitive": "sampler",
+    "description": "Selects which sampler engine is active: 0=Continuum, 1=Rhythmicon, 2=Acoustic Resonator.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter that determines which sampler engine processes the signal.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sampler.INPUT_GAIN_DB",
+    "primitive": "sampler",
+    "description": "Controls the input level to the sampler engine in decibels. Affects recording and processing levels.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "sampler.OUTPUT_GAIN_DB",
+    "primitive": "sampler",
+    "description": "Controls the output level from the sampler engine in decibels. Used for level matching.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "sampler.MIX",
+    "primitive": "sampler",
+    "description": "Blends between dry (0.0) and wet (1.0) signal. Controls the prominence of the sampler effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = fully dry, 1.0 = fully wet.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sampler.BYPASS",
+    "primitive": "sampler",
+    "description": "Bypasses the entire sampler primitive when set to 1.0. Signal passes through unprocessed.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = active, 1.0 = bypassed.",
+    "shared": true,
+    "default_value": 1.0
+  },
+  {
+    "parameter_id": "sampler.RECORD_TOGGLE",
+    "primitive": "sampler",
+    "description": "Toggles recording mode when set to 1.0. Captures input audio into the sampler buffer.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all sampler engines. 0.0 = playback mode, 1.0 = recording mode.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine",
+      "rhythmicon_engine",
+      "acoustic_resonator_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.PLAY_TOGGLE",
+    "primitive": "sampler",
+    "description": "Toggles playback mode when set to 1.0. Plays back recorded audio from the sampler buffer.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all sampler engines. 0.0 = stopped, 1.0 = playing.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine",
+      "rhythmicon_engine",
+      "acoustic_resonator_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.CLEAR_BUFFER",
+    "primitive": "sampler",
+    "description": "Clears the sampler buffer when set to 1.0. Resets the recorded audio.",
+    "range_type": "normalized_0_1",
+    "notes": "Shared by all sampler engines. 0.0 = no clear, 1.0 = clear buffer.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine",
+      "rhythmicon_engine",
+      "acoustic_resonator_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.CONTINUUM_SPEED_PITCH",
+    "primitive": "sampler",
+    "description": "Controls the playback speed/pitch of the Continuum engine. Higher values increase speed and pitch.",
+    "range_type": "normalized_0_1",
+    "notes": "Continuum Engine only. 0.0 = original speed, 1.0 = double speed.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "sampler.CONTINUUM_AGE",
+    "primitive": "sampler",
+    "description": "Adds tape-like degradation to the Continuum engine. Simulates aging analog media.",
+    "range_type": "normalized_0_1",
+    "notes": "Continuum Engine only. 0.0 = new tape, 1.0 = old tape.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.CONTINUUM_WOW_FLUTTER",
+    "primitive": "sampler",
+    "description": "Simulates wow and flutter in the Continuum engine. Adds mechanical imperfections.",
+    "range_type": "normalized_0_1",
+    "notes": "Continuum Engine only. 0.0 = no wow/flutter, 1.0 = maximum wow/flutter.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.CONTINUUM_GRAIN_SIZE",
+    "primitive": "sampler",
+    "description": "Size of grains used in granular synthesis. Smaller grains produce glitchier textures.",
+    "range_type": "normalized_0_1",
+    "notes": "Continuum Engine only. Maps linearly from 1ms to 100ms.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.CONTINUUM_GRAIN_DENSITY",
+    "primitive": "sampler",
+    "description": "Controls grain density in the Continuum engine. Affects the thickness of granular textures.",
+    "range_type": "normalized_0_1",
+    "notes": "Continuum Engine only. 0.0 = sparse, 1.0 = dense.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.CONTINUUM_GRAIN_POSITION",
+    "primitive": "sampler",
+    "description": "Controls the playback position within grains in the Continuum engine. Creates scrubbing effects.",
+    "range_type": "normalized_0_1",
+    "notes": "Continuum Engine only. 0.0 = beginning, 1.0 = end of buffer.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.CONTINUUM_GRAIN_SPRAY",
+    "primitive": "sampler",
+    "description": "Controls the randomness of grain placement in the Continuum engine. Higher values create more chaotic textures.",
+    "range_type": "normalized_0_1",
+    "notes": "Continuum Engine only. 0.0 = deterministic, 1.0 = maximum spray.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.CONTINUUM_GRAIN_HARMONIZE_SCALE",
+    "primitive": "sampler",
+    "description": "Selects the scale for harmonic grain pitch shifting. Applies musical key constraints.",
+    "range_type": "normalized_0_1",
+    "notes": "Continuum Engine only. Selects major, minor, pentatonic, etc.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.CONTINUUM_GRAIN_HARMONIZE_AMOUNT",
+    "primitive": "sampler",
+    "description": "Controls the amount of harmonic pitch shifting applied to grains. Creates chord-like textures.",
+    "range_type": "normalized_0_1",
+    "notes": "Continuum Engine only. 0.0 = no harmonization, 1.0 = full harmonization.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sampler.RHYTHMICON_BUFFER_LENGTH_BEATS",
+    "primitive": "sampler",
+    "description": "Sets the buffer length in beats for the Rhythmicon engine. Determines loop duration.",
+    "range_type": "normalized_0_1",
+    "notes": "Rhythmicon Engine only. Maps to 1, 2, 4, 8, 16 beat lengths.",
+    "shared": false,
+    "engine_applicability": [
+      "rhythmicon_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.RHYTHMICON_SLICE_SENSITIVITY",
+    "primitive": "sampler",
+    "description": "Controls the sensitivity of automatic slicing in the Rhythmicon engine. Affects beat detection.",
+    "range_type": "normalized_0_1",
+    "notes": "Rhythmicon Engine only. 0.0 = low sensitivity, 1.0 = high sensitivity.",
+    "shared": false,
+    "engine_applicability": [
+      "rhythmicon_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.RHYTHMICON_EVOLVE",
+    "primitive": "sampler",
+    "description": "Controls the evolution amount in the Rhythmicon engine. Creates generative variations.",
+    "range_type": "normalized_0_1",
+    "notes": "Rhythmicon Engine only. 0.0 = static loop, 1.0 = maximum evolution.",
+    "shared": false,
+    "engine_applicability": [
+      "rhythmicon_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.RESONATOR_CAPTURE_MODE",
+    "primitive": "sampler",
+    "description": "Selects the capture mode for the Acoustic Resonator engine. Determines how samples are captured.",
+    "range_type": "normalized_0_1",
+    "notes": "Acoustic Resonator Engine only. 0.0 = direct capture, 1.0 = resonant capture.",
+    "shared": false,
+    "engine_applicability": [
+      "acoustic_resonator_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.RESONATOR_IR_SELECTOR",
+    "primitive": "sampler",
+    "description": "Selects the impulse response for the Acoustic Resonator engine. Determines the acoustic character.",
+    "range_type": "normalized_0_1",
+    "notes": "Acoustic Resonator Engine only. Selects from predefined IRs (e.g., room, hall, plate).",
+    "shared": false,
+    "engine_applicability": [
+      "acoustic_resonator_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.RESONATOR_TENSION",
+    "primitive": "sampler",
+    "description": "Controls the tension of the resonator in the Acoustic Resonator engine. Affects resonance behavior.",
+    "range_type": "normalized_0_1",
+    "notes": "Acoustic Resonator Engine only. 0.0 = loose, 1.0 = tight.",
+    "shared": false,
+    "engine_applicability": [
+      "acoustic_resonator_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sampler.RESONATOR_DECAY",
+    "primitive": "sampler",
+    "description": "Controls the decay time of the resonator in the Acoustic Resonator engine.",
+    "range_type": "normalized_0_1",
+    "notes": "Acoustic Resonator Engine only. 0.0 = short decay, 1.0 = long decay.",
+    "shared": false,
+    "engine_applicability": [
+      "acoustic_resonator_engine"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "sampler.SAMPLER_REVERSE",
+    "primitive": "sampler",
+    "description": "Reverses the playback of the sampled audio. Useful for creative textural effects.",
+    "range_type": "normalized_0_1",
+    "notes": "All Sampler Engines. 0.0 = forward, 1.0 = reversed.",
+    "shared": false,
+    "engine_applicability": [
+      "continuum_engine",
+      "rhythmicon_engine",
+      "acoustic_resonator_engine"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.ENGINE_SELECTOR",
+    "primitive": "utility",
+    "description": "Selects which utility engine is active: 0=Channel Strip, 1=Mid-Side Processor, 2=Master Bus Limiter, 3=Harmonic Exciter, 4=Sidechain Compressor, 5=De-Reverberator, 6=Dynamic EQ, 7=Phase Aligner.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter that determines which utility engine processes the signal.",
+    "shared": true,
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "utility.INPUT_GAIN_DB",
+    "primitive": "utility",
+    "description": "Controls the input level to the utility engine in decibels. Affects processing headroom and character.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "utility.OUTPUT_GAIN_DB",
+    "primitive": "utility",
+    "description": "Controls the output level from the utility engine in decibels. Used for level matching.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. Maps to -20dB to +20dB range.",
+    "shared": true,
+    "default_value": 0.5,
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "utility.BYPASS",
+    "primitive": "utility",
+    "description": "Bypasses the entire utility primitive when set to 1.0. Signal passes through unprocessed.",
+    "range_type": "normalized_0_1",
+    "notes": "Global parameter. 0.0 = active, 1.0 = bypassed.",
+    "shared": true,
+    "default_value": 1.0
+  },
+  {
+    "parameter_id": "utility.CHANNEL_HPF_FREQ_HZ",
+    "primitive": "utility",
+    "description": "Sets the high-pass filter frequency in the Channel Strip. Removes low-frequency content.",
+    "range_type": "normalized_0_1",
+    "notes": "Channel Strip engine only. Maps logarithmically from 20Hz to 500Hz.",
+    "shared": false,
+    "engine_applicability": [
+      "channel_strip"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "utility.CHANNEL_LPF_FREQ_HZ",
+    "primitive": "utility",
+    "description": "Sets the low-pass filter frequency in the Channel Strip. Removes high-frequency content.",
+    "range_type": "normalized_0_1",
+    "notes": "Channel Strip engine only. Maps logarithmically from 200Hz to 20kHz.",
+    "shared": false,
+    "engine_applicability": [
+      "channel_strip"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "utility.CHANNEL_GAIN_DB",
+    "primitive": "utility",
+    "description": "Controls the channel gain in the Channel Strip. Adjusts overall volume.",
+    "range_type": "normalized_0_1",
+    "notes": "Channel Strip engine only. Maps to -20dB to +20dB.",
+    "shared": false,
+    "engine_applicability": [
+      "channel_strip"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.MS_MID_GAIN_DB",
+    "primitive": "utility",
+    "description": "Controls the mid (center) channel gain in the Mid-Side Processor. Affects mono content.",
+    "range_type": "normalized_0_1",
+    "notes": "Mid-Side Processor engine only. Maps to -20dB to +20dB range.",
+    "shared": false,
+    "engine_applicability": [
+      "mid_side_processor"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.MS_SIDE_GAIN_DB",
+    "primitive": "utility",
+    "description": "Controls the side (stereo) channel gain in the Mid-Side Processor. Affects stereo width.",
+    "range_type": "normalized_0_1",
+    "notes": "Mid-Side Processor engine only. Maps to -20dB to +20dB range.",
+    "shared": false,
+    "engine_applicability": [
+      "mid_side_processor"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.MS_SIDE_HPF_FREQ_HZ",
+    "primitive": "utility",
+    "description": "Sets the high-pass filter frequency for the side channel in the Mid-Side Processor.",
+    "range_type": "normalized_0_1",
+    "notes": "Mid-Side Processor engine only. Maps logarithmically from 20Hz to 500Hz.",
+    "shared": false,
+    "engine_applicability": [
+      "mid_side_processor"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "utility.MS_BASS_MONO_FREQ_HZ",
+    "primitive": "utility",
+    "description": "Sets the crossover frequency for the Mid-Side Bass Mono feature. Low frequencies go to mono.",
+    "range_type": "normalized_0_1",
+    "notes": "Mid-Side Processor engine only. Maps logarithmically from 20Hz to 200Hz.",
+    "shared": false,
+    "engine_applicability": [
+      "mid_side_processor"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "utility.LIMITER_THRESHOLD_DB",
+    "primitive": "utility",
+    "description": "Sets the threshold for the Master Bus Limiter. Controls when limiting occurs.",
+    "range_type": "normalized_0_1",
+    "notes": "Master Bus Limiter engine only. Maps to -60dB to 0dB range.",
+    "shared": false,
+    "engine_applicability": [
+      "master_bus_limiter"
+    ],
+    "default_value": 0.8
+  },
+  {
+    "parameter_id": "utility.LIMITER_RELEASE_MS",
+    "primitive": "utility",
+    "description": "Sets the release time for the Master Bus Limiter. Controls how quickly the limiter recovers.",
+    "range_type": "normalized_0_1",
+    "notes": "Master Bus Limiter engine only. Maps from 10ms to 1000ms.",
+    "shared": false,
+    "engine_applicability": [
+      "master_bus_limiter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.LIMITER_LOOKAHEAD_MS",
+    "primitive": "utility",
+    "description": "Controls lookahead time for the Master Bus Limiter. Improves transient handling.",
+    "range_type": "normalized_0_1",
+    "notes": "Master Bus Limiter engine only. Maps from 0ms to 100ms.",
+    "shared": false,
+    "engine_applicability": [
+      "master_bus_limiter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.LIMITER_CHARACTER",
+    "primitive": "utility",
+    "description": "Controls the character of the Master Bus Limiter. Affects harmonic saturation and transparency.",
+    "range_type": "normalized_0_1",
+    "notes": "Master Bus Limiter engine only. 0.0 = transparent, 1.0 = colored.",
+    "shared": false,
+    "engine_applicability": [
+      "master_bus_limiter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.EXCITER_FREQ_HZ",
+    "primitive": "utility",
+    "description": "Controls the excitation frequency in the Harmonic Exciter. Determines where harmonics are added.",
+    "range_type": "normalized_0_1",
+    "notes": "Harmonic Exciter engine only. Maps logarithmically from 100Hz to 10kHz.",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "utility.EXCITER_DRIVE",
+    "primitive": "utility",
+    "description": "Controls the drive amount in the Harmonic Exciter. Increases harmonic content.",
+    "range_type": "normalized_0_1",
+    "notes": "Harmonic Exciter engine only. 0.0 = no effect, 1.0 = full excitation.",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.EXCITER_MIX",
+    "primitive": "utility",
+    "description": "Controls the mix of excited harmonics in the Harmonic Exciter. Blends original and processed signal.",
+    "range_type": "normalized_0_1",
+    "notes": "Harmonic Exciter engine only. 0.0 = no effect, 1.0 = full excitation.",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "utility.EXCITER_HARMONICS",
+    "primitive": "utility",
+    "description": "Selects the harmonic content type in the Harmonic Exciter. Maps to different harmonic profiles.",
+    "range_type": "normalized_0_1",
+    "notes": "Harmonic Exciter engine only. Different harmonic generation algorithms.",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.SC_THRESHOLD_DB",
+    "primitive": "utility",
+    "description": "Sets the threshold for the Sidechain Compressor. Controls when compression is triggered by sidechain.",
+    "range_type": "normalized_0_1",
+    "notes": "Sidechain Compressor engine only. Maps to -60dB to 0dB range.",
+    "shared": false,
+    "engine_applicability": [
+      "sidechain_compressor"
+    ],
+    "default_value": 0.8
+  },
+  {
+    "parameter_id": "utility.SC_RATIO",
+    "primitive": "utility",
+    "description": "Controls the compression ratio for the Sidechain Compressor. Higher values provide more aggressive pumping.",
+    "range_type": "normalized_0_1",
+    "notes": "Sidechain Compressor engine only. Maps to 1:1 to 20:1 ratio.",
+    "shared": false,
+    "engine_applicability": [
+      "sidechain_compressor"
+    ],
+    "default_value": 0.2
+  },
+  {
+    "parameter_id": "utility.SC_ATTACK_MS",
+    "primitive": "utility",
+    "description": "Sets the attack time for the Sidechain Compressor. Affects how quickly compression engages.",
+    "range_type": "normalized_0_1",
+    "notes": "Sidechain Compressor engine only. Maps to 0.1ms to 100ms range.",
+    "shared": false,
+    "engine_applicability": [
+      "sidechain_compressor"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "utility.SC_RELEASE_MS",
+    "primitive": "utility",
+    "description": "Sets the release time for the Sidechain Compressor. Controls how quickly compression disengages.",
+    "range_type": "normalized_0_1",
+    "notes": "Sidechain Compressor engine only. Maps to 10ms to 1000ms range.",
+    "shared": false,
+    "engine_applicability": [
+      "sidechain_compressor"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.SC_KNEE_DB",
+    "primitive": "utility",
+    "description": "Controls the knee characteristic of the Sidechain Compressor. Affects compression smoothness.",
+    "range_type": "normalized_0_1",
+    "notes": "Sidechain Compressor engine only. 0.0 = hard knee, 1.0 = soft knee.",
+    "shared": false,
+    "engine_applicability": [
+      "sidechain_compressor"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.SC_MAKEUP_GAIN_DB",
+    "primitive": "utility",
+    "description": "Controls makeup gain for the Sidechain Compressor. Compensates for level reduction.",
+    "range_type": "normalized_0_1",
+    "notes": "Sidechain Compressor engine only. Maps to 0dB to +20dB range.",
+    "shared": false,
+    "engine_applicability": [
+      "sidechain_compressor"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.DEREVERB_SENSITIVITY",
+    "primitive": "utility",
+    "description": "Controls the sensitivity of the De-Reverberator. Higher values remove more reverb.",
+    "range_type": "normalized_0_1",
+    "notes": "De-Reverberator engine only. 0.0 = no de-reverb, 1.0 = full de-reverb.",
+    "shared": false,
+    "engine_applicability": [
+      "de_reverberator"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "utility.DEREVERB_REDUCTION_AMOUNT_DB",
+    "primitive": "utility",
+    "description": "Controls the amount of reverb reduction in the De-Reverberator. Higher values remove more reverb.",
+    "range_type": "normalized_0_1",
+    "notes": "De-Reverberator engine only. Maps to 0dB to -20dB range.",
+    "shared": false,
+    "engine_applicability": [
+      "de_reverberator"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "reverb.CONVOLUTION_REVERB_MIX",
+    "primitive": "reverb",
+    "description": "kMix parameter for ConvolutionReverb engine.",
+    "range_type": "normalized_0_1",
+    "notes": "ConvolutionReverb engine only.",
+    "shared": false,
+    "engine_applicability": [
+      "convolution_reverb"
+    ],
+    "default_value": 0.0,
+    "display_name": "Kmix"
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_SIZE",
+    "primitive": "reverb",
+    "description": "Controls the size of the reverb space in the platinum shimmer implementation.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = small room, 1.0 = large cathedral",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_AMOUNT",
+    "primitive": "reverb",
+    "description": "Amount of pitch-shifted shimmer effect in the feedback path.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = no shimmer, 1.0 = maximum shimmer",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_PITCH",
+    "primitive": "reverb",
+    "description": "Pitch shift amount for the shimmer effect in semitones.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = -12 semitones, 0.5 = no shift, 1.0 = +12 semitones",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.667
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_DAMPING",
+    "primitive": "reverb",
+    "description": "High frequency damping in the reverb tail.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = no damping, 1.0 = maximum damping",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_DIFFUSION",
+    "primitive": "reverb",
+    "description": "Diffusion amount controlling reverb density.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = minimal diffusion, 1.0 = maximum diffusion",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.8
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_MODULATION",
+    "primitive": "reverb",
+    "description": "Modulation depth for creating movement in the reverb.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = no modulation, 1.0 = maximum modulation",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.2
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_PREDELAY",
+    "primitive": "reverb",
+    "description": "Pre-delay time before reverb onset.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = 0ms, 1.0 = 200ms",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.1
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_WIDTH",
+    "primitive": "reverb",
+    "description": "Stereo width of the reverb field.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = mono, 1.0 = wide stereo",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.8
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_FREEZE",
+    "primitive": "reverb",
+    "description": "Freeze the reverb buffer for infinite sustain.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = normal, 1.0 = frozen",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "reverb.PLATINUM_SHIMMER_MIX",
+    "primitive": "reverb",
+    "description": "Dry/wet mix control for the reverb effect.",
+    "range_type": "normalized_0_1",
+    "notes": "Platinum ShimmerReverb only. 0.0 = dry only, 1.0 = wet only",
+    "shared": false,
+    "engine_applicability": [
+      "platinum_shimmer_reverb"
+    ],
+    "default_value": 0.3
+  },
+  {
+    "parameter_id": "character.WAVE_FOLDER_FOLD",
+    "primitive": "character",
+    "description": "Amount of wavefolding distortion applied to the signal.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = no folding, 1.0 = maximum folding with multiple reflections",
+    "shared": false,
+    "engine_applicability": [
+      "wave_folder"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.WAVE_FOLDER_ASYMMETRY",
+    "primitive": "character",
+    "description": "Asymmetric folding for even harmonic generation.",
+    "range_type": "normalized_0_1",
+    "notes": "0.5 = symmetric, 0.0/1.0 = maximum asymmetry in different directions",
+    "shared": false,
+    "engine_applicability": [
+      "wave_folder"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.WAVE_FOLDER_DC_OFFSET",
+    "primitive": "character",
+    "description": "DC offset before folding for asymmetric distortion.",
+    "range_type": "normalized_0_1",
+    "notes": "0.5 = no offset, adds up to \u00b110% DC offset",
+    "shared": false,
+    "engine_applicability": [
+      "wave_folder"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.WAVE_FOLDER_PRE_GAIN",
+    "primitive": "character",
+    "description": "Pre-folding gain to drive the wavefolder harder.",
+    "range_type": "normalized_0_1",
+    "notes": "Maps to 0.1x to 4.0x gain",
+    "shared": false,
+    "engine_applicability": [
+      "wave_folder"
+    ],
+    "default_value": 0.25
+  },
+  {
+    "parameter_id": "character.WAVE_FOLDER_POST_GAIN",
+    "primitive": "character",
+    "description": "Post-folding gain for output level control.",
+    "range_type": "normalized_0_1",
+    "notes": "Maps to 0.1x to 2.0x gain",
+    "shared": false,
+    "engine_applicability": [
+      "wave_folder"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.WAVE_FOLDER_SMOOTHING",
+    "primitive": "character",
+    "description": "Anti-derivative smoothing to reduce harsh artifacts.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = no smoothing, 1.0 = maximum smoothing",
+    "shared": false,
+    "engine_applicability": [
+      "wave_folder"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "character.WAVE_FOLDER_HARMONICS",
+    "primitive": "character",
+    "description": "Harmonic emphasis on 2nd, 3rd, and 4th harmonics.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = no emphasis, 1.0 = maximum harmonic boost",
+    "shared": false,
+    "engine_applicability": [
+      "wave_folder"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "character.WAVE_FOLDER_MIX",
+    "primitive": "character",
+    "description": "Dry/wet mix control for parallel processing.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = dry signal only, 1.0 = wet signal only",
+    "shared": false,
+    "engine_applicability": [
+      "wave_folder"
+    ],
+    "default_value": 1.0
+  },
+  {
+    "parameter_id": "sculptor.VOCAL_FORMANT_VOWEL1",
+    "primitive": "sculptor",
+    "description": "First vowel selection for formant filtering (A, E, I, O, U).",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = A, 0.25 = E, 0.5 = I, 0.75 = O, 1.0 = U",
+    "shared": false,
+    "engine_applicability": [
+      "vocal_formant_filter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.VOCAL_FORMANT_VOWEL2",
+    "primitive": "sculptor",
+    "description": "Second vowel selection for morphing between formants.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = A, 0.25 = E, 0.5 = I, 0.75 = O, 1.0 = U",
+    "shared": false,
+    "engine_applicability": [
+      "vocal_formant_filter"
+    ],
+    "default_value": 0.4
+  },
+  {
+    "parameter_id": "sculptor.VOCAL_FORMANT_MORPH",
+    "primitive": "sculptor",
+    "description": "Morphing amount between vowel 1 and vowel 2.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = 100% vowel 1, 1.0 = 100% vowel 2",
+    "shared": false,
+    "engine_applicability": [
+      "vocal_formant_filter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.VOCAL_FORMANT_RESONANCE",
+    "primitive": "sculptor",
+    "description": "Resonance of the formant filters for sharper peaks.",
+    "range_type": "normalized_0_1",
+    "notes": "Scales Q factor from 0.5x to 2.5x of base values",
+    "shared": false,
+    "engine_applicability": [
+      "vocal_formant_filter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.VOCAL_FORMANT_BRIGHTNESS",
+    "primitive": "sculptor",
+    "description": "High frequency shelf for brightness control.",
+    "range_type": "normalized_0_1",
+    "notes": "Controls shelf frequency from 2kHz to 8kHz",
+    "shared": false,
+    "engine_applicability": [
+      "vocal_formant_filter"
+    ],
+    "default_value": 0.5
+  },
+  {
+    "parameter_id": "sculptor.VOCAL_FORMANT_MOD_RATE",
+    "primitive": "sculptor",
+    "description": "LFO modulation rate for animated vowel movement.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = no modulation, maps to 0-10Hz",
+    "shared": false,
+    "engine_applicability": [
+      "vocal_formant_filter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.VOCAL_FORMANT_MOD_DEPTH",
+    "primitive": "sculptor",
+    "description": "Depth of LFO modulation for vowel morphing.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = no modulation, 1.0 = \u00b120% frequency shift",
+    "shared": false,
+    "engine_applicability": [
+      "vocal_formant_filter"
+    ],
+    "default_value": 0.0
+  },
+  {
+    "parameter_id": "sculptor.VOCAL_FORMANT_MIX",
+    "primitive": "sculptor",
+    "description": "Dry/wet mix control for parallel processing.",
+    "range_type": "normalized_0_1",
+    "notes": "0.0 = dry signal only, 1.0 = wet signal only",
+    "shared": false,
+    "engine_applicability": [
+      "vocal_formant_filter"
+    ],
+    "default_value": 1.0
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_ATTACK",
+    "primitive": "sculptor",
+    "description": "Controls the gain applied to transient portions of the signal",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 0.1-4.0x gain",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 0.5,
+    "display_name": "Attack"
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_SUSTAIN",
+    "primitive": "sculptor",
+    "description": "Controls the gain applied to sustained portions of the signal",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 0.1-4.0x gain",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 0.5,
+    "display_name": "Sustain"
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_ATTACK_TIME",
+    "primitive": "sculptor",
+    "description": "Sets the attack time of the envelope detector",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 0.1-50ms",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 0.1,
+    "display_name": "Attack Time",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_RELEASE_TIME",
+    "primitive": "sculptor",
+    "description": "Sets the release time of the envelope detector",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 1-500ms",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 0.3,
+    "display_name": "Release Time",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_SEPARATION",
+    "primitive": "sculptor",
+    "description": "Controls the spectral separation between transients and sustain",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Adjusts HP/LP filter frequencies",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 0.5,
+    "display_name": "Separation"
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_DETECTION",
+    "primitive": "sculptor",
+    "description": "Selects detection algorithm: Peak, RMS, Hilbert, or Hybrid",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0-0.25=Peak, 0.25-0.5=RMS, 0.5-0.75=Hilbert, 0.75-1=Hybrid",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 0.0,
+    "display_name": "Detection"
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_LOOKAHEAD",
+    "primitive": "sculptor",
+    "description": "Sets the lookahead time for improved transient detection",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 0-46ms",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 0.0,
+    "display_name": "Lookahead",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_SOFT_KNEE",
+    "primitive": "sculptor",
+    "description": "Controls the soft knee width for smoother dynamics",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Affects compression curve smoothness",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 0.2,
+    "display_name": "Soft Knee"
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_OVERSAMPLING",
+    "primitive": "sculptor",
+    "description": "Sets oversampling factor: 1x, 2x, or 4x",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0-0.33=1x, 0.33-0.66=2x, 0.66-1=4x",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 0.0,
+    "display_name": "Oversampling"
+  },
+  {
+    "parameter_id": "sculptor.TRANSIENT_SHAPER_MIX",
+    "primitive": "sculptor",
+    "description": "Blends between dry and processed signal",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0=dry, 1=wet",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_LOW_GAIN",
+    "primitive": "eq",
+    "description": "Low shelf gain control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Low Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_LOW_FREQ",
+    "primitive": "eq",
+    "description": "Low shelf frequency control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = 30Hz, 1.0 = 300Hz",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Low Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_MID_GAIN",
+    "primitive": "eq",
+    "description": "Mid bell gain control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_MID_FREQ",
+    "primitive": "eq",
+    "description": "Mid frequency control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = 200Hz, 1.0 = 8kHz (logarithmic)",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_MID_Q",
+    "primitive": "eq",
+    "description": "Mid Q width control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = 0.3 (wide), 1.0 = 3.0 (narrow)",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Q"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_HIGH_GAIN",
+    "primitive": "eq",
+    "description": "High shelf gain control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "High Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_HIGH_FREQ",
+    "primitive": "eq",
+    "description": "High shelf frequency control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = 3kHz, 1.0 = 16kHz",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "High Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_DRIVE",
+    "primitive": "eq",
+    "description": "Console saturation amount",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = clean, 1.0 = maximum color",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Drive"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_CONSOLE_TYPE",
+    "primitive": "eq",
+    "description": "Console model selection",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0-0.25 = SSL, 0.25-0.5 = API, 0.5-0.75 = Neve, 0.75-1.0 = Pultec",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Console Type"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_VINTAGE",
+    "primitive": "eq",
+    "description": "Vintage character amount",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = modern, 1.0 = vintage",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Vintage"
+  },
+  {
+    "parameter_id": "eq.VINTAGE_CONSOLE_EQ_PLATINUM_MIX",
+    "primitive": "eq",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageConsoleEQ_Platinum engine. 0.0 = dry, 1.0 = wet",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_console_eq_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_MID_GAIN",
+    "primitive": "spatial",
+    "description": "Mid channel gain control",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -20dB, 0.5 = 0dB, 1.0 = +20dB",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_SIDE_GAIN",
+    "primitive": "spatial",
+    "description": "Side channel gain control",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -20dB, 0.5 = 0dB, 1.0 = +20dB",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Side Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_WIDTH",
+    "primitive": "spatial",
+    "description": "Stereo width control",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = mono, 0.5 = 100%, 1.0 = 200%",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Width",
+    "unit": "%"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_MID_LOW",
+    "primitive": "spatial",
+    "description": "Mid channel low shelf EQ",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB @ 200Hz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Low",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_MID_HIGH",
+    "primitive": "spatial",
+    "description": "Mid channel high shelf EQ",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB @ 5kHz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid High",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_SIDE_LOW",
+    "primitive": "spatial",
+    "description": "Side channel low shelf EQ",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB @ 200Hz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Side Low",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_SIDE_HIGH",
+    "primitive": "spatial",
+    "description": "Side channel high shelf EQ",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = -15dB, 0.5 = 0dB, 1.0 = +15dB @ 5kHz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Side High",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_BASS_MONO",
+    "primitive": "spatial",
+    "description": "Bass mono frequency cutoff",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = off, 1.0 = 500Hz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Bass Mono",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_SOLO_MODE",
+    "primitive": "spatial",
+    "description": "Solo monitoring mode",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = off, 0.33 = mid only, 0.66 = side only",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Solo Mode"
+  },
+  {
+    "parameter_id": "spatial.MIDSIDE_PROCESSOR_PLATINUM_PRESENCE",
+    "primitive": "spatial",
+    "description": "Presence boost amount",
+    "range_type": "normalized_0_1",
+    "notes": "MidSideProcessor_Platinum engine. 0.0 = off, 1.0 = +6dB @ 10kHz",
+    "shared": false,
+    "engine_applicability": [
+      "midside_processor_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Presence",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_SPEED",
+    "primitive": "modulation",
+    "description": "Rotor speed control",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. 0=stop, 0.5=slow (chorale), 1=fast (tremolo)",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Speed"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_ACCELERATION",
+    "primitive": "modulation",
+    "description": "Rotor acceleration/inertia",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. Controls how quickly rotors change speed",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Acceleration"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_DRIVE",
+    "primitive": "modulation",
+    "description": "Tube preamp saturation",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. Adds warmth and harmonic saturation",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Drive"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_MIC_DISTANCE",
+    "primitive": "modulation",
+    "description": "Virtual microphone distance",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. Affects Doppler intensity and stereo image",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.6,
+    "display_name": "Mic Distance"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_STEREO_WIDTH",
+    "primitive": "modulation",
+    "description": "Stereo spread amount",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. 0=mono, 1=wide stereo (45° mic angle)",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 0.8,
+    "display_name": "Stereo Width"
+  },
+  {
+    "parameter_id": "modulation.ROTARY_SPEAKER_PLATINUM_MIX",
+    "primitive": "modulation",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "RotarySpeaker_Platinum engine. 0=dry, 1=wet",
+    "shared": false,
+    "engine_applicability": [
+      "rotary_speaker_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_RATE",
+    "primitive": "modulation",
+    "description": "LFO rate control",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. Maps to 0.01-20Hz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Rate",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_DEPTH",
+    "primitive": "modulation",
+    "description": "Modulation depth amount",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0=no modulation, 1=maximum depth",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Depth"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_RESONANCE",
+    "primitive": "modulation",
+    "description": "Filter resonance amount",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0=no resonance, 1=self-oscillation",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Resonance"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_FILTER_FREQ",
+    "primitive": "modulation",
+    "description": "Filter cutoff frequency",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. Maps to 20Hz-20kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Filter Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_VOICES",
+    "primitive": "modulation",
+    "description": "Number of chorus voices",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. Maps to 1-6 voices",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Voices"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_SPREAD",
+    "primitive": "modulation",
+    "description": "Stereo spread width",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0=narrow, 1=wide stereo field",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Spread"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_FEEDBACK",
+    "primitive": "modulation",
+    "description": "Feedback amount control",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0.5=no feedback, 0=-100%, 1=+100%",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Feedback"
+  },
+  {
+    "parameter_id": "modulation.RESONANT_CHORUS_PLATINUM_MIX",
+    "primitive": "modulation",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "ResonantChorus_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "resonant_chorus_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_TENSION",
+    "primitive": "reverb",
+    "description": "Spring tension control",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Controls brightness/darkness of spring character",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Tension"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_DAMPING",
+    "primitive": "reverb",
+    "description": "High frequency damping",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Controls how quickly high frequencies decay",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Damping"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_DECAY",
+    "primitive": "reverb",
+    "description": "Reverb decay time",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Maps to 0.1-5.0 seconds",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Decay",
+    "unit": "s"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_MODULATION",
+    "primitive": "reverb",
+    "description": "Spring wobble modulation",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Adds authentic spring movement",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Modulation"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_CHIRP",
+    "primitive": "reverb",
+    "description": "Transient chirp amount",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Classic spring 'boing' on transients",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Chirp"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_DRIVE",
+    "primitive": "reverb",
+    "description": "Input saturation drive",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. Tube-style saturation",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Drive"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_WIDTH",
+    "primitive": "reverb",
+    "description": "Stereo width control",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. 0=narrow, 1=wide stereo field",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.8,
+    "display_name": "Width"
+  },
+  {
+    "parameter_id": "reverb.SPRING_REVERB_PLATINUM_MIX",
+    "primitive": "reverb",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "SpringReverb_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "spring_reverb_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_FREQUENCY",
+    "primitive": "harmonics",
+    "description": "Target frequency range for harmonic generation",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. Maps to 1kHz-10kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Frequency",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_DRIVE",
+    "primitive": "harmonics",
+    "description": "Harmonic generation amount",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=bypass, 1=maximum harmonics",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Drive"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_HARMONICS",
+    "primitive": "harmonics",
+    "description": "Even vs odd harmonic balance",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=even harmonics (warm), 1=odd harmonics (bright)",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Harmonics"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_CLARITY",
+    "primitive": "harmonics",
+    "description": "Phase coherence control",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=none, 1=maximum phase alignment",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Clarity"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_WARMTH",
+    "primitive": "harmonics",
+    "description": "Low frequency enhancement",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=flat, 1=+6dB @ 100Hz",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Warmth",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_PRESENCE",
+    "primitive": "harmonics",
+    "description": "High frequency enhancement",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=flat, 1=+6dB @ 8kHz",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.4,
+    "display_name": "Presence",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_COLOR",
+    "primitive": "harmonics",
+    "description": "Harmonic character selection",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=tube (even), 1=transistor (odd)",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Color"
+  },
+  {
+    "parameter_id": "harmonics.HARMONIC_EXCITER_PLATINUM_MIX",
+    "primitive": "harmonics",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "HarmonicExciter_Platinum engine. 0=100% dry, 1=100% wet",
+    "shared": false,
+    "engine_applicability": [
+      "harmonic_exciter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_LOW_GAIN",
+    "primitive": "eq",
+    "description": "Low frequency band gain",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to -18dB to +18dB",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Low Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_LOW_FREQ",
+    "primitive": "eq",
+    "description": "Low frequency band center frequency",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to 20Hz-500Hz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Low Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_MID_GAIN",
+    "primitive": "eq",
+    "description": "Mid frequency band gain",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to -18dB to +18dB",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_MID_FREQ",
+    "primitive": "eq",
+    "description": "Mid frequency band center frequency",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to 200Hz-5kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_MID_Q",
+    "primitive": "eq",
+    "description": "Mid frequency band Q factor",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to 0.1-10.0",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mid Q"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_HIGH_GAIN",
+    "primitive": "eq",
+    "description": "High frequency band gain",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to -18dB to +18dB",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "High Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_HIGH_FREQ",
+    "primitive": "eq",
+    "description": "High frequency band center frequency",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to 2kHz-20kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "High Freq",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_OUTPUT_GAIN",
+    "primitive": "eq",
+    "description": "Overall output gain",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. Maps to -12dB to +12dB",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Output",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "eq.PARAMETRIC_EQ_PLATINUM_MIX",
+    "primitive": "eq",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "ParametricEQ_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "parametric_eq_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_THRESHOLD",
+    "primitive": "dynamics",
+    "description": "Gate threshold level",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to -60dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Threshold",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_RANGE",
+    "primitive": "dynamics",
+    "description": "Maximum attenuation when gate is closed",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to -40dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Range",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_ATTACK",
+    "primitive": "dynamics",
+    "description": "Gate opening time",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 0.1ms to 100ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.1,
+    "display_name": "Attack",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_HOLD",
+    "primitive": "dynamics",
+    "description": "Gate hold time",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 0ms to 500ms",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.1,
+    "display_name": "Hold",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_RELEASE",
+    "primitive": "dynamics",
+    "description": "Gate closing time",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 1ms to 1000ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Release",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_HYSTERESIS",
+    "primitive": "dynamics",
+    "description": "Threshold hysteresis to prevent chattering",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 0dB to 10dB",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Hysteresis",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_SIDECHAIN",
+    "primitive": "dynamics",
+    "description": "Sidechain filter frequency",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 20Hz to 2kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Sidechain",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "dynamics.NOISE_GATE_PLATINUM_LOOKAHEAD",
+    "primitive": "dynamics",
+    "description": "Lookahead time for smoother gating",
+    "range_type": "normalized_0_1",
+    "notes": "NoiseGate_Platinum engine. Maps to 0ms to 10ms",
+    "shared": false,
+    "engine_applicability": [
+      "noise_gate_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Lookahead",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_GAIN",
+    "primitive": "dynamics",
+    "description": "Input gain control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. Maps to -20dB to +20dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Gain",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_PEAK_REDUCTION",
+    "primitive": "dynamics",
+    "description": "Amount of peak reduction",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. Maps to 0% to 100%",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Peak Reduction"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_EMPHASIS",
+    "primitive": "dynamics",
+    "description": "HF emphasis sidechain filter",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. Maps to flat to +10dB @ 10kHz",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Emphasis"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_OUTPUT",
+    "primitive": "dynamics",
+    "description": "Output level control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. Maps to -20dB to +20dB",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Output",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_MIX",
+    "primitive": "dynamics",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_KNEE",
+    "primitive": "dynamics",
+    "description": "Compression knee softness",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. 0=hard knee, 1=soft knee",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Knee"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_HARMONICS",
+    "primitive": "dynamics",
+    "description": "Tube-style harmonic saturation",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. 0=clean, 1=maximum harmonics",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Harmonics"
+  },
+  {
+    "parameter_id": "dynamics.VINTAGE_OPTO_COMPRESSOR_PLATINUM_STEREO_LINK",
+    "primitive": "dynamics",
+    "description": "Stereo channel linking",
+    "range_type": "normalized_0_1",
+    "notes": "VintageOptoCompressor_Platinum engine. 0=dual mono, 1=stereo linked",
+    "shared": false,
+    "engine_applicability": [
+      "vintage_opto_compressor_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Stereo Link"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_DIVISION",
+    "primitive": "delay",
+    "description": "Beat division for repeat length",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. Maps from 1/64 to 4 bars",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Division"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_PROBABILITY",
+    "primitive": "delay",
+    "description": "Repeat trigger probability",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=never, 1=always",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Probability"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_FEEDBACK",
+    "primitive": "delay",
+    "description": "Feedback amount",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=no feedback, 1=infinite",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Feedback"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_FILTER",
+    "primitive": "delay",
+    "description": "Filter cutoff and type",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. <0.5=lowpass, >0.5=highpass",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Filter"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_PITCH",
+    "primitive": "delay",
+    "description": "Pitch shift amount",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. Maps to -1 to +1 octave",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Pitch"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_REVERSE",
+    "primitive": "delay",
+    "description": "Reverse playback probability",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=never reverse, 1=always reverse",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Reverse"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_STUTTER",
+    "primitive": "delay",
+    "description": "Stutter gate amount",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=smooth, 1=maximum stutter",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Stutter"
+  },
+  {
+    "parameter_id": "delay.BUFFER_REPEAT_PLATINUM_MIX",
+    "primitive": "delay",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "BufferRepeat_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "buffer_repeat_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_THRESHOLD",
+    "primitive": "spectral",
+    "description": "Gate threshold level",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to -80dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Threshold",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_RATIO",
+    "primitive": "spectral",
+    "description": "Gate expansion ratio",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 1:1 to 1:20",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Ratio"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_ATTACK",
+    "primitive": "spectral",
+    "description": "Gate attack time",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 0.1ms to 100ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.1,
+    "display_name": "Attack",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_RELEASE",
+    "primitive": "spectral",
+    "description": "Gate release time",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 1ms to 1000ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Release",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_FREQ_LOW",
+    "primitive": "spectral",
+    "description": "Low frequency boundary",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 20Hz to 20kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Freq Low",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_FREQ_HIGH",
+    "primitive": "spectral",
+    "description": "High frequency boundary",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 20Hz to 20kHz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Freq High",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_LOOKAHEAD",
+    "primitive": "spectral",
+    "description": "Lookahead time for smoother gating",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. Maps to 0ms to 20ms",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Lookahead",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "spectral.SPECTRAL_GATE_PLATINUM_MIX",
+    "primitive": "spectral",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "SpectralGate_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "spectral_gate_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_THRESHOLD",
+    "primitive": "dynamics",
+    "description": "Limiting threshold",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to -30dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.9,
+    "display_name": "Threshold",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_CEILING",
+    "primitive": "dynamics",
+    "description": "Output ceiling level",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to -3dB to 0dB",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.97,
+    "display_name": "Ceiling",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_RELEASE",
+    "primitive": "dynamics",
+    "description": "Release time",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to 1ms to 1000ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Release",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_LOOKAHEAD",
+    "primitive": "dynamics",
+    "description": "Lookahead time",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to 0ms to 10ms",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Lookahead",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_KNEE",
+    "primitive": "dynamics",
+    "description": "Knee softness",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=hard knee, 1=soft knee",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Knee"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_MAKEUP",
+    "primitive": "dynamics",
+    "description": "Makeup gain",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. Maps to 0dB to +12dB",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Makeup",
+    "unit": "dB"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_SATURATION",
+    "primitive": "dynamics",
+    "description": "Soft saturation amount",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=clean, 1=maximum saturation",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 0.2,
+    "display_name": "Saturation"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_STEREO_LINK",
+    "primitive": "dynamics",
+    "description": "Stereo channel linking",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=independent, 1=linked",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Stereo Link"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_TRUE_PEAK",
+    "primitive": "dynamics",
+    "description": "True peak limiting mode",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=off, 1=on",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "True Peak"
+  },
+  {
+    "parameter_id": "dynamics.MASTERING_LIMITER_PLATINUM_MIX",
+    "primitive": "dynamics",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "MasteringLimiter_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "mastering_limiter_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_RATE",
+    "primitive": "modulation",
+    "description": "Chaos generation rate",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. Maps to 0.01Hz to 100Hz logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Rate",
+    "unit": "Hz"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_DEPTH",
+    "primitive": "modulation",
+    "description": "Modulation depth",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. 0=no modulation, 1=maximum",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Depth"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_TYPE",
+    "primitive": "modulation",
+    "description": "Chaos algorithm type",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. Selects between different chaos algorithms",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Type"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_SMOOTHING",
+    "primitive": "modulation",
+    "description": "Output smoothing amount",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. 0=raw chaos, 1=heavily smoothed",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Smoothing"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_MOD_TARGET",
+    "primitive": "modulation",
+    "description": "Modulation target selection",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. Selects which parameter to modulate",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Mod Target"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_SYNC",
+    "primitive": "modulation",
+    "description": "Tempo sync enable",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. 0=free running, 1=tempo synced",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Sync"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_SEED",
+    "primitive": "modulation",
+    "description": "Random seed value",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. Changes the chaos pattern",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Seed"
+  },
+  {
+    "parameter_id": "modulation.CHAOS_GENERATOR_PLATINUM_MIX",
+    "primitive": "modulation",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "ChaosGenerator_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "chaos_generator_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Mix"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_ATTACK",
+    "primitive": "dynamics",
+    "description": "Attack transient emphasis",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to -100% to +100%",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Attack"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_SUSTAIN",
+    "primitive": "dynamics",
+    "description": "Sustain level control",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to -100% to +100%",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Sustain"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_ATTACK_TIME",
+    "primitive": "dynamics",
+    "description": "Attack detection time",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 0.1ms to 50ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Attack Time",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_RELEASE_TIME",
+    "primitive": "dynamics",
+    "description": "Release detection time",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 1ms to 500ms logarithmically",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Release Time",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_SEPARATION",
+    "primitive": "dynamics",
+    "description": "Transient/sustain separation",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Controls detection sensitivity",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Separation"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_DETECTION",
+    "primitive": "dynamics",
+    "description": "Detection mode",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0=peak, 1=RMS",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.0,
+    "display_name": "Detection"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_LOOKAHEAD",
+    "primitive": "dynamics",
+    "description": "Lookahead time",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. Maps to 0ms to 10ms",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.3,
+    "display_name": "Lookahead",
+    "unit": "ms"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_SOFT_KNEE",
+    "primitive": "dynamics",
+    "description": "Processing knee softness",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0=hard, 1=soft",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.7,
+    "display_name": "Soft Knee"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_OVERSAMPLING",
+    "primitive": "dynamics",
+    "description": "Oversampling mode",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0=off, 0.5=2x, 1=4x",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 0.5,
+    "display_name": "Oversampling"
+  },
+  {
+    "parameter_id": "dynamics.TRANSIENT_SHAPER_PLATINUM_MIX",
+    "primitive": "dynamics",
+    "description": "Dry/wet mix control",
+    "range_type": "normalized_0_1",
+    "notes": "TransientShaper_Platinum engine. 0=fully dry, 1=fully wet",
+    "shared": false,
+    "engine_applicability": [
+      "transient_shaper_platinum"
+    ],
+    "default_value": 1.0,
+    "display_name": "Mix"
+  }
+]

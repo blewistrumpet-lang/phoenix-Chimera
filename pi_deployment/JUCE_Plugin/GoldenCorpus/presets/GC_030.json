@@ -1,0 +1,91 @@
+{
+  "id": "GC_030",
+  "name": "Voltage Storm",
+  "technicalHint": "Chaos Generator + Wave Folder + Noise Gate + Ring Mod",
+  "category": "Experimental Laboratory",
+  "subcategory": "Electrical Phenomena",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 41,
+      "typeName": "Chaos Generator",
+      "mix": 0.82,
+      "params": [
+        0.88,
+        0.73,
+        0.45,
+        0.92,
+        0.35,
+        0.78,
+        0.65
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 47,
+      "typeName": "Noise Gate",
+      "mix": 0.65,
+      "params": [
+        0.08,
+        0.35,
+        0.72,
+        0.88,
+        0.45,
+        0.65
+      ]
+    },
+    {
+      "slot": 3,
+      "type": 15,
+      "typeName": "Ring Modulator",
+      "mix": 0.55,
+      "params": [
+        0.003,
+        0.75,
+        0.32,
+        0.88,
+        0.45,
+        0.65,
+        0.78
+      ]
+    },
+    {
+      "slot": 4,
+      "type": 20,
+      "typeName": "Transient Shaper",
+      "mix": 0.45,
+      "params": [
+        0.95,
+        0.15,
+        0.72,
+        0.88,
+        0.35,
+        0.65,
+        0.45
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.88,
+    "density": 0.75,
+    "movement": 0.92,
+    "space": 0.45,
+    "aggression": 0.95,
+    "vintage": 0.25
+  },
+  "keywords": [
+    "voltage",
+    "storm",
+    "electrical",
+    "chaos",
+    "lightning",
+    "arc",
+    "discharge",
+    "dangerous",
+    "industrial",
+    "harsh",
+    "extreme",
+    "power"
+  ],
+  "cpuTier": "HEAVY"
+}

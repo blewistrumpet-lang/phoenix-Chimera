@@ -1,0 +1,9 @@
+Engine,TestFile,Status,PassedTests,FailedTests,SuccessRate
+VintageTubePreamp,/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/Tests/Distortion/Results/VintageTubePreamp_TestResults.txt,NOT_RUN,0,0,0%
+WaveFolder,/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/Tests/Distortion/Results/WaveFolder_TestResults.txt,NOT_RUN,0,0,0%
+HarmonicExciter,/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/Tests/Distortion/Results/HarmonicExciter_TestResults.txt,NOT_RUN,0,0,0%
+BitCrusher,/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/Tests/Distortion/Results/BitCrusher_TestResults.txt,NOT_RUN,0,0,0%
+MultibandSaturator,/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/Tests/Distortion/Results/MultibandSaturator_TestResults.txt,NOT_RUN,0,0,0%
+MuffFuzz,/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/Tests/Distortion/Results/MuffFuzz_TestResults.txt,NOT_RUN,0,0,0%
+RodentDistortion,/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/Tests/Distortion/Results/RodentDistortion_TestResults.txt,NOT_RUN,0,0,0%
+KStyleOverdrive,/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/Tests/Distortion/Results/KStyleOverdrive_TestResults.txt,NOT_RUN,0,0,0%

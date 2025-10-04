@@ -1,0 +1,136 @@
+╔═══════════════════════════════════════════════════════════════╗
+║   ChimeraPhoenix Raspberry Pi 5 - Quick Reference Card        ║
+╚═══════════════════════════════════════════════════════════════╝
+
+📦 DEPLOYMENT PACKAGE: pi_deployment/ (59MB) - READY! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1️⃣  TRANSFER TO PI (Choose one method)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Network (fastest):
+------------------
+rsync -avz --progress pi_deployment/ pi@raspberrypi.local:~/ChimeraPhoenix/
+
+USB Drive:
+----------
+cp -r pi_deployment /Volumes/YOUR_DRIVE/ChimeraPhoenix
+# Then on Pi:
+cp -r /media/pi/YOUR_DRIVE/ChimeraPhoenix ~/
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2️⃣  BUILD ON PI (Run these commands on Pi)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ssh pi@raspberrypi.local
+
+cd ~/ChimeraPhoenix
+chmod +x pi_setup.sh
+./pi_setup.sh
+
+⏱  Build time: 10-20 minutes
+💾 Will install: build tools, JUCE, JACK audio
+🔨 Compiles with ARM optimizations
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3️⃣  RUN CHIMERA PHOENIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+~/chimera_run.sh
+
+Or manually:
+------------
+# Start JACK audio
+jackd -R -dalsa -dhw:1 -r48000 -p512 -n3 &
+
+# Launch plugin
+cd ~/ChimeraPhoenix/JUCE_Plugin/Builds/LinuxMakefile/build
+./ChimeraPhoenix
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build fails:
+sudo apt update && sudo apt install -y build-essential libasound2-dev
+
+No sound:
+aplay -l  # List audio devices
+# Then restart JACK with correct device number
+
+Trinity server not connecting:
+# On Mac, ensure server is running:
+cd AI_Server
+python3 server_trinity_complete.py
+
+# Test connection from Pi:
+curl http://YOUR_MAC_IP:8000/health
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RASPBERRY_PI_QUICKSTART.md    - Detailed setup guide
+HARDWARE_INTEGRATION_PLAN.md  - Complete hardware roadmap
+                                 (displays, encoders, voice input)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 HARDWARE PROTOTYPE PHASES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Phase 1: Software (Current)     ⬅️  GET THIS WORKING FIRST
+  ✓ Build ChimeraPhoenix on Pi
+  ✓ Test audio performance
+  ✓ Verify Trinity connectivity
+
+Phase 2: Display Integration
+  • 3.5" OLED via SPI (~$25)
+  • Show presets, parameters, status
+
+Phase 3: Physical Controls
+  • 6 rotary encoders (~$12)
+  • GPIO wiring for hands-on control
+
+Phase 4: Voice Input
+  • USB microphone (~$25)
+  • Whisper AI transcription
+  • "Create warm vintage delay"
+
+Phase 5: Enclosure
+  • 3D printed case (~$15)
+  • Professional look
+
+Phase 6: Assembly
+  • Boot-to-audio configuration
+  • Complete standalone unit
+
+Phase 7: Polish
+  • Demo video
+  • Beta testing
+  • Ready for production!
+
+Total hardware cost: ~$312 (excl. Pi you already have)
+Timeline: 6-7 weeks
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ CURRENT STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Deployment package created (59MB)
+✓ Setup scripts ready
+✓ Documentation complete
+✓ Ready to transfer to Pi 5 (8GB)
+
+NEXT: Transfer to Pi and run ./pi_setup.sh
+
+
+╔═══════════════════════════════════════════════════════════════╗
+║  Questions? Check RASPBERRY_PI_QUICKSTART.md                  ║
+║  Hardware plans? See HARDWARE_INTEGRATION_PLAN.md             ║
+╚═══════════════════════════════════════════════════════════════╝

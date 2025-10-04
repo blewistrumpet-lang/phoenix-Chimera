@@ -1,0 +1,126 @@
+{
+  "engine_mapping": {
+    "0": {"id": 0, "name": "None", "category": "none"},
+    "1": {"id": 1, "name": "Vintage Opto Compressor", "category": "dynamics"},
+    "2": {"id": 2, "name": "Classic Compressor", "category": "dynamics"},
+    "3": {"id": 3, "name": "Transient Shaper", "category": "dynamics"},
+    "4": {"id": 4, "name": "Noise Gate", "category": "dynamics"},
+    "5": {"id": 5, "name": "Mastering Limiter", "category": "dynamics"},
+    "6": {"id": 6, "name": "Dynamic EQ", "category": "dynamics"},
+    "7": {"id": 7, "name": "Parametric EQ", "category": "eq"},
+    "8": {"id": 8, "name": "Vintage Console EQ", "category": "eq"},
+    "9": {"id": 9, "name": "Ladder Filter", "category": "filter"},
+    "10": {"id": 10, "name": "State Variable Filter", "category": "filter"},
+    "11": {"id": 11, "name": "Formant Filter", "category": "filter"},
+    "12": {"id": 12, "name": "Envelope Filter", "category": "filter"},
+    "13": {"id": 13, "name": "Comb Resonator", "category": "filter"},
+    "14": {"id": 14, "name": "Vocal Formant Filter", "category": "filter"},
+    "15": {"id": 15, "name": "Vintage Tube Preamp", "category": "distortion"},
+    "16": {"id": 16, "name": "Wave Folder", "category": "distortion"},
+    "17": {"id": 17, "name": "Harmonic Exciter", "category": "distortion"},
+    "18": {"id": 18, "name": "Bit Crusher", "category": "distortion"},
+    "19": {"id": 19, "name": "Multiband Saturator", "category": "distortion"},
+    "20": {"id": 20, "name": "Muff Fuzz", "category": "distortion"},
+    "21": {"id": 21, "name": "Rodent Distortion", "category": "distortion"},
+    "22": {"id": 22, "name": "K-Style Overdrive", "category": "distortion"},
+    "23": {"id": 23, "name": "Digital Chorus", "category": "modulation"},
+    "24": {"id": 24, "name": "Resonant Chorus", "category": "modulation"},
+    "25": {"id": 25, "name": "Analog Phaser", "category": "modulation"},
+    "26": {"id": 26, "name": "Ring Modulator", "category": "modulation"},
+    "27": {"id": 27, "name": "Frequency Shifter", "category": "modulation"},
+    "28": {"id": 28, "name": "Harmonic Tremolo", "category": "modulation"},
+    "29": {"id": 29, "name": "Classic Tremolo", "category": "modulation"},
+    "30": {"id": 30, "name": "Rotary Speaker", "category": "modulation"},
+    "31": {"id": 31, "name": "Pitch Shifter", "category": "modulation"},
+    "32": {"id": 32, "name": "Detune Doubler", "category": "modulation"},
+    "33": {"id": 33, "name": "Intelligent Harmonizer", "category": "modulation"},
+    "34": {"id": 34, "name": "Tape Echo", "category": "delay"},
+    "35": {"id": 35, "name": "Digital Delay", "category": "delay"},
+    "36": {"id": 36, "name": "Magnetic Drum Echo", "category": "delay"},
+    "37": {"id": 37, "name": "Bucket Brigade Delay", "category": "delay"},
+    "38": {"id": 38, "name": "Buffer Repeat", "category": "delay"},
+    "39": {"id": 39, "name": "Plate Reverb", "category": "reverb"},
+    "40": {"id": 40, "name": "Spring Reverb", "category": "reverb"},
+    "41": {"id": 41, "name": "Convolution Reverb", "category": "reverb"},
+    "42": {"id": 42, "name": "Shimmer Reverb", "category": "reverb"},
+    "43": {"id": 43, "name": "Gated Reverb", "category": "reverb"},
+    "44": {"id": 44, "name": "Stereo Widener", "category": "spatial"},
+    "45": {"id": 45, "name": "Stereo Imager", "category": "spatial"},
+    "46": {"id": 46, "name": "Dimension Expander", "category": "spatial"},
+    "47": {"id": 47, "name": "Spectral Freeze", "category": "special"},
+    "48": {"id": 48, "name": "Spectral Gate", "category": "special"},
+    "49": {"id": 49, "name": "Phased Vocoder", "category": "special"},
+    "50": {"id": 50, "name": "Granular Cloud", "category": "special"},
+    "51": {"id": 51, "name": "Chaos Generator", "category": "special"},
+    "52": {"id": 52, "name": "Feedback Network", "category": "special"},
+    "53": {"id": 53, "name": "Mid-Side Processor", "category": "utility"},
+    "54": {"id": 54, "name": "Gain Utility", "category": "utility"},
+    "55": {"id": 55, "name": "Mono Maker", "category": "utility"},
+    "56": {"id": 56, "name": "Phase Align", "category": "utility"}
+  },
+  "categories": {
+    "dynamics": {
+      "ids": [1, 2, 3, 4, 5, 6],
+      "typical_position": "early_chain",
+      "purpose": "Control dynamics and transients"
+    },
+    "eq": {
+      "ids": [7, 8],
+      "typical_position": "early_to_mid",
+      "purpose": "Frequency shaping"
+    },
+    "filter": {
+      "ids": [9, 10, 11, 12, 13, 14],
+      "typical_position": "mid_chain",
+      "purpose": "Creative filtering"
+    },
+    "distortion": {
+      "ids": [15, 16, 17, 18, 19, 20, 21, 22],
+      "typical_position": "mid_chain",
+      "purpose": "Harmonic generation and saturation"
+    },
+    "modulation": {
+      "ids": [23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33],
+      "typical_position": "mid_to_late",
+      "purpose": "Movement and animation"
+    },
+    "delay": {
+      "ids": [34, 35, 36, 37, 38],
+      "typical_position": "late_chain",
+      "purpose": "Time-based effects"
+    },
+    "reverb": {
+      "ids": [39, 40, 41, 42, 43],
+      "typical_position": "end_chain",
+      "purpose": "Spatial depth"
+    },
+    "spatial": {
+      "ids": [44, 45, 46],
+      "typical_position": "late_chain",
+      "purpose": "Stereo manipulation"
+    },
+    "special": {
+      "ids": [47, 48, 49, 50, 51, 52],
+      "typical_position": "anywhere",
+      "purpose": "Creative and experimental"
+    },
+    "utility": {
+      "ids": [53, 54, 55, 56],
+      "typical_position": "as_needed",
+      "purpose": "Technical utilities"
+    }
+  },
+  "parameter_count": 16,
+  "parameter_names": [
+    "param0", "param1", "param2", "param3",
+    "param4", "param5", "param6", "param7",
+    "param8", "param9", "param10", "param11",
+    "param12", "param13", "param14", "param15"
+  ],
+  "slot_count": 6,
+  "metadata": {
+    "version": "1.0",
+    "last_updated": "2025-09-19",
+    "source": "engine_mapping_authoritative.py"
+  }
+}

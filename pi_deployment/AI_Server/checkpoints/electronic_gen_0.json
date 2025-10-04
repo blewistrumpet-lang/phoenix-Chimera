@@ -1,0 +1,38 @@
+{
+  "generation": 1,
+  "baseline": 0.7070000000000002,
+  "best_config": {
+    "visionary": {
+      "temperature": 0.8,
+      "use_cloud": true,
+      "keyword_weight": 1.2,
+      "creativity_bias": 0.7,
+      "experimental_bonus": 0.3
+    },
+    "oracle": {
+      "engine_weight": 15.0,
+      "vibe_weight": 0.5,
+      "search_k": 10,
+      "similarity_threshold": 0.2,
+      "prefer_experimental": true
+    },
+    "calculator": {
+      "nudge_intensity": 0.6,
+      "keyword_sensitivity": 1.5,
+      "harmonic_balance": 0.4,
+      "parameter_range": 0.4,
+      "preserve_extremes": true,
+      "genre_bias": "electronic"
+    },
+    "alchemist": {
+      "validation_strictness": 0.3,
+      "name_creativity": 0.9,
+      "safety_threshold": 0.6,
+      "max_effects": 5
+    }
+  },
+  "best_fitness": 0.7670000000000001,
+  "fitness_history": [
+    0.7670000000000001
+  ]
+}

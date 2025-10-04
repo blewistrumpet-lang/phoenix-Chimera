@@ -1,0 +1,79 @@
+{
+  "id": "GC_022",
+  "name": "Neural Bloom",
+  "technicalHint": "Intelligent Harmonizer + Feedback Network + Spectral Gate",
+  "category": "Experimental",
+  "subcategory": "Organic Processing",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 42,
+      "typeName": "Intelligent Harmonizer",
+      "mix": 0.708,
+      "params": [
+        0.4,
+        0.7,
+        0.854,
+        0.618,
+        0.04,
+        0.764,
+        0.916
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 49,
+      "typeName": "Feedback Network",
+      "mix": 0.618,
+      "params": [
+        0.708,
+        0.764,
+        0.618,
+        0.833,
+        0.472,
+        0.528,
+        0.916
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 46,
+      "typeName": "Spectral Gate",
+      "mix": 0.528,
+      "params": [
+        0.55,
+        0.618,
+        0.005,
+        0.04,
+        0.1,
+        0.8,
+        0.708
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.708,
+    "density": 0.854,
+    "movement": 0.916,
+    "space": 0.764,
+    "aggression": 0.382,
+    "vintage": 0.146
+  },
+  "keywords": [
+    "neural",
+    "bloom",
+    "brain",
+    "organic",
+    "intelligent",
+    "evolving",
+    "synaptic",
+    "network",
+    "biological",
+    "learning",
+    "adaptive",
+    "consciousness",
+    "gamma",
+    "cognitive"
+  ],
+  "cpuTier": "HEAVY"
+}

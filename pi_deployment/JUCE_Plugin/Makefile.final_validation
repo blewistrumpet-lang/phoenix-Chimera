@@ -1,0 +1,72 @@
+# Makefile for Final Validation Test
+# Compiles and runs comprehensive validation of all 57 Chimera Phoenix engines
+
+# Compiler settings
+CXX = clang++
+CXXFLAGS = -std=c++17 -O2 -Wall -Wextra -I./Source -I./JuceLibraryCode
+
+# JUCE framework path (adjust if needed)
+JUCE_PATH = /System/Library/Frameworks
+JUCE_FLAGS = -framework Foundation -framework CoreFoundation -framework CoreAudio -framework CoreMIDI -framework Cocoa -framework IOKit -framework QuartzCore -framework Accelerate -framework AudioToolbox -framework AudioUnit
+
+# Source files for the test
+SOURCES = final_validation_test.cpp \
+          Source/EngineFactory.cpp \
+          Source/PluginProcessor.cpp \
+          Source/CompleteEngineMetadata.cpp \
+          Source/UnifiedDefaultParameters.cpp \
+          Source/EngineMetadataInit.cpp \
+          JuceLibraryCode/include_juce_core.cpp \
+          JuceLibraryCode/include_juce_audio_basics.cpp \
+          JuceLibraryCode/include_juce_audio_processors.cpp \
+          JuceLibraryCode/include_juce_dsp.cpp
+
+# Output executable
+TARGET = final_validation_test
+
+# Build and run the test
+all: build run
+
+build:
+	@echo "Building Final Validation Test..."
+	$(CXX) $(CXXFLAGS) $(SOURCES) $(JUCE_FLAGS) -o $(TARGET)
+	@echo "Build complete."
+
+run:
+	@echo "Running Final Validation Test..."
+	./$(TARGET)
+
+# Quick test with minimal output
+quick:
+	@echo "Running quick validation test..."
+	./$(TARGET) | grep -E "(PASS|FAIL|WARN|SUMMARY|READINESS|RECOMMENDATION)"
+
+# Clean build artifacts
+clean:
+	rm -f $(TARGET)
+	rm -f final_validation_report.txt
+	@echo "Cleaned build artifacts."
+
+# Build only (no run)
+compile: build
+
+# Show help
+help:
+	@echo "Final Validation Test Makefile"
+	@echo "=============================="
+	@echo "Available targets:"
+	@echo "  all      - Build and run complete validation test"
+	@echo "  build    - Compile the test executable only"  
+	@echo "  run      - Run the validation test (must build first)"
+	@echo "  quick    - Run test with summary output only"
+	@echo "  clean    - Remove build artifacts and reports"
+	@echo "  help     - Show this help message"
+	@echo ""
+	@echo "The test validates all 57 engines for:"
+	@echo "  - Engine initialization"
+	@echo "  - Parameter mapping"
+	@echo "  - Audio processing"
+	@echo "  - Mix parameter indices"
+	@echo "  - Recent bug fixes"
+
+.PHONY: all build run quick clean compile help

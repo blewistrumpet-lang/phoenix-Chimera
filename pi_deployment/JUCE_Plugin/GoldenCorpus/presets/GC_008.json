@@ -1,0 +1,81 @@
+{
+  "id": "GC_008",
+  "name": "Iron Butterfly",
+  "technicalHint": "Envelope Filter + Spectral Gate + Wave Folder",
+  "category": "Dynamic Processing",
+  "subcategory": "Responsive Effects",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 48,
+      "typeName": "Envelope Filter",
+      "mix": 0.707,
+      "params": [
+        0.394,
+        0.618,
+        0.472,
+        0.146,
+        0.764,
+        0.333,
+        0.854
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 46,
+      "typeName": "Spectral Gate",
+      "mix": 0.472,
+      "params": [
+        0.618,
+        0.382,
+        0.236,
+        0.854,
+        0.157,
+        0.63,
+        0.528
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 31,
+      "typeName": "Wave Folder",
+      "mix": 0.382,
+      "params": [
+        0.472,
+        0.667,
+        0.618,
+        0.854,
+        0.75,
+        0.146,
+        0.5
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.667,
+    "density": 0.764,
+    "movement": 0.618,
+    "space": 0.382,
+    "aggression": 0.708,
+    "vintage": 0.292
+  },
+  "keywords": [
+    "iron",
+    "butterfly",
+    "envelope",
+    "filter",
+    "spectral",
+    "gate",
+    "wave",
+    "folder",
+    "dynamic",
+    "responsive",
+    "metallic",
+    "morphing",
+    "transformative",
+    "aggressive",
+    "modern",
+    "electronic"
+  ],
+  "cpuTier": "MEDIUM"
+}

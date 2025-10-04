@@ -1,0 +1,82 @@
+{
+  "id": "GC_007",
+  "name": "Liquid Sunshine",
+  "technicalHint": "Harmonic Tremolo + Tape Echo + Vintage Console EQ",
+  "category": "Movement & Rhythm",
+  "subcategory": "Organic Motion",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 21,
+      "typeName": "Harmonic Tremolo",
+      "mix": 0.618,
+      "params": [
+        0.382,
+        0.618,
+        0.333,
+        0.667,
+        0.25,
+        0.5,
+        0.125
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 1,
+      "typeName": "Tape Echo",
+      "mix": 0.382,
+      "params": [
+        0.236,
+        0.618,
+        0.472,
+        0.146,
+        0.667,
+        0.854,
+        0.5
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 26,
+      "typeName": "Vintage Console EQ",
+      "mix": 1.0,
+      "params": [
+        0.125,
+        0.556,
+        0.25,
+        0.444,
+        0.5,
+        0.611,
+        0.875
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.618,
+    "density": 0.472,
+    "movement": 0.854,
+    "space": 0.528,
+    "aggression": 0.146,
+    "vintage": 0.764
+  },
+  "keywords": [
+    "liquid",
+    "sunshine",
+    "warm",
+    "golden",
+    "flowing",
+    "organic",
+    "tremolo",
+    "harmonic",
+    "movement",
+    "vintage",
+    "console",
+    "tape",
+    "smooth",
+    "musical",
+    "rhythmic",
+    "pulsing",
+    "breathing"
+  ],
+  "cpuTier": "LIGHT"
+}

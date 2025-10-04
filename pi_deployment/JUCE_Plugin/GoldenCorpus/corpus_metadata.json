@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "presetCount": 30,
+  "categories": [
+    {
+      "name": "Studio Essentials",
+      "count": 4
+    },
+    {
+      "name": "Spatial Design",
+      "count": 6
+    },
+    {
+      "name": "Character & Color",
+      "count": 5
+    },
+    {
+      "name": "Creative Sound Design",
+      "count": 3
+    },
+    {
+      "name": "Movement & Rhythm",
+      "count": 1
+    },
+    {
+      "name": "Dynamic Processing",
+      "count": 3
+    },
+    {
+      "name": "Textural Effects",
+      "count": 1
+    },
+    {
+      "name": "Experimental",
+      "count": 4
+    },
+    {
+      "name": "World Music",
+      "count": 1
+    },
+    {
+      "name": "Experimental Laboratory",
+      "count": 2
+    }
+  ]
+}

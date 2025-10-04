@@ -1,0 +1,2330 @@
+{
+  "version": "2.0",
+  "presetCount": 30,
+  "presets": [
+    {
+      "id": "GC_001",
+      "name": "Velvet Thunder",
+      "technicalHint": "Vintage Tube + Tape Echo + EQ",
+      "category": "Studio Essentials",
+      "subcategory": "Vocal Processing",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "vintage_tube",
+          "typeName": "Vintage Tube Preamp",
+          "mix": 1.0,
+          "params": [
+            0.35,
+            0.65,
+            0.45,
+            0.7,
+            0.0,
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "tape_echo",
+          "typeName": "Tape Echo",
+          "mix": 0.3,
+          "params": [
+            0.125,
+            0.25,
+            0.6,
+            0.4,
+            0.5,
+            0.6,
+            0.5
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "parametric_eq",
+          "typeName": "Parametric EQ",
+          "mix": 1.0,
+          "params": [
+            0.85,
+            0.6,
+            0.3,
+            0.65,
+            0.55,
+            0.5,
+            0.2
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.7,
+        "density": 0.4,
+        "movement": 0.3,
+        "space": 0.4,
+        "aggression": 0.1,
+        "vintage": 0.7
+      },
+      "keywords": [
+        "warm",
+        "vintage",
+        "tube",
+        "vocal",
+        "smooth",
+        "classic",
+        "analog",
+        "professional",
+        "velvet",
+        "thunder",
+        "presence",
+        "air",
+        "polish",
+        "radio",
+        "broadcast"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_002",
+      "name": "Crystal Palace",
+      "technicalHint": "Shimmer Reverb + Dimension Expander",
+      "category": "Spatial Design",
+      "subcategory": "Impossible Spaces",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "shimmer_reverb",
+          "typeName": "Shimmer Reverb",
+          "mix": 1.0,
+          "params": [
+            0.7,
+            0.8,
+            0.6,
+            0.5,
+            0.7,
+            0.6,
+            0.5
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "dimension_expander",
+          "typeName": "Dimension Expander",
+          "mix": 0.6,
+          "params": [
+            0.8,
+            0.6,
+            0.4,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.8,
+        "density": 0.5,
+        "movement": 0.4,
+        "space": 0.9,
+        "aggression": 0.0,
+        "vintage": 0.2
+      },
+      "keywords": [
+        "ethereal",
+        "shimmer",
+        "space",
+        "dreamy",
+        "expansive",
+        "ambient",
+        "celestial",
+        "floating",
+        "crystal",
+        "palace",
+        "octave",
+        "wide",
+        "atmospheric",
+        "cinematic",
+        "beautiful"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_003",
+      "name": "Broken Radio",
+      "technicalHint": "Bit Crusher + Filter + Spring Reverb",
+      "category": "Character & Color",
+      "subcategory": "Lo-Fi Character",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "bit_crusher",
+          "typeName": "Bit Crusher",
+          "mix": 0.7,
+          "params": [
+            0.4,
+            0.3,
+            0.6,
+            0.5,
+            0.0,
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "ladder_filter",
+          "typeName": "Ladder Filter",
+          "mix": 1.0,
+          "params": [
+            0.4,
+            0.6,
+            0.3,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "spring_reverb",
+          "typeName": "Spring Reverb",
+          "mix": 0.3,
+          "params": [
+            0.4,
+            0.3,
+            0.7,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.2,
+        "density": 0.6,
+        "movement": 0.3,
+        "space": 0.4,
+        "aggression": 0.4,
+        "vintage": 0.8
+      },
+      "keywords": [
+        "lofi",
+        "vintage",
+        "broken",
+        "radio",
+        "character",
+        "nostalgic",
+        "degraded",
+        "crushed",
+        "filtered",
+        "spring",
+        "old",
+        "retro",
+        "telephone",
+        "transistor",
+        "am radio"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_004",
+      "name": "Midnight Oil",
+      "technicalHint": "Harmonic Exciter + Multiband Saturator + Analog Phaser",
+      "category": "Character & Color",
+      "subcategory": "Harmonic Enhancement",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "harmonic_exciter",
+          "typeName": "Harmonic Exciter",
+          "mix": 0.6,
+          "params": [
+            0.3,
+            0.7,
+            0.2,
+            0.6,
+            0.4,
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "multiband_saturator",
+          "typeName": "Multiband Saturator",
+          "mix": 0.8,
+          "params": [
+            0.7,
+            0.5,
+            0.3,
+            0.4,
+            0.6,
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "analog_phaser",
+          "typeName": "Analog Phaser",
+          "mix": 0.2,
+          "params": [
+            0.1,
+            0.6,
+            0.3,
+            0.4,
+            0.5,
+            0.5,
+            0.5
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.3,
+        "density": 0.8,
+        "movement": 0.2,
+        "space": 0.3,
+        "aggression": 0.5,
+        "vintage": 0.7
+      },
+      "keywords": [
+        "dark",
+        "saturated",
+        "thick",
+        "midnight",
+        "oil",
+        "warm",
+        "harmonic",
+        "rich",
+        "deep",
+        "analog",
+        "moody",
+        "dense",
+        "fat",
+        "phat",
+        "late night",
+        "brooding"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_005",
+      "name": "Glass Cathedral",
+      "technicalHint": "Convolution Reverb + Formant Filter + Transient Shaper",
+      "category": "Spatial Design",
+      "subcategory": "Realistic Spaces",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "convolution_reverb",
+          "typeName": "Convolution Reverb",
+          "mix": 0.6,
+          "params": [
+            0.8,
+            0.85,
+            0.3,
+            0.7,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "vocal_formant",
+          "typeName": "Vocal Formant Filter",
+          "mix": 0.3,
+          "params": [
+            0.6,
+            0.7,
+            0.4,
+            0.5,
+            0.0,
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "transient_shaper",
+          "typeName": "Transient Shaper",
+          "mix": 1.0,
+          "params": [
+            0.6,
+            0.4,
+            0.7,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.8,
+        "density": 0.4,
+        "movement": 0.3,
+        "space": 0.9,
+        "aggression": 0.0,
+        "vintage": 0.3
+      },
+      "keywords": [
+        "glass",
+        "cathedral",
+        "pristine",
+        "clear",
+        "ethereal",
+        "spiritual",
+        "reverb",
+        "space",
+        "formant",
+        "crystalline",
+        "height",
+        "air",
+        "church",
+        "sacred",
+        "angelic"
+      ],
+      "cpuTier": "HEAVY"
+    },
+    {
+      "id": "GC_006",
+      "name": "Neon Dreams",
+      "technicalHint": "Frequency Shifter + Stereo Chorus + Digital Delay",
+      "category": "Creative Sound Design",
+      "subcategory": "Synthetic Textures",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "frequency_shifter",
+          "typeName": "Frequency Shifter",
+          "mix": 0.4,
+          "params": [
+            0.52,
+            0.3,
+            0.6,
+            0.0,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "digital_chorus",
+          "typeName": "Digital Chorus",
+          "mix": 0.7,
+          "params": [
+            0.3,
+            0.7,
+            0.4,
+            0.8,
+            0.5,
+            0.6,
+            0.5
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "digital_delay",
+          "typeName": "Digital Delay",
+          "mix": 0.3,
+          "params": [
+            0.375,
+            0.4,
+            0.7,
+            0.5,
+            0.0,
+            0.5,
+            0.5
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.8,
+        "density": 0.5,
+        "movement": 0.7,
+        "space": 0.6,
+        "aggression": 0.2,
+        "vintage": 0.7
+      },
+      "keywords": [
+        "neon",
+        "dreams",
+        "80s",
+        "synthwave",
+        "vaporwave",
+        "retro",
+        "chorus",
+        "wide",
+        "synthetic",
+        "colorful",
+        "bright",
+        "nostalgic",
+        "future",
+        "cyber",
+        "miami"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_007",
+      "name": "Liquid Sunshine",
+      "technicalHint": "Harmonic Tremolo + Tape Echo + Vintage Console EQ",
+      "category": "Movement & Rhythm",
+      "subcategory": "Organic Motion",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "harmonic_tremolo",
+          "typeName": "Harmonic Tremolo",
+          "mix": 0.618,
+          "params": [
+            0.382,
+            0.618,
+            0.333,
+            0.667,
+            0.25,
+            0.5,
+            0.125
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "tape_echo",
+          "typeName": "Tape Echo",
+          "mix": 0.382,
+          "params": [
+            0.236,
+            0.618,
+            0.472,
+            0.146,
+            0.667,
+            0.854,
+            0.5
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "vintage_console_eq",
+          "typeName": "Vintage Console EQ",
+          "mix": 1.0,
+          "params": [
+            0.125,
+            0.556,
+            0.25,
+            0.444,
+            0.5,
+            0.611,
+            0.875
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.618,
+        "density": 0.472,
+        "movement": 0.854,
+        "space": 0.528,
+        "aggression": 0.146,
+        "vintage": 0.764
+      },
+      "keywords": [
+        "liquid",
+        "sunshine",
+        "warm",
+        "golden",
+        "flowing",
+        "organic",
+        "tremolo",
+        "harmonic",
+        "movement",
+        "vintage",
+        "console",
+        "tape",
+        "smooth",
+        "musical",
+        "rhythmic",
+        "pulsing",
+        "breathing"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_008",
+      "name": "Iron Butterfly",
+      "technicalHint": "Envelope Filter + Spectral Gate + Wave Folder",
+      "category": "Dynamic Processing",
+      "subcategory": "Responsive Effects",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "envelope_filter",
+          "typeName": "Envelope Filter",
+          "mix": 0.707,
+          "params": [
+            0.394,
+            0.618,
+            0.472,
+            0.146,
+            0.764,
+            0.333,
+            0.854
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "spectral_gate",
+          "typeName": "Spectral Gate",
+          "mix": 0.472,
+          "params": [
+            0.618,
+            0.382,
+            0.236,
+            0.854,
+            0.157,
+            0.63,
+            0.528
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "wave_folder",
+          "typeName": "Wave Folder",
+          "mix": 0.382,
+          "params": [
+            0.472,
+            0.667,
+            0.618,
+            0.854,
+            0.75,
+            0.146,
+            0.5
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.667,
+        "density": 0.764,
+        "movement": 0.618,
+        "space": 0.382,
+        "aggression": 0.708,
+        "vintage": 0.292
+      },
+      "keywords": [
+        "iron",
+        "butterfly",
+        "envelope",
+        "filter",
+        "spectral",
+        "gate",
+        "wave",
+        "folder",
+        "dynamic",
+        "responsive",
+        "metallic",
+        "morphing",
+        "transformative",
+        "aggressive",
+        "modern",
+        "electronic"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_009",
+      "name": "Phantom Embrace",
+      "technicalHint": "Comb Resonator + Mid/Side Processor + Gated Reverb",
+      "category": "Spatial Design",
+      "subcategory": "Surround Effects",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "comb_resonator",
+          "typeName": "Comb Resonator",
+          "mix": 0.528,
+          "params": [
+            0.26,
+            0.833,
+            0.472,
+            0.618,
+            0.26,
+            0.498,
+            0.708
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "gated_reverb",
+          "typeName": "Gated Reverb",
+          "mix": 0.618,
+          "params": [
+            0.764,
+            0.5,
+            0.618,
+            0.146,
+            0.382,
+            0.708,
+            0.472
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.708,
+        "density": 0.618,
+        "movement": 0.528,
+        "space": 0.916,
+        "aggression": 0.146,
+        "vintage": 0.382
+      },
+      "keywords": [
+        "phantom",
+        "embrace",
+        "ghostly",
+        "ethereal",
+        "wide",
+        "surround",
+        "comb",
+        "filter",
+        "mid",
+        "side",
+        "gated",
+        "reverb",
+        "haunting",
+        "mysterious",
+        "floating",
+        "phase"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_010",
+      "name": "Solar Flare",
+      "technicalHint": "Intelligent Harmonizer + Spectral Freeze + Feedback Network",
+      "category": "Creative Sound Design",
+      "subcategory": "Spectral Manipulation",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "intelligent_harmonizer",
+          "typeName": "Intelligent Harmonizer",
+          "mix": 0.618,
+          "params": [
+            0.667,
+            0.333,
+            0.764,
+            0.618,
+            0.236,
+            0.708,
+            0.5
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "spectral_freeze",
+          "typeName": "Spectral Freeze",
+          "mix": 0.472,
+          "params": [
+            0.618,
+            0.854,
+            0.382,
+            0.708,
+            0.528,
+            0.667,
+            0.146
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "feedback_network",
+          "typeName": "Feedback Network",
+          "mix": 0.382,
+          "params": [
+            0.764,
+            0.618,
+            0.472,
+            0.708,
+            0.854,
+            0.333,
+            0.528
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.916,
+        "density": 0.854,
+        "movement": 0.764,
+        "space": 0.708,
+        "aggression": 0.618,
+        "vintage": 0.146
+      },
+      "keywords": [
+        "solar",
+        "flare",
+        "explosive",
+        "harmonic",
+        "intelligent",
+        "freeze",
+        "spectral",
+        "feedback",
+        "radiant",
+        "bright",
+        "energy",
+        "burst",
+        "futuristic",
+        "expansive",
+        "blooming"
+      ],
+      "cpuTier": "HEAVY"
+    },
+    {
+      "id": "GC_011",
+      "name": "Dust & Echoes",
+      "technicalHint": "Granular Cloud + Magnetic Drum Echo + Vintage Opto Compressor",
+      "category": "Textural Effects",
+      "subcategory": "Granular Processing",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "granular_cloud",
+          "typeName": "Granular Cloud",
+          "mix": 0.528,
+          "params": [
+            0.089,
+            0.618,
+            0.382,
+            0.708,
+            0.236,
+            0.472,
+            0.667
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "magnetic_drum_echo",
+          "typeName": "Magnetic Drum Echo",
+          "mix": 0.618,
+          "params": [
+            0.144,
+            0.233,
+            0.377,
+            0.618,
+            0.708,
+            0.854,
+            0.528
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "vintage_opto",
+          "typeName": "Vintage Opto",
+          "mix": 1.0,
+          "params": [
+            0.618,
+            0.382,
+            0.146,
+            0.854,
+            0.333,
+            0.667,
+            0.708
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.382,
+        "density": 0.764,
+        "movement": 0.854,
+        "space": 0.833,
+        "aggression": 0.146,
+        "vintage": 0.916
+      },
+      "keywords": [
+        "dust",
+        "echoes",
+        "granular",
+        "memories",
+        "nostalgic",
+        "vintage",
+        "tape",
+        "magnetic",
+        "particles",
+        "dissolving",
+        "fading",
+        "melancholic",
+        "cinematic",
+        "emotional",
+        "texture"
+      ],
+      "cpuTier": "HEAVY"
+    },
+    {
+      "id": "GC_012",
+      "name": "Thunder & Silk",
+      "technicalHint": "Transient Shaper + State Variable Filter + Classic Compressor",
+      "category": "Dynamic Processing",
+      "subcategory": "Transient Design",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "transient_shaper",
+          "typeName": "Transient Shaper",
+          "mix": 1.0,
+          "params": [
+            0.764,
+            0.382,
+            0.236,
+            0.618,
+            0.708,
+            0.854,
+            0.5
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "state_variable_filter",
+          "typeName": "State Variable Filter",
+          "mix": 1.0,
+          "params": [
+            0.382,
+            0.708,
+            0.667,
+            0.333,
+            0.618,
+            0.472,
+            0.25
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "classic_compressor",
+          "typeName": "Classic Compressor",
+          "mix": 1.0,
+          "params": [
+            0.528,
+            0.472,
+            0.089,
+            0.618,
+            0.708,
+            0.667,
+            0.764
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.708,
+        "density": 0.618,
+        "movement": 0.382,
+        "space": 0.472,
+        "aggression": 0.764,
+        "vintage": 0.528
+      },
+      "keywords": [
+        "thunder",
+        "silk",
+        "punch",
+        "smooth",
+        "transient",
+        "shaper",
+        "compress",
+        "attack",
+        "modern",
+        "polish",
+        "professional",
+        "glue",
+        "impact",
+        "clarity",
+        "presence"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_013",
+      "name": "Quantum Garden",
+      "technicalHint": "Chaos Generator + Buffer Repeat + Resonant Chorus",
+      "category": "Experimental",
+      "subcategory": "Glitch & Chaos",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "chaos_generator",
+          "typeName": "Chaos Generator",
+          "mix": 0.618,
+          "params": [
+            0.906,
+            0.382,
+            0.618,
+            0.472,
+            0.708,
+            0.333,
+            0.854
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "buffer_repeat",
+          "typeName": "Buffer Repeat",
+          "mix": 0.472,
+          "params": [
+            0.146,
+            0.764,
+            0.382,
+            0.618,
+            0.528,
+            0.708,
+            0.236
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "resonant_chorus",
+          "typeName": "Resonant Chorus",
+          "mix": 0.708,
+          "params": [
+            0.089,
+            0.854,
+            0.618,
+            0.472,
+            0.764,
+            0.667,
+            0.382
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.618,
+        "density": 0.854,
+        "movement": 0.958,
+        "space": 0.764,
+        "aggression": 0.382,
+        "vintage": 0.236
+      },
+      "keywords": [
+        "quantum",
+        "garden",
+        "chaos",
+        "fractal",
+        "glitch",
+        "buffer",
+        "repeat",
+        "experimental",
+        "evolving",
+        "organic",
+        "strange",
+        "attractor",
+        "unpredictable",
+        "generative"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_014",
+      "name": "Copper Resonance",
+      "technicalHint": "Analog Ring Modulator + Ladder Filter + Multiband Saturator",
+      "category": "Character & Color",
+      "subcategory": "Metallic Tones",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "ring_modulator",
+          "typeName": "Analog Ring Modulator",
+          "mix": 0.472,
+          "params": [
+            0.276,
+            0.854,
+            0.618,
+            0.146,
+            0.708,
+            0.382,
+            0.528
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "ladder_filter",
+          "typeName": "Ladder Filter",
+          "mix": 1.0,
+          "params": [
+            0.54,
+            0.893,
+            0.382,
+            0.236,
+            0.618,
+            0.146,
+            0.764
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "multiband_saturator",
+          "typeName": "Multiband Saturator",
+          "mix": 0.618,
+          "params": [
+            0.472,
+            0.708,
+            0.382,
+            0.276,
+            0.893,
+            0.618,
+            0.764
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.618,
+        "density": 0.708,
+        "movement": 0.472,
+        "space": 0.382,
+        "aggression": 0.528,
+        "vintage": 0.764
+      },
+      "keywords": [
+        "copper",
+        "resonance",
+        "metallic",
+        "warm",
+        "analog",
+        "ring",
+        "modulator",
+        "ladder",
+        "filter",
+        "musical",
+        "bell",
+        "organic",
+        "harmonic",
+        "saturated",
+        "vintage"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_015",
+      "name": "Aurora Borealis",
+      "technicalHint": "Phased Vocoder + Pitch Shifter + Detune Doubler",
+      "category": "Spatial Design",
+      "subcategory": "Atmospheric Effects",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "phased_vocoder",
+          "typeName": "Phased Vocoder",
+          "mix": 0.764,
+          "params": [
+            0.428,
+            0.558,
+            0.382,
+            0.618,
+            0.854,
+            0.708,
+            0.236
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "pitch_shifter",
+          "typeName": "Pitch Shifter",
+          "mix": 0.382,
+          "params": [
+            0.583,
+            0.25,
+            0.708,
+            0.618,
+            0.472,
+            0.528,
+            0.854
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "detune_doubler",
+          "typeName": "Detune Doubler",
+          "mix": 0.618,
+          "params": [
+            0.146,
+            0.236,
+            0.089,
+            0.144,
+            0.708,
+            0.618,
+            0.118
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.854,
+        "density": 0.618,
+        "movement": 0.916,
+        "space": 0.958,
+        "aggression": 0.089,
+        "vintage": 0.236
+      },
+      "keywords": [
+        "aurora",
+        "borealis",
+        "northern",
+        "lights",
+        "shimmer",
+        "ethereal",
+        "vocoder",
+        "pitch",
+        "shift",
+        "detune",
+        "atmospheric",
+        "celestial",
+        "colorful",
+        "morphing",
+        "beautiful"
+      ],
+      "cpuTier": "HEAVY"
+    },
+    {
+      "id": "GC_016",
+      "name": "Digital Erosion",
+      "technicalHint": "Bit Crusher + Buffer Repeat + Frequency Shifter",
+      "category": "Creative Sound Design",
+      "subcategory": "Digital Degradation",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "bit_crusher",
+          "typeName": "Bit Crusher",
+          "mix": 0.764,
+          "params": [
+            0.333,
+            0.25,
+            0.618,
+            0.472,
+            0.708,
+            0.382,
+            0.854
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "buffer_repeat",
+          "typeName": "Buffer Repeat",
+          "mix": 0.618,
+          "params": [
+            0.064,
+            0.708,
+            0.382,
+            0.236,
+            0.618,
+            0.854,
+            0.472
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "frequency_shifter",
+          "typeName": "Frequency Shifter",
+          "mix": 0.382,
+          "params": [
+            0.511,
+            0.618,
+            0.708,
+            0.146,
+            0.382,
+            0.236,
+            0.472
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.382,
+        "density": 0.854,
+        "movement": 0.764,
+        "space": 0.236,
+        "aggression": 0.708,
+        "vintage": 0.146
+      },
+      "keywords": [
+        "digital",
+        "erosion",
+        "glitch",
+        "bit",
+        "crush",
+        "corrupt",
+        "degradation",
+        "cyberpunk",
+        "dystopian",
+        "buffer",
+        "stutter",
+        "alias",
+        "artifacts",
+        "broken",
+        "technological"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_017",
+      "name": "Velvet Hammer",
+      "technicalHint": "Vintage Opto Compressor + Harmonic Exciter + Vintage Console EQ",
+      "category": "Studio Essentials",
+      "subcategory": "Mix Enhancement",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "vintage_opto",
+          "typeName": "Vintage Opto",
+          "mix": 1.0,
+          "params": [
+            0.528,
+            0.382,
+            0.25,
+            0.708,
+            0.854,
+            0.618,
+            0.764
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "harmonic_exciter",
+          "typeName": "Harmonic Exciter",
+          "mix": 0.472,
+          "params": [
+            0.618,
+            0.764,
+            0.382,
+            0.708,
+            0.528,
+            0.618,
+            0.854
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "vintage_console_eq",
+          "typeName": "Vintage Console EQ",
+          "mix": 1.0,
+          "params": [
+            0.1,
+            0.583,
+            0.35,
+            0.444,
+            0.65,
+            0.611,
+            0.9
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.708,
+        "density": 0.764,
+        "movement": 0.236,
+        "space": 0.472,
+        "aggression": 0.382,
+        "vintage": 0.854
+      },
+      "keywords": [
+        "velvet",
+        "hammer",
+        "smooth",
+        "powerful",
+        "opto",
+        "compressor",
+        "harmonic",
+        "exciter",
+        "vintage",
+        "console",
+        "warm",
+        "professional",
+        "studio",
+        "mix",
+        "master"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_018",
+      "name": "Whisper Network",
+      "technicalHint": "Vintage Opto Compressor + Mid/Side EQ + Plate Reverb",
+      "category": "Studio Essentials",
+      "subcategory": "Transparent Processing",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "vintage_opto",
+          "typeName": "Vintage Opto",
+          "mix": 1.0,
+          "params": [
+            0.708,
+            0.236,
+            0.382,
+            0.618,
+            0.854,
+            0.528,
+            0.382
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "plate_reverb",
+          "typeName": "Plate Reverb",
+          "mix": 0.146,
+          "params": [
+            0.382,
+            0.472,
+            0.618,
+            0.236,
+            0.708,
+            0.854,
+            0.528
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.708,
+        "density": 0.382,
+        "movement": 0.236,
+        "space": 0.618,
+        "aggression": 0.089,
+        "vintage": 0.472
+      },
+      "keywords": [
+        "whisper",
+        "network",
+        "transparent",
+        "gentle",
+        "air",
+        "intimate",
+        "subtle",
+        "opto",
+        "plate",
+        "natural",
+        "enhancement",
+        "delicate",
+        "professional",
+        "invisible",
+        "polish"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_019",
+      "name": "Cosmic Strings",
+      "technicalHint": "Intelligent Harmonizer + Comb Resonator + Phased Vocoder",
+      "category": "Experimental",
+      "subcategory": "Quantum Effects",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "intelligent_harmonizer",
+          "typeName": "Intelligent Harmonizer",
+          "mix": 0.618,
+          "params": [
+            0.75,
+            0.416,
+            0.916,
+            0.708,
+            0.146,
+            0.618,
+            0.854
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "comb_resonator",
+          "typeName": "Comb Resonator",
+          "mix": 0.708,
+          "params": [
+            0.137,
+            0.618,
+            0.764,
+            0.382,
+            0.507,
+            0.854,
+            0.916
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "phased_vocoder",
+          "typeName": "Phased Vocoder",
+          "mix": 0.472,
+          "params": [
+            0.272,
+            0.618,
+            0.764,
+            0.382,
+            0.916,
+            0.528,
+            0.089
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.764,
+        "density": 0.854,
+        "movement": 0.708,
+        "space": 0.916,
+        "aggression": 0.236,
+        "vintage": 0.089
+      },
+      "keywords": [
+        "cosmic",
+        "strings",
+        "quantum",
+        "dimensional",
+        "harmonizer",
+        "resonance",
+        "theoretical",
+        "physics",
+        "vibration",
+        "celestial",
+        "evolving",
+        "intelligent",
+        "space",
+        "ethereal"
+      ],
+      "cpuTier": "HEAVY"
+    },
+    {
+      "id": "GC_020",
+      "name": "Rust & Bones",
+      "technicalHint": "Muff Fuzz + Spring Reverb + Envelope Filter",
+      "category": "Character & Color",
+      "subcategory": "Industrial Decay",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "muff_fuzz",
+          "typeName": "Muff Fuzz",
+          "mix": 0.708,
+          "params": [
+            0.764,
+            0.382,
+            0.854,
+            0.618,
+            0.472,
+            0.708,
+            0.146
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "spring_reverb",
+          "typeName": "Spring Reverb",
+          "mix": 0.618,
+          "params": [
+            0.708,
+            0.472,
+            0.854,
+            0.618,
+            0.382,
+            0.764,
+            0.528
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "envelope_filter",
+          "typeName": "Envelope Filter",
+          "mix": 0.472,
+          "params": [
+            0.28,
+            0.708,
+            0.382,
+            0.618,
+            0.854,
+            0.236,
+            0.382
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.236,
+        "density": 0.854,
+        "movement": 0.472,
+        "space": 0.618,
+        "aggression": 0.764,
+        "vintage": 0.854
+      },
+      "keywords": [
+        "rust",
+        "bones",
+        "decay",
+        "industrial",
+        "corroded",
+        "metal",
+        "abandoned",
+        "gritty",
+        "fuzz",
+        "spring",
+        "mechanical",
+        "dark",
+        "weathered",
+        "ancient",
+        "desolate"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_021",
+      "name": "Silk Road Echo",
+      "technicalHint": "Bucket Brigade Delay + Formant Filter + Rotary Speaker",
+      "category": "World Music",
+      "subcategory": "Eastern Flavors",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "bucket_brigade",
+          "typeName": "Bucket Brigade Delay",
+          "mix": 0.618,
+          "params": [
+            0.245,
+            0.708,
+            0.382,
+            0.618,
+            0.472,
+            0.764,
+            0.528
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "vocal_formant",
+          "typeName": "Vocal Formant Filter",
+          "mix": 0.854,
+          "params": [
+            0.37,
+            0.555,
+            0.618,
+            0.764,
+            0.382,
+            0.472,
+            0.089
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "rotary_speaker",
+          "typeName": "Rotary Speaker",
+          "mix": 0.472,
+          "params": [
+            0.138,
+            0.618,
+            0.708,
+            0.472,
+            0.854,
+            0.382,
+            0.667
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.618,
+        "density": 0.708,
+        "movement": 0.764,
+        "space": 0.854,
+        "aggression": 0.236,
+        "vintage": 0.764
+      },
+      "keywords": [
+        "silk",
+        "road",
+        "echo",
+        "eastern",
+        "exotic",
+        "mystical",
+        "journey",
+        "sitar",
+        "formant",
+        "rotary",
+        "caravan",
+        "ancient",
+        "trade",
+        "organic",
+        "world"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_022",
+      "name": "Neural Bloom",
+      "technicalHint": "Intelligent Harmonizer + Feedback Network + Spectral Gate",
+      "category": "Experimental",
+      "subcategory": "Organic Processing",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "intelligent_harmonizer",
+          "typeName": "Intelligent Harmonizer",
+          "mix": 0.708,
+          "params": [
+            0.4,
+            0.7,
+            0.854,
+            0.618,
+            0.04,
+            0.764,
+            0.916
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "feedback_network",
+          "typeName": "Feedback Network",
+          "mix": 0.618,
+          "params": [
+            0.708,
+            0.764,
+            0.618,
+            0.833,
+            0.472,
+            0.528,
+            0.916
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "spectral_gate",
+          "typeName": "Spectral Gate",
+          "mix": 0.528,
+          "params": [
+            0.55,
+            0.618,
+            0.005,
+            0.04,
+            0.1,
+            0.8,
+            0.708
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.708,
+        "density": 0.854,
+        "movement": 0.916,
+        "space": 0.764,
+        "aggression": 0.382,
+        "vintage": 0.146
+      },
+      "keywords": [
+        "neural",
+        "bloom",
+        "brain",
+        "organic",
+        "intelligent",
+        "evolving",
+        "synaptic",
+        "network",
+        "biological",
+        "learning",
+        "adaptive",
+        "consciousness",
+        "gamma",
+        "cognitive"
+      ],
+      "cpuTier": "HEAVY"
+    },
+    {
+      "id": "GC_023",
+      "name": "Tidal Force",
+      "technicalHint": "Mastering Limiter + State Variable Filter + Dimension Expander",
+      "category": "Dynamic Processing",
+      "subcategory": "Power Dynamics",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "mastering_limiter",
+          "typeName": "Mastering Limiter",
+          "mix": 1.0,
+          "params": [
+            0.618,
+            0.958,
+            0.001,
+            0.742,
+            0.089,
+            0.854,
+            0.764
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "state_variable_filter",
+          "typeName": "State Variable Filter",
+          "mix": 0.854,
+          "params": [
+            0.074,
+            0.708,
+            0.618,
+            0.764,
+            0.382,
+            0.916,
+            0.012
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "dimension_expander",
+          "typeName": "Dimension Expander",
+          "mix": 0.708,
+          "params": [
+            0.916,
+            0.764,
+            0.528,
+            0.382,
+            0.618,
+            0.854,
+            0.472
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.528,
+        "density": 0.916,
+        "movement": 0.854,
+        "space": 0.958,
+        "aggression": 0.916,
+        "vintage": 0.382
+      },
+      "keywords": [
+        "tidal",
+        "force",
+        "ocean",
+        "massive",
+        "limiter",
+        "power",
+        "crushing",
+        "waves",
+        "pressure",
+        "gravitational",
+        "deep",
+        "maritime",
+        "elemental",
+        "tsunami"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_024",
+      "name": "Amber Preservation",
+      "technicalHint": "Vintage Tube Preamp + Parametric EQ + Vintage Opto Compressor",
+      "category": "Studio Essentials",
+      "subcategory": "Vintage Enhancement",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "vintage_tube",
+          "typeName": "Vintage Tube Preamp",
+          "mix": 1.0,
+          "params": [
+            0.472,
+            0.618,
+            0.59,
+            0.764,
+            0.146,
+            0.667,
+            0.708
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "parametric_eq",
+          "typeName": "Parametric EQ",
+          "mix": 1.0,
+          "params": [
+            0.916,
+            0.618,
+            0.382,
+            0.59,
+            0.472,
+            0.618,
+            0.1
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "vintage_opto",
+          "typeName": "Vintage Opto",
+          "mix": 1.0,
+          "params": [
+            0.764,
+            0.333,
+            0.236,
+            0.618,
+            0.764,
+            0.472,
+            0.618
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.708,
+        "density": 0.618,
+        "movement": 0.236,
+        "space": 0.528,
+        "aggression": 0.146,
+        "vintage": 0.854
+      },
+      "keywords": [
+        "amber",
+        "preservation",
+        "warm",
+        "golden",
+        "vintage",
+        "tube",
+        "timeless",
+        "organic",
+        "natural",
+        "beautiful",
+        "nostalgic",
+        "analog",
+        "preserved",
+        "clarity"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_025",
+      "name": "Zero Point Field",
+      "technicalHint": "Noise Gate + Granular Cloud + Spectral Freeze",
+      "category": "Experimental",
+      "subcategory": "Quantum Audio",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "noise_gate",
+          "typeName": "Noise Gate",
+          "mix": 1.0,
+          "params": [
+            0.089,
+            0.916,
+            0.001,
+            0.023,
+            0.618,
+            0.1,
+            0.854
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "granular_cloud",
+          "typeName": "Granular Cloud",
+          "mix": 0.708,
+          "params": [
+            0.023,
+            0.916,
+            0.618,
+            0.382,
+            0.854,
+            0.5,
+            0.764
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "spectral_freeze",
+          "typeName": "Spectral Freeze",
+          "mix": 0.618,
+          "params": [
+            0.5,
+            0.916,
+            0.062,
+            0.854,
+            0.618,
+            0.089,
+            0.001
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.618,
+        "density": 0.382,
+        "movement": 0.708,
+        "space": 0.854,
+        "aggression": 0.089,
+        "vintage": 0.023
+      },
+      "keywords": [
+        "zero",
+        "point",
+        "field",
+        "quantum",
+        "vacuum",
+        "fluctuation",
+        "virtual",
+        "particles",
+        "void",
+        "silence",
+        "emergence",
+        "planck",
+        "uncertainty",
+        "physics"
+      ],
+      "cpuTier": "HEAVY"
+    },
+    {
+      "id": "GC_026",
+      "name": "Arctic Drift",
+      "technicalHint": "Spectral Freeze + Shimmer Reverb + Slow LFO",
+      "category": "Spatial Design",
+      "subcategory": "Frozen Landscapes",
+      "engines": [
+        {
+          "slot": 1,
+          "type": "shimmer_reverb",
+          "typeName": "Shimmer Reverb",
+          "mix": 0.65,
+          "params": [
+            0.87,
+            0.92,
+            0.78,
+            0.45,
+            0.95,
+            0.33,
+            0.76
+          ]
+        },
+        {
+          "slot": 3,
+          "type": "buffer_repeat",
+          "typeName": "Buffer Repeat",
+          "mix": 0.25,
+          "params": [
+            0.92,
+            0.18,
+            0.65,
+            0.88,
+            0.35,
+            0.73,
+            0.15
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.82,
+        "density": 0.25,
+        "movement": 0.18,
+        "space": 0.95,
+        "aggression": 0.08,
+        "vintage": 0.15
+      },
+      "keywords": [
+        "arctic",
+        "frozen",
+        "ice",
+        "crystal",
+        "aurora",
+        "drift",
+        "cold",
+        "glacial",
+        "polar",
+        "shimmer",
+        "vast",
+        "tundra"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_027",
+      "name": "Brass Furnace",
+      "technicalHint": "Multiband Saturator + Wave Folder + Formant Filter",
+      "category": "Character & Color",
+      "subcategory": "Harmonic Enhancement",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "multiband_saturator",
+          "typeName": "Multiband Saturator",
+          "mix": 0.78,
+          "params": [
+            0.82,
+            0.45,
+            0.73,
+            0.88,
+            0.25,
+            0.65,
+            0.65
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "wave_folder",
+          "typeName": "Wave Folder",
+          "mix": 0.55,
+          "params": [
+            0.75,
+            0.62,
+            0.88,
+            0.45,
+            0.73,
+            0.35,
+            0.82
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "vocal_formant",
+          "typeName": "Vocal Formant Filter",
+          "mix": 0.65,
+          "params": [
+            0.52,
+            0.73,
+            0.58,
+            0.88,
+            0.42,
+            0.67,
+            0.35
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.85,
+        "density": 0.78,
+        "movement": 0.35,
+        "space": 0.28,
+        "aggression": 0.82,
+        "vintage": 0.65
+      },
+      "keywords": [
+        "brass",
+        "furnace",
+        "hot",
+        "metallic",
+        "saturated",
+        "harmonic",
+        "powerful",
+        "industrial",
+        "molten",
+        "heat",
+        "aggressive",
+        "thick"
+      ],
+      "cpuTier": "LIGHT"
+    },
+    {
+      "id": "GC_028",
+      "name": "Mycelial Network",
+      "technicalHint": "Feedback Network + Granular Cloud + Phased Vocoder",
+      "category": "Experimental Laboratory",
+      "subcategory": "Organic Systems",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "feedback_network",
+          "typeName": "Feedback Network",
+          "mix": 0.72,
+          "params": [
+            0.68,
+            0.45,
+            0.73,
+            0.85,
+            0.52,
+            0.78,
+            0.35
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.32,
+        "density": 0.85,
+        "movement": 0.73,
+        "space": 0.78,
+        "aggression": 0.15,
+        "vintage": 0.08
+      },
+      "keywords": [
+        "mycelial",
+        "fungal",
+        "network",
+        "organic",
+        "underground",
+        "spores",
+        "growth",
+        "biological",
+        "ecosystem",
+        "feedback",
+        "granular",
+        "living"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_029",
+      "name": "Stained Glass",
+      "technicalHint": "Prism Refractor + Ladder Filter + Shimmer Reverb",
+      "category": "Spatial Design",
+      "subcategory": "Sacred Spaces",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "frequency_shifter",
+          "typeName": "Frequency Shifter",
+          "mix": 0.75,
+          "params": [
+            0.52,
+            0.73,
+            0.88,
+            0.35,
+            0.65,
+            0.42,
+            0.95
+          ]
+        },
+        {
+          "slot": 1,
+          "type": "ladder_filter",
+          "typeName": "Ladder Filter",
+          "mix": 0.68,
+          "params": [
+            0.65,
+            0.78,
+            0.45,
+            0.82,
+            0.35,
+            0.73,
+            0.42
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "shimmer_reverb",
+          "typeName": "Shimmer Reverb",
+          "mix": 0.82,
+          "params": [
+            0.92,
+            0.88,
+            0.75,
+            0.45,
+            0.85,
+            0.38,
+            0.82
+          ]
+        },
+        {
+          "slot": 3,
+          "type": "harmonic_tremolo",
+          "typeName": "Harmonic Tremolo",
+          "mix": 0.35,
+          "params": [
+            0.15,
+            0.42,
+            0.73,
+            0.65,
+            0.88,
+            0.35,
+            0.78
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.85,
+        "density": 0.58,
+        "movement": 0.35,
+        "space": 0.92,
+        "aggression": 0.08,
+        "vintage": 0.75
+      },
+      "keywords": [
+        "stained",
+        "glass",
+        "cathedral",
+        "sacred",
+        "light",
+        "prism",
+        "refraction",
+        "shimmer",
+        "holy",
+        "church",
+        "spiritual",
+        "colors"
+      ],
+      "cpuTier": "MEDIUM"
+    },
+    {
+      "id": "GC_030",
+      "name": "Voltage Storm",
+      "technicalHint": "Chaos Generator + Wave Folder + Noise Gate + Ring Mod",
+      "category": "Experimental Laboratory",
+      "subcategory": "Electrical Phenomena",
+      "engines": [
+        {
+          "slot": 0,
+          "type": "chaos_generator",
+          "typeName": "Chaos Generator",
+          "mix": 0.82,
+          "params": [
+            0.88,
+            0.73,
+            0.45,
+            0.92,
+            0.35,
+            0.78,
+            0.65
+          ]
+        },
+        {
+          "slot": 2,
+          "type": "noise_gate",
+          "typeName": "Noise Gate",
+          "mix": 0.65,
+          "params": [
+            0.08,
+            0.35,
+            0.72,
+            0.88,
+            0.45,
+            0.65
+          ]
+        },
+        {
+          "slot": 3,
+          "type": "ring_modulator",
+          "typeName": "Analog Ring Modulator",
+          "mix": 0.55,
+          "params": [
+            0.003,
+            0.75,
+            0.32,
+            0.88,
+            0.45,
+            0.65,
+            0.78
+          ]
+        },
+        {
+          "slot": 4,
+          "type": "transient_shaper",
+          "typeName": "Transient Shaper",
+          "mix": 0.45,
+          "params": [
+            0.95,
+            0.15,
+            0.72,
+            0.88,
+            0.35,
+            0.65,
+            0.45
+          ]
+        }
+      ],
+      "sonicProfile": {
+        "brightness": 0.88,
+        "density": 0.75,
+        "movement": 0.92,
+        "space": 0.45,
+        "aggression": 0.95,
+        "vintage": 0.25
+      },
+      "keywords": [
+        "voltage",
+        "storm",
+        "electrical",
+        "chaos",
+        "lightning",
+        "arc",
+        "discharge",
+        "dangerous",
+        "industrial",
+        "harsh",
+        "extreme",
+        "power"
+      ],
+      "cpuTier": "HEAVY"
+    }
+  ],
+  "format": "string_ids"
+}

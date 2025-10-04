@@ -1,0 +1,65 @@
+{
+  "id": "GC_018",
+  "name": "Whisper Network",
+  "technicalHint": "Vintage Opto Compressor + Mid/Side EQ + Plate Reverb",
+  "category": "Studio Essentials",
+  "subcategory": "Transparent Processing",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 6,
+      "typeName": "Opto Compressor",
+      "mix": 1.0,
+      "params": [
+        0.708,
+        0.236,
+        0.382,
+        0.618,
+        0.854,
+        0.528,
+        0.382
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 3,
+      "typeName": "Plate Reverb",
+      "mix": 0.146,
+      "params": [
+        0.382,
+        0.472,
+        0.618,
+        0.236,
+        0.708,
+        0.854,
+        0.528
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.708,
+    "density": 0.382,
+    "movement": 0.236,
+    "space": 0.618,
+    "aggression": 0.089,
+    "vintage": 0.472
+  },
+  "keywords": [
+    "whisper",
+    "network",
+    "transparent",
+    "gentle",
+    "air",
+    "intimate",
+    "subtle",
+    "opto",
+    "plate",
+    "natural",
+    "enhancement",
+    "delicate",
+    "professional",
+    "invisible",
+    "polish"
+  ],
+  "cpuTier": "LIGHT"
+}

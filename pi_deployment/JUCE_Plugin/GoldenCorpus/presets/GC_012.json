@@ -1,0 +1,80 @@
+{
+  "id": "GC_012",
+  "name": "Thunder & Silk",
+  "technicalHint": "Transient Shaper + State Variable Filter + Classic Compressor",
+  "category": "Dynamic Processing",
+  "subcategory": "Transient Design",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 20,
+      "typeName": "Transient Shaper",
+      "mix": 1.0,
+      "params": [
+        0.764,
+        0.382,
+        0.236,
+        0.618,
+        0.708,
+        0.854,
+        0.5
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 29,
+      "typeName": "State Variable Filter",
+      "mix": 1.0,
+      "params": [
+        0.382,
+        0.708,
+        0.667,
+        0.333,
+        0.618,
+        0.472,
+        0.25
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 7,
+      "typeName": "VCA Compressor",
+      "mix": 1.0,
+      "params": [
+        0.528,
+        0.472,
+        0.089,
+        0.618,
+        0.708,
+        0.667,
+        0.764
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.708,
+    "density": 0.618,
+    "movement": 0.382,
+    "space": 0.472,
+    "aggression": 0.764,
+    "vintage": 0.528
+  },
+  "keywords": [
+    "thunder",
+    "silk",
+    "punch",
+    "smooth",
+    "transient",
+    "shaper",
+    "compress",
+    "attack",
+    "modern",
+    "polish",
+    "professional",
+    "glue",
+    "impact",
+    "clarity",
+    "presence"
+  ],
+  "cpuTier": "LIGHT"
+}

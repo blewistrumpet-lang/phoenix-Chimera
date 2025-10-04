@@ -1,0 +1,80 @@
+{
+  "id": "GC_020",
+  "name": "Rust & Bones",
+  "technicalHint": "Muff Fuzz + Spring Reverb + Envelope Filter",
+  "category": "Character & Color",
+  "subcategory": "Industrial Decay",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 35,
+      "typeName": "Muff Fuzz",
+      "mix": 0.708,
+      "params": [
+        0.764,
+        0.382,
+        0.854,
+        0.618,
+        0.472,
+        0.708,
+        0.146
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 5,
+      "typeName": "Spring Reverb",
+      "mix": 0.618,
+      "params": [
+        0.708,
+        0.472,
+        0.854,
+        0.618,
+        0.382,
+        0.764,
+        0.528
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 48,
+      "typeName": "Envelope Filter",
+      "mix": 0.472,
+      "params": [
+        0.28,
+        0.708,
+        0.382,
+        0.618,
+        0.854,
+        0.236,
+        0.382
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.236,
+    "density": 0.854,
+    "movement": 0.472,
+    "space": 0.618,
+    "aggression": 0.764,
+    "vintage": 0.854
+  },
+  "keywords": [
+    "rust",
+    "bones",
+    "decay",
+    "industrial",
+    "corroded",
+    "metal",
+    "abandoned",
+    "gritty",
+    "fuzz",
+    "spring",
+    "mechanical",
+    "dark",
+    "weathered",
+    "ancient",
+    "desolate"
+  ],
+  "cpuTier": "LIGHT"
+}

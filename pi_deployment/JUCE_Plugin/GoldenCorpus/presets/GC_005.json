@@ -1,0 +1,80 @@
+{
+  "id": "GC_005",
+  "name": "Glass Cathedral",
+  "technicalHint": "Convolution Reverb + Formant Filter + Transient Shaper",
+  "category": "Spatial Design",
+  "subcategory": "Realistic Spaces",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 4,
+      "typeName": "Convolution Reverb",
+      "mix": 0.6,
+      "params": [
+        0.8,
+        0.85,
+        0.3,
+        0.7,
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 17,
+      "typeName": "Vocal Formant Filter",
+      "mix": 0.3,
+      "params": [
+        0.6,
+        0.7,
+        0.4,
+        0.5,
+        0.0,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 20,
+      "typeName": "Transient Shaper",
+      "mix": 1.0,
+      "params": [
+        0.6,
+        0.4,
+        0.7,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.8,
+    "density": 0.4,
+    "movement": 0.3,
+    "space": 0.9,
+    "aggression": 0.0,
+    "vintage": 0.3
+  },
+  "keywords": [
+    "glass",
+    "cathedral",
+    "pristine",
+    "clear",
+    "ethereal",
+    "spiritual",
+    "reverb",
+    "space",
+    "formant",
+    "crystalline",
+    "height",
+    "air",
+    "church",
+    "sacred",
+    "angelic"
+  ],
+  "cpuTier": "HEAVY"
+}

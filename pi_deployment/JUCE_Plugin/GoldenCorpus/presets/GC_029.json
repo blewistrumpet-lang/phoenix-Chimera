@@ -1,0 +1,92 @@
+{
+  "id": "GC_029",
+  "name": "Stained Glass",
+  "technicalHint": "Prism Refractor + Ladder Filter + Shimmer Reverb",
+  "category": "Spatial Design",
+  "subcategory": "Sacred Spaces",
+  "engines": [
+    {
+      "slot": 0,
+      "type": 19,
+      "typeName": "Frequency Shifter",
+      "mix": 0.75,
+      "params": [
+        0.52,
+        0.73,
+        0.88,
+        0.35,
+        0.65,
+        0.42,
+        0.95
+      ]
+    },
+    {
+      "slot": 1,
+      "type": 28,
+      "typeName": "Ladder Filter",
+      "mix": 0.68,
+      "params": [
+        0.65,
+        0.78,
+        0.45,
+        0.82,
+        0.35,
+        0.73,
+        0.42
+      ]
+    },
+    {
+      "slot": 2,
+      "type": 2,
+      "typeName": "Shimmer Reverb",
+      "mix": 0.82,
+      "params": [
+        0.92,
+        0.88,
+        0.75,
+        0.45,
+        0.85,
+        0.38,
+        0.82
+      ]
+    },
+    {
+      "slot": 3,
+      "type": 21,
+      "typeName": "Harmonic Tremolo",
+      "mix": 0.35,
+      "params": [
+        0.15,
+        0.42,
+        0.73,
+        0.65,
+        0.88,
+        0.35,
+        0.78
+      ]
+    }
+  ],
+  "sonicProfile": {
+    "brightness": 0.85,
+    "density": 0.58,
+    "movement": 0.35,
+    "space": 0.92,
+    "aggression": 0.08,
+    "vintage": 0.75
+  },
+  "keywords": [
+    "stained",
+    "glass",
+    "cathedral",
+    "sacred",
+    "light",
+    "prism",
+    "refraction",
+    "shimmer",
+    "holy",
+    "church",
+    "spiritual",
+    "colors"
+  ],
+  "cpuTier": "MEDIUM"
+}

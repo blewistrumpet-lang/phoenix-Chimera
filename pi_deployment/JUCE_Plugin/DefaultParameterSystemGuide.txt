@@ -1,0 +1,198 @@
+CHIMERA PHOENIX DEFAULT PARAMETER SYSTEM
+========================================
+
+OVERVIEW
+--------
+The DefaultParameterValues system provides musically useful default parameter values for all 50 Chimera Phoenix engines. When a user loads an engine, it automatically applies carefully crafted defaults that sound good immediately, eliminating the need to tweak parameters from scratch.
+
+FILES CREATED
+-------------
+1. Source/DefaultParameterValues.h - Header with interface declarations
+2. Source/DefaultParameterValues.cpp - Implementation with all default values
+3. Source/TestDefaultParameters.cpp - Test/validation program
+
+INTEGRATION
+-----------
+The system has been integrated into the main plugin:
+
+1. PluginProcessor.h - Added applyDefaultParameters() method declaration
+2. PluginProcessor.cpp - Added include and implementation:
+   - Includes DefaultParameterValues.h
+   - applyDefaultParameters() method implementation
+   - Modified loadEngine() to call applyDefaultParameters()
+
+DESIGN PRINCIPLES
+-----------------
+All defaults follow these principles for musical utility:
+
+1. SAFETY FIRST: No harsh, unusable, or damaging sounds
+2. MUSICAL UTILITY: Each engine sounds good immediately
+3. MODERATE VALUES: Most parameters in 0.3-0.7 range
+4. CONSERVATIVE DRIVE: Drive/gain parameters start low (0.2-0.4)
+5. APPROPRIATE MIX:
+   - Most effects: 100% wet (1.0) for full effect
+   - Distortions: 70-80% wet for blend with dry signal
+   - Dynamics: 100% wet (no dry signal needed)
+6. MUSICAL TIMING: Time-based effects use musical note values
+7. CONTROLLED FEEDBACK: Conservative feedback (0.2-0.4) to avoid runaway
+8. SMOOTH RESONANCE: Moderate Q/resonance (0.3-0.5) for musicality
+9. UNITY GAIN: Output levels maintain consistent volume
+10. FIRST IMPRESSION: Users hear something inspiring immediately
+
+ENGINE CATEGORIES (50 Total)
+-----------------------------
+Distortion/Saturation (8 engines):
+- K-Style Overdrive: Drive=0.3, Tone=0.5, Output=0.5
+- Rodent Distortion: Conservative RAT-style settings
+- Muff Fuzz: Sustain=0.6 for violin-like tone
+- Multiband Saturator: Gentle multi-band saturation
+- Bit Crusher: 12-bit subtle degradation
+- Wave Folder: Moderate waveshaping
+- Vintage Tube Preamp: Warm tube saturation
+- Harmonic Exciter: Subtle enhancement
+
+Delays (4 engines):
+- Tape Echo: 1/8 note, moderate feedback, vintage character
+- Magnetic Drum Echo: 1/16 note rhythmic echo
+- Bucket Brigade Delay: 1/4 note with analog warmth
+- Digital Delay: Clean 1/8 note delay
+
+Reverbs (5 engines):
+- Plate Reverb: Medium plate, musical decay
+- Convolution Reverb: Medium hall, subtle level
+- Shimmer Reverb: Long tail with moderate shimmer
+- Gated Reverb: Quick gate, moderate size
+- Spring Reverb: Classic spring character
+
+Modulation (9 engines):
+- Classic Tremolo: Musical rate and depth
+- Harmonic Tremolo: Subtle harmonic modulation
+- Rotary Speaker: Slow speed, balanced rotors
+- Detune Doubler: Subtle 10-cent detuning
+- Stereo Chorus: Wide stereo chorus
+- Analog Ring Modulator: Musical frequency
+- Frequency Shifter: Subtle shifting
+- Analog Phaser: 4-stage musical phasing
+- Resonant Chorus: Balanced chorus with resonance
+
+Filters (6 engines):
+- Ladder Filter: Upper midrange, musical resonance
+- Formant Filter: Neutral vowel position
+- State Variable Filter: Centered with moderate Q
+- Vocal Formant Filter: "A" vowel setting
+- Envelope Filter: Moderate auto-wah response
+- Comb Resonator: Musical frequency, controlled feedback
+
+Dynamics (5 engines):
+- Classic Compressor: 4:1 ratio, musical settings
+- Vintage Opto Compressor: Gentle LA-2A style compression
+- Mastering Limiter: Transparent, high threshold
+- Noise Gate: Moderate gating
+- Transient Shaper: Neutral starting point
+
+EQ (2 engines):
+- Parametric EQ: Flat starting point with key frequencies
+- Vintage Console EQ: Classic console-style curves
+
+Spatial (2 engines):
+- Dimension Expander: Moderate stereo widening
+- Mid-Side Processor: Balanced M/S processing
+
+Spectral/Advanced (4 engines):
+- Spectral Freeze: Not frozen initially, balanced blend
+- Granular Cloud: Small grains, moderate density
+- Spectral Gate: 32-band intelligent gating
+- Phased Vocoder: Neutral pitch/time settings
+
+Pitch (2 engines):
+- Pitch Shifter: No pitch change initially
+- Intelligent Harmonizer: Perfect fifth, C major
+
+Experimental/Glitch (3 engines):
+- Feedback Network: Conservative feedback
+- Chaos Generator: Moderate chaos amount
+- Buffer Repeat: 1/16 note repeats
+
+API USAGE
+---------
+// Get defaults for a specific engine
+std::map<int, float> defaults = DefaultParameterValues::getDefaultParameters(ENGINE_K_STYLE);
+
+// Get all engine information
+std::vector<DefaultParameterValues::EngineDefaultInfo> allEngines = 
+    DefaultParameterValues::getAllEngineDefaults();
+
+// Get engines by category
+std::map<std::string, std::vector<int>> categories = 
+    DefaultParameterValues::getEnginesByCategory();
+
+// Utility functions
+int paramCount = DefaultParameterValues::getParameterCount(engineId);
+std::string paramName = DefaultParameterValues::getParameterName(engineId, paramIndex);
+
+TESTING
+-------
+Use TestDefaultParameters.cpp to validate the system:
+
+cd /path/to/plugin
+g++ -I"./Source" -std=c++17 Source/DefaultParameterValues.cpp Source/TestDefaultParameters.cpp -o test_defaults
+./test_defaults
+
+This will show:
+- Coverage report (should be 100%)
+- Engine categorization
+- Example parameter values
+- Validation of all engines
+
+SPECIFIC ENGINE EXAMPLES
+------------------------
+K-Style Overdrive:
+- Drive: 0.3 (low drive for smooth warmth)
+- Tone: 0.5 (balanced)
+- Output: 0.5 (unity gain)
+
+Vintage Opto Compressor:
+- Gain: 0.5 (moderate input)
+- Peak Reduction: 0.3 (gentle compression)
+- HF Emphasis: 0.0 (flat response)
+- Output: 0.5 (unity)
+- Mix: 1.0 (full compression)
+- Knee: 0.7 (soft knee)
+- Harmonics: 0.3 (subtle tube color)
+- Stereo Link: 1.0 (linked)
+
+Mastering Limiter:
+- Threshold: 0.8 (high threshold for transparency)
+- Release: 0.1 (fast release)
+- Lookahead: 0.3 (moderate lookahead)
+- Character: 0.0 (transparent)
+- Output: 0.5 (unity gain)
+
+Intelligent Harmonizer:
+- Interval: 0.583 (perfect fifth, 7 semitones)
+- Scale: 0.0 (major scale)
+- Key: 0.0 (C major)
+- Mix: 0.4 (subtle harmonization)
+- Voice 1 Level: 0.5 (balanced)
+- Voice 2 Level: 0.4 (slightly quieter)
+
+MAINTENANCE
+-----------
+To add new engines or modify defaults:
+
+1. Add engine to ParameterDefinitions.h enum
+2. Add case to getDefaultParameters() switch statement
+3. Add engine info to getAllEngineDefaults() vector
+4. Add to appropriate category in getEnginesByCategory()
+5. Test with TestDefaultParameters.cpp
+
+BENEFITS
+--------
+1. Immediate Musical Results: Users hear something good right away
+2. Reduced Learning Curve: No need to understand every parameter initially
+3. Consistent Experience: Professional starting points for all engines
+4. Safe Operation: No risk of harsh or damaging sounds
+5. Educational: Defaults teach good parameter relationships
+6. Workflow Enhancement: Faster sound design and experimentation
+
+This system ensures that Chimera Phoenix makes a great first impression with every engine, encouraging exploration and creativity while maintaining professional audio standards.

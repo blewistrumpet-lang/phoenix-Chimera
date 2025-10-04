@@ -1,0 +1,368 @@
+[
+  {
+    "file": "trinity_context.md",
+    "find": "57",
+    "replace": "Valid engine ID",
+    "reason": "Documentation references invalid engine ID"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot1_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot2_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot3_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot4_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot5_param0",
+    "reason": "Missing parameter"
+  },
+  {
+    "file": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json",
+    "find": "Missing",
+    "replace": "slot6_param0",
+    "reason": "Missing parameter"
+  }
+]
