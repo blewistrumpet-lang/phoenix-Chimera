@@ -192,7 +192,7 @@ Return a JSON object with your refined preset:
             
             # Call OpenAI for intelligent refinement (await for AsyncOpenAI)
             response = await self.client.chat.completions.create(
-                model="gpt-4",  # Using GPT-4 for superior musical intelligence
+                model="gpt-3.5-turbo",  # Using GPT-3.5 Turbo for fast parameter optimization
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
@@ -439,6 +439,18 @@ Focus on musical accuracy and professional quality."""
             engine_name = slot.get("engine_name", "Unknown")
             params = slot.get("parameters", [])
             knowledge = self.engine_knowledge.get(engine_id, {})
+
+            # CRITICAL: Trim parameters to match engine's actual count
+            expected_param_count = knowledge.get("num_params", 0)
+            if isinstance(params, dict):
+                # Convert dict to only include params up to expected count
+                trimmed_params = {}
+                for i in range(expected_param_count):
+                    key = f"param{i + 1}"
+                    if key in params:
+                        trimmed_params[key] = params[key]
+                slot["parameters"] = trimmed_params
+                params = trimmed_params
 
             # Get mix parameter index
             mix_index = knowledge.get("mix_param_index", -1)

@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "PluginEditor_Pi.h"
 #include "PluginEditorSkunkworks.h"
 #include "PluginEditorRefined.h"
 #include "PluginEditorNexus.h"
@@ -275,6 +276,15 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
     // Start AI server
     // TEMPORARILY DISABLED FOR DEBUGGING
     // startAIServer();
+
+    // Explicitly set all engine selectors to 0 (None) to ensure clean start
+    for (int slot = 1; slot <= 6; ++slot) {
+        auto* param = parameters.getParameter("slot" + juce::String(slot) + "_engine");
+        if (param != nullptr) {
+            param->setValueNotifyingHost(0.0f);
+        }
+    }
+    DBG("Explicitly initialized all engine selectors to None");
 }
 
 ChimeraAudioProcessor::~ChimeraAudioProcessor() {
@@ -569,11 +579,24 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     if (maxLevel > currentLevel) {
         m_currentOutputLevel.store(maxLevel);
     }
+
+    // Feed Input 2 to voice recorder for Pi build
+    #ifdef JUCE_LINUX
+    if (auto* piEditor = dynamic_cast<ChimeraAudioProcessorEditor_Pi*>(getActiveEditor())) {
+        if (buffer.getNumChannels() >= 2) {
+            const float* channel2 = buffer.getReadPointer(1); // Input 2
+            piEditor->feedVoiceRecorder(channel2, buffer.getNumSamples());
+        }
+    }
+    #endif
 }
 
 juce::AudioProcessorEditor* ChimeraAudioProcessor::createEditor() {
+    // Raspberry Pi gets simplified UI
+    #ifdef CHIMERA_PI
+        return new ChimeraAudioProcessorEditor_Pi(*this);
     // Use the new dynamic parameter system that queries live engines
-    #ifdef USE_DYNAMIC_NEXUS
+    #elif defined(USE_DYNAMIC_NEXUS)
         // Back to using the real editor - we've identified the issue!
         return new PluginEditorNexusStatic(*this);  // STATIC architecture
     #elif defined(USE_ORIGINAL_UI)
@@ -610,6 +633,13 @@ void ChimeraAudioProcessor::getStateInformation(juce::MemoryBlock& destData) {
 }
 
 void ChimeraAudioProcessor::setStateInformation(const void* data, int sizeInBytes) {
+    // Always start fresh mode - ignore saved state to ensure clean startup
+    if (m_alwaysStartFresh) {
+        DBG("Always start fresh mode enabled - ignoring saved state");
+        DBG("Plugin will start with all slots set to None");
+        return;
+    }
+
     std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
     if (xmlState.get() != nullptr) {
         if (xmlState->hasTagName(parameters.state.getType())) {

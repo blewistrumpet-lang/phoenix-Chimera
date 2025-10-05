@@ -133,5 +133,8 @@ private:
     mutable std::mutex m_engineMutex;
     std::atomic<bool> m_engineChangePending{false};
 
+    // Always start fresh mode - don't restore saved state
+    bool m_alwaysStartFresh = true;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChimeraAudioProcessor)
 };
