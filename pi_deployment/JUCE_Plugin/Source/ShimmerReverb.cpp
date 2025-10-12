@@ -134,43 +134,55 @@ public:
         std::fill(buffer.begin(), buffer.end(), 0.0f);
         writePos = 0;
         for (int i = 0; i < numGrains; i++) {
-            grainPos[i] = i * grainSize / numGrains;
+            // Start grains at 1/4 window position where envelope has good amplitude
+            // This avoids starting at position 0 where Hann window = 0
+            float basePos = grainSize * 0.25f;  // Start at 25% through window
+            grainPos[i] = basePos + (i * grainSize / numGrains);
+            // Wrap around if needed
+            while (grainPos[i] >= grainSize) grainPos[i] -= grainSize;
         }
     }
     
     float process(float input, float pitchRatio) {
         // Write to circular buffer
         buffer[writePos] = input;
-        
+
         float output = 0.0f;
-        
+
         // Process grains
         for (int g = 0; g < numGrains; g++) {
-            // Read position with pitch shift
-            float readPos = grainPos[g];
-            
+            // Read position - read backwards from write position using grain delay
+            // This ensures we're reading from filled buffer positions
+            float grainDelay = grainPos[g];
+            float readPosFloat = writePos - grainDelay;
+
+            // Handle wraparound for negative positions
+            while (readPosFloat < 0) {
+                readPosFloat += pitchBufferSize;
+            }
+
             // Get sample with linear interpolation
-            int readIdx = static_cast<int>(readPos) % pitchBufferSize;
+            int readIdx = static_cast<int>(readPosFloat) % pitchBufferSize;
             int readIdx2 = (readIdx + 1) % pitchBufferSize;
-            float frac = readPos - std::floor(readPos);
-            
+            float frac = readPosFloat - std::floor(readPosFloat);
+
             float sample = buffer[readIdx] * (1.0f - frac) + buffer[readIdx2] * frac;
-            
+
             // Apply grain envelope
             int envPos = static_cast<int>(grainPos[g]) % grainSize;
             sample *= grainEnvelope[envPos];
-            
+
             output += sample;
-            
+
             // Update grain position
             grainPos[g] += pitchRatio;
             if (grainPos[g] >= grainSize) {
                 grainPos[g] -= grainSize;
             }
         }
-        
+
         writePos = (writePos + 1) % pitchBufferSize;
-        
+
         return output / numGrains;
     }
     
