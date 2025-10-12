@@ -338,7 +338,7 @@ void PhasedVocoder::prepareToPlay(double sampleRate, int samplesPerBlock) {
         statePtr->inputWritePos = 0;
         statePtr->accumulated = 0;
         statePtr->firstFrame = true;
-        statePtr->warmupSamples = statePtr->latency + FFT_SIZE;  // Conservative prime
+        statePtr->warmupSamples = statePtr->latency + HOP_SIZE;  // Need latency + one hop for proper initialization
         
         statePtr->isFrozen = false;
         statePtr->denormFlushCounter = 0;
@@ -389,7 +389,7 @@ void PhasedVocoder::reset() {
         state.inputWritePos = 0;
         state.accumulated = 0;
         state.firstFrame = true;
-        state.warmupSamples = state.latency + FFT_SIZE;  // Conservative prime
+        state.warmupSamples = state.latency + HOP_SIZE;  // Need latency + one hop for proper initialization
         
         // Reset detection states
         state.transientDetector.reset();
@@ -536,25 +536,39 @@ void PhasedVocoder::Impl::analyzeFrame(ChannelState& state) noexcept {
     for (size_t k = 0; k <= FFT_SIZE/2; ++k) {
         const float real = state.fftRI[2*k];
         const float imag = state.fftRI[2*k + 1];
-        
+
         // Magnitude
         state.magnitude[k] = std::sqrt(real * real + imag * imag);
-        
+
         // Phase
-        const double currentPhase = std::atan2(static_cast<double>(imag), 
+        const double currentPhase = std::atan2(static_cast<double>(imag),
                                               static_cast<double>(real));
         state.phase[k] = currentPhase;
-        
-        // Phase difference from last frame
+
+        // CRITICAL FIX: Proper phase vocoder analysis with phase unwrapping
         const double omega_k = 2.0 * M_PI * static_cast<double>(k) / static_cast<double>(FFT_SIZE);
+
+        // Special case for DC bin (k=0): no phase advance needed
+        if (k == 0) {
+            state.instFreq[k] = 0.0;
+            state.lastPhase[k] = currentPhase;
+            continue;
+        }
+
         double delta = currentPhase - state.lastPhase[k] - omega_k * Ha;
-        
+
         // Principal value in (-pi, pi] using std::remainder
         delta = std::remainder(delta, 2.0 * M_PI);
-        
+
         // Instantaneous frequency (rad/sample)
         state.instFreq[k] = omega_k + delta / Ha;
-        
+
+        // CRITICAL FIX: Clamp instantaneous frequency to reasonable range
+        // to prevent runaway phase accumulation - but allow for extreme pitch shifts
+        // Max frequency is Nyquist (pi rad/sample)
+        const double maxFreq = M_PI * 0.95;  // Up to ~95% of Nyquist
+        state.instFreq[k] = std::max(-maxFreq, std::min(maxFreq, state.instFreq[k]));
+
         // Update last phase for next frame
         state.lastPhase[k] = currentPhase;
     }
@@ -639,9 +653,12 @@ void PhasedVocoder::Impl::synthesizeFrame(ChannelState& state) noexcept {
     const float timeStretch = timeStretchSmoother->tick();
     const float pitchShift = pitchShiftSmoother->tick();
     
-    // Calculate synthesis hop size (H_s) - must be integer rounded
+    // Calculate synthesis hop size (H_s) - must be integer rounded and bounded
     const double Ha = static_cast<double>(HOP_SIZE);
-    const double Hs = static_cast<double>(std::round(HOP_SIZE * timeStretch));  // Use same Hs everywhere
+    double Hs = std::round(HOP_SIZE * timeStretch);
+
+    // CRITICAL FIX: Ensure Hs is always valid (at least 1, max reasonable)
+    Hs = std::max(1.0, std::min(Hs, static_cast<double>(HOP_SIZE * MAX_STRETCH)));
     
     // Initialize synthesis phase on first frame
     if (state.firstFrame) {
@@ -650,74 +667,43 @@ void PhasedVocoder::Impl::synthesizeFrame(ChannelState& state) noexcept {
         }
         state.firstFrame = false;
     }
-    
-    // STFT identity bypass for testing
-#define IDENTITY_STFT 0  // Set to 1 to bypass PV processing
-#define ANALYSIS_PHASE_PASSTHROUGH 0  // Use analysis phase directly
-#define PHASE_LOCKING 1  // Enable phase locking for vertical coherence
-    
-#if IDENTITY_STFT
-    // Direct copy of analysis spectrum
-    std::memcpy(state.fftRI.data(), state.savedRI.data(), sizeof(float) * 2 * FFT_SIZE);
-#else
-#if ANALYSIS_PHASE_PASSTHROUGH
-    // Use analysis phase directly (no phase advance)
+
+    // Standard per-bin phase vocoder synthesis with proper phase accumulation
     for (size_t k = 0; k <= FFT_SIZE/2; ++k) {
-        const float mag = state.magnitude[k];
-        const float ph = static_cast<float>(state.phase[k]);  // analysis phase
-        state.fftRI[2*k]     = mag * std::cos(ph);
-        state.fftRI[2*k + 1] = mag * std::sin(ph);
-    }
-#elif PHASE_LOCKING
-    // Phase locking: find dominant peak and lock all bins to it
-    int kPeak = 1;
-    float maxMag = 0.0f;
-    for (int k = 1; k < FFT_SIZE/2; ++k) {
-        if (state.magnitude[k] > maxMag) {
-            maxMag = state.magnitude[k];
-            kPeak = k;
+        // CRITICAL FIX: Guard against invalid instantaneous frequency
+        double instFreqClamped = state.instFreq[k];
+        if (std::isnan(instFreqClamped) || std::isinf(instFreqClamped)) {
+            instFreqClamped = state.omega[k];  // Fall back to bin center frequency
         }
-    }
-    
-    // Advance ONLY the peak with PV
-    state.synthPhase[kPeak] += state.instFreq[kPeak] * Hs * pitchShift;
-    
-    // Lock all bins' phases to the peak's advanced phase, preserving intra-lobe offsets
-    const float phaseAnchor = static_cast<float>(state.synthPhase[kPeak]);
-    const float phasePeakNow = static_cast<float>(state.phase[kPeak]);
-    
-    for (size_t k = 0; k <= FFT_SIZE/2; ++k) {
-        const float mag = state.magnitude[k];
-        // Relative phase from analysis spectrum
-        float rel = static_cast<float>(std::remainder(state.phase[k] - phasePeakNow, 2.0 * M_PI));
-        const float ph = phaseAnchor + rel;
-        
-        state.fftRI[2*k]     = mag * std::cos(ph);
-        state.fftRI[2*k + 1] = mag * std::sin(ph);
-    }
-#else
-    // Standard per-bin PV phase update
-    for (size_t k = 0; k <= FFT_SIZE/2; ++k) {
-        // Advance synthesis phase
-        state.synthPhase[k] += state.instFreq[k] * Hs * pitchShift;
-        
-        const float mag = state.magnitude[k];
+
+        // Advance synthesis phase based on instantaneous frequency
+        state.synthPhase[k] += instFreqClamped * Hs * pitchShift;
+
+        // Wrap phase to avoid accumulation overflow
+        state.synthPhase[k] = std::remainder(state.synthPhase[k], 2.0 * M_PI);
+
+        // CRITICAL FIX: Guard against NaN/Inf in magnitude
+        float mag = state.magnitude[k];
+        if (std::isnan(mag) || std::isinf(mag) || mag < 0.0f) {
+            mag = 0.0f;
+        }
+
         const float ph = static_cast<float>(state.synthPhase[k]);
         state.fftRI[2*k]     = mag * std::cos(ph);
         state.fftRI[2*k + 1] = mag * std::sin(ph);
     }
-#endif
-    
-    // mirror 1..N/2-1 into N-1..N/2+1
+
+    // CRITICAL FIX: Proper Hermitian symmetry for real IFFT
+    // Mirror positive frequencies to negative frequencies (conjugate symmetry)
+    // For real signal: X[N-k] = conj(X[k]) for k = 1..N/2-1
     for (size_t k = 1; k < FFT_SIZE/2; ++k) {
-        state.fftRI[2*(FFT_SIZE - k)]     =  state.fftRI[2*k];       // real
-        state.fftRI[2*(FFT_SIZE - k) + 1] = -state.fftRI[2*k + 1];   // -imag
+        state.fftRI[2*(FFT_SIZE - k)]     =  state.fftRI[2*k];       // real part same
+        state.fftRI[2*(FFT_SIZE - k) + 1] = -state.fftRI[2*k + 1];   // imag part negated
     }
-    
-    // DC/Nyquist imag = 0
-    state.fftRI[1] = 0.0f;
-    state.fftRI[2*(FFT_SIZE/2) + 1] = 0.0f;
-#endif  // IDENTITY_STFT
+
+    // CRITICAL FIX: Ensure DC (k=0) and Nyquist (k=N/2) bins are purely real
+    state.fftRI[1] = 0.0f;                      // DC imaginary = 0
+    state.fftRI[2*(FFT_SIZE/2) + 1] = 0.0f;     // Nyquist imaginary = 0
     
     // IFFT on fftRI
     state.fft.perform(reinterpret_cast<std::complex<float>*>(state.fftRI.data()),
@@ -770,18 +756,26 @@ void PhasedVocoder::updateParameters(const std::map<int, float>& params) {
     for (const auto& [id, value] : params) {
         switch (static_cast<ParamID>(id)) {
             case ParamID::TimeStretch:
-                // Map 0-1 to 0.25x-4x, with 0.2 giving exactly 1.0x
-                float stretch;
-                if (std::abs(value - 0.2f) < 0.01f) {
-                    stretch = 1.0f;  // Snap to 1x for pass-through
-                } else {
-                    stretch = 0.25f + value * 3.75f;
+                // CRITICAL FIX: Map 0-1 to 0.25x-4x with proper clamping
+                // Snap zone around 1.0x for easier neutral positioning
+                {
+                    float stretch;
+                    if (std::abs(value - 0.2f) < 0.02f) {
+                        stretch = 1.0f;  // Snap to 1x for pass-through (wider tolerance)
+                    } else {
+                        stretch = 0.25f + value * 3.75f;
+                        stretch = std::max(0.25f, std::min(4.0f, stretch));  // Ensure bounds
+                    }
+                    pimpl->params.timeStretch.store(stretch, std::memory_order_relaxed);
                 }
-                pimpl->params.timeStretch.store(stretch, std::memory_order_relaxed);
                 break;
             case ParamID::PitchShift:
-                pimpl->params.pitchShift.store(0.5f + value * 1.5f, 
-                                              std::memory_order_relaxed);
+                // CRITICAL FIX: Map 0-1 to 0.5x-2x with proper clamping
+                {
+                    float pitch = 0.5f + value * 1.5f;
+                    pitch = std::max(0.5f, std::min(2.0f, pitch));  // Ensure bounds
+                    pimpl->params.pitchShift.store(pitch, std::memory_order_relaxed);
+                }
                 break;
             case ParamID::SpectralSmear:
                 pimpl->params.spectralSmear.store(value, std::memory_order_relaxed);

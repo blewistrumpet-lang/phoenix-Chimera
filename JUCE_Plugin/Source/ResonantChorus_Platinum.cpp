@@ -596,7 +596,7 @@ public:
         if (numChannels == 0 || numSamples == 0) return;
         
         // Get smoothed parameters
-        const float rate = m_params.rate.process() * 20.0f;
+        const float rate = 0.01f + m_params.rate.process() * 1.99f;  // 0.01-2.0 Hz (proper chorus range)
         const float depth = m_params.depth.process();
         const float resonance = m_params.resonance.process();
         const float filterFreq = 20.0f + m_params.filterFreq.process() * 19980.0f;

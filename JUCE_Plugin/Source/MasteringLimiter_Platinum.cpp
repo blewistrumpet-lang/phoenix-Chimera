@@ -223,14 +223,7 @@ struct MasteringLimiter_Platinum::Impl {
         const float ceilingGain = dBToGain(ceiling);
         const float makeupGain = dBToGain(makeup);
         const float kneeWidth = knee * 0.5f; // Half knee on each side
-        
-        // Debug every 1000th block
-        static int blockCount = 0;
-        if (blockCount++ % 1000 == 0) {
-            printf("Process: threshold=%.1fdB (gain=%.3f), ceiling=%.1fdB, makeup=%.1fdB, mix=%.2f\n",
-                   threshold, thresholdGain, ceiling, makeup, mix);
-        }
-        
+
         // First pass: fill predictive analysis buffer
         for (int i = 0; i < numSamples; ++i) {
             // Peak detection across channels
@@ -276,15 +269,7 @@ struct MasteringLimiter_Platinum::Impl {
             if (linkedPeak > thresholdGain) {
                 // True limiting: infinite ratio above threshold
                 gainReduction = thresholdGain / linkedPeak;
-                
-                // Debug first sample that's limited
-                static bool debugged = false;
-                if (!debugged && i == 0) {
-                    printf("  Limiting: peak=%.3f > threshold=%.3f, gainReduction=%.3f\n",
-                           linkedPeak, thresholdGain, gainReduction);
-                    debugged = true;
-                }
-                
+
                 // Apply soft knee only below threshold
                 if (linkedPeak > thresholdGain - kneeWidth && kneeWidth > 0.0f) {
                     float kneeStart = thresholdGain - kneeWidth;
@@ -323,16 +308,7 @@ struct MasteringLimiter_Platinum::Impl {
                 
                 // Get delayed dry signal
                 float drySample = delayLines[ch].process(channelData[i]);
-                
-                // Debug first channel, first sample
-                if (ch == 0 && i == 0) {
-                    static int debugCount = 0;
-                    if (debugCount++ < 3) {
-                        printf("    Channel %d, sample %d: input=%.3f, drySample=%.3f\n", 
-                               ch, i, channelData[i], drySample);
-                    }
-                }
-                
+
                 // SIMPLIFIED: Just use the current gain reduction directly
                 // Skip the complex lookahead buffer for now to fix the basic limiting
                 float currentGainReduction = gainReduction;
@@ -458,25 +434,10 @@ void MasteringLimiter_Platinum::updateParameters(const std::map<int, float>& par
         return it != params.end() ? it->second : defaultVal;
     };
     
-    // Debug: Print what we're receiving and what we're setting
-    static int callCount = 0;
-    if (callCount++ % 100 == 0) {  // Print every 100th call
-        printf("MasteringLimiter params: ");
-        for (auto& p : params) {
-            printf("[%d]=%.3f ", p.first, p.second);
-        }
-        printf("\n");
-    }
-    
     // Map normalized 0-1 to meaningful ranges
     // Correct limiter mapping: 0 = -30dB (max limiting), 1 = 0dB (no limiting)
     float threshParam = get(kThreshold, 0.9f);  // Default to 0.9 (light limiting)
     pimpl->threshold = -30.0f + 30.0f * threshParam;  // -30 to 0 dB
-    
-    if (callCount % 100 == 1) {
-        printf("  Threshold param %.3f -> %.1f dB (gain %.3f)\n", 
-               threshParam, pimpl->threshold, std::pow(10.0f, pimpl->threshold * 0.05f));
-    }
     pimpl->ceiling = -10.0f + 9.9f * get(kCeiling, 0.99f);            // -10 to -0.1 dB
     pimpl->release = 1.0f + 199.0f * get(kRelease, 0.25f);            // 1 to 200 ms
     pimpl->lookahead = 0.1f + 9.9f * get(kLookahead, 0.5f);           // 0.1 to 10 ms

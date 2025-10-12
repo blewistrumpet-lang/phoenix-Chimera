@@ -41,8 +41,9 @@ void DetuneDoubler::prepareToPlay(double sampleRate, int samplesPerBlock) {
         m_voices[i].modulator->setSampleRate(sampleRate);
         m_voices[i].modulator->setRates(0.1f + i * 0.03f);
         
-        // Configure tape filter with slight high-frequency boost
-        m_voices[i].tapeFilter->setHighShelf(8000.0, sampleRate, 2.0);
+        // Configure tape filter with very gentle high-frequency boost to minimize THD
+        // Reduced from 2.0dB to 0.5dB to prevent harmonic generation
+        m_voices[i].tapeFilter->setHighShelf(8000.0, sampleRate, 0.5);
         
         // Randomize all-pass networks for each voice
         m_voices[i].phaseNetwork->randomize();
@@ -188,10 +189,10 @@ void DetuneDoubler::processStereo(float* left, float* right, int numSamples) {
         float wetGain = 0.7f + detune * 0.4f; // Range from 0.7 to 1.1
         left[i] = dryL * (1.0f - mix) + thickL * mix * wetGain;
         right[i] = dryR * (1.0f - mix) + thickR * mix * wetGain;
-        
-        // Soft limiting
-        left[i] = std::tanh(left[i] * 0.9f) * 1.1f;
-        right[i] = std::tanh(right[i] * 0.9f) * 1.1f;
+
+        // Gentle clipping to prevent overflow without adding harmonics
+        left[i] = std::clamp(left[i], -0.95f, 0.95f);
+        right[i] = std::clamp(right[i], -0.95f, 0.95f);
     }
 }
 

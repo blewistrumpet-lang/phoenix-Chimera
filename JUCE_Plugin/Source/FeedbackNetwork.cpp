@@ -50,9 +50,15 @@ void FeedbackNetwork::process(juce::AudioBuffer<float>& buffer) {
         modPhaseL += 2.0 * M_PI * modRate / fs;
         modPhaseR += 2.0 * M_PI * (modRate * 1.1) / fs;
 
-        // Read delay
-        float dl = delayL.read(std::clamp<size_t>(delaySamples + (size_t)modOffsetL, 1, delayL.buffer.size()-1));
-        float dr = delayR.read(std::clamp<size_t>(delaySamples + (size_t)modOffsetR, 1, delayR.buffer.size()-1));
+        // Read delay with safe modulation offset calculation
+        // CRITICAL FIX: modOffset can be negative, must clamp BEFORE casting to size_t
+        int modDelayL = static_cast<int>(delaySamples) + static_cast<int>(modOffsetL);
+        int modDelayR = static_cast<int>(delaySamples) + static_cast<int>(modOffsetR);
+        size_t safeDelayL = std::clamp<size_t>(std::max(1, modDelayL), 1, delayL.buffer.size()-1);
+        size_t safeDelayR = std::clamp<size_t>(std::max(1, modDelayR), 1, delayR.buffer.size()-1);
+
+        float dl = delayL.read(safeDelayL);
+        float dr = delayR.read(safeDelayR);
 
         // Apply freeze
         if (freeze > 0.5f) {

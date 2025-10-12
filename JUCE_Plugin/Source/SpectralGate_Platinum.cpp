@@ -17,8 +17,9 @@ SpectralGate_Platinum::SpectralGate_Platinum() {
 }
 
 void SpectralGate_Platinum::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    sr_ = std::max(8000.0, sampleRate);
-    maxBlock_ = std::max(16, samplesPerBlock);
+    // SAFETY: Clamp sample rate to valid range
+    sr_ = std::clamp(sampleRate, 8000.0, 192000.0);
+    maxBlock_ = std::clamp(samplesPerBlock, 16, 8192);
 
     // Set parameter smoothing times
     pThreshold.setTimeMs(10.f, sr_);
@@ -31,10 +32,25 @@ void SpectralGate_Platinum::prepareToPlay(double sampleRate, int samplesPerBlock
     pMix.setTimeMs(10.f, sr_);
 
     // Bounded iteration limit (prevent infinite loops)
-    maxProcessingIterations_ = std::min(1000, maxBlock_ * 10);
+    maxProcessingIterations_ = std::min(10000, maxBlock_ * 10);
 
-    // Don't call reset() here - it might be clearing things
-    // reset();
+    // Initialize channels (ensure at least stereo)
+    if (channels_.size() < 2) {
+        channels_.resize(2);
+    }
+
+    // CRITICAL: Initialize FFT windows for all channels
+    for (auto& ch : channels_) {
+        ch.fftProc.prepareWindow();
+        ch.reset();
+
+        // Prepare lookahead delay buffer
+        int maxLookaheadSamples = static_cast<int>(0.010 * sr_); // 10ms max
+        ch.delayBuf.resize(maxLookaheadSamples + 1, 0.0f);
+    }
+
+    // Initialize state
+    reset();
 }
 
 void SpectralGate_Platinum::reset() {
@@ -77,34 +93,114 @@ void SpectralGate_Platinum::updateParameters(const std::map<int, float>& params)
 
 // -------------------------------------------------------
 void SpectralGate_Platinum::process(juce::AudioBuffer<float>& buffer) {
-    // Debug: print that we're in the right function
-    static int callCount = 0;
-    if (callCount++ < 2) {
-        std::cout << "SpectralGate_Platinum::process called with " 
-                  << buffer.getNumChannels() << " channels, " 
-                  << buffer.getNumSamples() << " samples\n";
+    // SAFETY: Early validation checks
+    const int numChannels = buffer.getNumChannels();
+    const int numSamples = buffer.getNumSamples();
+
+    // SAFETY: Bounds check
+    if (numChannels <= 0 || numSamples <= 0 || numSamples > maxBlock_) {
+        return; // Invalid buffer, passthrough
     }
-    // Simple passthrough - don't modify the buffer at all
-    // This should definitely pass audio through
-    return;
+
+    // SAFETY: Ensure channels are initialized
+    if (channels_.empty()) {
+        return; // Not prepared, passthrough
+    }
+
+    // SAFETY: Denormal protection
+    juce::ScopedNoDenormals noDenormals;
+
+    // Tick parameters once per block
+    const float threshDb = pThreshold.tick();
+    const float ratio = pRatio.tick();
+    const float attackMs = pAttack.tick();
+    const float releaseMs = pRelease.tick();
+    const float freqLow = pFreqLow.tick();
+    const float freqHigh = pFreqHigh.tick();
+    const float lookaheadMs = pLookahead.tick();
+    const float mixValue = pMix.tick();
+
+    // SAFETY: Validate parameter ranges
+    if (!std::isfinite(threshDb) || !std::isfinite(ratio) ||
+        !std::isfinite(mixValue) || ratio < 1.0f) {
+        return; // Invalid parameters, passthrough to prevent crash
+    }
+
+    // Create dry buffer for mix
+    juce::AudioBuffer<float> dryBuffer(numChannels, numSamples);
+    dryBuffer.makeCopyOf(buffer);
+
+    // Process each channel independently
+    const int channelsToProcess = std::min(numChannels, (int)channels_.size());
+    for (int ch = 0; ch < channelsToProcess; ++ch) {
+        float* channelData = buffer.getWritePointer(ch);
+
+        // SAFETY: Null pointer check
+        if (channelData == nullptr) {
+            continue;
+        }
+
+        // Process channel with safety wrapper
+        try {
+            processChannel(channels_[ch], channelData, numSamples);
+        } catch (...) {
+            // SAFETY: On any exception, copy dry signal
+            const float* dryData = dryBuffer.getReadPointer(ch);
+            if (dryData) {
+                std::copy(dryData, dryData + numSamples, channelData);
+            }
+        }
+    }
+
+    // Apply dry/wet mix
+    const float wetGain = std::clamp(mixValue, 0.0f, 1.0f);
+    const float dryGain = 1.0f - wetGain;
+
+    for (int ch = 0; ch < channelsToProcess; ++ch) {
+        float* wetData = buffer.getWritePointer(ch);
+        const float* dryData = dryBuffer.getReadPointer(ch);
+
+        if (wetData && dryData) {
+            for (int i = 0; i < numSamples; ++i) {
+                // SAFETY: NaN check and clamping
+                float wet = wetData[i];
+                if (!std::isfinite(wet)) {
+                    wet = 0.0f;
+                }
+
+                float mixed = wet * wetGain + dryData[i] * dryGain;
+
+                // SAFETY: Final output clamping
+                wetData[i] = std::clamp(mixed, -2.0f, 2.0f);
+            }
+        }
+    }
 }
 
 void SpectralGate_Platinum::processChannel(Channel& ch, float* data, int numSamples) {
+    // SAFETY: Validate input
+    if (!data || numSamples <= 0) return;
+
     // Get current parameters
     const float threshDb = pThreshold.current;
-    const float ratio    = pRatio.current;
-    const float attackMs = pAttack.current;
-    const float releaseMs= pRelease.current;
-    const float freqLow  = pFreqLow.current;
-    const float freqHigh = pFreqHigh.current;
+    const float ratio    = std::max(1.0f, pRatio.current);  // SAFETY: Ensure ratio >= 1
+    const float attackMs = std::clamp(pAttack.current, 0.1f, 1000.0f);  // SAFETY: Clamp
+    const float releaseMs= std::clamp(pRelease.current, 1.0f, 5000.0f); // SAFETY: Clamp
+    const float freqLow  = std::clamp(pFreqLow.current, 20.0f, static_cast<float>(sr_ * 0.5));
+    const float freqHigh = std::clamp(pFreqHigh.current, 20.0f, static_cast<float>(sr_ * 0.5));
 
-    const float threshLin = std::pow(10.0f, threshDb / 20.0f);
+    // SAFETY: Convert threshold with bounds checking
+    const float threshLin = std::clamp(std::pow(10.0f, std::clamp(threshDb, -80.0f, 0.0f) / 20.0f),
+                                       1e-10f, 10.0f);
+
     const int binLow  = freqToBin(freqLow, sr_);
     const int binHigh = freqToBin(freqHigh, sr_);
 
-    // Envelope coefficients
-    const float attackCoeff = std::exp(-1000.0f / (attackMs * sr_));
-    const float releaseCoeff = std::exp(-1000.0f / (releaseMs * sr_));
+    // SAFETY: Envelope coefficients with bounds checking to prevent NaN
+    const float attackDenom = std::max(0.01f, attackMs * static_cast<float>(sr_));
+    const float releaseDenom = std::max(0.01f, releaseMs * static_cast<float>(sr_));
+    const float attackCoeff = std::clamp(std::exp(-1000.0f / attackDenom), 0.0f, 0.9999f);
+    const float releaseCoeff = std::clamp(std::exp(-1000.0f / releaseDenom), 0.0f, 0.9999f);
 
     // Bounded processing loop
     int iterations = 0;
@@ -189,58 +285,113 @@ void SpectralGate_Platinum::FFTProcessor::prepareWindow() {
 void SpectralGate_Platinum::FFTProcessor::processFrame(const float* input, float* output,
                                                        float threshold, float ratio,
                                                        int binLow, int binHigh) {
-    // Copy and window input (bounded)
+    // SAFETY: Validate inputs
+    if (!input || !output) {
+        if (output) {
+            std::fill(output, output + kFFTSize, 0.0f);
+        }
+        return;
+    }
+
+    // SAFETY: Clamp bin ranges
+    binLow = std::clamp(binLow, 0, kFFTBins - 1);
+    binHigh = std::clamp(binHigh, binLow, kFFTBins - 1);
+    threshold = std::max(1e-10f, threshold);  // SAFETY: Prevent division by zero
+    ratio = std::clamp(ratio, 1.0f, 100.0f);  // SAFETY: Reasonable ratio range
+
+    // Copy and window input with NaN protection
     for (int i = 0; i < kFFTSize; ++i) {
-        fftData[i] = input[i] * window[i];
+        float sample = input[i];
+        // SAFETY: NaN/Inf check
+        if (!std::isfinite(sample)) {
+            sample = 0.0f;
+        }
+        fftData[i] = sample * window[i];
     }
 
     // Forward FFT
     fft.performFrequencyOnlyForwardTransform(fftData.data());
 
-    // Apply spectral gating (bounded iteration)
-    // For now, simplify: just pass through all frequencies to test FFT/IFFT chain
-    for (int bin = 0; bin < kFFTBins && bin < 512; ++bin) { // Limit to 512 bins
-        float mag = std::abs(fftData[bin]);
-        
-        float gain = 1.0f;  // Always pass through for now
-        
-        // Gate logic disabled for testing
-        /*if (bin >= binLow && bin <= binHigh) {
+    // Apply spectral gating with full safety checks
+    for (int bin = 0; bin < kFFTBins; ++bin) {
+        float real = fftData[bin * 2];
+        float imag = fftData[bin * 2 + 1];
+
+        // SAFETY: NaN check on FFT output
+        if (!std::isfinite(real) || !std::isfinite(imag)) {
+            fftData[bin * 2] = 0.0f;
+            fftData[bin * 2 + 1] = 0.0f;
+            continue;
+        }
+
+        float mag = std::sqrt(real * real + imag * imag);
+
+        // SAFETY: Check magnitude is finite
+        if (!std::isfinite(mag)) {
+            mag = 0.0f;
+        }
+
+        float gain = 1.0f;
+
+        // Gate logic: only process bins in frequency range
+        if (bin >= binLow && bin <= binHigh) {
             if (mag < threshold) {
+                // Below threshold: apply full gating
                 gain = 0.0f;
             } else if (ratio > 1.0f) {
+                // Above threshold: apply ratio
                 float excess = mag - threshold;
                 float gated = threshold + excess / ratio;
+                // SAFETY: Prevent division by zero
                 gain = gated / std::max(mag, 1e-10f);
-                gain = clamp(gain, 0.0f, 1.0f);
+                // SAFETY: Clamp gain to valid range
+                gain = std::clamp(gain, 0.0f, 1.0f);
             }
-        }*/
+        }
 
-        fftData[bin] *= gain;
+        // Apply gain to complex components
+        fftData[bin * 2] *= gain;
+        fftData[bin * 2 + 1] *= gain;
     }
 
     // Inverse FFT
     fft.performRealOnlyInverseTransform(fftData.data());
 
-    // Overlap-add with windowing (bounded)
-    // The JUCE FFT already includes 1/N scaling in inverse transform
-    // We only need to compensate for windowing overlap (Hann window with 75% overlap sums to ~1.5)
-    float scaleFactor = 1.0f / 1.5f;
-    
+    // Overlap-add with windowing and safety checks
+    // JUCE FFT includes 1/N scaling; Hann window with 75% overlap sums to ~1.5
+    const float scaleFactor = 1.0f / 1.5f;
+
     for (int i = 0; i < kFFTSize; ++i) {
-        float windowed = fftData[i] * window[i] * scaleFactor;
-        
-        // Simple overlap-add
+        float ifftSample = fftData[i];
+
+        // SAFETY: NaN check on IFFT output
+        if (!std::isfinite(ifftSample)) {
+            ifftSample = 0.0f;
+        }
+
+        float windowed = ifftSample * window[i] * scaleFactor;
+
+        // SAFETY: Clamp windowed output
+        windowed = std::clamp(windowed, -10.0f, 10.0f);
+
+        // Overlap-add
         int pos = (overlapPos + i) % kFFTSize;
         if (i < kHopSize) {
             output[i] = overlapBuf[pos] + windowed;
+            // SAFETY: Final output sanitation
+            if (!std::isfinite(output[i])) {
+                output[i] = 0.0f;
+            }
+            output[i] = std::clamp(output[i], -2.0f, 2.0f);
             overlapBuf[pos] = 0.0f;
         } else {
             overlapBuf[pos] += windowed;
+            // SAFETY: Clamp overlap buffer to prevent accumulation
+            overlapBuf[pos] = std::clamp(overlapBuf[pos], -10.0f, 10.0f);
             output[i] = 0.0f;
         }
     }
-    
+
     overlapPos = (overlapPos + kHopSize) % kFFTSize;
 }
 

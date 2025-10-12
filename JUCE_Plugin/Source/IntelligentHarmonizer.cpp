@@ -134,6 +134,7 @@ public:
     double sampleRate_ = 48000.0;
     int blockSize_ = 512;
     bool prepared_ = false;
+    int warmupSamples_ = 0;  // Buffer priming counter
     
     // Humanization
     std::mt19937 rng_{std::random_device{}()};
@@ -298,7 +299,24 @@ public:
         // Allocate buffers
         inputBuffer_.resize(blockSize_);
         outputBuffer_.resize(blockSize_);
-        
+
+        // CRITICAL FIX: Calculate warmup period based on SMBPitchShift latency
+        // SMBPitchShift has internal buffering that needs priming
+        // Get maximum latency from all pitch shifters
+        int maxLatency = 0;
+        for (const auto& shifter : pitchShifters_) {
+            if (shifter) {
+                int latency = shifter->getLatencySamples();
+                if (latency > maxLatency) {
+                    maxLatency = latency;
+                }
+            }
+        }
+
+        // Set warmup samples: need enough samples to fill the internal buffers
+        // Use 2x latency + one block for safety margin
+        warmupSamples_ = (maxLatency * 2) + blockSize_;
+
         prepared_ = true;
     }
     
@@ -307,17 +325,35 @@ public:
             std::copy(input, input + numSamples, output);
             return;
         }
-        
+
+        // CRITICAL FIX: Handle warmup period for buffer priming
+        // During warmup, process audio through the pitch shifters to prime their buffers
+        // but output the dry signal to avoid outputting zeros
+        bool isWarming = warmupSamples_ > 0;
+        if (isWarming) {
+            // Decrement warmup counter
+            warmupSamples_ = std::max(0, warmupSamples_ - numSamples);
+
+            // Process through all pitch shifters to prime their buffers
+            // but don't use the output yet - just let them fill their internal buffers
+            std::vector<float> tempOutput(numSamples);
+            for (int voiceIdx = 0; voiceIdx < 3; ++voiceIdx) {
+                if (pitchShifters_[voiceIdx]) {
+                    // Process with a neutral pitch ratio to prime buffers
+                    pitchShifters_[voiceIdx]->process(input, tempOutput.data(), numSamples, 1.0f);
+                }
+            }
+
+            // Output dry signal during warmup
+            if (input != output) {
+                std::copy(input, input + numSamples, output);
+            }
+            return;
+        }
+
         // Get current mix level
         float masterMix = masterMix_.tick();
-        
-        #ifdef DEBUG
-        static int debugCounter = 0;
-        if (debugCounter++ % 100 == 0) {
-            std::cout << "[processBlock] masterMix = " << masterMix << std::endl;
-        }
-        #endif
-        
+
         // Early return for dry signal (0% mix)
         if (masterMix < 0.001f) {
             // Dry only - pass through unchanged
@@ -335,15 +371,8 @@ public:
             // Copy input to temp buffer since input and output may be the same
             std::vector<float> inputCopy(input, input + numSamples);
             std::fill(output, output + numSamples, 0.0f);
-            
+
             // Process each voice separately
-            #ifdef DEBUG
-            static int dbgCnt = 0;
-            if (dbgCnt++ % 100 == 0) {
-                std::cout << "[HQ] numVoices=" << numVoices_ << " mode=" << !lowLatencyMode_ << std::endl;
-            }
-            #endif
-            
             for (int voiceIdx = 0; voiceIdx < numVoices_; ++voiceIdx) {
                 float ratio = 1.0f;
                 float volume = 0.0f;
@@ -366,12 +395,6 @@ public:
                 if (volume > 0.01f) {
                     if (std::fabs(ratio - 1.0f) > 0.001f && voiceIdx < 3 && pitchShifters_[voiceIdx]) {
                         // Pitched voice - use SMBPitchShift
-                        #ifdef DEBUG
-                        static int psCnt = 0;
-                        if (psCnt++ % 100 == 0) {
-                            std::cout << "[PS] voice=" << voiceIdx << " ratio=" << ratio << " vol=" << volume << std::endl;
-                        }
-                        #endif
                         std::vector<float> tempOutput(numSamples);
                         pitchShifters_[voiceIdx]->process(inputCopy.data(), tempOutput.data(), numSamples, ratio);
                         
@@ -416,6 +439,20 @@ public:
         outputBuffer_.clear();
         delayBuffer_.clear();
         delayWritePos_ = 0;
+
+        // CRITICAL FIX: Recalculate warmup period after reset
+        if (prepared_) {
+            int maxLatency = 0;
+            for (const auto& shifter : pitchShifters_) {
+                if (shifter) {
+                    int latency = shifter->getLatencySamples();
+                    if (latency > maxLatency) {
+                        maxLatency = latency;
+                    }
+                }
+            }
+            warmupSamples_ = (maxLatency * 2) + blockSize_;
+        }
     }
     
     void setPitchRatio(float ratio) { 
@@ -564,14 +601,7 @@ void IntelligentHarmonizer::updateParameters(const std::map<int, float>& params)
     // Parameter 4: Master Mix (dry/wet)
     float masterMixNorm = getParam(kMasterMix, 0.5f);
     pimpl->setMasterMix(masterMixNorm);
-    
-    // Debug: Print what we're setting
-    #ifdef DEBUG
-    if (params.find(kMasterMix) != params.end()) {
-        std::cout << "[IntelligentHarmonizer] Setting master mix to: " << masterMixNorm << std::endl;
-    }
-    #endif
-    
+
     // Parameter 5: Voice 1 Volume
     float voice1VolNorm = getParam(kVoice1Volume, 1.0f);
     pimpl->setVoice1Volume(voice1VolNorm);
@@ -660,18 +690,15 @@ void IntelligentHarmonizer::updateParameters(const std::map<int, float>& params)
 }
 
 void IntelligentHarmonizer::snapParameters(const std::map<int, float>& params) {
-    float ratio = 1.0f;
-    float mix = 0.5f;
-    
-    for (const auto& [paramId, value] : params) {
-        if (paramId == kMasterMix) {
-            mix = value;
-        }
-        // For chord-based system, we'll snap to the root ratio
-        // The chord intervals will be calculated from the chord type
+    // Snap all parameters to their immediate values using updateParameters
+    // which handles all the chord interval calculations
+    updateParameters(params);
+
+    // Additionally snap master mix for immediate response
+    auto it = params.find(kMasterMix);
+    if (it != params.end()) {
+        pimpl->setMasterMix(it->second);
     }
-    
-    pimpl->snapParameters(ratio, mix);
 }
 
 juce::String IntelligentHarmonizer::getParameterName(int index) const {

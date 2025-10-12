@@ -165,23 +165,40 @@ private:
         double minDelay = 64.0; // Minimum samples behind write position
         double readPos = m_writePos - GRAIN_SIZE - minDelay + grainPos * m_readSpeed;
         while (readPos < 0) readPos += BUFFER_SIZE;
-        
-        // Get interpolated sample
+
+        // Cubic interpolation for better anti-aliasing
         int idx0 = static_cast<int>(readPos) & BUFFER_MASK;
+        int idxm1 = (idx0 - 1) & BUFFER_MASK;
         int idx1 = (idx0 + 1) & BUFFER_MASK;
+        int idx2 = (idx0 + 2) & BUFFER_MASK;
+
         float frac = static_cast<float>(readPos - std::floor(readPos));
-        float sample = m_buffer[idx0] * (1.0f - frac) + m_buffer[idx1] * frac;
-        
-        // Apply simple Hann window with constant gain
+
+        // 4-point cubic interpolation (Hermite)
+        float ym1 = m_buffer[idxm1];
+        float y0 = m_buffer[idx0];
+        float y1 = m_buffer[idx1];
+        float y2 = m_buffer[idx2];
+
+        float c0 = y0;
+        float c1 = 0.5f * (y1 - ym1);
+        float c2 = ym1 - 2.5f * y0 + 2.0f * y1 - 0.5f * y2;
+        float c3 = 0.5f * (y2 - ym1) + 1.5f * (y0 - y1);
+
+        float sample = ((c3 * frac + c2) * frac + c1) * frac + c0;
+
+        // Apply improved Hann-Poisson window for better spectral characteristics
         double windowPos = grainPos / GRAIN_SIZE + phaseOffset;
         windowPos = windowPos - std::floor(windowPos);
-        
-        // Simple Hann window
-        float window = 0.5f * (1.0f - std::cos(2.0f * M_PI * windowPos));
-        
+
+        // Hann-Poisson window (alpha = 2.0) - reduced sidelobes compared to Hann
+        float hann = 0.5f * (1.0f - std::cos(2.0f * M_PI * windowPos));
+        float poisson = std::exp(-2.0f * std::abs(2.0f * windowPos - 1.0f));
+        float window = hann * poisson;
+
         // Constant gain regardless of pitch ratio
-        // The overlapping grains should naturally maintain amplitude
-        return sample * window * 0.707f; // Scale for two overlapping windows
+        // Adjusted scaling for Hann-Poisson window overlap
+        return sample * window * 0.85f; // Scale for two overlapping windows with Hann-Poisson
     }
     
     void randomizeGrain(double& grainPos) {

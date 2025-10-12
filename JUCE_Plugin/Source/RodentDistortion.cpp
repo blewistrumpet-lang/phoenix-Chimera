@@ -472,28 +472,31 @@ double RodentDistortion::processFuzzFaceCircuit(double input, int channel) {
     // Dallas Arbiter Fuzz Face circuit emulation
     // Germanium transistor characteristics
     double temperature = m_thermalModel.getTemperature();
-    
+
     // Temperature-dependent biasing
     double bias = -0.2 + (temperature - 298.15) * 0.001;
-    
+
     // First transistor stage (Q1)
     double q1Out = m_transistors[channel].process(input * 10.0, bias);
-    
+
     // Second transistor stage (Q2) with feedback
     double q2Input = q1Out - m_fuzzFaceFeedback[channel] * 0.5;
     double q2Out = m_transistors[channel].process(q2Input * 50.0, bias * 1.2);
-    
+
+    // Update feedback with denormal protection
     m_fuzzFaceFeedback[channel] = q2Out * 0.1;
-    
+    m_fuzzFaceFeedback[channel] += DistortionConstants::DENORMAL_PREVENTION;
+    m_fuzzFaceFeedback[channel] -= DistortionConstants::DENORMAL_PREVENTION;
+
     // Fuzz control affects the input impedance and gain
     double fuzzAmount = m_clipping->getCurrent();
     q2Out *= (0.1 + fuzzAmount * 0.9);
-    
+
     // Gate effect at low input levels
     if (std::abs(input) < 0.05) {
         q2Out *= std::abs(input) * 20.0;
     }
-    
+
     // Safety check
     if (!std::isfinite(q2Out)) {
         q2Out = 0.0;

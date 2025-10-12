@@ -80,9 +80,10 @@ private:
     void populateEngineSelector(int slotIndex);
     
     bool comboBoxAttachmentsCreated = false;
-    
+    bool isApplyingTrinityPreset = false;  // Flag to prevent re-entrant engine loads
+
     // Tactile Futurism look and feel
     std::unique_ptr<NexusLookAndFeel> nexusLookAndFeel;
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditorNexusStatic)
 };

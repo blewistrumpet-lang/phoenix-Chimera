@@ -80,8 +80,9 @@ private:
         }
         float process(float x){
             const float y = b0*x + b1*x1 + b2*x2 - a1*y1 - a2*y2;
-            x2=x1; x1=x; y2=y1; y1=DSPUtils::flushDenorm(y);
-            return y;
+            x2=x1; x1=x; y2=y1;
+            y1 = std::isfinite(y) ? DSPUtils::flushDenorm(y) : 0.0f;
+            return std::isfinite(y) ? y : 0.0f;
         }
         void reset(){ x1=x2=y1=y2=0.f; }
     };
@@ -91,27 +92,53 @@ private:
         float a1=0, a2=0, a3=0; // denom (1 + a1 z^-1 + a2 z^-2 + a3 z^-3)
         float b0=0, b1=0, b2=0, b3=0; // numer reversed
         float x1=0,x2=0,x3=0, y1=0,y2=0,y3=0;
+        float lastD=-1.0f;  // Track last delay to avoid recomputation
+
         // fractional delay D in [0..3]
         void set(float D){
-            D = juce::jlimit(0.0f, 2.999f, D);
+            // Limit to safe range away from singularities
+            D = juce::jlimit(0.0f, 2.0f, D);  // Even safer limit
+
+            // Avoid recomputation if unchanged
+            if (std::abs(D - lastD) < 1e-6f) return;
+            lastD = D;
+
             // coefficients (see Thiran 1987)
             const float N=3.f;
             const float a1n = -3.0f + 3.0f*D;
             const float a2n =  3.0f - 6.0f*D + 3.0f*D*D;
             const float a3n = -1.0f + 3.0f*D - 3.0f*D*D + D*D*D;
 
-            a1 = a1n / (N - D);
-            a2 = a2n / ((N - D)*(N - D - 1.0f));
-            a3 = a3n / ((N - D)*(N - D - 1.0f)*(N - D - 2.0f));
+            // Protected division with safe denominators
+            const float denom1 = N - D;
+            const float denom2 = N - D - 1.0f;
+            const float denom3 = N - D - 2.0f;
+
+            // Only compute if denominators are safe (increased threshold)
+            if (std::abs(denom1) > 0.1f && std::abs(denom2) > 0.1f && std::abs(denom3) > 0.1f) {
+                a1 = a1n / denom1;
+                a2 = a2n / (denom1 * denom2);
+                a3 = a3n / (denom1 * denom2 * denom3);
+
+                // Clamp coefficients to prevent instability
+                a1 = juce::jlimit(-10.0f, 10.0f, a1);
+                a2 = juce::jlimit(-10.0f, 10.0f, a2);
+                a3 = juce::jlimit(-1.0f, 1.0f, a3);
+            } else {
+                // Fallback to unity/bypass if near singularity
+                a1 = a2 = 0.0f;
+                a3 = 0.0f;
+            }
 
             b0 = a3; b1 = a2; b2 = a1; b3 = 1.0f; // reversed for all-pass
         }
         float process(float x){
             const float y = b0*x + b1*x1 + b2*x2 + b3*x3 - a1*y1 - a2*y2 - a3*y3;
-            x3=x2; x2=x1; x1=x; y3=y2; y2=y1; y1=DSPUtils::flushDenorm(y);
-            return y;
+            x3=x2; x2=x1; x1=x; y3=y2; y2=y1;
+            y1 = std::isfinite(y) ? DSPUtils::flushDenorm(y) : 0.0f;
+            return std::isfinite(y) ? y : 0.0f;
         }
-        void reset(){ x1=x2=x3=y1=y2=y3=0.f; }
+        void reset(){ x1=x2=x3=y1=y2=y3=0.f; lastD=-1.0f; }
     };
 
     // Per-channel band splitter + phase rotators

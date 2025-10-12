@@ -102,11 +102,14 @@ private:
     void runEngineTests();
     void runIsolatedEngineTests();
 
+    // Allow PluginEditorNexusStatic to call loadEngine for Trinity preset loading
+    friend class PluginEditorNexusStatic;
+
 private:
     juce::AudioProcessorValueTreeState parameters;
     static constexpr int NUM_SLOTS = CHIMERA_NUM_SLOTS;  // Using centralized configuration
     std::array<std::unique_ptr<EngineBase>, NUM_SLOTS> m_activeEngines;
-    
+
     void parameterChanged(const juce::String& parameterID, float newValue) override;
     void loadEngine(int slot, int engineID);
     void updateEngineParameters(int slot);

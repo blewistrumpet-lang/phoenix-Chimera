@@ -77,7 +77,7 @@ void ResonantChorus::process(juce::AudioBuffer<float>& buffer) {
         float width = m_widthParam.process(m_widthTarget);         // 0.0 - 1.5 stereo width
         
         // Map parameters to proper ranges
-        rate = 0.1f + rate * 1.4f;          // 0.1 - 1.5 Hz
+        rate = 0.01f + rate * 1.99f;        // 0.01 - 2.0 Hz (musical chorus range)
         depth = 0.2f + depth * 0.4f;        // 0.2 - 0.6 samples
         resonance = 0.5f + resonance * 0.5f; // Q 0.5 - 1.0
         width = width * 1.5f;                // 0.0 - 1.5

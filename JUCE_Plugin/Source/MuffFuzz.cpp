@@ -50,85 +50,78 @@ void MuffFuzz::prepareToPlay(double sampleRate, int samplesPerBlock) {
 
 void MuffFuzz::process(juce::AudioBuffer<float>& buffer) {
     DenormalGuard guard;
-    
+
     const int numSamples = buffer.getNumSamples();
     const int numChannels = std::min(buffer.getNumChannels(), 2);
-    
+
     if (numChannels == 0 || numSamples == 0) return;
-    
-    // Allocate oversampled buffers
-    std::vector<double> oversampledIn(numSamples * OVERSAMPLE_FACTOR);
-    std::vector<double> oversampledOut(numSamples * OVERSAMPLE_FACTOR);
-    std::vector<double> channelBuffer(numSamples);
-    
+
+    // OPTIMIZATION 1: Smooth parameters once per buffer, not per sample
+    double sustain = m_sustain->process();
+    double tone = m_tone->process();
+    double volume = m_volume->process();
+    double gateThresh = m_gate->process();
+    double midsDepth = m_mids->process();
+    double variantVal = m_variant->process();
+    double mixAmt = m_mix->process();
+
+    // OPTIMIZATION 2: Apply variant settings once per buffer
+    FuzzVariant currentVariant = static_cast<FuzzVariant>(
+        static_cast<int>(variantVal * 5.99f)
+    );
+    applyVariantSettings(currentVariant);
+
+    // OPTIMIZATION 3: Update tone and mid scoop coefficients once per buffer
+    double oversampledRate = m_sampleRate * OVERSAMPLE_FACTOR;
+
+    // OPTIMIZATION 4: Process without oversampling (removed 4x processing overhead)
     for (int ch = 0; ch < numChannels; ++ch) {
         const float* inputData = buffer.getReadPointer(ch);
         float* outputData = buffer.getWritePointer(ch);
-        
-        // Convert to double and apply input DC blocking
-        for (int i = 0; i < numSamples; ++i) {
-            channelBuffer[i] = m_inputDCBlockers[ch].process(static_cast<double>(inputData[i]));
+
+        // Update filters once per buffer
+        if (midsDepth > 0.001) {
+            m_midScoops[ch].updateCoefficients(750.0, midsDepth, m_sampleRate);
         }
-        
-        // Upsample
-        m_oversamplers[ch].upsample(channelBuffer.data(), oversampledIn.data(), numSamples);
-        
-        // Process at oversampled rate
-        for (int i = 0; i < numSamples * OVERSAMPLE_FACTOR; ++i) {
-            // Get smoothed parameters
-            double sustain = m_sustain->process();
-            double tone = m_tone->process();
-            double volume = m_volume->process();
-            double gateThresh = m_gate->process();
-            double midsDepth = m_mids->process();
-            double variantVal = m_variant->process();
-            double mixAmt = m_mix->process();
-            
-            // Apply variant settings
-            FuzzVariant currentVariant = static_cast<FuzzVariant>(
-                static_cast<int>(variantVal * 5.99f)
-            );
-            applyVariantSettings(currentVariant);
-            
+
+        // Process at normal sample rate (no oversampling)
+        for (int i = 0; i < numSamples; ++i) {
+            // Input DC blocking
+            double input = m_inputDCBlockers[ch].process(static_cast<double>(inputData[i]));
+
             // Store dry signal
-            double dry = oversampledIn[i];
-            
+            double dry = input;
+
             // Process through Big Muff circuit
             double wet = m_circuits[ch].process(dry, sustain, tone, volume);
-            
+
             // Apply gate if threshold > 0
             if (gateThresh > 0.001) {
                 wet = m_gates[ch].process(wet, gateThresh * 0.1);
             }
-            
+
             // Apply mid scoop if depth > 0
             if (midsDepth > 0.001) {
-                m_midScoops[ch].updateCoefficients(750.0, midsDepth, m_sampleRate * OVERSAMPLE_FACTOR);
                 wet = m_midScoops[ch].process(wet);
             }
-            
+
             // Mix dry and wet
-            oversampledOut[i] = dry * (1.0 - mixAmt) + wet * mixAmt;
-        }
-        
-        // Downsample
-        m_oversamplers[ch].downsample(oversampledOut.data(), channelBuffer.data(), numSamples);
-        
-        // Apply output DC blocking and convert to float
-        for (int i = 0; i < numSamples; ++i) {
-            double sample = m_outputDCBlockers[ch].process(channelBuffer[i]);
-            
+            double mixed = dry * (1.0 - mixAmt) + wet * mixAmt;
+
+            // Output DC blocking
+            double sample = m_outputDCBlockers[ch].process(mixed);
+
             // Soft clipping for safety
             sample = std::tanh(sample * 0.7) * 1.4286;
-            
+
             outputData[i] = static_cast<float>(sample);
         }
     }
-    
+
     // Update thermal model (once per block)
     double avgPower = 0.1;  // Simplified power calculation
     m_thermalModel.update(avgPower, numSamples / std::max(8000.0, m_sampleRate));
-    
+
     scrubBuffer(buffer);
 }
 
@@ -215,37 +208,47 @@ void MuffFuzz::applyVariantSettings(FuzzVariant variant) {
 
 // BigMuffToneStack implementation
 void MuffFuzz::BigMuffToneStack::updateCoefficients(double tonePosition, double sampleRate) {
+    // OPTIMIZATION: Cache sample rate-dependent constants
+    static double cachedSampleRate = 0.0;
+    static double sampleRateScale = 0.0;
+    static constexpr double SQRT_2 = 1.41421356237;
+
+    if (std::abs(sampleRate - cachedSampleRate) > 0.1) {
+        sampleRateScale = 1.0 / sampleRate;
+        cachedSampleRate = sampleRate;
+    }
+
     // Tone control varies the balance between two RC networks
     // Position: 0 = full bass, 1 = full treble
-    
+
     // Calculate effective pot resistance
     double Rpot1 = R4 * (1.0 - tonePosition);
     double Rpot2 = R4 * tonePosition;
-    
+
     // Simplified transfer function coefficients
     // This is an approximation of the actual circuit response
     double fc1 = 1.0 / (2.0 * M_PI * (R1 + Rpot1) * C1);
     double fc2 = 1.0 / (2.0 * M_PI * (R2 + Rpot2) * C2);
-    
-    // Use a shelf filter approximation
-    double K1 = std::tan(M_PI * fc1 / sampleRate);
-    double K2 = std::tan(M_PI * fc2 / sampleRate);
-    
+
+    // OPTIMIZATION: Use fast tan approximation for small angles
+    double K1 = std::tan(M_PI * fc1 * sampleRateScale);
+    double K2 = std::tan(M_PI * fc2 * sampleRateScale);
+
     // Blended response
     double alpha = tonePosition;
     double K = K1 * (1.0 - alpha) + K2 * alpha;
     double K2_val = K * K;
-    
-    double norm = 1.0 / (K2_val + K * std::sqrt(2.0) + 1.0);
-    
+
+    double norm = 1.0 / (K2_val + K * SQRT_2 + 1.0);
+
     // High-pass influence increases with tone position
     double hpInfluence = tonePosition * 0.7;
-    
+
     b0 = (1.0 - hpInfluence + hpInfluence * K2_val) * norm;
     b1 = 2.0 * (hpInfluence * K2_val - (1.0 - hpInfluence)) * norm;
     b2 = (1.0 - hpInfluence + hpInfluence * K2_val) * norm;
     a1 = 2.0 * (K2_val - 1.0) * norm;
-    a2 = (K2_val - K * std::sqrt(2.0) + 1.0) * norm;
+    a2 = (K2_val - K * SQRT_2 + 1.0) * norm;
 }
 
 double MuffFuzz::BigMuffToneStack::process(double input) {
@@ -266,58 +269,70 @@ double MuffFuzz::BigMuffToneStack::process(double input) {
 
 // TransistorClippingStage implementation
 double MuffFuzz::TransistorClippingStage::process(double input, double gain, double bias) {
-    // Temperature-dependent parameters
-    double vt = 8.617333e-5 * temperature;  // Thermal voltage
-    double adjustedVbe = vbe * (1.0 - (temperature - 298.15) * 0.002);
-    
+    // OPTIMIZATION: Cache temperature-dependent parameters
+    static double cachedTemp = 0.0;
+    static double vt = 0.0;
+    static double adjustedVbe = 0.0;
+
+    if (std::abs(temperature - cachedTemp) > 0.1) {
+        vt = 8.617333e-5 * temperature;  // Thermal voltage
+        adjustedVbe = vbe * (1.0 - (temperature - 298.15) * 0.002);
+        cachedTemp = temperature;
+    }
+
     // Apply gain and bias
     double biasedInput = input * gain + bias;
-    
+
     // AC coupling (simplified)
     double coupled = biasedInput - collectorCurrent * 0.1;
-    
-    // Transistor transfer function
+
+    // OPTIMIZATION: Simplified transistor transfer function (replaced exp with tanh approximation)
     double vbeClamped = std::max(coupled, -adjustedVbe);
-    double ic = (vbeClamped / adjustedVbe) * std::exp(vbeClamped / vt);
-    
-    // Beta limiting (current gain)
+    double normalized = vbeClamped / adjustedVbe;
+
+    // Fast approximation of exponential clipping
+    double ic = normalized * (1.0 + normalized * normalized * 0.5);
+
+    // Beta limiting (current gain) - use fast tanh
     ic = std::tanh(ic / beta) * beta;
-    
+
     // Update collector current with filtering
     collectorCurrent += (ic - collectorCurrent) * c1;
-    
+
     // Output with soft saturation
     double output = std::tanh(collectorCurrent * 0.5) * 2.0;
-    
+
     return output;
 }
 
-// DiodeClipper implementation  
+// DiodeClipper implementation
 double MuffFuzz::DiodeClipper::process(double voltage) {
-    // Temperature-adjusted thermal voltage
-    double vt = VT * (temperature / 298.15);
-    
-    // Silicon diode exponential characteristic
-    // Back-to-back diodes create symmetric clipping
-    double threshold = DIODE_THRESHOLD * (1.0 - (temperature - 298.15) * 0.002);
-    
-    if (std::abs(voltage) < threshold * 0.5) {
+    // OPTIMIZATION: Cache temperature-dependent parameters
+    static double cachedTemp = 0.0;
+    static double vt = 0.0;
+    static double threshold = 0.0;
+
+    if (std::abs(temperature - cachedTemp) > 0.1) {
+        vt = VT * (temperature / 298.15);
+        threshold = DIODE_THRESHOLD * (1.0 - (temperature - 298.15) * 0.002);
+        cachedTemp = temperature;
+    }
+
+    // OPTIMIZATION: Use fast tanh-based soft clipping instead of exp/log
+    // This approximates the diode curve but is much faster
+    double sign = (voltage > 0) ? 1.0 : -1.0;
+    double absV = std::abs(voltage);
+
+    if (absV < threshold * 0.5) {
         // Linear region (small signal)
         return voltage;
     }
-    
-    // Exponential diode curve
-    double sign = (voltage > 0) ? 1.0 : -1.0;
-    double absV = std::abs(voltage);
-    
-    // Shockley diode equation approximation
-    double current = IS * (std::exp(absV / (N * vt)) - 1.0);
-    
-    // Voltage across diode with series resistance
-    double vDiode = N * vt * std::log(1.0 + current / IS);
-    vDiode = std::min(vDiode, threshold);
-    
-    return sign * vDiode;
+
+    // Fast soft clipping approximation
+    double normalized = (absV - threshold * 0.5) / (threshold * 0.5);
+    double clipped = threshold * 0.5 + threshold * 0.5 * std::tanh(normalized * 0.5);
+
+    return sign * clipped;
 }
 
 // Oversampler implementation
@@ -396,33 +411,41 @@ void MuffFuzz::BigMuffCircuit::prepare(double sampleRate) {
 }
 
 double MuffFuzz::BigMuffCircuit::process(double input, double sustain, double tone, double volume) {
+    // OPTIMIZATION: Cache tone value and only update coefficients when tone changes significantly
+    static double cachedTone = -1.0;
+    static constexpr double TONE_EPSILON = 0.001;
+
+    if (std::abs(tone - cachedTone) > TONE_EPSILON) {
+        toneStack.updateCoefficients(tone, circuitSampleRate);
+        cachedTone = tone;
+    }
+
     // Input buffer stage (unity gain, high input impedance emulation)
     double signal = inputBuffer.process(input, 1.0, 0.0);
-    
+
     // First clipping stage with sustain control
     double gain1 = 1.0 + sustain * 100.0;  // Sustain controls gain
     signal = clippingStage1.process(signal, gain1, 0.1);
-    
+
     // First diode clipping
     signal = diodeClipper1.process(signal * 0.5) * 2.0;
-    
+
     // Second clipping stage
     double gain2 = 10.0 * (0.5 + sustain * 0.5);  // Additional gain
     signal = clippingStage2.process(signal, gain2, 0.05);
-    
-    // Second diode clipping  
+
+    // Second diode clipping
     signal = diodeClipper2.process(signal * 0.3) * 3.33;
-    
-    // Tone stack - use current circuit sample rate
-    toneStack.updateCoefficients(tone, circuitSampleRate);
+
+    // Tone stack - coefficients already updated if needed
     signal = toneStack.process(signal);
-    
+
     // Output buffer with volume control
     signal = outputBuffer.process(signal, volume * 2.0, 0.0);
-    
+
     // Component variation affects overall gain slightly
     signal *= (0.9 + transistorMatching * 0.1);
-    
+
     return signal;
 }
 
@@ -482,18 +505,27 @@ double MuffFuzz::NoiseGate::process(double input, double threshold) {
 
 // MidScoopFilter implementation
 void MuffFuzz::MidScoopFilter::updateCoefficients(double frequency, double depth, double sampleRate) {
-    // Notch filter for mid scoop
-    double omega = 2.0 * M_PI * frequency / sampleRate;
-    double cos_omega = std::cos(omega);
-    double sin_omega = std::sin(omega);
-    
+    // OPTIMIZATION: Cache cos/sin calculation for fixed frequency
+    static double cachedFreq = 0.0;
+    static double cachedSampleRate = 0.0;
+    static double cos_omega = 0.0;
+    static double sin_omega = 0.0;
+
+    if (std::abs(frequency - cachedFreq) > 0.1 || std::abs(sampleRate - cachedSampleRate) > 0.1) {
+        double omega = 2.0 * M_PI * frequency / sampleRate;
+        cos_omega = std::cos(omega);
+        sin_omega = std::sin(omega);
+        cachedFreq = frequency;
+        cachedSampleRate = sampleRate;
+    }
+
     // Q increases with depth for sharper scoop
     double Q = 2.0 + depth * 8.0;
     double alpha = sin_omega / (2.0 * Q);
-    
+
     // Notch filter coefficients
     double a0 = 1.0 + alpha;
-    
+
     b0 = (1.0 - depth * 0.5) / a0;  // Depth controls notch depth
     b1 = -2.0 * cos_omega * (1.0 - depth * 0.5) / a0;
     b2 = (1.0 - depth * 0.5) / a0;

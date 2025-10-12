@@ -73,7 +73,7 @@ void StereoChorus::process(juce::AudioBuffer<float>& buffer) {
     }
     
     // Calculate LFO rate in Hz
-    float lfoRate = 0.1f + m_rate.current * 9.9f; // 0.1 to 10 Hz
+    float lfoRate = 0.1f + m_rate.current * 1.9f; // 0.1 to 2 Hz (typical chorus range)
     float lfoIncrement = lfoRate / m_sampleRate;
     
     // Calculate base delay in samples

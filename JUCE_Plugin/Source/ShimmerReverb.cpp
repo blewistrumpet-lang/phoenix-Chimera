@@ -15,7 +15,7 @@ namespace {
     const float scaleDamp = 0.4f;
     const float scaleRoom = 0.28f;
     const float offsetRoom = 0.7f;
-    const int stereoSpread = 23;
+    const int stereoSpread = 89;  // Increased from 67 to 89 for even wider stereo image
     
     // Freeverb delay times (44100Hz)
     const int combTuning[8] = { 1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617 };
@@ -119,58 +119,70 @@ private:
 // Simple pitch shifter using granular technique
 class SimplePitchShifter {
 public:
-    SimplePitchShifter() {
+    SimplePitchShifter(float phaseOffset = 0.0f) : phaseOffset(phaseOffset) {
         buffer.resize(pitchBufferSize, 0.0f);
         grainEnvelope.resize(grainSize);
-        
+
         // Create Hann window for grain envelope
         for (int i = 0; i < grainSize; i++) {
             float phase = static_cast<float>(i) / static_cast<float>(grainSize - 1);
             grainEnvelope[i] = 0.5f * (1.0f - std::cos(2.0f * M_PI * phase));
         }
     }
-    
+
     void reset() {
         std::fill(buffer.begin(), buffer.end(), 0.0f);
         writePos = 0;
         for (int i = 0; i < numGrains; i++) {
-            grainPos[i] = i * grainSize / numGrains;
+            // Start grains at 1/4 window position where envelope has good amplitude
+            // This avoids starting at position 0 where Hann window = 0
+            float basePos = grainSize * 0.25f;  // Start at 25% through window
+            grainPos[i] = basePos + (i * grainSize / numGrains) + (phaseOffset * grainSize);
+            // Wrap around if needed
+            while (grainPos[i] >= grainSize) grainPos[i] -= grainSize;
         }
     }
     
     float process(float input, float pitchRatio) {
         // Write to circular buffer
         buffer[writePos] = input;
-        
+
         float output = 0.0f;
-        
+
         // Process grains
         for (int g = 0; g < numGrains; g++) {
-            // Read position with pitch shift
-            float readPos = grainPos[g];
-            
+            // Read position - read backwards from write position using grain delay
+            // This ensures we're reading from filled buffer positions
+            float grainDelay = grainPos[g];
+            float readPosFloat = writePos - grainDelay;
+
+            // Handle wraparound for negative positions
+            while (readPosFloat < 0) {
+                readPosFloat += pitchBufferSize;
+            }
+
             // Get sample with linear interpolation
-            int readIdx = static_cast<int>(readPos) % pitchBufferSize;
+            int readIdx = static_cast<int>(readPosFloat) % pitchBufferSize;
             int readIdx2 = (readIdx + 1) % pitchBufferSize;
-            float frac = readPos - std::floor(readPos);
-            
+            float frac = readPosFloat - std::floor(readPosFloat);
+
             float sample = buffer[readIdx] * (1.0f - frac) + buffer[readIdx2] * frac;
-            
+
             // Apply grain envelope
             int envPos = static_cast<int>(grainPos[g]) % grainSize;
             sample *= grainEnvelope[envPos];
-            
+
             output += sample;
-            
+
             // Update grain position
             grainPos[g] += pitchRatio;
             if (grainPos[g] >= grainSize) {
                 grainPos[g] -= grainSize;
             }
         }
-        
+
         writePos = (writePos + 1) % pitchBufferSize;
-        
+
         return output / numGrains;
     }
     
@@ -179,6 +191,7 @@ private:
     std::vector<float> grainEnvelope;
     int writePos = 0;
     float grainPos[numGrains] = {0};
+    float phaseOffset = 0.0f;
 };
 
 // Main ShimmerReverb implementation
@@ -196,9 +209,9 @@ public:
     std::vector<float> allpassBufferL[numAllpasses];
     std::vector<float> allpassBufferR[numAllpasses];
     
-    // Pitch shifters for shimmer
-    SimplePitchShifter pitchShifterL;
-    SimplePitchShifter pitchShifterR;
+    // Pitch shifters for shimmer - initialize with different phase offsets for stereo width
+    SimplePitchShifter pitchShifterL{0.0f};    // Left channel: no offset
+    SimplePitchShifter pitchShifterR{0.333f};  // Right channel: 1/3 phase offset
     
     // Pre-delay
     std::vector<float> predelayBufferL;
@@ -348,10 +361,14 @@ public:
         
         // LFO increment
         float lfoInc = 2.0f * M_PI * lfoRate / sampleRate;
-        
+
         // Calculate pitch ratio (1.0 = no shift, 2.0 = octave up)
-        float pitchRatio = 1.0f + pitchShiftParam; // 1.0 to 2.0
-        
+        // Use different ratios for L/R to create stereo width
+        // Increased detuning from 1% to 3% for better stereo separation
+        float pitchRatioBase = 1.0f + pitchShiftParam; // 1.0 to 2.0
+        float pitchRatioL = pitchRatioBase * 0.97f;  // 3% lower for left
+        float pitchRatioR = pitchRatioBase * 1.03f;  // 3% higher for right
+
         for (int i = 0; i < numSamples; i++) {
             float inputL = leftData[i];
             float inputR = rightData ? rightData[i] : inputL;
@@ -359,14 +376,23 @@ public:
             // Apply pre-delay
             float delayedL = inputL;
             float delayedR = inputR;
-            
+
             if (predelaySize > 0) {
-                delayedL = predelayBufferL[predelayIndex];
-                delayedR = predelayBufferR[predelayIndex];
+                // Write current input to buffer first
                 predelayBufferL[predelayIndex] = inputL;
                 predelayBufferR[predelayIndex] = inputR;
-                
-                if (++predelayIndex >= predelaySize) {
+
+                // Calculate read index (predelaySize samples ago, wrapped)
+                int readIndex = predelayIndex - predelaySize;
+                if (readIndex < 0) {
+                    readIndex += static_cast<int>(predelayBufferL.size());
+                }
+
+                // Read delayed signal
+                delayedL = predelayBufferL[readIndex];
+                delayedR = predelayBufferR[readIndex];
+
+                if (++predelayIndex >= static_cast<int>(predelayBufferL.size())) {
                     predelayIndex = 0;
                 }
             }
@@ -374,11 +400,17 @@ public:
             // Process through Freeverb
             float reverbL = 0.0f;
             float reverbR = 0.0f;
-            
-            // Accumulate comb filters
+
+            // Add cross-channel mixing for stereo decorrelation
+            // Increased from 0.15 to 0.35 for better stereo width
+            float crossMix = 0.35f;
+            float delayedL_mixed = delayedL * (1.0f - crossMix) + delayedR * crossMix;
+            float delayedR_mixed = delayedR * (1.0f - crossMix) + delayedL * crossMix;
+
+            // Accumulate comb filters with mixed inputs
             for (int j = 0; j < numCombs; j++) {
-                reverbL += combL[j].process(delayedL);
-                reverbR += combR[j].process(delayedR);
+                reverbL += combL[j].process(delayedL_mixed);
+                reverbR += combR[j].process(delayedR_mixed);
             }
             
             // Process through allpasses
@@ -396,10 +428,10 @@ public:
             float shimmerR = reverbR;
             
             if (shimmerParam > 0.01f) {
-                // Pitch shift the reverb signal
-                float shiftedL = pitchShifterL.process(reverbL, pitchRatio);
-                float shiftedR = pitchShifterR.process(reverbR, pitchRatio);
-                
+                // Pitch shift the reverb signal with different ratios for L/R
+                float shiftedL = pitchShifterL.process(reverbL, pitchRatioL);
+                float shiftedR = pitchShifterR.process(reverbR, pitchRatioR);
+
                 // Mix pitched and unpitched based on shimmer amount
                 shimmerL = reverbL * (1.0f - shimmerParam) + shiftedL * shimmerParam;
                 shimmerR = reverbR * (1.0f - shimmerParam) + shiftedR * shimmerParam;
@@ -415,13 +447,20 @@ public:
             
             // Apply modulation if enabled
             if (modulationParam > 0.01f) {
-                float mod = std::sin(lfoPhase) * modulationParam * 0.002f;
+                // Increased modulation depth from 0.002 to 0.005 for better stereo width
+                float mod = std::sin(lfoPhase) * modulationParam * 0.005f;
                 lfoPhase += lfoInc;
                 if (lfoPhase > 2.0f * M_PI) lfoPhase -= 2.0f * M_PI;
-                
-                // Simple chorus-like modulation
+
+                // Enhanced stereo modulation - use opposite phases for L/R
                 shimmerL *= (1.0f + mod);
                 shimmerR *= (1.0f - mod);
+
+                // Additional phase-offset modulation for wider stereo image
+                // Increased from 0.001 to 0.003 for more decorrelation
+                float mod2 = std::cos(lfoPhase) * modulationParam * 0.003f;
+                shimmerL += shimmerR * mod2;
+                shimmerR += shimmerL * (-mod2);
             }
             
             // Apply filters

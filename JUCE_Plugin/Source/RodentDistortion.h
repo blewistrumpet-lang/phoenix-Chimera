@@ -157,16 +157,22 @@ private:
             double y1 = 0.0, y2 = 0.0;
             
             FORCE_INLINE double process(double input, const BiquadCoeffs& c) {
-                double output = c.b0 * input + c.b1 * x1 + c.b2 * x2 
+                double output = c.b0 * input + c.b1 * x1 + c.b2 * x2
                                - c.a1 * y1 - c.a2 * y2;
-                
+
                 x2 = x1; x1 = input;
                 y2 = y1; y1 = output;
-                
-                // Denormal prevention
+
+                // Denormal prevention for all states
+                x1 += DistortionConstants::DENORMAL_PREVENTION;
+                x1 -= DistortionConstants::DENORMAL_PREVENTION;
+                x2 += DistortionConstants::DENORMAL_PREVENTION;
+                x2 -= DistortionConstants::DENORMAL_PREVENTION;
                 y1 += DistortionConstants::DENORMAL_PREVENTION;
                 y1 -= DistortionConstants::DENORMAL_PREVENTION;
-                
+                y2 += DistortionConstants::DENORMAL_PREVENTION;
+                y2 -= DistortionConstants::DENORMAL_PREVENTION;
+
                 return output;
             }
             
@@ -235,31 +241,35 @@ private:
                 // Open-loop gain with frequency rolloff
                 // double openLoopGain = DistortionConstants::RAT_OPAMP_GAIN; // TODO: Use for frequency response modeling
                 // double gbProduct = 1e6; // 1MHz gain-bandwidth product // TODO: Use for frequency response modeling
-                
+
                 // Slew rate limiting
                 double maxDelta = slewRate / sampleRate;
                 double targetOutput = input * gain;
                 double delta = targetOutput - lastOutput;
-                
+
                 if (std::abs(delta) > maxDelta) {
                     delta = maxDelta * (delta > 0 ? 1.0 : -1.0);
                 }
-                
+
                 lastOutput += delta;
-                
+
                 // Output stage saturation
                 const double vcc = 9.0; // 9V battery
                 const double satVoltage = vcc - 1.5; // Headroom
-                
+
                 if (lastOutput > satVoltage) {
                     lastOutput = satVoltage - 0.1 * std::exp(-(lastOutput - satVoltage));
                 } else if (lastOutput < -satVoltage) {
                     lastOutput = -satVoltage + 0.1 * std::exp(lastOutput + satVoltage);
                 }
-                
+
+                // Denormal prevention on op-amp state
+                lastOutput += DistortionConstants::DENORMAL_PREVENTION;
+                lastOutput -= DistortionConstants::DENORMAL_PREVENTION;
+
                 return lastOutput;
             }
-            
+
             void reset() { lastOutput = 0.0; }
         };
         

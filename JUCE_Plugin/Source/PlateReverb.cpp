@@ -252,7 +252,7 @@ public:
         // Map our parameters to Freeverb parameters
         wetLevel = mixParam;
         dryLevel = 1.0f - mixParam;
-        
+
         // Room size with freeze capability
         if (freezeParam > 0.5f) {
             roomSize = 1.0f;
@@ -301,14 +301,23 @@ public:
             // Apply pre-delay
             float delayedL = inputL;
             float delayedR = inputR;
-            
+
             if (predelaySize > 0) {
-                delayedL = predelayBufferL[predelayIndex];
-                delayedR = predelayBufferR[predelayIndex];
+                // Write current input to buffer first
                 predelayBufferL[predelayIndex] = inputL;
                 predelayBufferR[predelayIndex] = inputR;
-                
-                if (++predelayIndex >= predelaySize) {
+
+                // Calculate read index (predelaySize samples ago, wrapped)
+                int readIndex = predelayIndex - predelaySize;
+                if (readIndex < 0) {
+                    readIndex += static_cast<int>(predelayBufferL.size());
+                }
+
+                // Read delayed signal
+                delayedL = predelayBufferL[readIndex];
+                delayedR = predelayBufferR[readIndex];
+
+                if (++predelayIndex >= static_cast<int>(predelayBufferL.size())) {
                     predelayIndex = 0;
                 }
             }
@@ -367,7 +376,7 @@ public:
     
     void setParameter(int index, float value) {
         value = std::clamp(value, 0.0f, 1.0f);
-        
+
         switch (index) {
             case 0: mixParam = value; break;
             case 1: sizeParam = value; break;

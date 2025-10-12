@@ -262,7 +262,7 @@ void FrequencyShifter::process(juce::AudioBuffer<float>& buffer) {
     
     // Calculate modulation
     float modFreq = m_modRate.current * 10.0f; // 0-10 Hz modulation
-    float modAmount = m_modDepth.current * 500.0f; // ±500 Hz modulation depth
+    float modAmount = m_modDepth.current * 50.0f; // ±50 Hz modulation depth (10% of base shift)
     
     // Process each channel
     for (int channel = 0; channel < numChannels; ++channel) {

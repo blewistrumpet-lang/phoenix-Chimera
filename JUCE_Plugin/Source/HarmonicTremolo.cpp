@@ -162,7 +162,7 @@ float HarmonicTremolo::processSample(float input, int channel) {
     m_crossover[channel].process(colored, lowBand, highBand);
     
     // Generate LFO
-    const float rateHz = 0.1f + rate * 19.9f; // 0.1Hz to 20Hz
+    const float rateHz = 0.1f + rate * 9.9f; // 0.1Hz to 10Hz (proper tremolo range)
     const float phaseOffset = channel == 1 ? stereoPhase : 0.0f;
     float lfo = m_lfoState[channel].process(rateHz, m_sampleRate, phaseOffset);
     

@@ -744,17 +744,21 @@ struct TransientShaper_Platinum::Impl {
         
         // Convert to usable values
         // Map attack/sustain from 0-1 to proper dB ranges with 0.5 = unity (0dB)
-        // Attack: ±15dB range (0 = -15dB, 0.5 = 0dB, 1 = +15dB)
-        // Sustain: ±24dB range (0 = -24dB, 0.5 = 0dB, 1 = +24dB)
+        // Attack: ±12dB range (0 = -12dB, 0.5 = 0dB, 1 = +12dB)
+        // Sustain: ±12dB range (0 = -12dB, 0.5 = 0dB, 1 = +12dB) - REDUCED from ±24dB to prevent runaway
         float attackVal = attack.getBlockValue();
         float sustainVal = sustain.getBlockValue();
-        
+
         // Convert parameter (0-1) to dB, then to linear gain
-        float attackDb = (attackVal - 0.5f) * 30.0f;  // ±15dB range
-        float sustainDb = (sustainVal - 0.5f) * 48.0f; // ±24dB range
-        
+        float attackDb = (attackVal - 0.5f) * 24.0f;  // ±12dB range
+        float sustainDb = (sustainVal - 0.5f) * 24.0f; // ±12dB range (was 48.0f = ±24dB - TOO HIGH!)
+
         cache.attackGain = std::pow(10.0f, attackDb / 20.0f);   // dB to linear
         cache.sustainGain = std::pow(10.0f, sustainDb / 20.0f); // dB to linear
+
+        // CRITICAL FIX: Clamp gains to prevent runaway - max +18dB boost (8x gain)
+        cache.attackGain = std::min(cache.attackGain, 8.0f);
+        cache.sustainGain = std::min(cache.sustainGain, 8.0f);
         cache.attackMs = 0.1f + attackTime.getBlockValue() * 49.9f;  // 0.1 to 50ms
         cache.releaseMs = 1.0f + releaseTime.getBlockValue() * 499.0f; // 1 to 500ms
         cache.separationAmount = separation.getBlockValue();
@@ -795,24 +799,8 @@ struct TransientShaper_Platinum::Impl {
         const int numChannels = std::min(buffer.getNumChannels(), 2);
         const int numSamples = buffer.getNumSamples();
         
-        // Debug: Check initial state
-        static bool firstTime = true;
-        if (firstTime) {
-            printf("DEBUG: First process block - attack=%.3f, sustain=%.3f, mix=%.3f\n",
-                   attack.getBlockValue(), sustain.getBlockValue(), mix.getBlockValue());
-            firstTime = false;
-        }
-        
         // Update cache once per block
         updateBlockCache();
-        
-        // Debug cache values
-        static int blockCount = 0;
-        if (blockCount < 3) {
-            printf("Block %d: attackGain=%.3f, sustainGain=%.3f, mix=%.3f\n",
-                   blockCount, cache.attackGain, cache.sustainGain, cache.mixAmount);
-            blockCount++;
-        }
         
         // Allow processing at very low mix values for subtle mixing (removed 0.001f threshold)
         // The mix calculation will naturally handle blending, even at very low values
@@ -872,18 +860,23 @@ struct TransientShaper_Platinum::Impl {
         // SPL-style differential envelope transient detection
         float transientAmount = 0.0f;
         float sustainAmount = 0.0f;
-        
+
         // Get transient and sustain amounts from differential envelope
         processor.diffDetector.process(sample, transientAmount, sustainAmount);
-        
+
         // Apply gains to respective portions
         // At unity (0.5), both gains are 1.0, so signal passes unchanged
         // transientAmount and sustainAmount are complementary ratios that sum to ~1.0
-        float processedSample = sample * (transientAmount * cache.attackGain + 
+        float processedSample = sample * (transientAmount * cache.attackGain +
                                           sustainAmount * cache.sustainGain);
-        
-        // Apply output gain and replace sample
-        sample = processedSample * cache.outputGain;
+
+        // Apply output gain
+        processedSample *= cache.outputGain;
+
+        // SAFETY LIMITER: Hard-clip to ±10.0 (~20dB) to prevent any runaway gain
+        processedSample = std::max(-10.0f, std::min(10.0f, processedSample));
+
+        sample = processedSample;
     }
 };
 

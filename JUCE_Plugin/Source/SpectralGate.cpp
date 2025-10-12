@@ -73,14 +73,17 @@ void SpectralGate::process(juce::AudioBuffer<float>& buffer) {
     dryBuffer.makeCopyOf(buffer);
     
     // Early bypass check for mix parameter
+    // NOTE: Removed early return that was causing Bug #3 (SpectralGate appearing "crashed")
+    // The early return prevented any output when mix < 0.001, but we need to process
+    // the signal even at low mix values for proper dry/wet blending below.
     const float mixValue = m_mix.getNextValue();
-    if (mixValue < 0.001f) {
-        // Completely dry - advance remaining mix parameter calls for smooth operation
-        for (int i = 1; i < numSamples; ++i) {
-            m_mix.getNextValue();
-        }
-        return;
-    }
+    // if (mixValue < 0.001f) {
+    //     // Completely dry - advance remaining mix parameter calls for smooth operation
+    //     for (int i = 1; i < numSamples; ++i) {
+    //         m_mix.getNextValue();
+    //     }
+    //     return;
+    // }
     
     for (int ch = 0; ch < numChannels; ++ch) {
         auto* channelData = buffer.getWritePointer(ch);

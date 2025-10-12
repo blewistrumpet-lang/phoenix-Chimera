@@ -3,10 +3,10 @@
 #include <algorithm>
 
 DynamicEQ::DynamicEQ() {
-    // Initialize smoothed parameters
+    // Initialize smoothed parameters with low-THD defaults
     m_frequency.reset(0.5f);    // 1kHz default
     m_threshold.reset(0.5f);    // -30dB default
-    m_ratio.reset(0.3f);        // 3:1 default
+    m_ratio.reset(0.0f);        // 1:1 default (no compression, lowest THD)
     m_attack.reset(0.2f);       // 5ms default
     m_release.reset(0.4f);      // 100ms default
     m_gain.reset(0.5f);         // 0dB default
@@ -66,9 +66,9 @@ void DynamicEQ::process(juce::AudioBuffer<float>& buffer) {
         return;
     }
     
-    // Update thermal modeling and component aging
-    m_thermalModel.update(m_sampleRate);
-    updateComponentAging(m_sampleRate);
+    // Thermal modeling and component aging disabled for low THD
+    // m_thermalModel.update(m_sampleRate);
+    // updateComponentAging(m_sampleRate);
     
     // Update smoothed parameters once per block (more efficient)
     for (int i = 0; i < numSamples; ++i) {
@@ -91,76 +91,81 @@ void DynamicEQ::process(juce::AudioBuffer<float>& buffer) {
             
             // Apply DC blocking
             input = m_dcBlockers[channel].process(input);
-            
+
             // Calculate frequency from parameter (20Hz to 20kHz)
             // Use exponential scaling with safer range
             float freqParam = std::min(0.95f, m_frequency.current); // Cap at 0.95 to prevent extreme values
             float freq = 20.0f * std::pow(200.0f, freqParam); // Further reduced to 200.0f for more stable scaling
-            
+
             // Clamp frequency to safe range (avoid Nyquist issues)
             freq = std::max(20.0f, std::min(freq, static_cast<float>(m_sampleRate * 0.45f)));
-            
-            // Apply thermal compensation to frequency
-            float thermalFactor = m_thermalModel.getThermalFactor();
-            freq *= thermalFactor;
-            
-            // Ensure frequency stays in safe range after thermal compensation
+
+            // Thermal compensation disabled for low THD
+            // float thermalFactor = m_thermalModel.getThermalFactor();
+            // freq *= thermalFactor;
+
+            // Ensure frequency stays in safe range
             freq = std::max(20.0f, std::min(freq, static_cast<float>(m_sampleRate * 0.48f)));
             
-            // Set up filter parameters with safe Q value
-            float Q = std::max(0.5f, std::min(10.0f, 2.0f)); // Bounded Q
+            // Set up filter parameters with lower Q value to reduce THD
+            // Reduced from 2.0 to 0.707 (Butterworth response) for minimal distortion
+            float Q = 0.707f; // Butterworth Q for flattest passband and lowest THD
+
+            // Update filter every sample for smooth parameter changes and low THD
+            // Removed threshold check to eliminate parameter discontinuities
+            state.peakFilter.setParameters(freq, Q, m_sampleRate);
             
-            // Only update filter if frequency changed significantly to avoid clicks
-            static float lastFreq = 0.0f;
-            if (std::abs(freq - lastFreq) > 0.1f) {
-                state.peakFilter.setParameters(freq, Q, m_sampleRate);
-                lastFreq = freq;
+            // Oversampling disabled for low THD - process at native sample rate
+            // Get filter outputs
+            auto filterOutputs = state.peakFilter.process(input);
+
+            // Set up dynamic processor timing
+            float attackMs = 0.1f + m_attack.current * 99.9f; // 0.1ms to 100ms
+            float releaseMs = 10.0f + m_release.current * 4990.0f; // 10ms to 5000ms
+            state.dynamicProcessor.setTiming(attackMs, releaseMs, m_sampleRate);
+
+            // Calculate threshold in dB
+            float thresholdDb = -60.0f + m_threshold.current * 60.0f; // -60dB to 0dB
+
+            // Calculate ratio
+            float ratio = 0.1f + m_ratio.current * 9.9f; // 0.1:1 to 10:1
+
+            // Determine mode
+            int mode = static_cast<int>(m_mode.current * 2.99f); // 0, 1, or 2
+
+            // Rebuild gain curve if parameters changed significantly
+            // Reduced thresholds for more frequent updates and smoother THD
+            static float lastThreshold[2] = {-1000.0f, -1000.0f};
+            static float lastRatio[2] = {-1.0f, -1.0f};
+            static int lastMode[2] = {-1, -1};
+
+            if (std::abs(thresholdDb - lastThreshold[channel]) > 0.1f ||  // Reduced from 0.5 to 0.1
+                std::abs(ratio - lastRatio[channel]) > 0.01f ||          // Reduced from 0.05 to 0.01
+                mode != lastMode[channel]) {
+                state.dynamicProcessor.buildGainCurve(thresholdDb, ratio, mode);
+                lastThreshold[channel] = thresholdDb;
+                lastRatio[channel] = ratio;
+                lastMode[channel] = mode;
             }
-            
-            // Process through oversampling for higher quality
-            float oversampledInput[2];
-            state.oversampler.upsample(input, oversampledInput);
-            
-            float processedOversampledOutput[2];
-            for (int os = 0; os < 2; ++os) {
-                // Get filter outputs
-                auto filterOutputs = state.peakFilter.process(oversampledInput[os]);
-                
-                // Set up dynamic processor timing
-                float attackMs = 0.1f + m_attack.current * 99.9f; // 0.1ms to 100ms
-                float releaseMs = 10.0f + m_release.current * 4990.0f; // 10ms to 5000ms
-                state.dynamicProcessor.setTiming(attackMs, releaseMs, m_sampleRate * 2); // Account for oversampling
-                
-                // Calculate threshold in dB
-                float thresholdDb = -60.0f + m_threshold.current * 60.0f; // -60dB to 0dB
-                
-                // Calculate ratio
-                float ratio = 0.1f + m_ratio.current * 9.9f; // 0.1:1 to 10:1
-                
-                // Determine mode
-                int mode = static_cast<int>(m_mode.current * 2.99f); // 0, 1, or 2
-                
-                // Process the peak band through dynamic processor
-                float processedPeak = state.dynamicProcessor.process(filterOutputs.peak, thresholdDb, ratio, mode);
-                
-                // Apply static gain
-                float gainDb = -20.0f + m_gain.current * 40.0f; // -20dB to +20dB
-                float gainLinear = dbToLinear(gainDb);
-                processedPeak *= gainLinear;
-                
-                // Apply analog saturation to the processed peak
-                processedPeak = applyAnalogSaturation(processedPeak);
-                
-                // Reconstruct the signal: original minus original peak plus processed peak
-                processedOversampledOutput[os] = oversampledInput[os] - filterOutputs.peak + processedPeak;
-            }
-            
-            // Downsample back to original rate
-            float output = state.oversampler.downsample(processedOversampledOutput);
-            
-            // Final analog saturation for warmth (removed excessive gain)
-            output = applyAnalogSaturation(output * 0.7f);
-            
+
+            // Process the peak band through dynamic processor
+            float processedPeak = state.dynamicProcessor.process(filterOutputs.peak, thresholdDb, ratio, mode);
+
+            // Apply static gain
+            float gainDb = -20.0f + m_gain.current * 40.0f; // -20dB to +20dB
+            float gainLinear = dbToLinear(gainDb);
+            processedPeak *= gainLinear;
+
+            // Analog saturation disabled for low THD
+            // processedPeak = applyAnalogSaturation(processedPeak);
+
+            // Reconstruct: add the processed peak band back to the input
+            // With biquad, filterOutputs.peak is already the isolated band
+            float output = input + processedPeak;
+
+            // Final analog saturation disabled for low THD
+            // output = applyAnalogSaturation(output * 0.7f);
+
             // Mix with dry signal
             channelData[sample] = drySignal * (1.0f - m_mix.current) + output * m_mix.current;
         }

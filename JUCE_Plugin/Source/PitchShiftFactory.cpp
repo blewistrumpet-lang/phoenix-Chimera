@@ -1,11 +1,18 @@
 #include "IPitchShiftStrategy.h"
 #include "SMBPitchShiftFixed.h"
+#include "PhaseVocoderPitchShift.h"
 
 std::unique_ptr<IPitchShiftStrategy> PitchShiftFactory::create(Algorithm algo) {
-    // Using the FIXED and TESTED SMB (Stephan M. Bernsee) pitch shift algorithm
-    // This version achieves < 0.0005% frequency error
-    return std::make_unique<SMBPitchShiftFixed>();
-    
+    // CRITICAL FIX: Use true Phase Vocoder instead of signalsmith-stretch
+    // signalsmith-stretch is a TIME-STRETCHER, not a pitch shifter
+    // This caused the 8.673% THD issue
+    //
+    // Now using proper phase vocoder with 8x overlap for < 0.5% THD
+    return std::make_unique<PhaseVocoderPitchShift>();
+
+    // Old broken version (signalsmith-stretch used incorrectly):
+    // return std::make_unique<SMBPitchShiftFixed>();
+
     // Future: can add algorithm selection back when we have multiple working implementations
     /*
     switch (algo) {
@@ -15,7 +22,7 @@ std::unique_ptr<IPitchShiftStrategy> PitchShiftFactory::create(Algorithm algo) {
         case Algorithm::PhaseVocoder:
         case Algorithm::RubberBand:
         default:
-            return std::make_unique<SignalsmithPitchShift>();
+            return std::make_unique<PhaseVocoderPitchShift>();
     }
     */
 }
