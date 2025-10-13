@@ -1,0 +1,3867 @@
+{
+  "engines": {
+    "22": {
+      "id": 22,
+      "name": "K-Style Overdrive",
+      "string_id": "k_style",
+      "enum": "ENGINE_K_STYLE",
+      "category": "Distortion",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Amount of tube saturation",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "EQ balance from dark to bright",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Level",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level with makeup gain",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet balance",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "15": {
+      "id": 15,
+      "name": "Vintage Tube Preamp",
+      "string_id": "vintage_tube",
+      "enum": "ENGINE_VINTAGE_TUBE",
+      "category": "Saturation",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Input Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input amplification \u00b120dB",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube saturation amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Bias",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube bias point",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Bass",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low frequency control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid frequency control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Treble",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Presence",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency clarity",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Output Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level \u00b120dB",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Tube Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube characteristic (12AX7/12AU7/12AT7/6SN7/ECC88/6V6/EL34/EL84)",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet balance",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "34": {
+      "id": 34,
+      "name": "Tape Echo",
+      "string_id": "tape_echo",
+      "enum": "ENGINE_TAPE_ECHO",
+      "category": "Delay",
+      "param_count": 5,
+      "parameters": [
+        {
+          "name": "Time",
+          "default": 0.375,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Delay time from 10ms to 2000ms",
+          "units": "percent",
+          "skew": 0.3
+        },
+        {
+          "name": "Feedback",
+          "default": 0.35,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Regeneration amount (>0.75 = self-oscillation)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Wow & Flutter",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tape transport instability and wobble",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Saturation",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tape compression and harmonic distortion",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.35,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet balance",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "42": {
+      "id": 42,
+      "name": "Shimmer Reverb",
+      "string_id": "shimmer_reverb",
+      "enum": "ENGINE_SHIMMER_REVERB",
+      "category": "Reverb",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pitch Shift",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pitch shift amount",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "name": "Shimmer",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Octave-up shimmer amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Room size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Feedback",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Modulation",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        }
+      ]
+    },
+    "39": {
+      "id": 39,
+      "name": "Plate Reverb",
+      "string_id": "plate_reverb",
+      "enum": "ENGINE_PLATE_REVERB",
+      "category": "Reverb",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Plate size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time up to 100ms",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Width",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Freeze",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Freeze reverb tail",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Early Reflections",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Early reflections level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Diffusion",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Diffusion amount",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "40": {
+      "id": 40,
+      "name": "Spring Reverb",
+      "string_id": "spring_reverb",
+      "enum": "ENGINE_SPRING_REVERB",
+      "category": "Reverb",
+      "param_count": 9,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Tension",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Spring tension",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Decay",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Decay time",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input drive",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Chirp",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Spring chirp amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        }
+      ]
+    },
+    "1": {
+      "id": 1,
+      "name": "Vintage Opto",
+      "string_id": "opto_compressor",
+      "enum": "ENGINE_OPTO_COMPRESSOR",
+      "category": "Dynamics",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression threshold",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "name": "Speed",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack/release speed",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Makeup",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Makeup gain",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "2": {
+      "id": 2,
+      "name": "Classic Compressor",
+      "string_id": "classic_compressor",
+      "enum": "ENGINE_VCA_COMPRESSOR",
+      "category": "Dynamics",
+      "param_count": 7,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression threshold",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Knee",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Knee softness",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Makeup",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Makeup gain",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "23": {
+      "id": 23,
+      "name": "Stereo Chorus",
+      "string_id": "stereo_chorus",
+      "enum": "ENGINE_DIGITAL_CHORUS",
+      "category": "Modulation",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "LFO rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Feedback",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 0.7,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "35": {
+      "id": 35,
+      "name": "Digital Delay",
+      "string_id": "digital_delay",
+      "enum": "ENGINE_DIGITAL_DELAY",
+      "category": "Delay",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Time",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Delay time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Feedback",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.9,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency cutoff",
+          "units": "Hz",
+          "skew": 0.3
+        }
+      ]
+    },
+    "29": {
+      "id": 29,
+      "name": "Classic Tremolo",
+      "string_id": "classic_tremolo",
+      "enum": "ENGINE_CLASSIC_TREMOLO",
+      "category": "Modulation",
+      "param_count": 8,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Shape",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "LFO waveform shape",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Stereo",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo phase",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo type",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Symmetry",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Waveform symmetry",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Volume",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output volume",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "28": {
+      "id": 28,
+      "name": "Harmonic Tremolo",
+      "string_id": "harmonic_tremolo",
+      "enum": "ENGINE_HARMONIC_TREMOLO",
+      "category": "Modulation",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Harmonics",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Harmonic content (crossover frequency)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Stereo Phase",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Phase offset",
+          "units": "degrees",
+          "skew": 0.5
+        }
+      ]
+    },
+    "46": {
+      "id": 46,
+      "name": "Dimension Expander",
+      "string_id": "dimension_expander",
+      "enum": "ENGINE_DIMENSION_EXPANDER",
+      "category": "Spatial",
+      "param_count": 3,
+      "parameters": [
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dimension size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "17": {
+      "id": 17,
+      "name": "Harmonic Exciter",
+      "string_id": "harmonic_exciter",
+      "enum": "ENGINE_HARMONIC_EXCITER",
+      "category": "Enhancement",
+      "param_count": 3,
+      "parameters": [
+        {
+          "name": "Harmonics",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Harmonic generation",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Frequency",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Frequency range",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "53": {
+      "id": 53,
+      "name": "Mid/Side Processor",
+      "string_id": "mid_side_processor",
+      "enum": "ENGINE_MID_SIDE_PROCESSOR",
+      "category": "Spatial",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Mid Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid channel gain (-20dB to +20dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Side Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Side channel gain (-20dB to +20dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width (0-200%)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid Low",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid low shelf EQ (-15dB to +15dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid High",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid high shelf EQ (-15dB to +15dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Side Low",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Side low shelf EQ (-15dB to +15dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Side High",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Side high shelf EQ (-15dB to +15dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Bass Mono",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Bass mono frequency (off to 500Hz)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Solo Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Solo monitoring (off/mid/side)",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Presence",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Presence boost (0-6dB @ 10kHz)",
+          "units": "dB",
+          "skew": 0.5
+        }
+      ]
+    },
+    "8": {
+      "id": 8,
+      "name": "Vintage Console EQ",
+      "string_id": "vintage_console_eq",
+      "enum": "ENGINE_VINTAGE_CONSOLE_EQ",
+      "category": "EQ",
+      "param_count": 5,
+      "parameters": [
+        {
+          "name": "Low",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low shelf",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Mid",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low mid band",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "High Mid",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High mid band",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "High",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High shelf",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Console saturation",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "7": {
+      "id": 7,
+      "name": "Parametric EQ",
+      "string_id": "parametric_eq",
+      "enum": "ENGINE_PARAMETRIC_EQ",
+      "category": "EQ",
+      "param_count": 9,
+      "parameters": [
+        {
+          "name": "Freq 1",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 1 frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Gain 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 1 gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Q 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 1 Q",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "name": "Freq 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 2 frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Gain 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 2 gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Q 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 2 Q",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "name": "Freq 3",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 3 frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Gain 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 3 gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Q 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 3 Q",
+          "units": "Q",
+          "skew": 0.5
+        }
+      ]
+    },
+    "3": {
+      "id": 3,
+      "name": "Transient Shaper",
+      "string_id": "transient_shaper",
+      "enum": "ENGINE_TRANSIENT_SHAPER",
+      "category": "Dynamics",
+      "param_count": 3,
+      "parameters": [
+        {
+          "name": "Attack",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack enhancement",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Sustain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Sustain control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "31": {
+      "id": 31,
+      "name": "Pitch Shifter",
+      "string_id": "pitch_shifter",
+      "enum": "ENGINE_PITCH_SHIFTER",
+      "category": "Pitch",
+      "param_count": 3,
+      "parameters": [
+        {
+          "name": "Pitch",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pitch shift amount",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "name": "Fine",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Fine tuning",
+          "units": "cents",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "47": {
+      "id": 47,
+      "name": "Spectral Freeze",
+      "string_id": "spectral_freeze",
+      "enum": "ENGINE_SPECTRAL_FREEZE",
+      "category": "Spectral",
+      "param_count": 3,
+      "parameters": [
+        {
+          "name": "Freeze",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Freeze trigger",
+          "units": "gate",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "FFT size",
+          "units": "samples",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "50": {
+      "id": 50,
+      "name": "Granular Cloud",
+      "string_id": "granular_cloud",
+      "enum": "ENGINE_GRANULAR_CLOUD",
+      "category": "Texture",
+      "param_count": 5,
+      "parameters": [
+        {
+          "name": "Grains",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Grain density",
+          "units": "grains/sec",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Grain size",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Position",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Playhead position",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pitch",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pitch variation",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "38": {
+      "id": 38,
+      "name": "Buffer Repeat",
+      "string_id": "buffer_repeat",
+      "enum": "ENGINE_BUFFER_REPEAT",
+      "category": "Glitch",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Buffer size",
+          "units": "beats",
+          "skew": 0.5
+        },
+        {
+          "name": "Rate",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Repeat rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Feedback",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.85,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "51": {
+      "id": 51,
+      "name": "Chaos Generator",
+      "string_id": "chaos_generator",
+      "enum": "ENGINE_CHAOS_GENERATOR",
+      "category": "Experimental",
+      "param_count": 8,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Chaos rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Chaos depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Chaos type",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Smoothing",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Smoothing amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Target",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Target parameter",
+          "units": "param",
+          "skew": 0.5
+        },
+        {
+          "name": "Sync",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tempo sync",
+          "units": "beats",
+          "skew": 0.5
+        },
+        {
+          "name": "Seed",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Random seed",
+          "units": "seed",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "33": {
+      "id": 33,
+      "name": "Intelligent Harmonizer",
+      "string_id": "intelligent_harmonizer",
+      "enum": "ENGINE_INTELLIGENT_HARMONIZER",
+      "category": "Pitch",
+      "param_count": 8,
+      "parameters": [
+        {
+          "name": "Interval",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Harmony interval",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "name": "Key",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Musical key",
+          "units": "note",
+          "skew": 0.5
+        },
+        {
+          "name": "Scale",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Scale type",
+          "units": "scale",
+          "skew": 0.5
+        },
+        {
+          "name": "Voices",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Number of voices",
+          "units": "voices",
+          "skew": 0.5
+        },
+        {
+          "name": "Spread",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo spread",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Humanize",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Humanization amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Formant",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Formant correction",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "43": {
+      "id": 43,
+      "name": "Gated Reverb",
+      "string_id": "gated_reverb",
+      "enum": "ENGINE_GATED_REVERB",
+      "category": "Reverb",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Threshold",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Hold",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate hold time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Release",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate release time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate attack time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Room size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        }
+      ]
+    },
+    "41": {
+      "id": 41,
+      "name": "Convolution Reverb",
+      "string_id": "convolution_reverb",
+      "enum": "ENGINE_CONVOLUTION_REVERB",
+      "category": "Reverb",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "IR Select",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Impulse response selection",
+          "units": "index",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "IR size scaling",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Reverse",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Reverse impulse response",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Early/Late",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Early vs late reflections",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Width",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "32": {
+      "id": 32,
+      "name": "Detune Doubler",
+      "string_id": "detune_doubler",
+      "enum": "ENGINE_DETUNE_DOUBLER",
+      "category": "Pitch",
+      "param_count": 5,
+      "parameters": [
+        {
+          "name": "Detune Amount",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Detune amount (0-50 cents)",
+          "units": "cents",
+          "skew": 0.5
+        },
+        {
+          "name": "Delay Time",
+          "default": 0.15,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Base delay time (10-60ms)",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Stereo Width",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo spread of doubled voices",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Thickness",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Voice blending thickness",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "49": {
+      "id": 49,
+      "name": "Phased Vocoder",
+      "string_id": "phased_vocoder",
+      "enum": "ENGINE_PHASED_VOCODER",
+      "category": "Spectral",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Bands",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Number of bands",
+          "units": "bands",
+          "skew": 0.5
+        },
+        {
+          "name": "Shift",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Frequency shift",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Formant",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Formant shift",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "48": {
+      "id": 48,
+      "name": "Spectral Gate",
+      "string_id": "spectral_gate",
+      "enum": "ENGINE_SPECTRAL_GATE",
+      "category": "Dynamics",
+      "param_count": 8,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Freq Low",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Freq High",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Lookahead",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Lookahead time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "4": {
+      "id": 4,
+      "name": "Noise Gate",
+      "string_id": "noise_gate",
+      "enum": "ENGINE_NOISE_GATE",
+      "category": "Dynamics",
+      "param_count": 5,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Hold",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Hold time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Range",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate range",
+          "units": "dB",
+          "skew": 0.5
+        }
+      ]
+    },
+    "12": {
+      "id": 12,
+      "name": "Envelope Filter",
+      "string_id": "envelope_filter",
+      "enum": "ENGINE_ENVELOPE_FILTER",
+      "category": "Filter",
+      "param_count": 5,
+      "parameters": [
+        {
+          "name": "Sensitivity",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Envelope sensitivity",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Range",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter range",
+          "units": "octaves",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "52": {
+      "id": 52,
+      "name": "Feedback Network",
+      "string_id": "feedback_network",
+      "enum": "ENGINE_FEEDBACK_NETWORK",
+      "category": "Experimental",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Feedback",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.85,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Delay",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Delay time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Modulation",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "5": {
+      "id": 5,
+      "name": "Mastering Limiter",
+      "string_id": "mastering_limiter",
+      "enum": "ENGINE_MASTERING_LIMITER",
+      "category": "Dynamics",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.9,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Limiting threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Release",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Knee",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Knee softness",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Lookahead",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Lookahead time",
+          "units": "ms",
+          "skew": 0.5
+        }
+      ]
+    },
+    "44": {
+      "id": 44,
+      "name": "Stereo Widener",
+      "string_id": "stereo_widener",
+      "enum": "ENGINE_STEREO_WIDENER",
+      "category": "Spatial",
+      "param_count": 3,
+      "parameters": [
+        {
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Bass Mono",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Bass mono frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "24": {
+      "id": 24,
+      "name": "Resonant Chorus",
+      "string_id": "resonant_chorus",
+      "enum": "ENGINE_RESONANT_CHORUS",
+      "category": "Modulation",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "LFO rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Resonance",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.9,
+          "description": "Filter resonance",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "6": {
+      "id": 6,
+      "name": "Dynamic EQ",
+      "string_id": "dynamic_eq",
+      "enum": "ENGINE_DYNAMIC_EQ",
+      "category": "EQ",
+      "param_count": 8,
+      "parameters": [
+        {
+          "name": "Frequency",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 0.9,
+          "description": "Center frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Threshold",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dynamic threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "EQ gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression/expansion mode",
+          "units": "mode",
+          "skew": 0.5
+        }
+      ]
+    },
+    "45": {
+      "id": 45,
+      "name": "Stereo Imager",
+      "string_id": "stereo_imager",
+      "enum": "ENGINE_STEREO_IMAGER",
+      "category": "Spatial",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Center",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Center level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Rotation",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo rotation",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "21": {
+      "id": 21,
+      "name": "Rodent Distortion",
+      "string_id": "rodent_distortion",
+      "enum": "ENGINE_RODENT_DISTORTION",
+      "category": "Distortion",
+      "param_count": 8,
+      "parameters": [
+        {
+          "name": "Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input gain (0-60dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Filter",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-distortion filter (60Hz-5kHz)",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Clipping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Clipping intensity",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tone control (500Hz-12kHz)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Output",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Circuit mode (RAT/TS/Muff/Fuzz)",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Presence",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency emphasis",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "20": {
+      "id": 20,
+      "name": "Muff Fuzz",
+      "string_id": "muff_fuzz",
+      "enum": "ENGINE_MUFF_FUZZ",
+      "category": "Distortion",
+      "param_count": 7,
+      "parameters": [
+        {
+          "name": "Sustain",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Sustain amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tone control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Volume",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output volume",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Gate",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Noise gate threshold",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mids",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid scoop depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Variant",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Big Muff variant",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "30": {
+      "id": 30,
+      "name": "Rotary Speaker",
+      "string_id": "rotary_speaker",
+      "enum": "ENGINE_ROTARY_SPEAKER",
+      "category": "Modulation",
+      "param_count": 6,
+      "parameters": [
+        {
+          "name": "Speed",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Rotor speed (chorale to tremolo)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Acceleration",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Speed transition acceleration",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube preamp drive",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mic Distance",
+          "default": 0.6,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Microphone distance",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Stereo Width",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo microphone angle",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "13": {
+      "id": 13,
+      "name": "Comb Resonator",
+      "string_id": "comb_resonator",
+      "enum": "ENGINE_COMB_RESONATOR",
+      "category": "Filter",
+      "param_count": 3,
+      "parameters": [
+        {
+          "name": "Frequency",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Resonance frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Resonance",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 0.95,
+          "description": "Resonance amount",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "9": {
+      "id": 9,
+      "name": "Ladder Filter Pro",
+      "string_id": "ladder_filter",
+      "enum": "ENGINE_LADDER_FILTER",
+      "category": "Filter",
+      "param_count": 7,
+      "parameters": [
+        {
+          "name": "Cutoff",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter cutoff frequency (20Hz-20kHz)",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Resonance",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter resonance/feedback",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input saturation drive",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Filter Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Morphable filter type (LP24/LP12/BP/HP/Notch/AP)",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Asymmetry",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Saturation asymmetry",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Vintage Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Vintage vs modern character",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ]
+    },
+    "54": {
+      "id": 54,
+      "name": "Gain Utility",
+      "string_id": "gain_utility",
+      "enum": "ENGINE_GAIN_UTILITY",
+      "category": "Utility",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Main gain control (-24dB to +24dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Left Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Left channel gain (-12dB to +12dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Right Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Right channel gain (-12dB to +12dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid (M) gain (-12dB to +12dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Side Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Side (S) gain (-12dB to +12dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Processing mode (stereo/M-S/mono)",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Phase L",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Left channel phase invert",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Phase R",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Right channel phase invert",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Channel Swap",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Swap L/R channels",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Auto Gain",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Auto gain compensation",
+          "units": "toggle",
+          "skew": 0.5
+        }
+      ]
+    },
+    "55": {
+      "id": 55,
+      "name": "Mono Maker",
+      "string_id": "mono_maker",
+      "enum": "ENGINE_MONO_MAKER",
+      "category": "Utility",
+      "param_count": 8,
+      "parameters": [
+        {
+          "name": "Frequency",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mono below this frequency (20Hz-1kHz)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Slope",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter slope (6-48 dB/oct)",
+          "units": "dB/oct",
+          "skew": 0.5
+        },
+        {
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Processing mode (standard/elliptical/M-S)",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Bass Mono",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Bass mono amount (0-100%)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Preserve Phase",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Phase preservation (minimum/linear)",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "DC Filter",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "DC blocking filter",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Width Above",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width above cutoff (0-200%)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Output Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output gain compensation (-6 to +6 dB)",
+          "units": "dB",
+          "skew": 0.5
+        }
+      ]
+    },
+    "56": {
+      "id": 56,
+      "name": "Phase Align",
+      "string_id": "phase_align",
+      "enum": "ENGINE_PHASE_ALIGN",
+      "category": "Utility",
+      "param_count": 4,
+      "parameters": [
+        {
+          "name": "Low Phase",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low frequency phase (-180\u00b0 to +180\u00b0)",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid Phase",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid frequency phase (-180\u00b0 to +180\u00b0)",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "High Phase",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency phase (-180\u00b0 to +180\u00b0)",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.0
+        }
+      ]
+    },
+    "0": {
+      "id": 0,
+      "name": "None",
+      "category": "Special",
+      "param_count": 0,
+      "parameters": []
+    },
+    "10": {
+      "id": 10,
+      "name": "Engine 10",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "11": {
+      "id": 11,
+      "name": "Engine 11",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "14": {
+      "id": 14,
+      "name": "Engine 14",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "16": {
+      "id": 16,
+      "name": "Engine 16",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "18": {
+      "id": 18,
+      "name": "Engine 18",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "19": {
+      "id": 19,
+      "name": "Engine 19",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "25": {
+      "id": 25,
+      "name": "Engine 25",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "26": {
+      "id": 26,
+      "name": "Engine 26",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "27": {
+      "id": 27,
+      "name": "Engine 27",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "36": {
+      "id": 36,
+      "name": "Engine 36",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    },
+    "37": {
+      "id": 37,
+      "name": "Engine 37",
+      "category": "Unknown",
+      "param_count": 10,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ]
+    }
+  },
+  "total_engines": 57,
+  "slot_count": 6,
+  "format_requirements": {
+    "slots": "0-indexed (0-5)",
+    "parameters": "Objects with 'name' and 'value' properties",
+    "parameter_names": "Use param1, param2, etc.",
+    "response_structure": "Wrapped in data.preset"
+  }
+}

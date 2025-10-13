@@ -1,0 +1,44 @@
+# CMakeLists.txt for LFO Calibration Test
+
+cmake_minimum_required(VERSION 3.15)
+project(LFO_Calibration_Test VERSION 1.0.0)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find JUCE
+find_package(JUCE CONFIG REQUIRED)
+
+# Add the executable
+add_executable(test_lfo_calibration
+    test_lfo_calibration.cpp
+    ../JUCE_Plugin/Source/StereoChorus.cpp
+    ../JUCE_Plugin/Source/ResonantChorus_Platinum.cpp
+    ../JUCE_Plugin/Source/FrequencyShifter.cpp
+    ../JUCE_Plugin/Source/HarmonicTremolo.cpp
+    ../JUCE_Plugin/Source/EngineBase.cpp
+)
+
+# Link JUCE modules
+target_link_libraries(test_lfo_calibration
+    PRIVATE
+        juce::juce_core
+        juce::juce_audio_basics
+        juce::juce_audio_devices
+        juce::juce_audio_formats
+        juce::juce_audio_processors
+        juce::juce_dsp
+)
+
+# Include directories
+target_include_directories(test_lfo_calibration
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../JUCE_Plugin/Source
+)
+
+# Compiler flags
+if(APPLE)
+    target_compile_options(test_lfo_calibration PRIVATE -Wall -Wextra -O2)
+elseif(UNIX)
+    target_compile_options(test_lfo_calibration PRIVATE -Wall -Wextra -O2)
+endif()

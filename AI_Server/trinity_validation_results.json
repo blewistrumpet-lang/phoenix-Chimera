@@ -1,0 +1,648 @@
+[
+  {
+    "prompt": "warm vintage guitar with tube saturation and spring reverb",
+    "success": true,
+    "preset_name": "Golden Tube Springs",
+    "musical_engines": [
+      [
+        2,
+        44,
+        "Stereo Widener"
+      ],
+      [
+        3,
+        43,
+        "Gated Reverb"
+      ],
+      [
+        4,
+        52,
+        "Feedback Network"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        54,
+        "Gain Utility"
+      ]
+    ],
+    "expected_engines": [
+      15
+    ],
+    "found_expected": [],
+    "issues": [
+      "Low engine match rate: 0.0%",
+      "Utility engines in main slots: [(1, 54, 'Gain Utility')]"
+    ]
+  },
+  {
+    "prompt": "aggressive metal with noise gate and heavy distortion",
+    "success": true,
+    "preset_name": "Sonic Fury Gate",
+    "musical_engines": [
+      [
+        1,
+        32,
+        "Detune Doubler"
+      ],
+      [
+        2,
+        39,
+        "Plate Reverb"
+      ],
+      [
+        3,
+        45,
+        "Stereo Imager"
+      ]
+    ],
+    "utility_engines": [],
+    "expected_engines": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      4
+    ],
+    "found_expected": [],
+    "issues": [
+      "Low engine match rate: 0.0%"
+    ]
+  },
+  {
+    "prompt": "spacious ambient pad with shimmer reverb",
+    "success": true,
+    "preset_name": "Ethereal Shimmering Haven",
+    "musical_engines": [
+      [
+        3,
+        44,
+        "Stereo Widener"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        55,
+        "Mono Maker"
+      ],
+      [
+        2,
+        54,
+        "Gain Utility"
+      ]
+    ],
+    "expected_engines": [
+      42
+    ],
+    "found_expected": [],
+    "issues": [
+      "Low engine match rate: 0.0%",
+      "Utility engines in main slots: [(1, 55, 'Mono Maker'), (2, 54, 'Gain Utility')]"
+    ]
+  },
+  {
+    "prompt": "funky bass with envelope filter",
+    "success": true,
+    "preset_name": "Groove Envelope Funk",
+    "musical_engines": [
+      [
+        3,
+        44,
+        "Stereo Widener"
+      ],
+      [
+        4,
+        47,
+        "Spectral Freeze"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        53,
+        "Mid-Side Processor"
+      ]
+    ],
+    "expected_engines": [
+      12
+    ],
+    "found_expected": [],
+    "issues": [
+      "Low engine match rate: 0.0%",
+      "Utility engines in main slots: [(1, 53, 'Mid-Side Processor')]"
+    ]
+  },
+  {
+    "prompt": "crispy drums with compression and transient shaping",
+    "success": true,
+    "preset_name": "Crunchy Vintage Punch",
+    "musical_engines": [
+      [
+        2,
+        5,
+        "Mastering Limiter"
+      ],
+      [
+        3,
+        45,
+        "Stereo Imager"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        55,
+        "Mono Maker"
+      ]
+    ],
+    "expected_engines": [
+      1,
+      2
+    ],
+    "found_expected": [],
+    "issues": [
+      "Low engine match rate: 0.0%",
+      "Utility engines in main slots: [(1, 55, 'Mono Maker')]"
+    ]
+  },
+  {
+    "prompt": "psychedelic guitar with phaser and tape delay",
+    "success": true,
+    "preset_name": "Psychedelic Tape Swirl",
+    "musical_engines": [
+      [
+        1,
+        52,
+        "Feedback Network"
+      ],
+      [
+        3,
+        44,
+        "Stereo Widener"
+      ],
+      [
+        4,
+        51,
+        "Chaos Generator"
+      ]
+    ],
+    "utility_engines": [],
+    "expected_engines": [
+      25,
+      34,
+      35
+    ],
+    "found_expected": [],
+    "issues": [
+      "Low engine match rate: 0.0%"
+    ]
+  },
+  {
+    "prompt": "ethereal vocal chain with lush reverb",
+    "success": true,
+    "preset_name": "Heavenly Reverie",
+    "musical_engines": [
+      [
+        2,
+        31,
+        "Pitch Shifter"
+      ],
+      [
+        3,
+        27,
+        "Frequency Shifter"
+      ],
+      [
+        4,
+        52,
+        "Feedback Network"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        54,
+        "Gain Utility"
+      ]
+    ],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": [
+      "Utility engines in main slots: [(1, 54, 'Gain Utility')]"
+    ]
+  },
+  {
+    "prompt": "punchy EDM lead with filter sweeps",
+    "success": true,
+    "preset_name": "Punchy Resonance Drive",
+    "musical_engines": [
+      [
+        2,
+        52,
+        "Feedback Network"
+      ],
+      [
+        3,
+        37,
+        "Bucket Brigade Delay"
+      ],
+      [
+        4,
+        47,
+        "Spectral Freeze"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        55,
+        "Mono Maker"
+      ]
+    ],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": [
+      "Utility engines in main slots: [(1, 55, 'Mono Maker')]"
+    ]
+  },
+  {
+    "prompt": "lo-fi hip hop beat with bit crusher",
+    "success": true,
+    "preset_name": "Crushed Tape Hiss",
+    "musical_engines": [
+      [
+        1,
+        18,
+        "Bit Crusher"
+      ],
+      [
+        3,
+        41,
+        "Convolution Reverb"
+      ],
+      [
+        4,
+        20,
+        "Muff Fuzz"
+      ],
+      [
+        5,
+        43,
+        "Gated Reverb"
+      ]
+    ],
+    "utility_engines": [
+      [
+        2,
+        55,
+        "Mono Maker"
+      ]
+    ],
+    "expected_engines": [
+      18
+    ],
+    "found_expected": [
+      18
+    ],
+    "issues": [
+      "Utility engines in main slots: [(2, 55, 'Mono Maker')]"
+    ]
+  },
+  {
+    "prompt": "smooth jazz guitar with chorus",
+    "success": true,
+    "preset_name": "Velvet Chorus Dreams",
+    "musical_engines": [
+      [
+        1,
+        52,
+        "Feedback Network"
+      ],
+      [
+        3,
+        43,
+        "Gated Reverb"
+      ],
+      [
+        4,
+        51,
+        "Chaos Generator"
+      ]
+    ],
+    "utility_engines": [],
+    "expected_engines": [
+      23,
+      24
+    ],
+    "found_expected": [],
+    "issues": [
+      "Low engine match rate: 0.0%"
+    ]
+  },
+  {
+    "prompt": "industrial noise with ring modulation",
+    "success": true,
+    "preset_name": "Mechanical Resonance",
+    "musical_engines": [
+      [
+        2,
+        52,
+        "Feedback Network"
+      ],
+      [
+        3,
+        37,
+        "Bucket Brigade Delay"
+      ],
+      [
+        4,
+        47,
+        "Spectral Freeze"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        55,
+        "Mono Maker"
+      ]
+    ],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": [
+      "Utility engines in main slots: [(1, 55, 'Mono Maker')]"
+    ]
+  },
+  {
+    "prompt": "cinematic soundscape with granular effects",
+    "success": true,
+    "preset_name": "Enigmatic Granular Horizon",
+    "musical_engines": [
+      [
+        3,
+        27,
+        "Frequency Shifter"
+      ],
+      [
+        4,
+        45,
+        "Stereo Imager"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        55,
+        "Mono Maker"
+      ],
+      [
+        2,
+        53,
+        "Mid-Side Processor"
+      ]
+    ],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": [
+      "Utility engines in main slots: [(1, 55, 'Mono Maker'), (2, 53, 'Mid-Side Processor')]"
+    ]
+  },
+  {
+    "prompt": "mastering chain with EQ and limiting",
+    "success": true,
+    "preset_name": "Crystal Clear Master",
+    "musical_engines": [
+      [
+        2,
+        35,
+        "Digital Delay"
+      ],
+      [
+        4,
+        52,
+        "Feedback Network"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        55,
+        "Mono Maker"
+      ],
+      [
+        3,
+        53,
+        "Mid-Side Processor"
+      ]
+    ],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": [
+      "Utility engines in main slots: [(1, 55, 'Mono Maker'), (3, 53, 'Mid-Side Processor')]"
+    ]
+  },
+  {
+    "prompt": "vocal de-essing with dynamic EQ",
+    "success": true,
+    "preset_name": "Sibilance Tamer",
+    "musical_engines": [
+      [
+        1,
+        52,
+        "Feedback Network"
+      ],
+      [
+        3,
+        45,
+        "Stereo Imager"
+      ],
+      [
+        4,
+        52,
+        "Feedback Network"
+      ]
+    ],
+    "utility_engines": [],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": []
+  },
+  {
+    "prompt": "stereo widening for mix bus",
+    "success": true,
+    "preset_name": "Dimensional Horizon",
+    "musical_engines": [
+      [
+        3,
+        43,
+        "Gated Reverb"
+      ],
+      [
+        4,
+        47,
+        "Spectral Freeze"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        53,
+        "Mid-Side Processor"
+      ]
+    ],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": [
+      "Utility engines in main slots: [(1, 53, 'Mid-Side Processor')]"
+    ]
+  },
+  {
+    "prompt": "mono-compatible bass processing",
+    "success": true,
+    "preset_name": "Analog Bass Sculptor",
+    "musical_engines": [
+      [
+        1,
+        52,
+        "Feedback Network"
+      ],
+      [
+        3,
+        45,
+        "Stereo Imager"
+      ],
+      [
+        4,
+        47,
+        "Spectral Freeze"
+      ]
+    ],
+    "utility_engines": [],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": []
+  },
+  {
+    "prompt": "simple clean boost",
+    "success": true,
+    "preset_name": "Crystal Clarity",
+    "musical_engines": [
+      [
+        1,
+        52,
+        "Feedback Network"
+      ],
+      [
+        3,
+        45,
+        "Stereo Imager"
+      ],
+      [
+        4,
+        52,
+        "Feedback Network"
+      ]
+    ],
+    "utility_engines": [],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": []
+  },
+  {
+    "prompt": "everything!",
+    "success": true,
+    "preset_name": "Ethereal Chaos Symphony",
+    "musical_engines": [
+      [
+        2,
+        44,
+        "Stereo Widener"
+      ],
+      [
+        4,
+        51,
+        "Chaos Generator"
+      ],
+      [
+        5,
+        52,
+        "Feedback Network"
+      ]
+    ],
+    "utility_engines": [
+      [
+        1,
+        54,
+        "Gain Utility"
+      ],
+      [
+        3,
+        55,
+        "Mono Maker"
+      ]
+    ],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": [
+      "Utility engines in main slots: [(1, 54, 'Gain Utility'), (3, 55, 'Mono Maker')]"
+    ]
+  },
+  {
+    "prompt": "nothing",
+    "success": true,
+    "preset_name": "Ethereal Silence",
+    "musical_engines": [
+      [
+        1,
+        52,
+        "Feedback Network"
+      ],
+      [
+        3,
+        43,
+        "Gated Reverb"
+      ],
+      [
+        4,
+        51,
+        "Chaos Generator"
+      ]
+    ],
+    "utility_engines": [],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": []
+  },
+  {
+    "prompt": "chaos generator and feedback network",
+    "success": true,
+    "preset_name": "Nebulaic Resonance",
+    "musical_engines": [
+      [
+        1,
+        52,
+        "Feedback Network"
+      ],
+      [
+        3,
+        43,
+        "Gated Reverb"
+      ],
+      [
+        4,
+        51,
+        "Chaos Generator"
+      ]
+    ],
+    "utility_engines": [],
+    "expected_engines": [],
+    "found_expected": [],
+    "issues": []
+  }
+]

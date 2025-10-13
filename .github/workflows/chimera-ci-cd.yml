@@ -1,0 +1,732 @@
+name: ChimeraPhoenix CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+    paths:
+      - 'JUCE_Plugin/Source/**'
+      - 'standalone_test/**'
+      - '.github/workflows/chimera-ci-cd.yml'
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Nightly builds at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      run_full_suite:
+        description: 'Run full test suite (slower)'
+        required: false
+        default: 'false'
+        type: boolean
+      benchmark_engines:
+        description: 'Run CPU benchmarks on all engines'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  JUCE_DIR: /usr/local/JUCE
+  BUILD_TYPE: Release
+  THD_THRESHOLD: 1.0
+  CPU_THRESHOLD_PERCENT: 50.0
+
+jobs:
+  # =============================================================================
+  # JOB 1: Build All Components
+  # =============================================================================
+  build:
+    name: Build ChimeraPhoenix
+    runs-on: macos-latest
+
+    outputs:
+      build_success: ${{ steps.build_check.outputs.success }}
+      build_time: ${{ steps.build_check.outputs.build_time }}
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better diff analysis
+
+    - name: Setup Build Environment
+      run: |
+        echo "Setting up macOS build environment..."
+
+        # Install dependencies
+        brew install cmake harfbuzz
+
+        # Install JUCE if not cached
+        if [ ! -d "$JUCE_DIR" ]; then
+          echo "Installing JUCE framework..."
+          git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git $JUCE_DIR
+        fi
+
+        # System info
+        echo "=== System Information ==="
+        sw_vers
+        sysctl -n machdep.cpu.brand_string
+        sysctl -n hw.ncpu
+        sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}'
+
+    - name: Cache JUCE Build
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.JUCE_DIR }}
+        key: juce-7.0.12-macos-${{ runner.arch }}
+
+    - name: Cache Build Artifacts
+      uses: actions/cache@v4
+      with:
+        path: |
+          standalone_test/build/obj
+        key: build-cache-${{ runner.os }}-${{ hashFiles('JUCE_Plugin/Source/**/*.cpp', 'JUCE_Plugin/Source/**/*.h') }}
+        restore-keys: |
+          build-cache-${{ runner.os }}-
+
+    - name: Build Standalone Test Suite
+      id: build_suite
+      working-directory: standalone_test
+      run: |
+        echo "=== Building Standalone Test Suite ==="
+        START_TIME=$(date +%s)
+
+        # Build using master build script
+        ./build_all.sh 2>&1 | tee ../build.log
+
+        END_TIME=$(date +%s)
+        BUILD_TIME=$((END_TIME - START_TIME))
+
+        echo "build_time=${BUILD_TIME}" >> $GITHUB_OUTPUT
+        echo "Build completed in ${BUILD_TIME} seconds"
+
+    - name: Build Performance Benchmarks
+      working-directory: standalone_test
+      run: |
+        echo "=== Building CPU Benchmark Suite ==="
+        ./build_cpu_benchmark.sh
+
+    - name: Build THD Test Suite
+      working-directory: standalone_test
+      run: |
+        echo "=== Building THD Test Suite ==="
+        ./build_comprehensive_thd.sh
+
+    - name: Verify Build Success
+      id: build_check
+      run: |
+        echo "=== Verifying Build Artifacts ==="
+
+        EXPECTED_BINARIES=(
+          "standalone_test/build/standalone_test"
+          "standalone_test/build/reverb_test"
+          "standalone_test/build/filter_test"
+          "standalone_test/build/distortion_test"
+          "standalone_test/build/dynamics_test"
+          "standalone_test/build/modulation_test"
+          "standalone_test/build/pitch_test"
+          "standalone_test/build/spatial_test"
+        )
+
+        ALL_FOUND=true
+        for binary in "${EXPECTED_BINARIES[@]}"; do
+          if [ -f "$binary" ]; then
+            echo "✓ Found: $binary"
+          else
+            echo "✗ Missing: $binary"
+            ALL_FOUND=false
+          fi
+        done
+
+        if [ "$ALL_FOUND" = true ]; then
+          echo "success=true" >> $GITHUB_OUTPUT
+          echo "✓ All binaries built successfully"
+        else
+          echo "success=false" >> $GITHUB_OUTPUT
+          echo "✗ Build verification failed"
+          exit 1
+        fi
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: chimera-test-binaries
+        path: |
+          standalone_test/build/
+          !standalone_test/build/obj
+        retention-days: 7
+
+    - name: Upload Build Logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: |
+          build.log
+          standalone_test/*.log
+        retention-days: 14
+
+  # =============================================================================
+  # JOB 2: Run Functional Tests
+  # =============================================================================
+  test-functional:
+    name: Functional Tests
+    needs: build
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        test_suite:
+          - name: reverb
+            binary: reverb_test
+            timeout: 300
+          - name: filter
+            binary: filter_test
+            timeout: 180
+          - name: distortion
+            binary: distortion_test
+            timeout: 180
+          - name: dynamics
+            binary: dynamics_test
+            timeout: 180
+          - name: modulation
+            binary: modulation_test
+            timeout: 240
+          - name: pitch
+            binary: pitch_test
+            timeout: 300
+          - name: spatial
+            binary: spatial_test
+            timeout: 240
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: chimera-test-binaries
+        path: standalone_test/build/
+
+    - name: Make Executables Runnable
+      run: chmod +x standalone_test/build/*
+
+    - name: Run ${{ matrix.test_suite.name }} Tests
+      timeout-minutes: ${{ matrix.test_suite.timeout }}
+      working-directory: standalone_test
+      run: |
+        echo "=== Running ${{ matrix.test_suite.name }} Test Suite ==="
+        ./build/${{ matrix.test_suite.binary }} 2>&1 | tee ${{ matrix.test_suite.name }}_results.txt
+
+    - name: Parse Test Results
+      id: parse_results
+      run: |
+        cd standalone_test
+
+        # Count passed/failed tests (adjust grep patterns based on your output format)
+        PASSED=$(grep -c "PASS\|✓" ${{ matrix.test_suite.name }}_results.txt || echo "0")
+        FAILED=$(grep -c "FAIL\|✗" ${{ matrix.test_suite.name }}_results.txt || echo "0")
+
+        echo "passed=$PASSED" >> $GITHUB_OUTPUT
+        echo "failed=$FAILED" >> $GITHUB_OUTPUT
+
+        echo "Test Results: $PASSED passed, $FAILED failed"
+
+        if [ "$FAILED" -gt 0 ]; then
+          echo "⚠️ Some tests failed!"
+          exit 1
+        fi
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.test_suite.name }}
+        path: |
+          standalone_test/*_results.txt
+          standalone_test/*.csv
+          standalone_test/*.json
+        retention-days: 30
+
+  # =============================================================================
+  # JOB 3: THD Measurements
+  # =============================================================================
+  test-thd:
+    name: THD Measurements (Audio Quality)
+    needs: build
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: chimera-test-binaries
+        path: standalone_test/build/
+
+    - name: Make Executables Runnable
+      run: chmod +x standalone_test/build/*
+
+    - name: Run Comprehensive THD Test Suite
+      timeout-minutes: 30
+      working-directory: standalone_test
+      run: |
+        echo "=== Running Comprehensive THD Analysis ==="
+        echo "Testing all clean effects for harmonic distortion..."
+
+        if [ -f "build/test_comprehensive_thd" ]; then
+          ./build/test_comprehensive_thd 2>&1 | tee thd_test_output.txt
+        else
+          echo "⚠️ THD test binary not found, skipping..."
+          exit 0
+        fi
+
+    - name: Analyze THD Results
+      id: thd_analysis
+      run: |
+        cd standalone_test
+
+        if [ ! -f "comprehensive_thd_results.csv" ]; then
+          echo "No THD results generated"
+          exit 0
+        fi
+
+        # Parse THD results
+        echo "=== THD Analysis Summary ==="
+
+        # Count engines exceeding THD threshold
+        FAILED_THD=$(awk -F',' -v threshold=$THD_THRESHOLD '
+          NR>1 && $3 ~ /^[0-9.]+$/ && $3 > threshold { count++ }
+          END { print count+0 }
+        ' comprehensive_thd_results.csv)
+
+        # Find worst THD
+        WORST_THD=$(awk -F',' 'NR>1 && $3 ~ /^[0-9.]+$/ {
+          if ($3 > max) { max=$3; engine=$2 }
+        } END { print max " - " engine }' comprehensive_thd_results.csv)
+
+        echo "failed_count=$FAILED_THD" >> $GITHUB_OUTPUT
+        echo "worst_thd=$WORST_THD" >> $GITHUB_OUTPUT
+
+        echo "Engines exceeding ${THD_THRESHOLD}% THD: $FAILED_THD"
+        echo "Worst THD: $WORST_THD"
+
+        # Create summary for PR comment
+        cat > thd_summary.md << EOF
+        ## 📊 THD Measurement Results
+
+        **THD Threshold:** ${THD_THRESHOLD}%
+
+        **Engines Exceeding Threshold:** $FAILED_THD
+
+        **Worst Case:** $WORST_THD
+
+        <details>
+        <summary>View Full THD Report</summary>
+
+        \`\`\`csv
+        $(cat comprehensive_thd_results.csv | head -20)
+        \`\`\`
+
+        </details>
+        EOF
+
+        # Fail if too many engines exceed threshold
+        if [ "$FAILED_THD" -gt 5 ]; then
+          echo "❌ Too many engines exceed THD threshold!"
+          exit 1
+        fi
+
+    - name: Upload THD Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: thd-measurements
+        path: |
+          standalone_test/comprehensive_thd_results.csv
+          standalone_test/comprehensive_thd_report.txt
+          standalone_test/thd_summary.md
+        retention-days: 90
+
+  # =============================================================================
+  # JOB 4: CPU Performance Benchmarks
+  # =============================================================================
+  benchmark-performance:
+    name: CPU Performance Benchmarks
+    needs: build
+    runs-on: macos-latest
+    if: github.event_name == 'push' || github.event_name == 'schedule' || inputs.benchmark_engines == 'true'
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2  # Need previous commit for comparison
+
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: chimera-test-binaries
+        path: standalone_test/build/
+
+    - name: Make Executables Runnable
+      run: chmod +x standalone_test/build/*
+
+    - name: Run CPU Benchmark Suite
+      timeout-minutes: 45
+      working-directory: standalone_test
+      run: |
+        echo "=== Running CPU Performance Benchmarks ==="
+        echo "Benchmarking all 56 engines..."
+
+        if [ -f "build/cpu_benchmark_all_engines" ]; then
+          ./build/cpu_benchmark_all_engines 2>&1 | tee cpu_benchmark_output.txt
+        else
+          echo "⚠️ CPU benchmark binary not found"
+          exit 0
+        fi
+
+    - name: Analyze Performance Results
+      id: perf_analysis
+      run: |
+        cd standalone_test
+
+        if [ ! -f "cpu_benchmark_results.csv" ]; then
+          echo "No benchmark results generated"
+          exit 0
+        fi
+
+        # Parse benchmark results
+        echo "=== Performance Analysis ==="
+
+        # Find engines exceeding CPU threshold
+        HEAVY_ENGINES=$(awk -F',' -v threshold=$CPU_THRESHOLD_PERCENT '
+          NR>1 && $6 ~ /^[0-9.]+$/ && $6 > threshold {
+            print $3 " - " $6 "% CPU"
+          }
+        ' cpu_benchmark_results.csv)
+
+        HEAVY_COUNT=$(echo "$HEAVY_ENGINES" | grep -c "%" || echo "0")
+
+        # Calculate average CPU usage
+        AVG_CPU=$(awk -F',' 'NR>1 && $6 ~ /^[0-9.]+$/ { sum+=$6; count++ }
+          END { print sum/count }' cpu_benchmark_results.csv)
+
+        echo "heavy_count=$HEAVY_COUNT" >> $GITHUB_OUTPUT
+        echo "avg_cpu=$AVG_CPU" >> $GITHUB_OUTPUT
+
+        echo "Engines exceeding ${CPU_THRESHOLD_PERCENT}% CPU: $HEAVY_COUNT"
+        echo "Average CPU usage: $AVG_CPU%"
+
+        # Create performance summary
+        cat > perf_summary.md << EOF
+        ## ⚡ CPU Performance Benchmark Results
+
+        **Average CPU Usage:** ${AVG_CPU}%
+
+        **Engines Exceeding ${CPU_THRESHOLD_PERCENT}% CPU:** $HEAVY_COUNT
+
+        ### Top 10 Most CPU-Intensive Engines
+
+        \`\`\`
+        $(awk -F',' 'NR>1 && NR<=11 { printf "%2d. %-35s %6.2f%%\n", $1, $3, $6 }' cpu_benchmark_results.csv)
+        \`\`\`
+
+        <details>
+        <summary>View Full Benchmark Report</summary>
+
+        \`\`\`csv
+        $(cat cpu_benchmark_results.csv)
+        \`\`\`
+
+        </details>
+        EOF
+
+    - name: Download Previous Benchmark Results
+      if: github.event_name == 'push'
+      continue-on-error: true
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: chimera-ci-cd.yml
+        name: cpu-benchmarks
+        path: standalone_test/previous/
+        search_artifacts: true
+
+    - name: Compare with Previous Results (Regression Detection)
+      if: github.event_name == 'push'
+      id: regression_check
+      run: |
+        cd standalone_test
+
+        if [ ! -f "previous/cpu_benchmark_results.csv" ]; then
+          echo "No previous results for comparison"
+          echo "regressions_found=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        echo "=== Performance Regression Analysis ==="
+
+        # Compare current vs previous (simple version - can be enhanced)
+        python3 << 'EOF'
+        import csv
+        import sys
+
+        def load_benchmarks(filename):
+            results = {}
+            with open(filename, 'r') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    engine_id = row['EngineID']
+                    cpu = float(row['CPU_%']) if row['CPU_%'].replace('.','').isdigit() else 0
+                    results[engine_id] = cpu
+            return results
+
+        try:
+            current = load_benchmarks('cpu_benchmark_results.csv')
+            previous = load_benchmarks('previous/cpu_benchmark_results.csv')
+
+            regressions = []
+            REGRESSION_THRESHOLD = 10.0  # 10% increase is a regression
+
+            for engine_id, current_cpu in current.items():
+                if engine_id in previous:
+                    prev_cpu = previous[engine_id]
+                    if prev_cpu > 0:
+                        percent_change = ((current_cpu - prev_cpu) / prev_cpu) * 100
+                        if percent_change > REGRESSION_THRESHOLD:
+                            regressions.append(f"Engine {engine_id}: +{percent_change:.1f}% (was {prev_cpu:.1f}%, now {current_cpu:.1f}%)")
+
+            if regressions:
+                print("⚠️ PERFORMANCE REGRESSIONS DETECTED:")
+                for r in regressions:
+                    print(f"  {r}")
+
+                with open('regressions.txt', 'w') as f:
+                    f.write('\n'.join(regressions))
+
+                sys.exit(1)
+            else:
+                print("✓ No significant performance regressions detected")
+
+        except Exception as e:
+            print(f"Error comparing benchmarks: {e}")
+            sys.exit(0)
+        EOF
+
+        if [ $? -eq 1 ]; then
+          echo "regressions_found=true" >> $GITHUB_OUTPUT
+        else
+          echo "regressions_found=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Upload Benchmark Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cpu-benchmarks
+        path: |
+          standalone_test/cpu_benchmark_results.csv
+          standalone_test/cpu_benchmark_output.txt
+          standalone_test/perf_summary.md
+          standalone_test/regressions.txt
+        retention-days: 90
+
+  # =============================================================================
+  # JOB 5: Endurance & Stress Tests
+  # =============================================================================
+  test-endurance:
+    name: Endurance & Stress Tests
+    needs: build
+    runs-on: macos-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: chimera-test-binaries
+        path: standalone_test/build/
+
+    - name: Make Executables Runnable
+      run: chmod +x standalone_test/build/*
+
+    - name: Run Endurance Test
+      timeout-minutes: 60
+      working-directory: standalone_test
+      run: |
+        echo "=== Running Endurance Test ==="
+        if [ -f "build/endurance_test" ]; then
+          ./build/endurance_test 2>&1 | tee endurance_results.txt
+        fi
+
+    - name: Run Stress Test
+      timeout-minutes: 30
+      working-directory: standalone_test
+      run: |
+        echo "=== Running Stress Test (Extreme Parameters) ==="
+        if [ -f "build/stress_test_extreme_parameters" ]; then
+          ./build/stress_test_extreme_parameters 2>&1 | tee stress_results.txt
+        fi
+
+    - name: Upload Endurance Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: endurance-test-results
+        path: |
+          standalone_test/endurance_results.txt
+          standalone_test/stress_results.txt
+        retention-days: 30
+
+  # =============================================================================
+  # JOB 6: Generate Reports & Alerts
+  # =============================================================================
+  report-and-alert:
+    name: Generate Reports & Send Alerts
+    needs: [build, test-functional, test-thd, benchmark-performance]
+    runs-on: macos-latest
+    if: always()
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/
+
+    - name: Generate Comprehensive Report
+      run: |
+        echo "=== Generating Comprehensive CI/CD Report ==="
+
+        cat > CI_CD_REPORT.md << 'EOF'
+        # ChimeraPhoenix CI/CD Report
+
+        **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Commit:** ${{ github.sha }}
+        **Branch:** ${{ github.ref_name }}
+        **Triggered by:** ${{ github.event_name }}
+
+        ---
+
+        ## Build Status
+
+        EOF
+
+        # Add build status
+        if [ -f "artifacts/build-logs/build.log" ]; then
+          echo "✓ Build completed successfully" >> CI_CD_REPORT.md
+        else
+          echo "✗ Build failed" >> CI_CD_REPORT.md
+        fi
+
+        # Add test results
+        echo "" >> CI_CD_REPORT.md
+        echo "## Test Results Summary" >> CI_CD_REPORT.md
+        echo "" >> CI_CD_REPORT.md
+
+        for suite in reverb filter distortion dynamics modulation pitch spatial; do
+          if [ -d "artifacts/test-results-${suite}" ]; then
+            echo "- ✓ ${suite} tests passed" >> CI_CD_REPORT.md
+          else
+            echo "- ⚠️ ${suite} tests incomplete" >> CI_CD_REPORT.md
+          fi
+        done
+
+        # Add THD summary
+        if [ -f "artifacts/thd-measurements/thd_summary.md" ]; then
+          echo "" >> CI_CD_REPORT.md
+          cat artifacts/thd-measurements/thd_summary.md >> CI_CD_REPORT.md
+        fi
+
+        # Add performance summary
+        if [ -f "artifacts/cpu-benchmarks/perf_summary.md" ]; then
+          echo "" >> CI_CD_REPORT.md
+          cat artifacts/cpu-benchmarks/perf_summary.md >> CI_CD_REPORT.md
+        fi
+
+        echo "" >> CI_CD_REPORT.md
+        echo "---" >> CI_CD_REPORT.md
+        echo "*Report generated by ChimeraPhoenix CI/CD Pipeline*" >> CI_CD_REPORT.md
+
+    - name: Comment on PR with Results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          let report = '';
+
+          try {
+            report = fs.readFileSync('CI_CD_REPORT.md', 'utf8');
+          } catch (e) {
+            report = '## CI/CD Report\n\nReport generation failed. Check logs for details.';
+          }
+
+          await github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: report
+          });
+
+    - name: Create GitHub Issue for Regressions
+      if: needs.benchmark-performance.outputs.regressions_found == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          let regressions = '';
+          try {
+            regressions = fs.readFileSync('artifacts/cpu-benchmarks/regressions.txt', 'utf8');
+          } catch (e) {
+            regressions = 'Unable to load regression details';
+          }
+
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `⚠️ Performance Regression Detected - ${context.sha.substring(0, 7)}`,
+            body: `## Performance Regression Alert\n\n**Commit:** ${context.sha}\n**Branch:** ${context.ref}\n\n### Regressions:\n\n\`\`\`\n${regressions}\n\`\`\`\n\n**Action Required:** Please investigate and optimize the affected engines.\n\n---\n*Automatically generated by CI/CD pipeline*`,
+            labels: ['performance', 'regression', 'needs-investigation']
+          });
+
+    - name: Send Slack Notification (if configured)
+      if: failure() && github.ref == 'refs/heads/main'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        if [ -n "$SLACK_WEBHOOK_URL" ]; then
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "🚨 ChimeraPhoenix CI/CD Pipeline Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*ChimeraPhoenix CI/CD Pipeline Failed*\n\n*Branch:* `${{ github.ref_name }}`\n*Commit:* `${{ github.sha }}`\n*Workflow:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                  }
+                }
+              ]
+            }'
+        fi
+
+    - name: Upload Final Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-cd-final-report
+        path: CI_CD_REPORT.md
+        retention-days: 90

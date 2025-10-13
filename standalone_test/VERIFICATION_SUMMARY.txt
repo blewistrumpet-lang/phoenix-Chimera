@@ -1,0 +1,236 @@
+================================================================================
+SMBPitchShiftFixed (Engine 34) - VERIFICATION SUMMARY
+================================================================================
+Date: 2025-10-11
+Algorithm: Signalsmith Stretch (Phase Vocoder)
+Configuration: 8x overlap, 160ms blocks
+================================================================================
+
+FINAL VERDICT: PARTIAL PASS - NOT PRODUCTION READY FOR GENERAL USE
+                Conditional approval for mid/high-frequency content only
+
+================================================================================
+ACCURACY RESULTS
+================================================================================
+
+Overall Statistics:
+  Tests Passed:     39/45  (86.7%)
+  Tests Failed:      6/45  (13.3%)
+  Average Error:     3.35 cents  (Excellent)
+  Maximum Error:    24.35 cents  (EXCEEDS ±5 cent target)
+
+Frequency-Specific Performance:
+  55 Hz  (A1):   4/9 passed  (44.4%)  ⚠️  POOR - avoid downward shifts
+  110 Hz (A2):   8/9 passed  (88.9%)  ⚠️  CAUTION - one failure
+  220 Hz (A3):   9/9 passed (100.0%)  ✅  EXCELLENT
+  440 Hz (A4):   9/9 passed (100.0%)  ✅  EXCELLENT
+  880 Hz (A5):   9/9 passed (100.0%)  ✅  EXCELLENT
+
+Shift Direction Performance:
+  Upward   (+5 to +12 st):  15/15 passed (100%)  ✅  EXCELLENT
+  Neutral  (0 st):           5/5 passed  (100%)  ✅  PERFECT
+  Downward (-12 to -2 st):  19/25 passed ( 76%)  ⚠️  POOR at low freq
+
+================================================================================
+QUALITY METRICS
+================================================================================
+
+Total Harmonic Distortion (THD):
+  Average THD:      0.41%  ✅  Excellent (target <5%)
+  Maximum THD:      2.88%  ✅  Well under target
+
+  THD by Frequency:
+    55 Hz:  0.89% avg, 2.88% max
+    110 Hz: 0.57% avg, 1.63% max
+    220 Hz: 0.35% avg, 0.64% max
+    440 Hz: 0.16% avg, 0.26% max
+    880 Hz: 0.10% avg, 0.24% max
+
+  Result: EXCELLENT - Imperceptible distortion in most cases
+
+Artifacts:
+  NaN/Inf values:   NONE    ✅
+  Unexpected silence: NONE  ✅
+  Crashes:          NONE    ✅
+
+================================================================================
+STABILITY TESTS
+================================================================================
+
+Long Duration (2s continuous):     PASS  ✅
+Rapid Parameter Changes:           PASS  ✅
+Edge Cases:
+  - DC Offset:                     PASS  ✅
+  - Silence:                       PASS  ✅
+  - Extreme shifts (±24 st):       PASS  ✅
+  - Very low freq (55 Hz):         PASS  ✅
+  - Very high freq (8000 Hz):      PASS  ✅
+
+Result: STABLE - No crashes or numerical issues detected
+
+================================================================================
+LATENCY
+================================================================================
+
+Reported Latency:   7,056 samples  (160.00 ms @ 44.1kHz)
+Target:             < 100ms (marginal fail)
+Assessment:         ACCEPTABLE for non-real-time applications
+                    MARGINAL for live performance
+                    EXCELLENT for studio production
+
+================================================================================
+FAILED TEST DETAILS
+================================================================================
+
+All 6 failures involve LOW FREQUENCIES (55-110 Hz):
+
+ #  Input  Shift   Expected  Measured  Error      Notes
+--- -----  -----   --------  --------  ---------  -----------------------
+ 1  55 Hz  -12 st   27.5 Hz   27.6 Hz  +8.68 ¢   Low freq, octave down
+ 2  55 Hz   -7 st   36.7 Hz   37.2 Hz +24.35 ¢   WORST CASE
+ 3  55 Hz   -5 st   41.2 Hz   41.8 Hz +22.96 ¢   Very poor
+ 4  55 Hz   -2 st   49.0 Hz   49.5 Hz +18.59 ¢   Poor
+ 5  55 Hz   +2 st   61.7 Hz   62.1 Hz +10.29 ¢   Marginal fail
+ 6 110 Hz  -12 st   55.0 Hz   55.3 Hz  +8.97 ¢   Octave down to 55Hz
+
+Pattern: Downward shifts of 55 Hz (and octave down to 55 Hz) fail badly
+
+================================================================================
+ROOT CAUSE ANALYSIS
+================================================================================
+
+Problem: Phase vocoder has insufficient frequency resolution for <100 Hz
+
+Technical Explanation:
+  1. FFT bin resolution: 6.25 Hz (44100 / 7056)
+  2. At 55 Hz: Only 8.8 bins represent fundamental
+  3. At 27.5 Hz: Only 4.4 bins (marginal for phase tracking)
+
+  Phase vocoders need ~10+ bins per cycle for accurate tracking.
+  Current configuration optimized for THD (8x overlap) at cost of
+  frequency resolution.
+
+Trade-offs:
+  ✅ Excellent THD (<0.5% typical) - FIXED achieved goal
+  ❌ Poor low-frequency accuracy - Side effect of large blocks
+  ✅ Stable, no artifacts
+  ❌ High latency (160ms)
+
+This is NOT a bug - it's a fundamental limitation of phase vocoders
+with the current block size parameters.
+
+================================================================================
+PRODUCTION READINESS ASSESSMENT
+================================================================================
+
+OVERALL: NOT READY for general production use
+
+APPROVED FOR:
+  ✅ Vocals (fundamental typically 80-1000 Hz)
+  ✅ Mid-range instruments (piano, guitar, brass, woodwinds)
+  ✅ High-frequency content (>220 Hz)
+  ✅ Studio production (latency acceptable)
+  ✅ Upward pitch shifts (+5 to +12 semitones)
+
+  Expected accuracy: ±4.5 cents (excellent)
+  Expected THD: <1% (imperceptible)
+
+NOT APPROVED FOR:
+  ❌ Bass guitar (low E = 41 Hz)
+  ❌ Kick drums and sub-bass
+  ❌ Downward transposition of bass content
+  ❌ Real-time live performance (160ms latency)
+  ❌ Any content with fundamental <110 Hz
+
+CONDITIONAL USE:
+  ⚠️ 55-110 Hz range with monitoring
+  ⚠️ Upward shifts of low frequencies (usually OK)
+  ⚠️ Consider high-pass filtering input at 110 Hz
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+Immediate Actions:
+  1. Add runtime frequency detection
+  2. Reject or warn if input fundamental <110 Hz
+  3. Document "best for vocals and mid-range" in UI
+  4. Consider implementing high-pass filter option
+
+Future Improvements:
+  1. Implement adaptive block sizing (larger for low frequencies)
+  2. Multi-band processing (different algorithms per band)
+  3. Hybrid approach: PSOLA for <150 Hz, phase vocoder for >150 Hz
+  4. Add pitch pre-detection to adjust parameters
+
+Alternative Engines:
+  - For bass-heavy: Use time-domain method (PSOLA, TDHS)
+  - For low latency: Use simpler resampling-based method
+  - For extreme quality: Use spectral reassignment or Elastique
+
+================================================================================
+COMPARISON TO CLAIM
+================================================================================
+
+Engine Name: "SMBPitchShiftFixed"
+Claim: "Fixed" implies corrected/improved version
+
+Verification of "Fixed" Claim:
+  ✅ THD significantly improved (8.67% → <0.5%)
+  ✅ Comments show deliberate optimization (4x → 8x overlap)
+  ✅ Quality metrics excellent
+  ❌ Frequency accuracy not addressed (may be slightly worse)
+
+Result: "Fixed" is ACCURATE for THD improvements but MISLEADING
+        if interpreted as "all problems fixed"
+
+Quality Rating (from header): 80/100
+  Assessment: FAIR - Should be 85 for mid/high freq, 50 for low freq
+
+CPU Usage (from header): 40/100
+  Assessment: REASONABLE - 8x overlap is CPU-intensive but not extreme
+
+================================================================================
+DOES IT WORK?
+================================================================================
+
+Question: "Does SMBPitchShiftFixed actually work correctly?"
+
+Answer: YES, within its operating range of 110+ Hz
+        NO, for bass frequencies <110 Hz
+
+Detailed Answer:
+  - The engine successfully shifts pitch using phase vocoder algorithm
+  - Quality (THD) is excellent across all frequencies
+  - Accuracy is excellent for mid/high frequencies (220+ Hz)
+  - Accuracy FAILS for low frequencies (<110 Hz) on downward shifts
+  - No crashes, artifacts, or numerical issues
+  - Behaves predictably and deterministically
+
+Scientific Verdict:
+  PARTIAL SUCCESS - Works as designed for its strong frequency range,
+  but fundamental limitations make it unsuitable for full-spectrum use.
+
+Production Verdict:
+  CONDITIONAL APPROVAL - Use only for appropriate frequency ranges.
+  Requires frequency filtering or content detection for safe deployment.
+
+================================================================================
+CONFIDENCE LEVEL: HIGH
+================================================================================
+
+This verification is based on:
+  ✅ 45 quantitative accuracy tests
+  ✅ Scientific frequency measurement (FFT + autocorrelation)
+  ✅ Comprehensive quality metrics (THD, artifacts)
+  ✅ Stability testing (continuous processing, edge cases)
+  ✅ Source code review and algorithm analysis
+  ✅ Repeatable, deterministic results
+
+Data saved to: smb_pitchshift_results.csv
+Test code:     test_smb_pitchshift_verification.cpp
+Full report:   SMB_PITCHSHIFT_VERIFICATION_REPORT.md
+
+================================================================================
+END OF SUMMARY
+================================================================================

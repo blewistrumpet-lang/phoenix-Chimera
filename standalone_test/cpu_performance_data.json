@@ -1,0 +1,692 @@
+[
+  {
+    "id": 0,
+    "name": "None (Bypass)",
+    "category": "Utility",
+    "complexity": "MINIMAL",
+    "cpu_percent": 0.1,
+    "characteristics": [
+      "Pass-through processing"
+    ],
+    "optimization_notes": "No DSP - minimal overhead"
+  },
+  {
+    "id": 1,
+    "name": "Vintage Opto Compressor",
+    "category": "Dynamics",
+    "complexity": "LOW",
+    "cpu_percent": 2.1,
+    "characteristics": [
+      "RMS detection",
+      "Smooth gain reduction"
+    ],
+    "optimization_notes": "Efficient envelope follower"
+  },
+  {
+    "id": 2,
+    "name": "Classic VCA Compressor",
+    "category": "Dynamics",
+    "complexity": "LOW",
+    "cpu_percent": 1.8,
+    "characteristics": [
+      "Peak/RMS detection",
+      "Fast attack/release"
+    ],
+    "optimization_notes": "Optimized gain computer"
+  },
+  {
+    "id": 3,
+    "name": "Transient Shaper",
+    "category": "Dynamics",
+    "complexity": "MODERATE",
+    "cpu_percent": 5.2,
+    "characteristics": [
+      "Envelope detection",
+      "Transient extraction"
+    ],
+    "optimization_notes": "Dual-band processing"
+  },
+  {
+    "id": 4,
+    "name": "Noise Gate",
+    "category": "Dynamics",
+    "complexity": "LOW",
+    "cpu_percent": 1.5,
+    "characteristics": [
+      "Threshold detection",
+      "Gain smoothing"
+    ],
+    "optimization_notes": "Simple threshold gate"
+  },
+  {
+    "id": 5,
+    "name": "Mastering Limiter",
+    "category": "Dynamics",
+    "complexity": "MODERATE",
+    "cpu_percent": 8.3,
+    "characteristics": [
+      "Lookahead buffer",
+      "True peak limiting"
+    ],
+    "optimization_notes": "Lookahead adds latency"
+  },
+  {
+    "id": 6,
+    "name": "Dynamic EQ",
+    "category": "Dynamics",
+    "complexity": "HIGH",
+    "cpu_percent": 18.7,
+    "characteristics": [
+      "Per-band dynamics",
+      "FFT analysis",
+      "Multi-band processing"
+    ],
+    "optimization_notes": "Complex multi-band DSP"
+  },
+  {
+    "id": 7,
+    "name": "Parametric EQ (Studio)",
+    "category": "Filter",
+    "complexity": "MODERATE",
+    "cpu_percent": 6.4,
+    "characteristics": [
+      "Multi-band IIR filters",
+      "Smooth parameter changes"
+    ],
+    "optimization_notes": "Efficient IIR implementation"
+  },
+  {
+    "id": 8,
+    "name": "Vintage Console EQ",
+    "category": "Filter",
+    "complexity": "MODERATE",
+    "cpu_percent": 7.1,
+    "characteristics": [
+      "Vintage filter curves",
+      "Saturation modeling"
+    ],
+    "optimization_notes": "Additional harmonic modeling"
+  },
+  {
+    "id": 9,
+    "name": "Ladder Filter",
+    "category": "Filter",
+    "complexity": "MODERATE",
+    "cpu_percent": 5.8,
+    "characteristics": [
+      "Moog-style resonance",
+      "Non-linear feedback"
+    ],
+    "optimization_notes": "4-pole filter with saturation"
+  },
+  {
+    "id": 10,
+    "name": "State Variable Filter",
+    "category": "Filter",
+    "complexity": "LOW",
+    "cpu_percent": 3.2,
+    "characteristics": [
+      "Simultaneous outputs",
+      "Smooth morphing"
+    ],
+    "optimization_notes": "Efficient topology"
+  },
+  {
+    "id": 11,
+    "name": "Formant Filter",
+    "category": "Filter",
+    "complexity": "MODERATE",
+    "cpu_percent": 9.3,
+    "characteristics": [
+      "Multiple resonant peaks",
+      "Vowel morphing"
+    ],
+    "optimization_notes": "Multiple parallel filters"
+  },
+  {
+    "id": 12,
+    "name": "Envelope Filter",
+    "category": "Filter",
+    "complexity": "MODERATE",
+    "cpu_percent": 6.7,
+    "characteristics": [
+      "Envelope follower",
+      "Dynamic cutoff"
+    ],
+    "optimization_notes": "Envelope + filter combination"
+  },
+  {
+    "id": 13,
+    "name": "Comb Resonator",
+    "category": "Filter",
+    "complexity": "LOW",
+    "cpu_percent": 4.1,
+    "characteristics": [
+      "Delay line",
+      "Feedback resonance"
+    ],
+    "optimization_notes": "Simple delay-based resonator"
+  },
+  {
+    "id": 14,
+    "name": "Vocal Formant Filter",
+    "category": "Filter",
+    "complexity": "MODERATE",
+    "cpu_percent": 10.2,
+    "characteristics": [
+      "Complex formant structure",
+      "Vowel interpolation"
+    ],
+    "optimization_notes": "Multi-formant processing"
+  },
+  {
+    "id": 15,
+    "name": "Vintage Tube Preamp",
+    "category": "Distortion",
+    "complexity": "MODERATE",
+    "cpu_percent": 8.9,
+    "characteristics": [
+      "Tube saturation modeling",
+      "Harmonic generation"
+    ],
+    "optimization_notes": "Non-linear waveshaping"
+  },
+  {
+    "id": 16,
+    "name": "Wave Folder",
+    "category": "Distortion",
+    "complexity": "LOW",
+    "cpu_percent": 3.5,
+    "characteristics": [
+      "Wave folding",
+      "Harmonic richness"
+    ],
+    "optimization_notes": "Simple folding algorithm"
+  },
+  {
+    "id": 17,
+    "name": "Harmonic Exciter",
+    "category": "Distortion",
+    "complexity": "MODERATE",
+    "cpu_percent": 7.6,
+    "characteristics": [
+      "Harmonic generation",
+      "Frequency-selective"
+    ],
+    "optimization_notes": "Selective harmonic enhancement"
+  },
+  {
+    "id": 18,
+    "name": "Bit Crusher",
+    "category": "Distortion",
+    "complexity": "LOW",
+    "cpu_percent": 2.3,
+    "characteristics": [
+      "Bit reduction",
+      "Sample rate reduction"
+    ],
+    "optimization_notes": "Simple digital degradation"
+  },
+  {
+    "id": 19,
+    "name": "Multiband Saturator",
+    "category": "Distortion",
+    "complexity": "HIGH",
+    "cpu_percent": 15.4,
+    "characteristics": [
+      "Multi-band splitting",
+      "Per-band saturation"
+    ],
+    "optimization_notes": "FFT-based band splitting"
+  },
+  {
+    "id": 20,
+    "name": "Muff Fuzz",
+    "category": "Distortion",
+    "complexity": "MODERATE",
+    "cpu_percent": 6.8,
+    "characteristics": [
+      "Transistor clipping",
+      "Tone stack"
+    ],
+    "optimization_notes": "Classic fuzz topology"
+  },
+  {
+    "id": 21,
+    "name": "Rodent Distortion",
+    "category": "Distortion",
+    "complexity": "MODERATE",
+    "cpu_percent": 5.9,
+    "characteristics": [
+      "Op-amp clipping",
+      "Active tone control"
+    ],
+    "optimization_notes": "Distortion + filtering"
+  },
+  {
+    "id": 22,
+    "name": "K-Style Overdrive",
+    "category": "Distortion",
+    "complexity": "MODERATE",
+    "cpu_percent": 6.2,
+    "characteristics": [
+      "Diode clipping",
+      "Soft clipping"
+    ],
+    "optimization_notes": "Classic overdrive circuit"
+  },
+  {
+    "id": 23,
+    "name": "Digital Chorus",
+    "category": "Modulation",
+    "complexity": "MODERATE",
+    "cpu_percent": 8.1,
+    "characteristics": [
+      "Multi-voice chorus",
+      "LFO modulation"
+    ],
+    "optimization_notes": "Multiple delay lines"
+  },
+  {
+    "id": 24,
+    "name": "Resonant Chorus",
+    "category": "Modulation",
+    "complexity": "MODERATE",
+    "cpu_percent": 9.7,
+    "characteristics": [
+      "Resonant delays",
+      "Complex modulation"
+    ],
+    "optimization_notes": "Resonant delays add CPU"
+  },
+  {
+    "id": 25,
+    "name": "Analog Phaser",
+    "category": "Modulation",
+    "complexity": "MODERATE",
+    "cpu_percent": 7.3,
+    "characteristics": [
+      "All-pass filters",
+      "LFO sweep"
+    ],
+    "optimization_notes": "Multiple cascaded stages"
+  },
+  {
+    "id": 26,
+    "name": "Ring Modulator",
+    "category": "Modulation",
+    "complexity": "LOW",
+    "cpu_percent": 3.8,
+    "characteristics": [
+      "Amplitude modulation",
+      "Carrier oscillator"
+    ],
+    "optimization_notes": "Simple multiplication"
+  },
+  {
+    "id": 27,
+    "name": "Frequency Shifter",
+    "category": "Modulation",
+    "complexity": "HIGH",
+    "cpu_percent": 16.2,
+    "characteristics": [
+      "Hilbert transform",
+      "Single-sideband modulation"
+    ],
+    "optimization_notes": "Complex phase processing"
+  },
+  {
+    "id": 28,
+    "name": "Harmonic Tremolo",
+    "category": "Modulation",
+    "complexity": "MODERATE",
+    "cpu_percent": 6.5,
+    "characteristics": [
+      "Dual-phase tremolo",
+      "Crossover filtering"
+    ],
+    "optimization_notes": "Dual-band amplitude modulation"
+  },
+  {
+    "id": 29,
+    "name": "Classic Tremolo",
+    "category": "Modulation",
+    "complexity": "LOW",
+    "cpu_percent": 2.1,
+    "characteristics": [
+      "Simple LFO",
+      "Amplitude modulation"
+    ],
+    "optimization_notes": "Basic amplitude modulation"
+  },
+  {
+    "id": 30,
+    "name": "Rotary Speaker",
+    "category": "Modulation",
+    "complexity": "HIGH",
+    "cpu_percent": 19.8,
+    "characteristics": [
+      "Doppler effect",
+      "Horn/drum simulation",
+      "Crossover"
+    ],
+    "optimization_notes": "Complex mechanical simulation"
+  },
+  {
+    "id": 31,
+    "name": "Pitch Shifter",
+    "category": "Modulation",
+    "complexity": "EXTREME",
+    "cpu_percent": 47.3,
+    "characteristics": [
+      "Time-domain pitch shifting",
+      "Large buffers"
+    ],
+    "optimization_notes": "Very CPU intensive"
+  },
+  {
+    "id": 32,
+    "name": "Detune Doubler",
+    "category": "Modulation",
+    "complexity": "HIGH",
+    "cpu_percent": 22.6,
+    "characteristics": [
+      "Dual pitch shifters",
+      "Stereo widening"
+    ],
+    "optimization_notes": "Multiple pitch shift instances"
+  },
+  {
+    "id": 33,
+    "name": "Intelligent Harmonizer",
+    "category": "Modulation",
+    "complexity": "EXTREME",
+    "cpu_percent": 52.8,
+    "characteristics": [
+      "Multi-voice pitch shifting",
+      "Scale quantization"
+    ],
+    "optimization_notes": "Most CPU-intensive modulation"
+  },
+  {
+    "id": 34,
+    "name": "Tape Echo",
+    "category": "Delay",
+    "complexity": "MODERATE",
+    "cpu_percent": 9.1,
+    "characteristics": [
+      "Tape saturation",
+      "Wow/flutter",
+      "Filtering"
+    ],
+    "optimization_notes": "Vintage tape modeling"
+  },
+  {
+    "id": 35,
+    "name": "Digital Delay",
+    "category": "Delay",
+    "complexity": "LOW",
+    "cpu_percent": 4.2,
+    "characteristics": [
+      "Clean delay line",
+      "Feedback control"
+    ],
+    "optimization_notes": "Efficient delay buffer"
+  },
+  {
+    "id": 36,
+    "name": "Magnetic Drum Echo",
+    "category": "Delay",
+    "complexity": "MODERATE",
+    "cpu_percent": 10.3,
+    "characteristics": [
+      "Drum modeling",
+      "Mechanical artifacts"
+    ],
+    "optimization_notes": "Vintage drum echo simulation"
+  },
+  {
+    "id": 37,
+    "name": "Bucket Brigade Delay",
+    "category": "Delay",
+    "complexity": "MODERATE",
+    "cpu_percent": 8.7,
+    "characteristics": [
+      "BBD emulation",
+      "Clock noise"
+    ],
+    "optimization_notes": "Analog BBD simulation"
+  },
+  {
+    "id": 38,
+    "name": "Buffer Repeat",
+    "category": "Delay",
+    "complexity": "LOW",
+    "cpu_percent": 3.6,
+    "characteristics": [
+      "Buffer capture",
+      "Glitch effects"
+    ],
+    "optimization_notes": "Simple buffer looping"
+  },
+  {
+    "id": 39,
+    "name": "Plate Reverb",
+    "category": "Reverb",
+    "complexity": "HIGH",
+    "cpu_percent": 24.5,
+    "characteristics": [
+      "Plate simulation",
+      "Dense early reflections"
+    ],
+    "optimization_notes": "FDN-based plate simulation"
+  },
+  {
+    "id": 40,
+    "name": "Spring Reverb",
+    "category": "Reverb",
+    "complexity": "MODERATE",
+    "cpu_percent": 12.8,
+    "characteristics": [
+      "Spring modeling",
+      "Boing character"
+    ],
+    "optimization_notes": "Physical spring model"
+  },
+  {
+    "id": 41,
+    "name": "Convolution Reverb",
+    "category": "Reverb",
+    "complexity": "EXTREME",
+    "cpu_percent": 68.9,
+    "characteristics": [
+      "FFT convolution",
+      "IR processing",
+      "Large memory"
+    ],
+    "optimization_notes": "Most CPU-intensive engine"
+  },
+  {
+    "id": 42,
+    "name": "Shimmer Reverb",
+    "category": "Reverb",
+    "complexity": "VERY_HIGH",
+    "cpu_percent": 38.2,
+    "characteristics": [
+      "Pitch shifting",
+      "Reverb tail",
+      "Feedback"
+    ],
+    "optimization_notes": "Reverb + pitch shifting"
+  },
+  {
+    "id": 43,
+    "name": "Gated Reverb",
+    "category": "Reverb",
+    "complexity": "HIGH",
+    "cpu_percent": 21.7,
+    "characteristics": [
+      "Reverb",
+      "Gate processing"
+    ],
+    "optimization_notes": "Reverb with envelope control"
+  },
+  {
+    "id": 44,
+    "name": "Stereo Widener",
+    "category": "Spatial",
+    "complexity": "LOW",
+    "cpu_percent": 3.1,
+    "characteristics": [
+      "M/S processing",
+      "Stereo enhancement"
+    ],
+    "optimization_notes": "Simple M/S manipulation"
+  },
+  {
+    "id": 45,
+    "name": "Stereo Imager",
+    "category": "Spatial",
+    "complexity": "MODERATE",
+    "cpu_percent": 5.7,
+    "characteristics": [
+      "Haas effect",
+      "Stereo imaging"
+    ],
+    "optimization_notes": "Delay-based stereo imaging"
+  },
+  {
+    "id": 46,
+    "name": "Dimension Expander",
+    "category": "Spatial",
+    "complexity": "MODERATE",
+    "cpu_percent": 11.6,
+    "characteristics": [
+      "Multi-tap modulation",
+      "Stereo spreading"
+    ],
+    "optimization_notes": "Multiple modulated delays"
+  },
+  {
+    "id": 47,
+    "name": "Spectral Freeze",
+    "category": "Special",
+    "complexity": "VERY_HIGH",
+    "cpu_percent": 31.4,
+    "characteristics": [
+      "FFT analysis",
+      "Spectral hold",
+      "Resynthesis"
+    ],
+    "optimization_notes": "Continuous FFT processing"
+  },
+  {
+    "id": 48,
+    "name": "Spectral Gate",
+    "category": "Special",
+    "complexity": "VERY_HIGH",
+    "cpu_percent": 29.8,
+    "characteristics": [
+      "FFT analysis",
+      "Per-bin gating",
+      "Resynthesis"
+    ],
+    "optimization_notes": "FFT-based gating"
+  },
+  {
+    "id": 49,
+    "name": "Phased Vocoder",
+    "category": "Special",
+    "complexity": "EXTREME",
+    "cpu_percent": 55.2,
+    "characteristics": [
+      "Phase vocoder",
+      "Time stretching",
+      "Large FFT"
+    ],
+    "optimization_notes": "Most complex spectral processor"
+  },
+  {
+    "id": 50,
+    "name": "Granular Cloud",
+    "category": "Special",
+    "complexity": "VERY_HIGH",
+    "cpu_percent": 35.6,
+    "characteristics": [
+      "Granular synthesis",
+      "Multiple grains",
+      "Windowing"
+    ],
+    "optimization_notes": "Many simultaneous grains"
+  },
+  {
+    "id": 51,
+    "name": "Chaos Generator",
+    "category": "Special",
+    "complexity": "MODERATE",
+    "cpu_percent": 8.4,
+    "characteristics": [
+      "Chaotic oscillators",
+      "Feedback loops"
+    ],
+    "optimization_notes": "Non-linear dynamics"
+  },
+  {
+    "id": 52,
+    "name": "Feedback Network",
+    "category": "Special",
+    "complexity": "HIGH",
+    "cpu_percent": 16.9,
+    "characteristics": [
+      "Complex feedback matrix",
+      "Multiple delays"
+    ],
+    "optimization_notes": "Matrix processing"
+  },
+  {
+    "id": 53,
+    "name": "Mid-Side Processor",
+    "category": "Utility",
+    "complexity": "LOW",
+    "cpu_percent": 1.2,
+    "characteristics": [
+      "M/S encoding/decoding"
+    ],
+    "optimization_notes": "Simple matrix operation"
+  },
+  {
+    "id": 54,
+    "name": "Gain Utility",
+    "category": "Utility",
+    "complexity": "MINIMAL",
+    "cpu_percent": 0.5,
+    "characteristics": [
+      "Gain adjustment",
+      "Pan control"
+    ],
+    "optimization_notes": "Trivial processing"
+  },
+  {
+    "id": 55,
+    "name": "Mono Maker",
+    "category": "Utility",
+    "complexity": "MINIMAL",
+    "cpu_percent": 0.7,
+    "characteristics": [
+      "Mono summing"
+    ],
+    "optimization_notes": "Simple channel summing"
+  },
+  {
+    "id": 56,
+    "name": "Phase Align",
+    "category": "Utility",
+    "complexity": "LOW",
+    "cpu_percent": 2.4,
+    "characteristics": [
+      "Phase correction",
+      "All-pass filtering"
+    ],
+    "optimization_notes": "Phase adjustment filter"
+  }
+]

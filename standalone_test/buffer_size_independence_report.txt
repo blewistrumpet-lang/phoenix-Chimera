@@ -1,0 +1,1058 @@
+================================================================================
+    CHIMERA PHOENIX - BUFFER SIZE INDEPENDENCE TEST REPORT
+================================================================================
+
+Test Configuration:
+  Sample Rate:       48000 Hz
+  Test Duration:     2.0 seconds
+  Test Signal:       1000.0 Hz sine wave
+  Test Amplitude:    0.5 (-6 dBFS)
+  Buffer Sizes:      32, 64, 128, 256, 512, 1024, 2048 samples
+  Pass Criteria:
+    Max Deviation:   < 1e-06
+    RMS Error:       < 1e-07
+
+================================================================================
+                         OVERALL SUMMARY
+================================================================================
+
+Total Engines Tested: 31
+Passed:               31 (100.0%)
+Failed:               0
+
+================================================================================
+                      DETAILED RESULTS
+================================================================================
+
+--------------------------------------------------------------------------------
+Engine 0: None (Bypass)
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 1: Vintage Opto Compressor
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 2: Classic VCA Compressor
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 3: Transient Shaper
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 4: Noise Gate
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 5: Mastering Limiter
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 6: Dynamic EQ
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 7: Parametric EQ
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 8: Vintage Console EQ
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 9: Ladder Filter
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 10: State Variable Filter
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 11: Formant Filter
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 12: Envelope Filter
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 13: Comb Resonator
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 14: Vocal Formant Filter
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 15: Vintage Tube Preamp
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 16: Wave Folder
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 17: Harmonic Exciter
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 18: Bit Crusher
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 19: Multiband Saturator
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 20: Muff Fuzz
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 21: Rodent Distortion
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 22: K-Style Overdrive
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 23: Digital Chorus
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 24: Resonant Chorus
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 25: Analog Phaser
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 26: Ring Modulator
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 27: Frequency Shifter
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 28: Harmonic Tremolo
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 29: Classic Tremolo
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+--------------------------------------------------------------------------------
+Engine 30: Rotary Speaker
+--------------------------------------------------------------------------------
+STATUS: PASSED
+
+Buffer Size Comparison Results:
+  (Reference: 32 samples)
+
+  Buffer Size 64:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 128:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 256:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 512:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 1024:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+  Buffer Size 2048:
+    Max Deviation:  0.000000e+00
+    RMS Error:      0.000000e+00
+
+
+================================================================================
+                    FAILED ENGINES SUMMARY
+================================================================================
+
+No failures! All engines are buffer-size independent.
+
+================================================================================
+                      END OF REPORT
+================================================================================

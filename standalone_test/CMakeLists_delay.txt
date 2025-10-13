@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.15)
+project(DelayRealtimeTest)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
+
+# JUCE setup
+add_subdirectory(/Users/Branden/JUCE JUCE)
+
+# Add the test executable
+add_executable(test_delays_realworld
+    test_delays_realworld.cpp
+    ../JUCE_Plugin/Source/DigitalDelay.cpp
+    ../JUCE_Plugin/Source/BucketBrigadeDelay.cpp
+)
+
+target_include_directories(test_delays_realworld PRIVATE
+    ../JUCE_Plugin/Source
+    ../JUCE_Plugin/JuceLibraryCode
+)
+
+target_link_libraries(test_delays_realworld PRIVATE
+    juce::juce_audio_basics
+    juce::juce_audio_devices
+    juce::juce_audio_formats
+    juce::juce_audio_processors
+    juce::juce_core
+    juce::juce_data_structures
+    juce::juce_dsp
+    juce::juce_events
+    juce::juce_graphics
+    juce::juce_gui_basics
+    juce::juce_gui_extra
+)
+
+target_compile_definitions(test_delays_realworld PRIVATE
+    JUCE_STANDALONE_APPLICATION=1
+    JUCE_USE_CURL=0
+    JUCE_WEB_BROWSER=0
+)

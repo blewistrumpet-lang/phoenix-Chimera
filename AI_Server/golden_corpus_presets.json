@@ -1,0 +1,521 @@
+{
+  "metadata": {
+    "name": "Chimera Phoenix Golden Corpus",
+    "version": "1.0",
+    "description": "50 essential preset types showcasing the plugin's 56 DSP engines across musical applications",
+    "total_presets": 50,
+    "engine_count": 56,
+    "utility_engines_excluded": [53, 54, 55, 56],
+    "categories": {
+      "DYNAMICS & COMPRESSION": "IDs 1-6",
+      "FILTERS & EQ": "IDs 7-14", 
+      "DISTORTION & SATURATION": "IDs 15-22",
+      "MODULATION EFFECTS": "IDs 23-33",
+      "REVERB & DELAY": "IDs 34-43", 
+      "SPATIAL & SPECIAL EFFECTS": "IDs 44-52"
+    },
+    "creation_date": "2025-09-18"
+  },
+  "presets": [
+    {
+      "id": 1,
+      "name": "Classic Guitar Processing",
+      "description": "Essential guitar chain with overdrive, chorus, and reverb",
+      "engines": ["K-Style Overdrive", "Digital Chorus", "Plate Reverb"],
+      "engine_ids": [22, 23, 39],
+      "signal_flow": "Input → Overdrive → Chorus → Reverb → Output",
+      "target_use": "Electric guitar, rock/pop styles",
+      "category": "Instrument Processing"
+    },
+    {
+      "id": 2,
+      "name": "Vocal Warmth & Presence",
+      "description": "Warm vocal processing with tube saturation and compression",
+      "engines": ["Vintage Tube Preamp", "Vintage Opto", "Harmonic Exciter"],
+      "engine_ids": [15, 1, 17],
+      "signal_flow": "Input → Tube Preamp → Opto Compressor → Harmonic Exciter → Output",
+      "target_use": "Lead vocals, jazz/soul styles",
+      "category": "Instrument Processing"
+    },
+    {
+      "id": 3,
+      "name": "Bass Foundation",
+      "description": "Tight bass processing with compression and subtle saturation",
+      "engines": ["Classic Compressor", "Vintage Tube Preamp", "Parametric EQ"],
+      "engine_ids": [2, 15, 7],
+      "signal_flow": "Input → Compressor → Tube Saturation → EQ → Output",
+      "target_use": "Bass guitar/synth bass, all genres",
+      "category": "Instrument Processing"
+    },
+    {
+      "id": 4,
+      "name": "Punchy Drums",
+      "description": "Drum processing with transient shaping and parallel compression",
+      "engines": ["Transient Shaper", "Classic Compressor", "Harmonic Exciter"],
+      "engine_ids": [3, 2, 17],
+      "signal_flow": "Input → Transient Shaper → Compressor → Harmonic Exciter → Output",
+      "target_use": "Drum bus, rock/pop production",
+      "category": "Instrument Processing"
+    },
+    {
+      "id": 5,
+      "name": "Analog Synth Character",
+      "description": "Classic analog synth processing with filter and modulation",
+      "engines": ["Ladder Filter", "Analog Phaser", "Classic Tremolo"],
+      "engine_ids": [9, 25, 29],
+      "signal_flow": "Input → Ladder Filter → Phaser → Tremolo → Output",
+      "target_use": "Synthesizers, electronic music",
+      "category": "Instrument Processing"
+    },
+    {
+      "id": 6,
+      "name": "Modern Electronic Lead",
+      "description": "Contemporary electronic lead with saturation and modulation",
+      "engines": ["Multiband Saturator", "Frequency Shifter", "Digital Delay"],
+      "engine_ids": [19, 27, 35],
+      "signal_flow": "Input → Multiband Saturator → Frequency Shifter → Digital Delay → Output",
+      "target_use": "Electronic leads, EDM/techno",
+      "category": "Instrument Processing"
+    },
+    {
+      "id": 7,
+      "name": "Acoustic Guitar Intimacy",
+      "description": "Gentle acoustic guitar enhancement with subtle reverb",
+      "engines": ["Harmonic Exciter", "Digital Chorus", "Spring Reverb"],
+      "engine_ids": [17, 23, 40],
+      "signal_flow": "Input → Harmonic Exciter → Light Chorus → Spring Reverb → Output",
+      "target_use": "Acoustic guitar, folk/singer-songwriter",
+      "category": "Instrument Processing"
+    },
+    {
+      "id": 8,
+      "name": "Heavy Rock Guitar",
+      "description": "Aggressive rock guitar with distortion and spatial effects",
+      "engines": ["Rodent Distortion", "Analog Phaser", "Gated Reverb"],
+      "engine_ids": [21, 25, 43],
+      "signal_flow": "Input → Distortion → Phaser → Gated Reverb → Output",
+      "target_use": "Heavy rock/metal guitar",
+      "category": "Genre - Rock"
+    },
+    {
+      "id": 9,
+      "name": "Smooth Jazz Warmth",
+      "description": "Warm, smooth processing for jazz instruments",
+      "engines": ["Vintage Console EQ", "Vintage Opto", "Plate Reverb"],
+      "engine_ids": [8, 1, 39],
+      "signal_flow": "Input → Vintage EQ → Opto Compressor → Plate Reverb → Output",
+      "target_use": "Jazz instruments, smooth production",
+      "category": "Genre - Jazz"
+    },
+    {
+      "id": 10,
+      "name": "Electronic Dance Energy",
+      "description": "High-energy electronic processing with modulation",
+      "engines": ["Harmonic Exciter", "Resonant Chorus", "Digital Delay"],
+      "engine_ids": [17, 24, 35],
+      "signal_flow": "Input → Harmonic Exciter → Resonant Chorus → Digital Delay → Output",
+      "target_use": "Electronic music, dance/EDM",
+      "category": "Genre - Electronic"
+    },
+    {
+      "id": 11,
+      "name": "Pop Vocal Shine",
+      "description": "Modern pop vocal processing with clarity and presence",
+      "engines": ["Dynamic EQ", "Harmonic Exciter", "Shimmer Reverb"],
+      "engine_ids": [6, 17, 42],
+      "signal_flow": "Input → Dynamic EQ → Harmonic Exciter → Shimmer Reverb → Output",
+      "target_use": "Pop vocals, contemporary production",
+      "category": "Genre - Pop"
+    },
+    {
+      "id": 12,
+      "name": "Ambient Soundscape",
+      "description": "Ethereal ambient processing with spatial enhancement",
+      "engines": ["Shimmer Reverb", "Granular Cloud", "Stereo Widener"],
+      "engine_ids": [42, 50, 44],
+      "signal_flow": "Input → Shimmer Reverb → Granular Cloud → Stereo Widener → Output",
+      "target_use": "Ambient music, atmospheric sounds",
+      "category": "Genre - Ambient"
+    },
+    {
+      "id": 13,
+      "name": "Lo-Fi Hip Hop Vibe",
+      "description": "Vintage lo-fi processing with analog character",
+      "engines": ["Bit Crusher", "Vintage Tube Preamp", "Magnetic Drum Echo"],
+      "engine_ids": [18, 15, 36],
+      "signal_flow": "Input → Bit Crusher → Tube Preamp → Magnetic Drum Echo → Output",
+      "target_use": "Lo-fi hip hop, vintage aesthetics",
+      "category": "Genre - Hip Hop"
+    },
+    {
+      "id": 14,
+      "name": "Country Guitar Twang",
+      "description": "Country guitar processing with clean compression and reverb",
+      "engines": ["Classic Compressor", "Harmonic Tremolo", "Spring Reverb"],
+      "engine_ids": [2, 28, 40],
+      "signal_flow": "Input → Compressor → Harmonic Tremolo → Spring Reverb → Output",
+      "target_use": "Country guitar, Americana",
+      "category": "Genre - Country"
+    },
+    {
+      "id": 15,
+      "name": "Experimental Texture",
+      "description": "Creative textural processing with granular synthesis",
+      "engines": ["Granular Cloud", "Spectral Freeze", "Chaos Generator"],
+      "engine_ids": [50, 47, 51],
+      "signal_flow": "Input → Granular Cloud → Spectral Freeze → Chaos Generator → Output",
+      "target_use": "Sound design, experimental music",
+      "category": "Creative/Experimental"
+    },
+    {
+      "id": 16,
+      "name": "Glitch Art",
+      "description": "Digital glitch effects for electronic music",
+      "engines": ["Buffer Repeat", "Bit Crusher", "Frequency Shifter"],
+      "engine_ids": [38, 18, 27],
+      "signal_flow": "Input → Buffer Repeat → Bit Crusher → Frequency Shifter → Output",
+      "target_use": "Glitch hop, IDM, electronic",
+      "category": "Creative/Experimental"
+    },
+    {
+      "id": 17,
+      "name": "Psychedelic Swirl",
+      "description": "Trippy modulation effects for psychedelic sounds",
+      "engines": ["Analog Phaser", "Rotary Speaker", "Shimmer Reverb"],
+      "engine_ids": [25, 30, 42],
+      "signal_flow": "Input → Analog Phaser → Rotary Speaker → Shimmer Reverb → Output",
+      "target_use": "Psychedelic rock, experimental",
+      "category": "Creative/Experimental"
+    },
+    {
+      "id": 18,
+      "name": "Industrial Aggression",
+      "description": "Harsh industrial processing with metallic textures",
+      "engines": ["Wave Folder", "Ring Modulator", "Feedback Network"],
+      "engine_ids": [16, 26, 52],
+      "signal_flow": "Input → Wave Folder → Ring Modulator → Feedback Network → Output",
+      "target_use": "Industrial music, harsh electronics",
+      "category": "Creative/Experimental"
+    },
+    {
+      "id": 19,
+      "name": "Vocal Formant Morph",
+      "description": "Vocal transformation using formant processing",
+      "engines": ["Vocal Formant Filter", "Phased Vocoder", "Stereo Imager"],
+      "engine_ids": [14, 49, 45],
+      "signal_flow": "Input → Vocal Formant → Phased Vocoder → Stereo Imager → Output",
+      "target_use": "Vocal effects, sound design",
+      "category": "Creative/Experimental"
+    },
+    {
+      "id": 20,
+      "name": "Clean Mix Bus",
+      "description": "Transparent mix bus processing for clarity",
+      "engines": ["Parametric EQ", "Classic Compressor", "Stereo Imager"],
+      "engine_ids": [7, 2, 45],
+      "signal_flow": "Input → Parametric EQ → Classic Compressor → Stereo Imager → Output",
+      "target_use": "Mix bus, submixes",
+      "category": "Standard Mixing"
+    },
+    {
+      "id": 21,
+      "name": "Warm Mix Bus",
+      "description": "Warm analog-style mix bus processing",
+      "engines": ["Vintage Console EQ", "Vintage Opto", "Harmonic Exciter"],
+      "engine_ids": [8, 1, 17],
+      "signal_flow": "Input → Vintage Console EQ → Vintage Opto → Harmonic Exciter → Output",
+      "target_use": "Mix bus, analog warmth",
+      "category": "Standard Mixing"
+    },
+    {
+      "id": 22,
+      "name": "Drum Bus Punch",
+      "description": "Drum bus processing for impact and cohesion",
+      "engines": ["Transient Shaper", "Multiband Saturator", "Vintage Console EQ"],
+      "engine_ids": [3, 19, 8],
+      "signal_flow": "Input → Transient Shaper → Multiband Saturator → Vintage Console EQ → Output",
+      "target_use": "Drum bus, rhythm section",
+      "category": "Standard Mixing"
+    },
+    {
+      "id": 23,
+      "name": "Vocal Bus Polish",
+      "description": "Vocal bus processing for consistency and presence",
+      "engines": ["Dynamic EQ", "Vintage Opto", "Harmonic Exciter"],
+      "engine_ids": [6, 1, 17],
+      "signal_flow": "Input → Dynamic EQ → Vintage Opto → Harmonic Exciter → Output",
+      "target_use": "Vocal bus, lead vocals",
+      "category": "Standard Mixing"
+    },
+    {
+      "id": 24,
+      "name": "Instrument Bus Glue",
+      "description": "Instrument bus processing for cohesion",
+      "engines": ["Vintage Console EQ", "Classic Compressor", "Plate Reverb"],
+      "engine_ids": [8, 2, 39],
+      "signal_flow": "Input → Vintage Console EQ → Classic Compressor → Light Plate Reverb → Output",
+      "target_use": "Instrument buses, group processing",
+      "category": "Standard Mixing"
+    },
+    {
+      "id": 25,
+      "name": "Transparent Master",
+      "description": "Clean mastering chain for transparency",
+      "engines": ["Parametric EQ", "Mastering Limiter", "Stereo Imager"],
+      "engine_ids": [7, 5, 45],
+      "signal_flow": "Input → Parametric EQ → Mastering Limiter → Stereo Imager → Output",
+      "target_use": "Mastering, clean limiting",
+      "category": "Mastering"
+    },
+    {
+      "id": 26,
+      "name": "Warm Master",
+      "description": "Warm mastering chain with analog character",
+      "engines": ["Vintage Console EQ", "Multiband Saturator", "Mastering Limiter"],
+      "engine_ids": [8, 19, 5],
+      "signal_flow": "Input → Vintage Console EQ → Multiband Saturator → Mastering Limiter → Output",
+      "target_use": "Mastering, analog warmth",
+      "category": "Mastering"
+    },
+    {
+      "id": 27,
+      "name": "Loud Master",
+      "description": "Competitive loudness mastering chain",
+      "engines": ["Dynamic EQ", "Harmonic Exciter", "Mastering Limiter"],
+      "engine_ids": [6, 17, 5],
+      "signal_flow": "Input → Dynamic EQ → Harmonic Exciter → Mastering Limiter → Output",
+      "target_use": "Mastering, competitive loudness",
+      "category": "Mastering"
+    },
+    {
+      "id": 28,
+      "name": "Vintage Master",
+      "description": "Vintage-style mastering with tape character",
+      "engines": ["Vintage Console EQ", "Vintage Tube Preamp", "Mastering Limiter"],
+      "engine_ids": [8, 15, 5],
+      "signal_flow": "Input → Vintage Console EQ → Vintage Tube → Mastering Limiter → Output",
+      "target_use": "Mastering, vintage character",
+      "category": "Mastering"
+    },
+    {
+      "id": 29,
+      "name": "Spatial Enhancement",
+      "description": "Stereo enhancement and spatial processing",
+      "engines": ["Stereo Widener", "Mid-Side Processor", "Dimension Expander"],
+      "engine_ids": [44, 53, 46],
+      "signal_flow": "Input → Stereo Widener → Mid-Side Processor → Dimension Expander → Output",
+      "target_use": "Stereo enhancement, spatial effects",
+      "category": "Spatial Processing"
+    },
+    {
+      "id": 30,
+      "name": "Vintage Delay Suite",
+      "description": "Classic delay effects in series",
+      "engines": ["Tape Echo", "Magnetic Drum Echo", "Bucket Brigade Delay"],
+      "engine_ids": [34, 36, 37],
+      "signal_flow": "Input → Tape Echo → Magnetic Drum Echo → Bucket Brigade → Output",
+      "target_use": "Vintage delay textures",
+      "category": "Time-Based Effects"
+    },
+    {
+      "id": 31,
+      "name": "Modern Reverb Hall",
+      "description": "Modern reverb processing for large spaces",
+      "engines": ["Convolution Reverb", "Shimmer Reverb", "Stereo Widener"],
+      "engine_ids": [41, 42, 44],
+      "signal_flow": "Input → Convolution Reverb → Shimmer Reverb → Stereo Widener → Output",
+      "target_use": "Large hall reverbs, orchestral",
+      "category": "Time-Based Effects"
+    },
+    {
+      "id": 32,
+      "name": "Rhythmic Echo",
+      "description": "Rhythmic delay effects with modulation",
+      "engines": ["Digital Delay", "Classic Tremolo", "Feedback Network"],
+      "engine_ids": [35, 29, 52],
+      "signal_flow": "Input → Digital Delay → Classic Tremolo → Feedback Network → Output",
+      "target_use": "Rhythmic delays, electronic music",
+      "category": "Time-Based Effects"
+    },
+    {
+      "id": 33,
+      "name": "Filter Sweep Dance",
+      "description": "Dance music filter effects with resonance",
+      "engines": ["Ladder Filter", "Envelope Filter", "Resonant Chorus"],
+      "engine_ids": [9, 12, 24],
+      "signal_flow": "Input → Ladder Filter → Envelope Filter → Resonant Chorus → Output",
+      "target_use": "Filter sweeps, dance music",
+      "category": "Filter Effects"
+    },
+    {
+      "id": 34,
+      "name": "Vocal Formant Magic",
+      "description": "Advanced vocal formant processing",
+      "engines": ["Vocal Formant Filter", "Formant Filter", "Harmonic Exciter"],
+      "engine_ids": [14, 11, 17],
+      "signal_flow": "Input → Vocal Formant Filter → Formant Filter → Harmonic Exciter → Output",
+      "target_use": "Vocal transformation, sound design",
+      "category": "Filter Effects"
+    },
+    {
+      "id": 35,
+      "name": "Comb Filter Resonance",
+      "description": "Resonant comb filtering for metallic tones",
+      "engines": ["Comb Resonator", "Ring Modulator", "Plate Reverb"],
+      "engine_ids": [13, 26, 39],
+      "signal_flow": "Input → Comb Resonator → Ring Modulator → Plate Reverb → Output",
+      "target_use": "Metallic tones, sound design",
+      "category": "Filter Effects"
+    },
+    {
+      "id": 36,
+      "name": "Pitch Harmony Stack",
+      "description": "Harmonic pitch processing for rich textures",
+      "engines": ["Intelligent Harmonizer", "Pitch Shifter", "Detune Doubler"],
+      "engine_ids": [33, 31, 32],
+      "signal_flow": "Input → Intelligent Harmonizer → Pitch Shifter → Detune Doubler → Output",
+      "target_use": "Harmony generation, choral effects",
+      "category": "Pitch Effects"
+    },
+    {
+      "id": 37,
+      "name": "Modulation Matrix",
+      "description": "Complex modulation effects in series",
+      "engines": ["Analog Phaser", "Rotary Speaker", "Harmonic Tremolo"],
+      "engine_ids": [25, 30, 28],
+      "signal_flow": "Input → Analog Phaser → Rotary Speaker → Harmonic Tremolo → Output",
+      "target_use": "Complex modulation, psychedelic effects",
+      "category": "Modulation Chains"
+    },
+    {
+      "id": 38,
+      "name": "Distortion Cascade",
+      "description": "Multiple distortion stages for aggressive tones",
+      "engines": ["K-Style Overdrive", "Muff Fuzz", "Wave Folder"],
+      "engine_ids": [22, 20, 16],
+      "signal_flow": "Input → K-Style Overdrive → Muff Fuzz → Wave Folder → Output",
+      "target_use": "Heavy distortion, experimental tones",
+      "category": "Distortion Chains"
+    },
+    {
+      "id": 39,
+      "name": "Saturation Layers",
+      "description": "Layered saturation for harmonic richness",
+      "engines": ["Vintage Tube Preamp", "Multiband Saturator", "Harmonic Exciter"],
+      "engine_ids": [15, 19, 17],
+      "signal_flow": "Input → Vintage Tube → Multiband Saturator → Harmonic Exciter → Output",
+      "target_use": "Harmonic enhancement, analog warmth",
+      "category": "Saturation Chains"
+    },
+    {
+      "id": 40,
+      "name": "Dynamic Control Suite",
+      "description": "Complete dynamic range processing",
+      "engines": ["Noise Gate", "Transient Shaper", "Classic Compressor"],
+      "engine_ids": [4, 3, 2],
+      "signal_flow": "Input → Noise Gate → Transient Shaper → Classic Compressor → Output",
+      "target_use": "Dynamic control, professional mixing",
+      "category": "Dynamics Chains"
+    },
+    {
+      "id": 41,
+      "name": "Vintage Compression",
+      "description": "Classic compression with vintage character",
+      "engines": ["Vintage Opto", "Vintage Tube Preamp", "Vintage Console EQ"],
+      "engine_ids": [1, 15, 8],
+      "signal_flow": "Input → Vintage Opto → Vintage Tube → Vintage Console EQ → Output",
+      "target_use": "Vintage-style processing, analog warmth",
+      "category": "Vintage Chains"
+    },
+    {
+      "id": 42,
+      "name": "Modern Clean",
+      "description": "Modern transparent processing chain",
+      "engines": ["Dynamic EQ", "Mastering Limiter", "Stereo Imager"],
+      "engine_ids": [6, 5, 45],
+      "signal_flow": "Input → Dynamic EQ → Mastering Limiter → Stereo Imager → Output",
+      "target_use": "Modern production, transparency",
+      "category": "Modern Chains"
+    },
+    {
+      "id": 43,
+      "name": "Spectral Manipulation",
+      "description": "Advanced spectral processing effects",
+      "engines": ["Spectral Freeze", "Phased Vocoder", "Spectral Gate"],
+      "engine_ids": [47, 49, 48],
+      "signal_flow": "Input → Spectral Freeze → Phased Vocoder → Spectral Gate → Output",
+      "target_use": "Sound design, spectral effects",
+      "category": "Spectral Processing"
+    },
+    {
+      "id": 44,
+      "name": "Texture Generator",
+      "description": "Complex textural processing",
+      "engines": ["Granular Cloud", "Chaos Generator", "Feedback Network"],
+      "engine_ids": [50, 51, 52],
+      "signal_flow": "Input → Granular Cloud → Chaos Generator → Feedback Network → Output",
+      "target_use": "Texture generation, ambient sounds",
+      "category": "Texture Creation"
+    },
+    {
+      "id": 45,
+      "name": "Retro Game Audio",
+      "description": "8-bit/chiptune style processing",
+      "engines": ["Bit Crusher", "Buffer Repeat", "Digital Delay"],
+      "engine_ids": [18, 38, 35],
+      "signal_flow": "Input → Bit Crusher → Buffer Repeat → Digital Delay → Output",
+      "target_use": "Chiptune, retro game audio",
+      "category": "Lo-Fi/Retro"
+    },
+    {
+      "id": 46,
+      "name": "Analog Tape Emulation",
+      "description": "Complete analog tape machine emulation",
+      "engines": ["Vintage Tube Preamp", "Tape Echo", "Vintage Console EQ"],
+      "engine_ids": [15, 34, 8],
+      "signal_flow": "Input → Vintage Tube → Tape Echo → Vintage Console EQ → Output",
+      "target_use": "Analog tape sound, vintage production",
+      "category": "Analog Emulation"
+    },
+    {
+      "id": 47,
+      "name": "Orchestral Space",
+      "description": "Orchestral reverb and spatial processing",
+      "engines": ["Convolution Reverb", "Dimension Expander", "Stereo Widener"],
+      "engine_ids": [41, 46, 44],
+      "signal_flow": "Input → Convolution Reverb → Dimension Expander → Stereo Widener → Output",
+      "target_use": "Orchestral music, classical recording",
+      "category": "Orchestral/Classical"
+    },
+    {
+      "id": 48,
+      "name": "Broadcast Voice",
+      "description": "Professional broadcast voice processing",
+      "engines": ["Dynamic EQ", "Classic Compressor", "Harmonic Exciter"],
+      "engine_ids": [6, 2, 17],
+      "signal_flow": "Input → Dynamic EQ → Classic Compressor → Harmonic Exciter → Output",
+      "target_use": "Broadcast, podcast, voice-over",
+      "category": "Broadcast/Voice"
+    },
+    {
+      "id": 49,
+      "name": "Cinematic Tension",
+      "description": "Film score tension and atmosphere",
+      "engines": ["Shimmer Reverb", "Chaos Generator", "Spectral Freeze"],
+      "engine_ids": [42, 51, 47],
+      "signal_flow": "Input → Shimmer Reverb → Chaos Generator → Spectral Freeze → Output",
+      "target_use": "Film scoring, cinematic atmospheres",
+      "category": "Cinematic/Film"
+    },
+    {
+      "id": 50,
+      "name": "Creative Sound Design",
+      "description": "Ultimate creative sound design chain",
+      "engines": ["Granular Cloud", "Ring Modulator", "Phased Vocoder"],
+      "engine_ids": [50, 26, 49],
+      "signal_flow": "Input → Granular Cloud → Ring Modulator → Phased Vocoder → Output",
+      "target_use": "Sound design, experimental music, film/game audio",
+      "category": "Sound Design"
+    }
+  ]
+}

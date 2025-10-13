@@ -1,0 +1,136 @@
+# ChimeraPhoenix DSP Engine Dependencies
+# Complete list of .cpp files required for standalone compilation
+# Generated from EngineFactory.cpp analysis
+# Last Updated: 2025-10-10
+
+# =============================================================================
+# CORE ENGINE INFRASTRUCTURE (Required)
+# =============================================================================
+EngineFactory.cpp
+
+# =============================================================================
+# DSP ENGINES WITH .CPP IMPLEMENTATIONS (56 engines)
+# =============================================================================
+
+# DYNAMICS & COMPRESSION (1-6)
+VintageOptoCompressor_Platinum.cpp
+ClassicCompressor.cpp
+TransientShaper_Platinum.cpp
+NoiseGate_Platinum.cpp
+MasteringLimiter_Platinum.cpp
+DynamicEQ.cpp
+
+# FILTERS & EQ (7-14)
+ParametricEQ_Studio.cpp
+VintageConsoleEQ_Studio.cpp
+LadderFilter.cpp
+StateVariableFilter.cpp
+FormantFilter.cpp
+EnvelopeFilter.cpp
+CombResonator.cpp
+VocalFormantFilter.cpp
+
+# DISTORTION & SATURATION (15-22)
+VintageTubePreamp_Studio.cpp
+WaveFolder.cpp
+HarmonicExciter_Platinum.cpp
+BitCrusher.cpp
+MultibandSaturator.cpp
+MuffFuzz.cpp
+RodentDistortion.cpp
+KStyleOverdrive.cpp
+
+# MODULATION (23-33)
+StereoChorus.cpp
+ResonantChorus_Platinum.cpp
+AnalogPhaser.cpp
+PlatinumRingModulator.cpp
+FrequencyShifter.cpp
+HarmonicTremolo.cpp
+ClassicTremolo.cpp
+RotarySpeaker_Platinum.cpp
+PitchShifter.cpp
+DetuneDoubler.cpp
+IntelligentHarmonizer.cpp
+
+# REVERB & DELAY (34-43)
+TapeEcho.cpp
+DigitalDelay.cpp
+MagneticDrumEcho.cpp
+BucketBrigadeDelay.cpp
+BufferRepeat_Platinum.cpp
+PlateReverb.cpp
+SpringReverb.cpp
+ConvolutionReverb.cpp
+ShimmerReverb.cpp
+GatedReverb.cpp
+
+# SPATIAL & SPECIAL (44-52)
+StereoWidener.cpp
+StereoImager.cpp
+DimensionExpander.cpp
+SpectralFreeze.cpp
+SpectralGate_Platinum.cpp
+PhasedVocoder.cpp
+GranularCloud.cpp
+ChaosGenerator.cpp
+FeedbackNetwork.cpp
+
+# UTILITY (53-56)
+MidSideProcessor_Platinum.cpp
+GainUtility_Platinum.cpp
+MonoMaker_Platinum.cpp
+PhaseAlign_Platinum.cpp
+
+# =============================================================================
+# HEADER-ONLY ENGINES (No .cpp needed)
+# =============================================================================
+# NoneEngine.h - Passthrough engine for empty slots (Engine ID 0)
+
+# =============================================================================
+# HELPER & UTILITY FILES (Header-only, but required)
+# =============================================================================
+# EngineBase.h - Base class for all engines
+# EngineTypes.h - Engine ID enumerations
+# ParameterDefinitions.h - Parameter definitions and ranges
+# DspEngineUtilities.h - DSP utility functions (denormal guards, smoothing, etc.)
+# DenormalProtection.h - Denormal number protection utilities
+# QualityMetrics.hpp - Audio quality measurement utilities
+
+# =============================================================================
+# COMPILATION NOTES
+# =============================================================================
+# 1. Total engines in EngineFactory: 57 (IDs 0-56)
+#    - 56 engines with .cpp files
+#    - 1 header-only engine (NoneEngine)
+#
+# 2. Namespace usage:
+#    - Most engines are in global namespace
+#    - AudioDSP namespace used by:
+#      * RotarySpeaker_Platinum
+#      * DetuneDoubler
+#      * DigitalDelay
+#
+# 3. Common dependencies for most engines:
+#    - JUCE framework (juce_audio_basics, juce_dsp, etc.)
+#    - DspEngineUtilities.h for common DSP operations
+#    - DenormalProtection.h for numerical stability
+#
+# 4. SIMD optimization:
+#    - Several engines use platform-specific SIMD (SSE2/AVX)
+#    - Check for __x86_64__, _M_X64, __i386__, _M_IX86 defines
+#
+# 5. Special cases:
+#    - Multiple variant .cpp files exist for some engines (e.g., PitchShifter_Clean.cpp,
+#      PitchShifter_StudioQuality.cpp) but only the main .cpp is used by EngineFactory
+#
+# =============================================================================
+# MISSING FILES / STUBS NEEDED
+# =============================================================================
+# None - All engines referenced in EngineFactory.cpp have corresponding .cpp files
+
+# =============================================================================
+# TOTAL FILES TO COMPILE: 57
+# =============================================================================
+# - 1 EngineFactory.cpp
+# - 56 engine .cpp files

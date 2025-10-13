@@ -40,31 +40,23 @@ ChimeraAudioProcessorEditor_Pi::ChimeraAudioProcessorEditor_Pi(ChimeraAudioProce
     progressLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(progressLabel);
 
-    // Voice button - clean text only
-    voiceButton.setButtonText("HOLD TO SPEAK");
-    voiceButton.setColour(juce::TextButton::buttonColourId, accentColor);
-    voiceButton.setColour(juce::TextButton::textColourOffId, juce::Colours::black);
-    voiceButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::red);
-    // ONLY use onStateChange for hold-to-speak behavior
-    voiceButton.onStateChange = [this] {
-        if (voiceButton.isDown() && !isRecording) {
+    // Voice button - gradient button with hold-to-speak
+    voiceButton.onPress = [this] {
+        if (!isRecording) {
             DBG("Voice button pressed - starting recording");
             startVoiceRecording();
-        } else if (!voiceButton.isDown() && isRecording) {
+        }
+    };
+    voiceButton.onRelease = [this] {
+        if (isRecording) {
             DBG("Voice button released - stopping recording");
             stopVoiceRecording();
         }
     };
     addAndMakeVisible(voiceButton);
 
-    // Engine display labels (all 6 slots) - futuristic monospace
-    for (int i = 0; i < 6; ++i) {
-        slotEngineLabels[i].setText("Slot " + juce::String(i + 1) + ": None", juce::dontSendNotification);
-        slotEngineLabels[i].setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 13.0f, juce::Font::plain));
-        slotEngineLabels[i].setColour(juce::Label::textColourId, textColor);
-        slotEngineLabels[i].setJustificationType(juce::Justification::centredLeft);
-        addAndMakeVisible(slotEngineLabels[i]);
-    }
+    // Engine slot grid - 6 colored boxes
+    addAndMakeVisible(engineSlotGrid);
 
     // Initial Trinity health check
     checkTrinityHealth();
@@ -77,6 +69,67 @@ ChimeraAudioProcessorEditor_Pi::~ChimeraAudioProcessorEditor_Pi()
 {
     stopTimer();
     system("pkill -9 arecord");
+}
+
+// Helper function to map engine name to category ID for color coding
+int ChimeraAudioProcessorEditor_Pi::getEngineCategoryFromName(const juce::String& engineName)
+{
+    // Map engine names to approximate IDs based on category
+    // Categories: Dynamics (1-6), EQ (7-14), Distortion (15-22), Modulation (23-30),
+    //             Pitch (31-33), Delay (34-38), Reverb (39-43), Spatial (44-46),
+    //             Spectral (47-52), Utility (53-56)
+
+    juce::String name = engineName.toLowerCase();
+
+    // Dynamics (Blue) - ID range 1-6
+    if (name.contains("compressor") || name.contains("limiter") ||
+        name.contains("gate") || name.contains("expander") ||
+        name.contains("transient")) return 3;
+
+    // EQ/Filters (Green) - ID range 7-14
+    if (name.contains("eq") || name.contains("filter") ||
+        name.contains("shelf") || name.contains("bell")) return 10;
+
+    // Distortion/Saturation (Red/Orange) - ID range 15-22
+    if (name.contains("distortion") || name.contains("overdrive") ||
+        name.contains("fuzz") || name.contains("saturation") ||
+        name.contains("tube") || name.contains("preamp") ||
+        name.contains("bitcrusher") || name.contains("crusher")) return 18;
+
+    // Modulation (Purple) - ID range 23-30
+    if (name.contains("chorus") || name.contains("flanger") ||
+        name.contains("phaser") || name.contains("tremolo") ||
+        name.contains("vibrato") || name.contains("rotary")) return 26;
+
+    // Pitch/Harmony (Yellow) - ID range 31-33
+    if (name.contains("pitch") || name.contains("harmon") ||
+        name.contains("octave") || name.contains("detune")) return 32;
+
+    // Delay/Echo (Amber) - ID range 34-38
+    if (name.contains("delay") || name.contains("echo") ||
+        name.contains("bucket")) return 36;
+
+    // Reverb (Cyan) - ID range 39-43
+    if (name.contains("reverb") || name.contains("room") ||
+        name.contains("hall") || name.contains("plate") ||
+        name.contains("spring")) return 41;
+
+    // Spatial (Magenta) - ID range 44-46
+    if (name.contains("stereo") || name.contains("width") ||
+        name.contains("imager") || name.contains("spatial") ||
+        name.contains("haas")) return 45;
+
+    // Spectral/Special (Teal) - ID range 47-52
+    if (name.contains("spectral") || name.contains("vocoder") ||
+        name.contains("freeze") || name.contains("formant") ||
+        name.contains("morph")) return 49;
+
+    // Utility (Gray) - ID range 53-56
+    if (name.contains("gain") || name.contains("utility") ||
+        name.contains("trim") || name.contains("tool")) return 54;
+
+    // Default - treat as utility
+    return 54;
 }
 
 void ChimeraAudioProcessorEditor_Pi::paint(juce::Graphics& g)
@@ -152,51 +205,23 @@ void ChimeraAudioProcessorEditor_Pi::resized()
     voiceButton.setBounds(bounds.removeFromTop(60));
     bounds.removeFromTop(12);
 
-    // Engine display (all 6 slots in 2 columns)
-    int engineLabelHeight = 16;
-    int columnWidth = bounds.getWidth() / 2;
-
-    for (int i = 0; i < 6; ++i) {
-        int row = i % 3;
-        int col = i / 3;
-
-        auto labelBounds = juce::Rectangle<int>(
-            col * columnWidth,
-            bounds.getY() + row * (engineLabelHeight + 2),
-            columnWidth - 5,
-            engineLabelHeight
-        );
-
-        slotEngineLabels[i].setBounds(labelBounds);
-    }
+    // Engine slot grid - 6x1 horizontal row at bottom
+    int gridHeight = 50;
+    engineSlotGrid.setBounds(bounds.removeFromBottom(gridHeight));
 }
 
 void ChimeraAudioProcessorEditor_Pi::timerCallback()
 {
-    // Update all 6 slot engine displays
+    // Update engine slot grid - colored boxes showing active engines
     for (int i = 0; i < 6; ++i) {
         auto& engine = audioProcessor.getEngine(i);
         if (engine) {
             juce::String engineName = engine->getName();
-
-            // Get bypass status
-            juce::String bypassID = "slotBypass" + juce::String(i + 1);
-            bool bypassed = false;
-            if (auto* bypassParam = audioProcessor.getValueTreeState().getParameter(bypassID)) {
-                bypassed = bypassParam->getValue() > 0.5f;
-            }
-
-            // Format: "Slot 1: EngineName [BYP]"
-            juce::String displayText = juce::String(i + 1) + ": " + engineName;
-            if (bypassed) {
-                displayText += " [BYP]";
-            }
-
-            slotEngineLabels[i].setText(displayText, juce::dontSendNotification);
-            slotEngineLabels[i].setColour(juce::Label::textColourId, bypassed ? juce::Colours::grey : textColor);
+            // Map engine name to approximate category ID for color coding
+            int categoryID = getEngineCategoryFromName(engineName);
+            engineSlotGrid.updateSlot(i, categoryID, engineName);
         } else {
-            slotEngineLabels[i].setText(juce::String(i + 1) + ": ---", juce::dontSendNotification);
-            slotEngineLabels[i].setColour(juce::Label::textColourId, juce::Colours::darkgrey);
+            engineSlotGrid.updateSlot(i, 0, "EMPTY");  // 0 = empty slot
         }
     }
 
@@ -286,6 +311,10 @@ void ChimeraAudioProcessorEditor_Pi::stopVoiceRecording()
 
     // Check if we have valid audio
     if (!audioFile.existsAsFile() || audioFile.getSize() < 1000) {
+        statusLabel.setText("Error: No audio detected (silent)", juce::dontSendNotification);
+        statusLabel.setColour(juce::Label::textColourId, errorColor);
+        return;
+    }
 #else
     // Stop internal recorder and get the recorded file
     voiceRecorder.stopRecording();
@@ -297,14 +326,12 @@ void ChimeraAudioProcessorEditor_Pi::stopVoiceRecording()
 
     // Check if we have valid audio using the new validation
     if (!voiceRecorder.hasValidAudio()) {
-#endif
         statusLabel.setText("Error: No audio detected (silent)", juce::dontSendNotification);
         statusLabel.setColour(juce::Label::textColourId, errorColor);
-#ifndef __linux__
         DBG("DIAGNOSTIC: " << voiceRecorder.getDiagnostics());
-#endif
         return;
     }
+#endif
 
     // Check if we have valid audio file
     if (recordedVoiceFile.existsAsFile() && recordedVoiceFile.getSize() > 1000) {

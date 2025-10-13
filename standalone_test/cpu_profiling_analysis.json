@@ -1,0 +1,1679 @@
+{
+  "summary": {
+    "total_engines": 56,
+    "passing": 16,
+    "failing": 40,
+    "target_cpu_percent": 5.0
+  },
+  "engines": [
+    {
+      "id": 41,
+      "name": "Convolution Reverb",
+      "category": "Reverb",
+      "cpu_percent": 68.9,
+      "complexity": "EXTREME",
+      "meets_target": false,
+      "priority": "CRITICAL",
+      "operations": {
+        "fft": true,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": true
+      },
+      "estimated_costs": {
+        "Convolution": 43.0625,
+        "FFT": 25.837500000000002
+      }
+    },
+    {
+      "id": 49,
+      "name": "Phased Vocoder",
+      "category": "Special",
+      "cpu_percent": 55.2,
+      "complexity": "EXTREME",
+      "meets_target": false,
+      "priority": "CRITICAL",
+      "operations": {
+        "fft": true,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "FFT": 55.2
+      }
+    },
+    {
+      "id": 33,
+      "name": "Intelligent Harmonizer",
+      "category": "Modulation",
+      "cpu_percent": 52.8,
+      "complexity": "EXTREME",
+      "meets_target": false,
+      "priority": "CRITICAL",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": true,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "PitchShift": 52.8
+      }
+    },
+    {
+      "id": 31,
+      "name": "Pitch Shifter",
+      "category": "Modulation",
+      "cpu_percent": 47.3,
+      "complexity": "EXTREME",
+      "meets_target": false,
+      "priority": "CRITICAL",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": true,
+        "lfo": false,
+        "pitch_shift": true,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "PitchShift": 36.38461538461538,
+        "DelayLines": 10.915384615384614
+      }
+    },
+    {
+      "id": 42,
+      "name": "Shimmer Reverb",
+      "category": "Reverb",
+      "cpu_percent": 38.2,
+      "complexity": "VERY_HIGH",
+      "meets_target": false,
+      "priority": "CRITICAL",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": true,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "PitchShift": 38.2
+      }
+    },
+    {
+      "id": 50,
+      "name": "Granular Cloud",
+      "category": "Special",
+      "cpu_percent": 35.6,
+      "complexity": "VERY_HIGH",
+      "meets_target": false,
+      "priority": "CRITICAL",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 47,
+      "name": "Spectral Freeze",
+      "category": "Special",
+      "cpu_percent": 31.4,
+      "complexity": "VERY_HIGH",
+      "meets_target": false,
+      "priority": "CRITICAL",
+      "operations": {
+        "fft": true,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "FFT": 31.4
+      }
+    },
+    {
+      "id": 48,
+      "name": "Spectral Gate",
+      "category": "Special",
+      "cpu_percent": 29.8,
+      "complexity": "VERY_HIGH",
+      "meets_target": false,
+      "priority": "CRITICAL",
+      "operations": {
+        "fft": true,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "FFT": 29.8
+      }
+    },
+    {
+      "id": 39,
+      "name": "Plate Reverb",
+      "category": "Reverb",
+      "cpu_percent": 24.5,
+      "complexity": "HIGH",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 32,
+      "name": "Detune Doubler",
+      "category": "Modulation",
+      "cpu_percent": 22.6,
+      "complexity": "HIGH",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": true,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "PitchShift": 22.6
+      }
+    },
+    {
+      "id": 43,
+      "name": "Gated Reverb",
+      "category": "Reverb",
+      "cpu_percent": 21.7,
+      "complexity": "HIGH",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 30,
+      "name": "Rotary Speaker",
+      "category": "Modulation",
+      "cpu_percent": 19.8,
+      "complexity": "HIGH",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 6,
+      "name": "Dynamic EQ",
+      "category": "Dynamics",
+      "cpu_percent": 18.7,
+      "complexity": "HIGH",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": true,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "FFT": 18.7
+      }
+    },
+    {
+      "id": 52,
+      "name": "Feedback Network",
+      "category": "Special",
+      "cpu_percent": 16.9,
+      "complexity": "HIGH",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": true,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "DelayLines": 16.9
+      }
+    },
+    {
+      "id": 27,
+      "name": "Frequency Shifter",
+      "category": "Modulation",
+      "cpu_percent": 16.2,
+      "complexity": "HIGH",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": true,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "LFOs": 16.2
+      }
+    },
+    {
+      "id": 19,
+      "name": "Multiband Saturator",
+      "category": "Distortion",
+      "cpu_percent": 15.4,
+      "complexity": "HIGH",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 40,
+      "name": "Spring Reverb",
+      "category": "Reverb",
+      "cpu_percent": 12.8,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 46,
+      "name": "Dimension Expander",
+      "category": "Spatial",
+      "cpu_percent": 11.6,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": true,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "LFOs": 11.6
+      }
+    },
+    {
+      "id": 36,
+      "name": "Magnetic Drum Echo",
+      "category": "Delay",
+      "cpu_percent": 10.3,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 14,
+      "name": "Vocal Formant Filter",
+      "category": "Filter",
+      "cpu_percent": 10.2,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "HIGH",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 24,
+      "name": "Resonant Chorus",
+      "category": "Modulation",
+      "cpu_percent": 9.7,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": true,
+        "lfo": true,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "DelayLines": 5.29090909090909,
+        "LFOs": 4.409090909090908
+      }
+    },
+    {
+      "id": 11,
+      "name": "Formant Filter",
+      "category": "Filter",
+      "cpu_percent": 9.3,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 34,
+      "name": "Tape Echo",
+      "category": "Delay",
+      "cpu_percent": 9.1,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": true,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "Filters": 9.1
+      }
+    },
+    {
+      "id": 15,
+      "name": "Vintage Tube Preamp",
+      "category": "Distortion",
+      "cpu_percent": 8.9,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 37,
+      "name": "Bucket Brigade Delay",
+      "category": "Delay",
+      "cpu_percent": 8.7,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 51,
+      "name": "Chaos Generator",
+      "category": "Special",
+      "cpu_percent": 8.4,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 5,
+      "name": "Mastering Limiter",
+      "category": "Dynamics",
+      "cpu_percent": 8.3,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": true,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "DelayLines": 8.3
+      }
+    },
+    {
+      "id": 23,
+      "name": "Digital Chorus",
+      "category": "Modulation",
+      "cpu_percent": 8.1,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": true,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "LFOs": 8.1
+      }
+    },
+    {
+      "id": 17,
+      "name": "Harmonic Exciter",
+      "category": "Distortion",
+      "cpu_percent": 7.6,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 25,
+      "name": "Analog Phaser",
+      "category": "Modulation",
+      "cpu_percent": 7.3,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": true,
+        "oversampling": false,
+        "delay": false,
+        "lfo": true,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "Filters": 4.38,
+        "LFOs": 2.92
+      }
+    },
+    {
+      "id": 8,
+      "name": "Vintage Console EQ",
+      "category": "Filter",
+      "cpu_percent": 7.1,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": true,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "Filters": 7.1
+      }
+    },
+    {
+      "id": 20,
+      "name": "Muff Fuzz",
+      "category": "Distortion",
+      "cpu_percent": 6.8,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 12,
+      "name": "Envelope Filter",
+      "category": "Filter",
+      "cpu_percent": 6.7,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 28,
+      "name": "Harmonic Tremolo",
+      "category": "Modulation",
+      "cpu_percent": 6.5,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": true,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "Filters": 6.5
+      }
+    },
+    {
+      "id": 7,
+      "name": "Parametric EQ (Studio)",
+      "category": "Filter",
+      "cpu_percent": 6.4,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": true,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "Filters": 6.4
+      }
+    },
+    {
+      "id": 22,
+      "name": "K-Style Overdrive",
+      "category": "Distortion",
+      "cpu_percent": 6.2,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 21,
+      "name": "Rodent Distortion",
+      "category": "Distortion",
+      "cpu_percent": 5.9,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 9,
+      "name": "Ladder Filter",
+      "category": "Filter",
+      "cpu_percent": 5.8,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 45,
+      "name": "Stereo Imager",
+      "category": "Spatial",
+      "cpu_percent": 5.7,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 3,
+      "name": "Transient Shaper",
+      "category": "Dynamics",
+      "cpu_percent": 5.2,
+      "complexity": "MODERATE",
+      "meets_target": false,
+      "priority": "MEDIUM",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 35,
+      "name": "Digital Delay",
+      "category": "Delay",
+      "cpu_percent": 4.2,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": true,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "DelayLines": 4.2
+      }
+    },
+    {
+      "id": 13,
+      "name": "Comb Resonator",
+      "category": "Filter",
+      "cpu_percent": 4.1,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": true,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "DelayLines": 4.1
+      }
+    },
+    {
+      "id": 26,
+      "name": "Ring Modulator",
+      "category": "Modulation",
+      "cpu_percent": 3.8,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": true,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "LFOs": 3.8
+      }
+    },
+    {
+      "id": 38,
+      "name": "Buffer Repeat",
+      "category": "Delay",
+      "cpu_percent": 3.6,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": true,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "DelayLines": 3.6
+      }
+    },
+    {
+      "id": 16,
+      "name": "Wave Folder",
+      "category": "Distortion",
+      "cpu_percent": 3.5,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 10,
+      "name": "State Variable Filter",
+      "category": "Filter",
+      "cpu_percent": 3.2,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 44,
+      "name": "Stereo Widener",
+      "category": "Spatial",
+      "cpu_percent": 3.1,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 56,
+      "name": "Phase Align",
+      "category": "Utility",
+      "cpu_percent": 2.4,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": true,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "Filters": 2.4
+      }
+    },
+    {
+      "id": 18,
+      "name": "Bit Crusher",
+      "category": "Distortion",
+      "cpu_percent": 2.3,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 1,
+      "name": "Vintage Opto Compressor",
+      "category": "Dynamics",
+      "cpu_percent": 2.1,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 29,
+      "name": "Classic Tremolo",
+      "category": "Modulation",
+      "cpu_percent": 2.1,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": true,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {
+        "LFOs": 2.1
+      }
+    },
+    {
+      "id": 2,
+      "name": "Classic VCA Compressor",
+      "category": "Dynamics",
+      "cpu_percent": 1.8,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 4,
+      "name": "Noise Gate",
+      "category": "Dynamics",
+      "cpu_percent": 1.5,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 53,
+      "name": "Mid-Side Processor",
+      "category": "Utility",
+      "cpu_percent": 1.2,
+      "complexity": "LOW",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 55,
+      "name": "Mono Maker",
+      "category": "Utility",
+      "cpu_percent": 0.7,
+      "complexity": "MINIMAL",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    },
+    {
+      "id": 54,
+      "name": "Gain Utility",
+      "category": "Utility",
+      "cpu_percent": 0.5,
+      "complexity": "MINIMAL",
+      "meets_target": true,
+      "priority": "LOW",
+      "operations": {
+        "fft": false,
+        "filters": false,
+        "oversampling": false,
+        "delay": false,
+        "lfo": false,
+        "pitch_shift": false,
+        "convolution": false
+      },
+      "estimated_costs": {}
+    }
+  ],
+  "category_stats": {
+    "Reverb": {
+      "count": 5,
+      "avg_cpu": 33.220000000000006,
+      "max_cpu": 68.9,
+      "min_cpu": 12.8,
+      "total_cpu": 166.10000000000002,
+      "pass_rate": 0.0
+    },
+    "Special": {
+      "count": 6,
+      "avg_cpu": 29.550000000000008,
+      "max_cpu": 55.2,
+      "min_cpu": 8.4,
+      "total_cpu": 177.30000000000004,
+      "pass_rate": 0.0
+    },
+    "Modulation": {
+      "count": 11,
+      "avg_cpu": 17.836363636363636,
+      "max_cpu": 52.8,
+      "min_cpu": 2.1,
+      "total_cpu": 196.2,
+      "pass_rate": 18.181818181818183
+    },
+    "Dynamics": {
+      "count": 6,
+      "avg_cpu": 6.266666666666667,
+      "max_cpu": 18.7,
+      "min_cpu": 1.5,
+      "total_cpu": 37.6,
+      "pass_rate": 50.0
+    },
+    "Distortion": {
+      "count": 8,
+      "avg_cpu": 7.074999999999999,
+      "max_cpu": 15.4,
+      "min_cpu": 2.3,
+      "total_cpu": 56.599999999999994,
+      "pass_rate": 25.0
+    },
+    "Spatial": {
+      "count": 3,
+      "avg_cpu": 6.800000000000001,
+      "max_cpu": 11.6,
+      "min_cpu": 3.1,
+      "total_cpu": 20.400000000000002,
+      "pass_rate": 33.33333333333333
+    },
+    "Delay": {
+      "count": 5,
+      "avg_cpu": 7.18,
+      "max_cpu": 10.3,
+      "min_cpu": 3.6,
+      "total_cpu": 35.9,
+      "pass_rate": 40.0
+    },
+    "Filter": {
+      "count": 8,
+      "avg_cpu": 6.6000000000000005,
+      "max_cpu": 10.2,
+      "min_cpu": 3.2,
+      "total_cpu": 52.800000000000004,
+      "pass_rate": 25.0
+    },
+    "Utility": {
+      "count": 4,
+      "avg_cpu": 1.2,
+      "max_cpu": 2.4,
+      "min_cpu": 0.5,
+      "total_cpu": 4.8,
+      "pass_rate": 100.0
+    }
+  },
+  "optimization_opportunities": [
+    {
+      "engine_id": 41,
+      "engine_name": "Convolution Reverb",
+      "priority": "CRITICAL",
+      "cpu_percent": 68.9,
+      "operations": [
+        "Convolution",
+        "FFT Operations"
+      ],
+      "recommendations": [
+        "Consider GPU acceleration for long IRs",
+        "Implement partitioned convolution",
+        "Minimize FFT size where possible",
+        "Use vDSP accelerated FFT",
+        "Optimize FFT size (use smaller blocks)",
+        "Consider hop size optimization"
+      ]
+    },
+    {
+      "engine_id": 49,
+      "engine_name": "Phased Vocoder",
+      "priority": "CRITICAL",
+      "cpu_percent": 55.2,
+      "operations": [
+        "FFT Operations"
+      ],
+      "recommendations": [
+        "Consider hop size optimization",
+        "Minimize FFT size where possible",
+        "Use vDSP accelerated FFT"
+      ]
+    },
+    {
+      "engine_id": 33,
+      "engine_name": "Intelligent Harmonizer",
+      "priority": "CRITICAL",
+      "cpu_percent": 52.8,
+      "operations": [
+        "Pitch Shifting"
+      ],
+      "recommendations": [
+        "Use optimized phase vocoder (PVSOLA)",
+        "Consider using spectral modeling",
+        "Implement pitch cache for common intervals"
+      ]
+    },
+    {
+      "engine_id": 31,
+      "engine_name": "Pitch Shifter",
+      "priority": "CRITICAL",
+      "cpu_percent": 47.3,
+      "operations": [
+        "Pitch Shifting",
+        "Delay Lines"
+      ],
+      "recommendations": [
+        "Use circular buffers efficiently",
+        "Implement pitch cache for common intervals",
+        "Consider fixed-point for delay indices",
+        "Optimize interpolation (linear vs cubic)",
+        "Use optimized phase vocoder (PVSOLA)",
+        "Consider using spectral modeling"
+      ]
+    },
+    {
+      "engine_id": 42,
+      "engine_name": "Shimmer Reverb",
+      "priority": "CRITICAL",
+      "cpu_percent": 38.2,
+      "operations": [
+        "Pitch Shifting"
+      ],
+      "recommendations": [
+        "Use optimized phase vocoder (PVSOLA)",
+        "Consider using spectral modeling",
+        "Implement pitch cache for common intervals"
+      ]
+    },
+    {
+      "engine_id": 50,
+      "engine_name": "Granular Cloud",
+      "priority": "CRITICAL",
+      "cpu_percent": 35.6,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 47,
+      "engine_name": "Spectral Freeze",
+      "priority": "CRITICAL",
+      "cpu_percent": 31.4,
+      "operations": [
+        "FFT Operations"
+      ],
+      "recommendations": [
+        "Consider hop size optimization",
+        "Minimize FFT size where possible",
+        "Use vDSP accelerated FFT"
+      ]
+    },
+    {
+      "engine_id": 48,
+      "engine_name": "Spectral Gate",
+      "priority": "CRITICAL",
+      "cpu_percent": 29.8,
+      "operations": [
+        "FFT Operations"
+      ],
+      "recommendations": [
+        "Consider hop size optimization",
+        "Minimize FFT size where possible",
+        "Use vDSP accelerated FFT"
+      ]
+    },
+    {
+      "engine_id": 39,
+      "engine_name": "Plate Reverb",
+      "priority": "HIGH",
+      "cpu_percent": 24.5,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 32,
+      "engine_name": "Detune Doubler",
+      "priority": "HIGH",
+      "cpu_percent": 22.6,
+      "operations": [
+        "Pitch Shifting"
+      ],
+      "recommendations": [
+        "Use optimized phase vocoder (PVSOLA)",
+        "Consider using spectral modeling",
+        "Implement pitch cache for common intervals"
+      ]
+    },
+    {
+      "engine_id": 43,
+      "engine_name": "Gated Reverb",
+      "priority": "HIGH",
+      "cpu_percent": 21.7,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 30,
+      "engine_name": "Rotary Speaker",
+      "priority": "HIGH",
+      "cpu_percent": 19.8,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 6,
+      "engine_name": "Dynamic EQ",
+      "priority": "HIGH",
+      "cpu_percent": 18.7,
+      "operations": [
+        "FFT Operations"
+      ],
+      "recommendations": [
+        "Consider hop size optimization",
+        "Minimize FFT size where possible",
+        "Use vDSP accelerated FFT"
+      ]
+    },
+    {
+      "engine_id": 52,
+      "engine_name": "Feedback Network",
+      "priority": "HIGH",
+      "cpu_percent": 16.9,
+      "operations": [
+        "Delay Lines"
+      ],
+      "recommendations": [
+        "Consider fixed-point for delay indices",
+        "Use circular buffers efficiently",
+        "Optimize interpolation (linear vs cubic)"
+      ]
+    },
+    {
+      "engine_id": 27,
+      "engine_name": "Frequency Shifter",
+      "priority": "HIGH",
+      "cpu_percent": 16.2,
+      "operations": [
+        "LFO Calculations"
+      ],
+      "recommendations": [
+        "Pre-calculate modulation values",
+        "Use SIMD for multiple LFOs",
+        "Use wavetable lookup for LFO waveforms"
+      ]
+    },
+    {
+      "engine_id": 19,
+      "engine_name": "Multiband Saturator",
+      "priority": "HIGH",
+      "cpu_percent": 15.4,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 40,
+      "engine_name": "Spring Reverb",
+      "priority": "HIGH",
+      "cpu_percent": 12.8,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 46,
+      "engine_name": "Dimension Expander",
+      "priority": "HIGH",
+      "cpu_percent": 11.6,
+      "operations": [
+        "LFO Calculations"
+      ],
+      "recommendations": [
+        "Pre-calculate modulation values",
+        "Use SIMD for multiple LFOs",
+        "Use wavetable lookup for LFO waveforms"
+      ]
+    },
+    {
+      "engine_id": 36,
+      "engine_name": "Magnetic Drum Echo",
+      "priority": "HIGH",
+      "cpu_percent": 10.3,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 14,
+      "engine_name": "Vocal Formant Filter",
+      "priority": "HIGH",
+      "cpu_percent": 10.2,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 24,
+      "engine_name": "Resonant Chorus",
+      "priority": "MEDIUM",
+      "cpu_percent": 9.7,
+      "operations": [
+        "Delay Lines",
+        "LFO Calculations"
+      ],
+      "recommendations": [
+        "Pre-calculate modulation values",
+        "Use circular buffers efficiently",
+        "Use wavetable lookup for LFO waveforms",
+        "Consider fixed-point for delay indices",
+        "Optimize interpolation (linear vs cubic)",
+        "Use SIMD for multiple LFOs"
+      ]
+    },
+    {
+      "engine_id": 11,
+      "engine_name": "Formant Filter",
+      "priority": "MEDIUM",
+      "cpu_percent": 9.3,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 34,
+      "engine_name": "Tape Echo",
+      "priority": "MEDIUM",
+      "cpu_percent": 9.1,
+      "operations": [
+        "Filter Processing"
+      ],
+      "recommendations": [
+        "Use biquad cascades efficiently",
+        "Vectorize filter calculations with SIMD",
+        "Consider lattice filter structures"
+      ]
+    },
+    {
+      "engine_id": 15,
+      "engine_name": "Vintage Tube Preamp",
+      "priority": "MEDIUM",
+      "cpu_percent": 8.9,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 37,
+      "engine_name": "Bucket Brigade Delay",
+      "priority": "MEDIUM",
+      "cpu_percent": 8.7,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 51,
+      "engine_name": "Chaos Generator",
+      "priority": "MEDIUM",
+      "cpu_percent": 8.4,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 5,
+      "engine_name": "Mastering Limiter",
+      "priority": "MEDIUM",
+      "cpu_percent": 8.3,
+      "operations": [
+        "Delay Lines"
+      ],
+      "recommendations": [
+        "Consider fixed-point for delay indices",
+        "Use circular buffers efficiently",
+        "Optimize interpolation (linear vs cubic)"
+      ]
+    },
+    {
+      "engine_id": 23,
+      "engine_name": "Digital Chorus",
+      "priority": "MEDIUM",
+      "cpu_percent": 8.1,
+      "operations": [
+        "LFO Calculations"
+      ],
+      "recommendations": [
+        "Pre-calculate modulation values",
+        "Use SIMD for multiple LFOs",
+        "Use wavetable lookup for LFO waveforms"
+      ]
+    },
+    {
+      "engine_id": 17,
+      "engine_name": "Harmonic Exciter",
+      "priority": "MEDIUM",
+      "cpu_percent": 7.6,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 25,
+      "engine_name": "Analog Phaser",
+      "priority": "MEDIUM",
+      "cpu_percent": 7.3,
+      "operations": [
+        "Filter Processing",
+        "LFO Calculations"
+      ],
+      "recommendations": [
+        "Pre-calculate modulation values",
+        "Consider lattice filter structures",
+        "Use wavetable lookup for LFO waveforms",
+        "Vectorize filter calculations with SIMD",
+        "Use biquad cascades efficiently",
+        "Use SIMD for multiple LFOs"
+      ]
+    },
+    {
+      "engine_id": 8,
+      "engine_name": "Vintage Console EQ",
+      "priority": "MEDIUM",
+      "cpu_percent": 7.1,
+      "operations": [
+        "Filter Processing"
+      ],
+      "recommendations": [
+        "Use biquad cascades efficiently",
+        "Vectorize filter calculations with SIMD",
+        "Consider lattice filter structures"
+      ]
+    },
+    {
+      "engine_id": 20,
+      "engine_name": "Muff Fuzz",
+      "priority": "MEDIUM",
+      "cpu_percent": 6.8,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 12,
+      "engine_name": "Envelope Filter",
+      "priority": "MEDIUM",
+      "cpu_percent": 6.7,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 28,
+      "engine_name": "Harmonic Tremolo",
+      "priority": "MEDIUM",
+      "cpu_percent": 6.5,
+      "operations": [
+        "Filter Processing"
+      ],
+      "recommendations": [
+        "Use biquad cascades efficiently",
+        "Vectorize filter calculations with SIMD",
+        "Consider lattice filter structures"
+      ]
+    },
+    {
+      "engine_id": 7,
+      "engine_name": "Parametric EQ (Studio)",
+      "priority": "MEDIUM",
+      "cpu_percent": 6.4,
+      "operations": [
+        "Filter Processing"
+      ],
+      "recommendations": [
+        "Use biquad cascades efficiently",
+        "Vectorize filter calculations with SIMD",
+        "Consider lattice filter structures"
+      ]
+    },
+    {
+      "engine_id": 22,
+      "engine_name": "K-Style Overdrive",
+      "priority": "MEDIUM",
+      "cpu_percent": 6.2,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 21,
+      "engine_name": "Rodent Distortion",
+      "priority": "MEDIUM",
+      "cpu_percent": 5.9,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 9,
+      "engine_name": "Ladder Filter",
+      "priority": "MEDIUM",
+      "cpu_percent": 5.8,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 45,
+      "engine_name": "Stereo Imager",
+      "priority": "MEDIUM",
+      "cpu_percent": 5.7,
+      "operations": [],
+      "recommendations": []
+    },
+    {
+      "engine_id": 3,
+      "engine_name": "Transient Shaper",
+      "priority": "MEDIUM",
+      "cpu_percent": 5.2,
+      "operations": [],
+      "recommendations": []
+    }
+  ],
+  "multi_engine_capacity": {
+    "10_engines": {
+      "estimated_cpu": 133.51785714285717,
+      "realistic_cpu": 146.8696428571429,
+      "realtime_ok": false
+    },
+    "25_engines": {
+      "estimated_cpu": 333.7946428571429,
+      "realistic_cpu": 383.8638392857143,
+      "realtime_ok": false
+    },
+    "56_engines": {
+      "estimated_cpu": 747.7000000000002,
+      "realistic_cpu": 897.2400000000001,
+      "realtime_ok": false
+    }
+  }
+}

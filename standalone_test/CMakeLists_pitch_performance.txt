@@ -1,0 +1,48 @@
+cmake_minimum_required(VERSION 3.15)
+
+project(PitchEnginePerformance)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum macOS version")
+
+# Add JUCE
+add_subdirectory(../JUCE build_juce)
+
+# Minimal JUCE application
+juce_add_console_app(test_pitch_performance
+    PRODUCT_NAME "Pitch Performance Profiler")
+
+target_sources(test_pitch_performance PRIVATE
+    test_pitch_engines_performance.cpp
+    ../JUCE_Plugin/Source/PitchShifter.cpp
+    ../JUCE_Plugin/Source/DetuneDoubler.cpp
+    ../JUCE_Plugin/Source/IntelligentHarmonizer.cpp
+    ../JUCE_Plugin/Source/TapeEcho.cpp
+    ../JUCE_Plugin/Source/DigitalDelay.cpp
+    ../JUCE_Plugin/Source/MagneticDrumEcho.cpp
+    ../JUCE_Plugin/Source/BucketBrigadeDelay.cpp
+    ../JUCE_Plugin/Source/BufferRepeat.cpp
+    ../JUCE_Plugin/Source/PhaseVocoderPitchShift.cpp
+    ../JUCE_Plugin/Source/SMBPitchShiftFixed.cpp
+    ../JUCE_Plugin/Source/PitchShiftFactory.cpp
+)
+
+target_compile_definitions(test_pitch_performance PRIVATE
+    JUCE_STANDALONE_APPLICATION=1
+    JUCE_USE_CURL=0
+    JUCE_WEB_BROWSER=0
+    JUCE_USE_CAMERA=0
+    JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1
+)
+
+target_link_libraries(test_pitch_performance PRIVATE
+    juce::juce_core
+    juce::juce_audio_basics
+    juce::juce_events
+)
+
+target_include_directories(test_pitch_performance PRIVATE
+    ../JUCE_Plugin/Source
+    ../JUCE_Plugin/JuceLibraryCode
+)

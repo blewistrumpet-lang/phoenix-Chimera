@@ -1,0 +1,563 @@
+========================================================================
+         CHIMERA PHOENIX - SILENCE HANDLING TEST REPORT
+========================================================================
+
+Test Configuration:
+  - Sample Rate: 48 kHz
+  - Block Size: 512 samples
+  - Audio Duration: 10 seconds
+  - Channels: Stereo (2)
+  - Input: Pure silence (all zeros)
+  - Total Engines Tested: 31 of 57 (test incomplete - Engine 31 timeout)
+
+========================================================================
+                         OVERALL SUMMARY
+========================================================================
+
+Total Passed: 29 / 31 tested
+Total Failed: 2 / 31 tested
+Total Incomplete: 26 engines (32-57, test hung on Engine 31)
+
+Failure Breakdown:
+  - NaN Output: 0 engines
+  - Denormal Output: 0 engines
+  - CPU Spike: 0 engines
+  - Incorrect Silence/Generation: 2 engines
+
+NOTE: Test hung indefinitely on Engine 31 (Pitch Shifter) after 3+ minutes
+of 100% CPU usage. This indicates a potential infinite loop or extremely
+slow processing with silence input.
+
+========================================================================
+                      DETAILED RESULTS
+========================================================================
+
+------------------------------------------------------------------------
+Engine 0: None (Bypass) [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 1: Vintage Opto Compressor [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 2: Classic VCA Compressor [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 3: Transient Shaper [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+Note: Debug output shows proper parameter handling with silence input
+
+------------------------------------------------------------------------
+Engine 4: Noise Gate [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 5: Mastering Limiter [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+Note: Debug output shows proper threshold/ceiling processing with silence
+
+------------------------------------------------------------------------
+Engine 6: Dynamic EQ [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 7: Parametric EQ (Studio) [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 8: Vintage Console EQ [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 9: Ladder Filter [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 10: State Variable Filter [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 11: Formant Filter [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 12: Envelope Filter [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 13: Comb Resonator [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 14: Vocal Formant Filter [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 15: Vintage Tube Preamp [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: FAILED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    FAIL (Expected: Silence, Got: Non-Silence)
+
+ISSUE: Vintage Tube Preamp produces non-zero output with silence input.
+This likely indicates the presence of DC offset, bias voltage modeling,
+or noise generation in the tube emulation circuit. While this may be
+intentional for analog modeling, it should be verified that the output
+levels are within acceptable ranges for noise floor.
+
+------------------------------------------------------------------------
+Engine 16: Wave Folder [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 17: Harmonic Exciter [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: FAILED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    FAIL (Expected: Silence, Got: Non-Silence)
+
+ISSUE: Harmonic Exciter produces non-zero output with silence input.
+This may indicate the presence of:
+- DC offset in the exciter circuit
+- Noise generation for analog character
+- Improper zero-input handling
+Recommend verification of output levels and consideration of noise gating.
+
+------------------------------------------------------------------------
+Engine 18: Bit Crusher [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 19: Multiband Saturator [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 20: Muff Fuzz [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 21: Rodent Distortion [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 22: K-Style Overdrive [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 23: Digital Chorus [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 24: Resonant Chorus [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 25: Analog Phaser [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 26: Ring Modulator [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 27: Frequency Shifter [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 28: Harmonic Tremolo [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 29: Classic Tremolo [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 30: Rotary Speaker [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: PASSED
+
+Test Results:
+  NaN Test:       PASS
+  Denormal Test:  PASS
+  CPU Test:       PASS
+  Output Test:    PASS (Expected: Silence, Got: Silence)
+
+------------------------------------------------------------------------
+Engine 31: Pitch Shifter [PROCESSOR]
+------------------------------------------------------------------------
+STATUS: INCOMPLETE - TEST TIMEOUT
+
+CRITICAL ISSUE: Pitch Shifter engine hung indefinitely during silence
+processing test. After 3+ minutes of 100% CPU usage, the test was
+forcibly terminated. This indicates one of the following issues:
+
+1. Infinite loop in silence handling code
+2. Extremely inefficient silence processing (10+ seconds for 10s audio)
+3. Deadlock in internal synchronization
+4. Unbounded buffer allocation or processing loop
+
+RECOMMENDATION: Immediate investigation required. The Pitch Shifter
+should be optimized to detect silence input and either bypass processing
+or use fast-path silence handling.
+
+========================================================================
+                    UNTESTED ENGINES (32-57)
+========================================================================
+
+The following 26 engines were not tested due to the hang on Engine 31:
+
+Engine 32: Detune Doubler
+Engine 33: Intelligent Harmonizer
+Engine 34: Tape Echo
+Engine 35: Digital Delay
+Engine 36: Magnetic Drum Echo
+Engine 37: Bucket Brigade Delay
+Engine 38: Buffer Repeat
+Engine 39: Plate Reverb
+Engine 40: Spring Reverb
+Engine 41: Convolution Reverb
+Engine 42: Shimmer Reverb
+Engine 43: Gated Reverb
+Engine 44: Stereo Widener
+Engine 45: Stereo Imager
+Engine 46: Dimension Expander
+Engine 47: Spectral Freeze
+Engine 48: Spectral Gate
+Engine 49: Phased Vocoder
+Engine 50: Granular Cloud [GENERATOR]
+Engine 51: Chaos Generator [GENERATOR]
+Engine 52: Feedback Network
+Engine 53: Mid-Side Processor
+Engine 54: Gain Utility
+Engine 55: Mono Maker
+Engine 56: Phase Align
+
+RECOMMENDATION: Re-run test with Engine 31 (Pitch Shifter) skipped
+to complete testing of remaining engines.
+
+========================================================================
+                    GENERATORS ANALYSIS
+========================================================================
+
+NOTE: Generators were not tested in this incomplete run.
+
+Chaos Generator (Engine 51) and Granular Cloud (Engine 50) are expected
+to produce non-silence output from silence input. These should be tested
+in a follow-up run to verify they generate appropriate output.
+
+========================================================================
+                    CRITICAL ISSUES
+========================================================================
+
+1. Engine 31 (Pitch Shifter) - CRITICAL
+   - Hangs indefinitely with silence input
+   - 100% CPU usage, no progress
+   - Test forcibly terminated after 3+ minutes
+   - REQUIRES IMMEDIATE FIX
+
+2. Engine 15 (Vintage Tube Preamp) - MINOR
+   - Produces non-silence from silence input
+   - Likely DC offset or noise modeling
+   - Verify output levels are acceptable
+
+3. Engine 17 (Harmonic Exciter) - MINOR
+   - Produces non-silence from silence input
+   - May indicate DC offset or improper zero handling
+   - Recommend verification and possible noise gating
+
+========================================================================
+                    PASSED ENGINES SUMMARY
+========================================================================
+
+The following 29 engines passed all silence handling tests:
+
+DYNAMICS & COMPRESSION:
+  ✓ Engine 0: None (Bypass)
+  ✓ Engine 1: Vintage Opto Compressor
+  ✓ Engine 2: Classic VCA Compressor
+  ✓ Engine 3: Transient Shaper
+  ✓ Engine 4: Noise Gate
+  ✓ Engine 5: Mastering Limiter
+  ✓ Engine 6: Dynamic EQ
+
+FILTERS & EQ:
+  ✓ Engine 7: Parametric EQ (Studio)
+  ✓ Engine 8: Vintage Console EQ
+  ✓ Engine 9: Ladder Filter
+  ✓ Engine 10: State Variable Filter
+  ✓ Engine 11: Formant Filter
+  ✓ Engine 12: Envelope Filter
+  ✓ Engine 13: Comb Resonator
+  ✓ Engine 14: Vocal Formant Filter
+
+DISTORTION & SATURATION:
+  ✓ Engine 16: Wave Folder
+  ✓ Engine 18: Bit Crusher
+  ✓ Engine 19: Multiband Saturator
+  ✓ Engine 20: Muff Fuzz
+  ✓ Engine 21: Rodent Distortion
+  ✓ Engine 22: K-Style Overdrive
+
+MODULATION:
+  ✓ Engine 23: Digital Chorus
+  ✓ Engine 24: Resonant Chorus
+  ✓ Engine 25: Analog Phaser
+  ✓ Engine 26: Ring Modulator
+  ✓ Engine 27: Frequency Shifter
+  ✓ Engine 28: Harmonic Tremolo
+  ✓ Engine 29: Classic Tremolo
+  ✓ Engine 30: Rotary Speaker
+
+All tested engines demonstrated:
+- No NaN values in output
+- No denormal values in output
+- No CPU spikes (processing within 50% of real-time)
+- Clean silence handling (except where noted)
+
+========================================================================
+                    RECOMMENDATIONS
+========================================================================
+
+IMMEDIATE ACTION REQUIRED:
+1. Fix Engine 31 (Pitch Shifter) infinite loop/hang issue
+   - Add silence detection
+   - Implement fast-path for silence
+   - Add timeout protection
+   - Optimize silence processing
+
+FOLLOW-UP ACTIONS:
+2. Investigate Engine 15 (Vintage Tube Preamp) non-silence output
+   - Verify DC offset levels
+   - Confirm noise modeling is intentional
+   - Document expected behavior
+
+3. Investigate Engine 17 (Harmonic Exciter) non-silence output
+   - Check for DC offset
+   - Verify zero-input handling
+   - Consider adding noise gate
+
+4. Complete testing of engines 32-57
+   - Skip Engine 31 or fix first
+   - Verify Chaos Generator produces non-silence
+   - Verify Granular Cloud produces non-silence
+
+5. Add per-engine timeout protection
+   - Prevent single engine from hanging entire suite
+   - Log timeout events for analysis
+
+========================================================================
+                    END OF REPORT
+========================================================================
+
+Test Date: 2025-10-11
+Test Duration: ~3 minutes (incomplete)
+Test Binary: test_silence_handling
+Build: ./build_silence_test.sh

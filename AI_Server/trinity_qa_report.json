@@ -1,0 +1,646 @@
+{
+  "test_execution": {
+    "total_tests": 28,
+    "successful_tests": 28,
+    "failed_tests": 0,
+    "total_time_seconds": 74.91,
+    "average_generation_time": 2.17
+  },
+  "quality_metrics": {
+    "engine_selection_accuracy": {
+      "average": 0.075,
+      "median": 0.0,
+      "min": 0.0,
+      "max": 0.46
+    },
+    "parameter_validity": {
+      "average": 1.059,
+      "median": 1.058,
+      "min": 1.039,
+      "max": 1.083
+    },
+    "preset_coherence": {
+      "average": 1.0,
+      "median": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "name_relevance": {
+      "average": 0.189,
+      "median": 0.225,
+      "min": 0.0,
+      "max": 0.4
+    },
+    "overall_quality": {
+      "average": 0.575,
+      "median": 0.564,
+      "min": 0.515,
+      "max": 0.659
+    }
+  },
+  "corpus_comparison": {
+    "corpus_stats": {
+      "total_presets": 150,
+      "unique_engines": 0,
+      "avg_engines_per_preset": 0.0,
+      "avg_param_value": 0
+    },
+    "generated_stats": {
+      "total_presets": 28,
+      "unique_engines": 20,
+      "avg_engines_per_preset": 3.75,
+      "avg_param_value": 0.075
+    },
+    "comparison": {
+      "engine_diversity_ratio": 0,
+      "param_similarity": 0.0
+    }
+  },
+  "detailed_results": [
+    {
+      "prompt": "warm",
+      "success": true,
+      "generation_time": 2.501,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.038888888888889,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.2,
+        "overall": 0.5497222222222222
+      },
+      "preset_name": "Vintage Tube Hug",
+      "preset_vibe": "Cozy Embrace",
+      "active_engines": [
+        "Phase Align",
+        "Gain Utility",
+        "Stereo Widener"
+      ]
+    },
+    {
+      "prompt": "bright",
+      "success": true,
+      "generation_time": 5.157,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0555555555555556,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.2,
+        "overall": 0.5538888888888889
+      },
+      "preset_name": "Celestial Sparkle",
+      "preset_vibe": "Shimmering Radiance",
+      "active_engines": [
+        "Mono Maker",
+        "Mid-Side Processor",
+        "Stereo Widener",
+        "Feedback Network"
+      ]
+    },
+    {
+      "prompt": "aggressive",
+      "success": true,
+      "generation_time": 1.847,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.08000000000000002,
+        "parameter_validity": 1.0722222222222222,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.2,
+        "overall": 0.5820555555555555
+      },
+      "preset_name": "Raging Fuzz Storm",
+      "preset_vibe": "Aggressive Rumble",
+      "active_engines": [
+        "Mono Maker",
+        "Detune Doubler",
+        "Bit Crusher",
+        "Stereo Imager",
+        "Chaos Generator"
+      ]
+    },
+    {
+      "prompt": "smooth",
+      "success": true,
+      "generation_time": 2.755,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0666666666666667,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.2,
+        "overall": 0.5566666666666666
+      },
+      "preset_name": "Velvet Echo Chamber",
+      "preset_vibe": "Soothing Elegance",
+      "active_engines": [
+        "Tape Echo",
+        "Mono Maker",
+        "Mid-Side Processor",
+        "Multiband Saturator"
+      ]
+    },
+    {
+      "prompt": "crisp",
+      "success": true,
+      "generation_time": 1.775,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0833333333333333,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.2,
+        "overall": 0.5608333333333333
+      },
+      "preset_name": "Crystal Crispness",
+      "preset_vibe": "Crystal Clear",
+      "active_engines": [
+        "Detune Doubler",
+        "Bucket Brigade Delay",
+        "Gain Utility",
+        "Mid-Side Processor"
+      ]
+    },
+    {
+      "prompt": "vintage analog warmth with subtle tape saturation",
+      "success": true,
+      "generation_time": 2.465,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0611111111111111,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.2857142857142857,
+        "overall": 0.5724206349206349
+      },
+      "preset_name": "Tape Saturation Serenade",
+      "preset_vibe": "Analog Warmth",
+      "active_engines": [
+        "Feedback Network",
+        "Stereo Imager",
+        "Feedback Network"
+      ]
+    },
+    {
+      "prompt": "pristine digital clarity with surgical precision",
+      "success": true,
+      "generation_time": 1.957,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.038888888888889,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.3333333333333333,
+        "overall": 0.5763888888888888
+      },
+      "preset_name": "Digital Surgeon's Clarity",
+      "preset_vibe": "Pristine Precision",
+      "active_engines": [
+        "Mid-Side Processor",
+        "Stereo Widener",
+        "Spectral Freeze"
+      ]
+    },
+    {
+      "prompt": "lush analog chorus with vintage character",
+      "success": true,
+      "generation_time": 1.803,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0444444444444445,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.16666666666666666,
+        "overall": 0.5444444444444444
+      },
+      "preset_name": "Vintage Lushscape",
+      "preset_vibe": "Analog Chorus Dream",
+      "active_engines": [
+        "Gain Utility",
+        "Phase Align",
+        "Feedback Network"
+      ]
+    },
+    {
+      "prompt": "ethereal shimmer with celestial reverb tails",
+      "success": true,
+      "generation_time": 3.176,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0444444444444445,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.3333333333333333,
+        "overall": 0.5777777777777777
+      },
+      "preset_name": "Celestial Shimmer Clouds",
+      "preset_vibe": "Ethereal Shimmer",
+      "active_engines": [
+        "Phase Align",
+        "Gain Utility",
+        "Stereo Widener"
+      ]
+    },
+    {
+      "prompt": "punchy compression with musical transparency",
+      "success": true,
+      "generation_time": 2.62,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.13333333333333333,
+        "parameter_validity": 1.05,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.0,
+        "overall": 0.5525
+      },
+      "preset_name": "Translucent Impact",
+      "preset_vibe": "Dynamic Clarity",
+      "active_engines": [
+        "Phase Align",
+        "Mastering Limiter",
+        "Stereo Imager"
+      ]
+    },
+    {
+      "prompt": "80s synthwave nostalgic glow",
+      "success": true,
+      "generation_time": 2.482,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0611111111111111,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.25,
+        "overall": 0.5652777777777778
+      },
+      "preset_name": "Retro Waveform Glow",
+      "preset_vibe": "80s Synthwave",
+      "active_engines": [
+        "Tape Echo",
+        "Mono Maker",
+        "Mid-Side Processor",
+        "Multiband Saturator"
+      ]
+    },
+    {
+      "prompt": "modern trap aggressive punch",
+      "success": true,
+      "generation_time": 1.905,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0444444444444445,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.25,
+        "overall": 0.5611111111111111
+      },
+      "preset_name": "Punchy Trap Fury",
+      "preset_vibe": "Modern Trap Aggression",
+      "active_engines": [
+        "Detune Doubler",
+        "Plate Reverb",
+        "Stereo Imager"
+      ]
+    },
+    {
+      "prompt": "ambient drone expansive space",
+      "success": true,
+      "generation_time": 2.383,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.4,
+        "parameter_validity": 1.05,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.0,
+        "overall": 0.6325000000000001
+      },
+      "preset_name": "Celestial Driftscape",
+      "preset_vibe": "Expansive ambient",
+      "active_engines": [
+        "Mono Maker",
+        "Mid-Side Processor",
+        "Shimmer Reverb",
+        "Spectral Freeze"
+      ]
+    },
+    {
+      "prompt": "jazz fusion smooth sophistication",
+      "success": true,
+      "generation_time": 2.094,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.038888888888889,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.25,
+        "overall": 0.5597222222222222
+      },
+      "preset_name": "Vintage Jazz Swirl",
+      "preset_vibe": "Sophisticated Jazz Fusion",
+      "active_engines": [
+        "Mono Maker",
+        "Mid-Side Processor",
+        "Shimmer Reverb",
+        "Spectral Freeze"
+      ]
+    },
+    {
+      "prompt": "metal brutal distortion",
+      "success": true,
+      "generation_time": 1.653,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.46,
+        "parameter_validity": 1.0833333333333333,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.0,
+        "overall": 0.6588333333333334
+      },
+      "preset_name": "Sonic Annihilation",
+      "preset_vibe": "Brutal Metal",
+      "active_engines": [
+        "Bit Crusher",
+        "Phase Align",
+        "Convolution Reverb",
+        "Muff Fuzz",
+        "Gated Reverb"
+      ]
+    },
+    {
+      "prompt": "lo-fi hip hop vinyl character",
+      "success": true,
+      "generation_time": 2.049,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.16000000000000003,
+        "parameter_validity": 1.0777777777777777,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.2,
+        "overall": 0.6074444444444445
+      },
+      "preset_name": "Vinyl Groove Drifter",
+      "preset_vibe": "Chill Grooves",
+      "active_engines": [
+        "Bit Crusher",
+        "Phase Align",
+        "Convolution Reverb",
+        "Muff Fuzz",
+        "Gated Reverb"
+      ]
+    },
+    {
+      "prompt": "LA-2A opto compressor vintage",
+      "success": true,
+      "generation_time": 2.092,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.05,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.25,
+        "overall": 0.5625
+      },
+      "preset_name": "Opto Lushness",
+      "preset_vibe": "Vintage Lushness",
+      "active_engines": [
+        "Detune Doubler",
+        "Plate Reverb",
+        "Stereo Imager"
+      ]
+    },
+    {
+      "prompt": "Moog ladder filter resonance",
+      "success": true,
+      "generation_time": 2.329,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.05,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.25,
+        "overall": 0.5625
+      },
+      "preset_name": "Resonant Ladder Drive",
+      "preset_vibe": "Analog Resonance Enhancement",
+      "active_engines": [
+        "Phase Align",
+        "Gain Utility",
+        "Stereo Widener"
+      ]
+    },
+    {
+      "prompt": "shimmer reverb ethereal",
+      "success": true,
+      "generation_time": 1.687,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.13333333333333333,
+        "parameter_validity": 1.0611111111111111,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.3333333333333333,
+        "overall": 0.6219444444444444
+      },
+      "preset_name": "Celestial Shimmer",
+      "preset_vibe": "Ethereal Shimmer",
+      "active_engines": [
+        "Detune Doubler",
+        "Plate Reverb",
+        "Stereo Imager"
+      ]
+    },
+    {
+      "prompt": "1176 FET compressor attack",
+      "success": true,
+      "generation_time": 1.827,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0444444444444445,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.25,
+        "overall": 0.5611111111111111
+      },
+      "preset_name": "FET Fury Enhancer",
+      "preset_vibe": "Punchy Precision",
+      "active_engines": [
+        "Phase Align",
+        "Gain Utility",
+        "Stereo Widener"
+      ]
+    },
+    {
+      "prompt": "Lexicon plate reverb hall",
+      "success": true,
+      "generation_time": 1.672,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0611111111111111,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.0,
+        "overall": 0.5152777777777777
+      },
+      "preset_name": "LexiHall Dreamspace",
+      "preset_vibe": "Enveloping Reverberation",
+      "active_engines": [
+        "Feedback Network",
+        "Stereo Widener",
+        "Chaos Generator"
+      ]
+    },
+    {
+      "prompt": "Echoplex tape delay vintage",
+      "success": true,
+      "generation_time": 1.725,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.1,
+        "parameter_validity": 1.0611111111111111,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.25,
+        "overall": 0.5952777777777778
+      },
+      "preset_name": "Tape Echo Dreams",
+      "preset_vibe": "Retro Echo Vibes",
+      "active_engines": [
+        "Tape Echo",
+        "Mono Maker",
+        "Mid-Side Processor",
+        "Multiband Saturator"
+      ]
+    },
+    {
+      "prompt": "API console EQ character",
+      "success": true,
+      "generation_time": 2.242,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0611111111111111,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.25,
+        "overall": 0.5652777777777778
+      },
+      "preset_name": "Analog Console Drive",
+      "preset_vibe": "Analog Warmth",
+      "active_engines": [
+        "Feedback Network",
+        "Stereo Widener",
+        "Chaos Generator"
+      ]
+    },
+    {
+      "prompt": "underwater cathedral acoustics",
+      "success": true,
+      "generation_time": 1.618,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.4,
+        "parameter_validity": 1.0555555555555556,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.0,
+        "overall": 0.633888888888889
+      },
+      "preset_name": "Abyssal Choir Reverb",
+      "preset_vibe": "Underwater Cathedral",
+      "active_engines": [
+        "Mono Maker",
+        "Mid-Side Processor",
+        "Shimmer Reverb",
+        "Spectral Freeze"
+      ]
+    },
+    {
+      "prompt": "broken radio transmission",
+      "success": true,
+      "generation_time": 1.831,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.0722222222222222,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.0,
+        "overall": 0.5180555555555555
+      },
+      "preset_name": "Glitchwave Transmitter",
+      "preset_vibe": "Malfunctioning Radio",
+      "active_engines": [
+        "Gain Utility",
+        "Stereo Widener",
+        "Phase Align",
+        "Chaos Generator",
+        "Feedback Network"
+      ]
+    },
+    {
+      "prompt": "cosmic wind through crystal caves",
+      "success": true,
+      "generation_time": 1.75,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.08000000000000002,
+        "parameter_validity": 1.0777777777777777,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.4,
+        "overall": 0.6234444444444445
+      },
+      "preset_name": "Ethereal Crystal Wind",
+      "preset_vibe": "Cosmic Cave Exploration",
+      "active_engines": [
+        "Detune Doubler",
+        "Phase Align",
+        "Plate Reverb",
+        "Stereo Widener",
+        "Feedback Network"
+      ]
+    },
+    {
+      "prompt": "industrial machinery rhythmic",
+      "success": true,
+      "generation_time": 1.732,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.16000000000000003,
+        "parameter_validity": 1.0833333333333333,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.0,
+        "overall": 0.5688333333333333
+      },
+      "preset_name": "Mechanical Grit Factory",
+      "preset_vibe": "Industrial Groove",
+      "active_engines": [
+        "Bit Crusher",
+        "Phase Align",
+        "Convolution Reverb",
+        "Muff Fuzz",
+        "Gated Reverb"
+      ]
+    },
+    {
+      "prompt": "silk curtains in moonlight",
+      "success": true,
+      "generation_time": 1.749,
+      "error_message": "",
+      "quality_scores": {
+        "engine_selection": 0.0,
+        "parameter_validity": 1.05,
+        "preset_coherence": 1.0,
+        "name_relevance": 0.25,
+        "overall": 0.5625
+      },
+      "preset_name": "Moonlit Silk Shimmer",
+      "preset_vibe": "Moonlit Serenity",
+      "active_engines": [
+        "Mono Maker",
+        "Mid-Side Processor",
+        "Stereo Widener",
+        "Feedback Network"
+      ]
+    }
+  ],
+  "recommendations": [
+    "Improve engine selection accuracy (current: 0.08) - review Visionary blueprint generation",
+    "Improve name relevance (current: 0.19) - enhance Alchemist name generation"
+  ]
+}

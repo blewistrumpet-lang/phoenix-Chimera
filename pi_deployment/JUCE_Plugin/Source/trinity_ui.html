@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=480, height=320, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trinity Compact UI - 480x320</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            width: 480px;
+            height: 320px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .device-container {
+            width: 480px;
+            height: 320px;
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+            padding: 8px;
+            position: relative;
+        }
+
+        /* Header Bar */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 25px;
+            margin-bottom: 5px;
+        }
+
+        .logo {
+            font-size: 16px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00ffcc, #7b68ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ab-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 3px 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .ab-state {
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .ab-state.active {
+            background: linear-gradient(135deg, #7b68ee, #00ffcc);
+            color: #000;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9px;
+            color: #888;
+        }
+
+        .status-led {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Main Display Area */
+        .main-display {
+            background: #000;
+            border-radius: 8px;
+            padding: 8px;
+            height: 165px;
+            position: relative;
+            border: 1px solid rgba(123, 104, 238, 0.1);
+        }
+
+        /* Preset Section */
+        .preset-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .preset-info {
+            flex: 1;
+        }
+
+        .preset-number {
+            font-size: 8px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .preset-name {
+            font-size: 14px;
+            color: #ffd700;
+            font-weight: 400;
+        }
+
+        .mode-badges {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .mode-badge {
+            padding: 2px 5px;
+            background: rgba(123, 104, 238, 0.1);
+            border: 1px solid rgba(123, 104, 238, 0.3);
+            border-radius: 6px;
+            font-size: 7px;
+            color: #b19cd9;
+            text-transform: uppercase;
+        }
+
+        .mode-badge.voice {
+            background: rgba(0, 255, 204, 0.1);
+            border-color: rgba(0, 255, 204, 0.3);
+            color: #00ffcc;
+        }
+
+        .mode-badge.engine {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+        }
+
+        /* Compact Encoders */
+        .encoder-row {
+            display: flex;
+            justify-content: center;
+            gap: 35px;
+            margin: 8px 0;
+        }
+
+        .encoder {
+            text-align: center;
+        }
+
+        .encoder-label {
+            font-size: 7px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .encoder-visual {
+            width: 16px;
+            height: 16px;
+            margin: 0 auto 2px;
+            position: relative;
+        }
+
+        .encoder-ring {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #222;
+            position: relative;
+        }
+
+        .encoder-position {
+            position: absolute;
+            top: 1px;
+            left: 50%;
+            width: 2px;
+            height: 5px;
+            background: #00ffcc;
+            transform: translateX(-50%);
+            transform-origin: 50% 8px;
+        }
+
+        .encoder-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #1a1a1a;
+        }
+
+        .encoder-value {
+            font-size: 8px;
+            color: #00ffcc;
+            font-weight: 500;
+        }
+
+        /* Voice Button */
+        .voice-button {
+            width: 200px;
+            height: 30px;
+            margin: 8px auto;
+            display: block;
+            background: linear-gradient(135deg, #7b68ee, #00ffcc);
+            border: none;
+            border-radius: 15px;
+            color: #000;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(123, 104, 238, 0.3);
+        }
+
+        .voice-button:active {
+            transform: scale(0.98);
+        }
+
+        .button-hint {
+            font-size: 6px;
+            color: #666;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        /* Compact Switches */
+        .switches-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 5px;
+        }
+
+        .switch-group {
+            text-align: center;
+        }
+
+        .switch-container {
+            position: relative;
+            width: 30px;
+            height: 16px;
+            margin: 0 auto 2px;
+        }
+
+        .three-way-switch {
+            width: 20px;
+            height: 100%;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+            position: relative;
+        }
+
+        .switch-handle {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 5px;
+            background: #3a3a3a;
+            border-radius: 2px;
+            transition: top 0.2s;
+            cursor: pointer;
+        }
+
+        .switch-handle.up { top: 1px; }
+        .switch-handle.center { top: 5.5px; }
+        .switch-handle.down { top: 10px; }
+
+        .switch-label {
+            font-size: 7px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .switch-states {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-top: 1px;
+        }
+
+        .switch-state {
+            font-size: 6px;
+            color: #555;
+            line-height: 1.1;
+        }
+
+        .switch-state.active {
+            color: #00ffcc;
+        }
+
+        /* Signal Chain */
+        .signal-chain {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 6px;
+            padding: 6px;
+            margin-top: 5px;
+            border: 1px solid rgba(123, 104, 238, 0.1);
+        }
+
+        .chain-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .chain-label {
+            font-size: 7px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chain-info {
+            font-size: 7px;
+            color: #00ffcc;
+        }
+
+        .chain-modules {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .chain-module {
+            flex: 1;
+            text-align: center;
+            padding: 4px 2px;
+            background: rgba(123, 104, 238, 0.1);
+            border-radius: 3px;
+            font-size: 6px;
+            color: #666;
+            border: 1px solid rgba(123, 104, 238, 0.2);
+            cursor: pointer;
+            height: 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .chain-module.active {
+            background: rgba(123, 104, 238, 0.3);
+            color: #fff;
+            border-color: rgba(0, 255, 204, 0.5);
+        }
+
+        .chain-module.premium {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .chain-module.hybrid {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .chain-module.experimental {
+            background: rgba(138, 43, 226, 0.1);
+            border-color: rgba(138, 43, 226, 0.3);
+        }
+
+        .chain-module.inactive {
+            background: rgba(30, 30, 30, 0.5);
+            border-color: rgba(80, 80, 80, 0.3);
+            color: #444;
+            opacity: 0.5;
+        }
+
+        .module-type {
+            font-size: 5px;
+            text-transform: uppercase;
+            margin-bottom: 1px;
+            font-weight: 600;
+        }
+
+        .module-name {
+            font-size: 6px;
+        }
+
+        .chain-arrow {
+            color: #444;
+            font-size: 8px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="device-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">TRINITY</div>
+            <div class="status-bar">
+                <div class="ab-indicator">
+                    <span class="ab-state active">A</span>
+                    <span class="ab-state">B</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-led"></div>
+                    <span>READY</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Display -->
+        <div class="main-display">
+            <div class="preset-section">
+                <div class="preset-info">
+                    <div class="preset-number">PRESET 042</div>
+                    <div class="preset-name">Celestial Cascade</div>
+                </div>
+                <div class="mode-badges">
+                    <div class="mode-badge voice">VOICE: EDIT</div>
+                    <div class="mode-badge engine">ENGINE: HYBRID</div>
+                </div>
+            </div>
+
+            <!-- Encoders -->
+            <div class="encoder-row">
+                <div class="encoder" data-param="filter">
+                    <div class="encoder-label">FILTER</div>
+                    <div class="encoder-visual">
+                        <div class="encoder-ring">
+                            <div class="encoder-position" style="transform: translateX(-50%) rotate(30deg);"></div>
+                            <div class="encoder-center"></div>
+                        </div>
+                    </div>
+                    <div class="encoder-value">2.8k</div>
+                </div>
+                <div class="encoder" data-param="mix">
+                    <div class="encoder-label">MIX</div>
+                    <div class="encoder-visual">
+                        <div class="encoder-ring">
+                            <div class="encoder-position" style="transform: translateX(-50%) rotate(75deg);"></div>
+                            <div class="encoder-center"></div>
+                        </div>
+                    </div>
+                    <div class="encoder-value">65%</div>
+                </div>
+                <div class="encoder" data-param="preset">
+                    <div class="encoder-label">PRESET</div>
+                    <div class="encoder-visual">
+                        <div class="encoder-ring">
+                            <div class="encoder-position" style="transform: translateX(-50%) rotate(-45deg);"></div>
+                            <div class="encoder-center"></div>
+                        </div>
+                    </div>
+                    <div class="encoder-value">042</div>
+                </div>
+            </div>
+
+            <!-- Voice Button -->
+            <button class="voice-button" id="voiceBtn">
+                🎤 TAP TO SPEAK
+            </button>
+            <div class="button-hint">HOLD: TAP TEMPO • DOUBLE: PANIC</div>
+
+            <!-- Switches -->
+            <div class="switches-row">
+                <div class="switch-group">
+                    <div class="switch-container">
+                        <div class="three-way-switch">
+                            <div class="switch-handle up" id="abSwitch"></div>
+                        </div>
+                    </div>
+                    <div class="switch-label">A/B</div>
+                    <div class="switch-states">
+                        <div class="switch-state active">A</div>
+                        <div class="switch-state">LINK</div>
+                        <div class="switch-state">B</div>
+                    </div>
+                </div>
+                <div class="switch-group">
+                    <div class="switch-container">
+                        <div class="three-way-switch">
+                            <div class="switch-handle center" id="voiceSwitch"></div>
+                        </div>
+                    </div>
+                    <div class="switch-label">VOICE</div>
+                    <div class="switch-states">
+                        <div class="switch-state">CREATE</div>
+                        <div class="switch-state active">EDIT</div>
+                        <div class="switch-state">SUGGEST</div>
+                    </div>
+                </div>
+                <div class="switch-group">
+                    <div class="switch-container">
+                        <div class="three-way-switch">
+                            <div class="switch-handle center" id="engineSwitch"></div>
+                        </div>
+                    </div>
+                    <div class="switch-label">ENGINE</div>
+                    <div class="switch-states">
+                        <div class="switch-state">PREMIUM</div>
+                        <div class="switch-state active">HYBRID</div>
+                        <div class="switch-state">EXPRMTL</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signal Chain -->
+        <div class="signal-chain">
+            <div class="chain-header">
+                <span class="chain-label">SIGNAL CHAIN</span>
+                <span class="chain-info">4 ACTIVE</span>
+            </div>
+            <div class="chain-modules">
+                <div class="chain-module active premium" data-slot="0">
+                    <div class="module-type">PREM</div>
+                    <div class="module-name">Hall</div>
+                </div>
+                <span class="chain-arrow">›</span>
+                <div class="chain-module active hybrid" data-slot="1">
+                    <div class="module-type">HYBR</div>
+                    <div class="module-name">Tape</div>
+                </div>
+                <span class="chain-arrow">›</span>
+                <div class="chain-module active experimental" data-slot="2">
+                    <div class="module-type">EXPR</div>
+                    <div class="module-name">Grain</div>
+                </div>
+                <span class="chain-arrow">›</span>
+                <div class="chain-module active hybrid" data-slot="3">
+                    <div class="module-type">HYBR</div>
+                    <div class="module-name">Chorus</div>
+                </div>
+                <span class="chain-arrow">›</span>
+                <div class="chain-module inactive" data-slot="4">
+                    <div class="module-type">OFF</div>
+                    <div class="module-name">---</div>
+                </div>
+                <span class="chain-arrow">›</span>
+                <div class="chain-module inactive" data-slot="5">
+                    <div class="module-type">OFF</div>
+                    <div class="module-name">---</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JUCE Integration API
+        window.trinityAPI = {
+            setParameter: function(param, value) {
+                if (window.juce) {
+                    window.juce.setParameter(param, value);
+                }
+            },
+            triggerVoice: function(gesture) {
+                if (window.juce) {
+                    window.juce.triggerVoice(gesture);
+                }
+            },
+            updateChain: function(slot, active) {
+                if (window.juce) {
+                    window.juce.updateChain(slot, active);
+                }
+            }
+        };
+
+        // Voice button interaction
+        const voiceBtn = document.getElementById('voiceBtn');
+        let holdTimer;
+        let tapCount = 0;
+        let tapTimer;
+
+        voiceBtn.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            clearTimeout(holdTimer);
+            tapCount++;
+            clearTimeout(tapTimer);
+
+            tapTimer = setTimeout(() => {
+                tapCount = 0;
+            }, 300);
+
+            holdTimer = setTimeout(() => {
+                this.innerHTML = '⏱️ TAP TEMPO';
+                this.style.background = 'linear-gradient(135deg, #ffa500, #ff6b6b)';
+                trinityAPI.triggerVoice('hold');
+            }, 500);
+        });
+
+        voiceBtn.addEventListener('mouseup', function(e) {
+            e.preventDefault();
+            clearTimeout(holdTimer);
+
+            if (tapCount === 2) {
+                this.innerHTML = '🚨 PANIC!';
+                this.style.background = 'linear-gradient(135deg, #ff0000, #ff6b6b)';
+                trinityAPI.triggerVoice('double_tap');
+                setTimeout(() => {
+                    this.innerHTML = '🎤 TAP TO SPEAK';
+                    this.style.background = '';
+                }, 1000);
+                tapCount = 0;
+            } else if (this.innerHTML.includes('TAP TEMPO')) {
+                this.innerHTML = '🎤 TAP TO SPEAK';
+                this.style.background = '';
+            } else {
+                this.innerHTML = '🎤 LISTENING...';
+                trinityAPI.triggerVoice('tap');
+                setTimeout(() => {
+                    this.innerHTML = '🎤 TAP TO SPEAK';
+                }, 2000);
+            }
+        });
+
+        // Switch interactions
+        function setupSwitch(switchId) {
+            const switchHandle = document.getElementById(switchId);
+            const states = ['up', 'center', 'down'];
+            let currentState = states.indexOf(switchHandle.className.replace('switch-handle ', ''));
+
+            switchHandle.addEventListener('click', function() {
+                currentState = (currentState + 1) % 3;
+                this.className = 'switch-handle ' + states[currentState];
+
+                const stateDivs = this.parentElement.parentElement.parentElement.querySelectorAll('.switch-state');
+                stateDivs.forEach((div, index) => {
+                    div.classList.toggle('active', index === currentState);
+                });
+
+                if (switchId === 'voiceSwitch') {
+                    const modes = ['CREATE', 'EDIT', 'SUGGEST'];
+                    document.querySelector('.mode-badge.voice').textContent = 'VOICE: ' + modes[currentState];
+                    trinityAPI.setParameter('voice_mode', currentState);
+                }
+                if (switchId === 'engineSwitch') {
+                    const engines = ['PREMIUM', 'HYBRID', 'EXPERIMENTAL'];
+                    document.querySelector('.mode-badge.engine').textContent = 'ENGINE: ' + engines[currentState];
+                    trinityAPI.setParameter('engine_mode', currentState);
+                }
+                if (switchId === 'abSwitch') {
+                    const abStates = document.querySelectorAll('.ab-state');
+                    if (currentState === 0) {
+                        abStates[0].classList.add('active');
+                        abStates[1].classList.remove('active');
+                    } else if (currentState === 2) {
+                        abStates[0].classList.remove('active');
+                        abStates[1].classList.add('active');
+                    } else {
+                        abStates[0].classList.add('active');
+                        abStates[1].classList.add('active');
+                    }
+                    trinityAPI.setParameter('ab_state', currentState);
+                }
+            });
+        }
+
+        setupSwitch('abSwitch');
+        setupSwitch('voiceSwitch');
+        setupSwitch('engineSwitch');
+
+        // Encoder interactions
+        document.querySelectorAll('.encoder').forEach((encoder, index) => {
+            const param = encoder.getAttribute('data-param');
+            let rotation = index === 0 ? 30 : index === 1 ? 75 : -45;
+
+            encoder.querySelector('.encoder-ring').addEventListener('click', function() {
+                rotation += 30;
+                const marker = this.querySelector('.encoder-position');
+                marker.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+
+                const valueDisplay = encoder.querySelector('.encoder-value');
+                let normalizedValue = 0;
+
+                if (param === 'filter') {
+                    const freq = Math.round(200 + rotation * 10);
+                    valueDisplay.textContent = freq > 1000 ? `${(freq/1000).toFixed(1)}k` : `${freq}Hz`;
+                    normalizedValue = freq / 20000;
+                } else if (param === 'mix') {
+                    const percent = Math.min(100, Math.max(0, Math.round(rotation / 3.6)));
+                    valueDisplay.textContent = `${percent}%`;
+                    normalizedValue = percent / 100;
+                } else if (param === 'preset') {
+                    const preset = Math.min(499, Math.max(1, Math.round(42 + rotation / 10)));
+                    valueDisplay.textContent = preset.toString().padStart(3, '0');
+                    normalizedValue = preset / 500;
+                }
+
+                trinityAPI.setParameter(param, normalizedValue);
+            });
+        });
+
+        // Chain module interactions
+        document.querySelectorAll('.chain-module').forEach(module => {
+            module.addEventListener('click', function() {
+                if (!this.classList.contains('inactive')) {
+                    this.classList.toggle('active');
+                    const slot = parseInt(this.getAttribute('data-slot'));
+                    const isActive = this.classList.contains('active');
+                    trinityAPI.updateChain(slot, isActive);
+                }
+
+                const activeCount = document.querySelectorAll('.chain-module.active').length;
+                document.querySelector('.chain-info').textContent = activeCount + ' ACTIVE';
+            });
+        });
+    </script>
+</body>
+</html>

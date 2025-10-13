@@ -1,0 +1,142 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║              PITCH ACCURACY TEST SUITE - QUICK START GUIDE             ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+OVERVIEW
+────────────────────────────────────────────────────────────────────────
+Tests pitch accuracy of engines 32-38, 49-50 across:
+  • 5 test frequencies: 110, 220, 440, 880, 1760 Hz
+  • 7 semitone shifts: -12, -7, -5, 0, +5, +7, +12
+  • Total: 315 test cases
+
+Measures frequency accuracy in CENTS (1 cent = 1/100 semitone)
+
+QUICK START
+────────────────────────────────────────────────────────────────────────
+
+1. Run everything (recommended):
+   ./run_pitch_accuracy_test.sh
+
+   This will:
+   ✓ Build the test program
+   ✓ Run all pitch accuracy tests
+   ✓ Generate analysis report
+   ✓ Create visualization plots
+
+2. View results:
+   cat build/pitch_accuracy_report.txt
+   open build/pitch_accuracy_plots/
+
+QUALITY RATINGS
+────────────────────────────────────────────────────────────────────────
+  PROFESSIONAL  < 1 cent      Studio quality
+  EXCELLENT     < 5 cents     Very good
+  GOOD          < 10 cents    Acceptable
+  FAIR          < 20 cents    Noticeable
+  POOR          ≥ 20 cents    Significant errors
+
+OUTPUT FILES
+────────────────────────────────────────────────────────────────────────
+  build/pitch_accuracy_results.csv          Raw test data
+  build/pitch_accuracy_report.txt           Detailed text report
+  build/pitch_accuracy_plots/               Visualization plots:
+    • pitch_accuracy_by_engine.png          Bar chart per engine
+    • pitch_error_distribution.png          Overall histogram
+    • pitch_error_by_shift.png              Error vs shift amount
+    • pitch_error_by_frequency.png          Error vs frequency
+
+MANUAL STEPS
+────────────────────────────────────────────────────────────────────────
+If you prefer to run steps individually:
+
+1. Build JUCE and engines (if not done):
+   make
+
+2. Run test:
+   ./build/test_pitch_accuracy
+
+3. Analyze results:
+   python3 analyze_pitch_accuracy.py
+
+REQUIREMENTS
+────────────────────────────────────────────────────────────────────────
+Build:
+  • clang++ with C++17
+  • JUCE framework
+  • HarfBuzz library
+
+Analysis:
+  • Python 3.6+
+  • NumPy: pip3 install numpy
+  • Matplotlib: pip3 install matplotlib
+
+INTERPRETING RESULTS
+────────────────────────────────────────────────────────────────────────
+Good results:
+  ✓ Average error < 5 cents
+  ✓ All tests produce valid measurements
+  ✓ Consistent across frequencies
+  ✓ Consistent across shift amounts
+
+Warning signs:
+  ⚠ Average error > 10 cents
+  ⚠ Many failed measurements
+  ⚠ High error at specific frequencies
+  ⚠ High error at extreme shifts
+
+TESTED ENGINES
+────────────────────────────────────────────────────────────────────────
+  32 - Pitch Shifter
+  33 - Intelligent Harmonizer
+  34 - Tape Echo
+  35 - Digital Delay
+  36 - Magnetic Drum Echo
+  37 - Bucket Brigade Delay
+  38 - Buffer Repeat Platinum
+  49 - Pitch Shifter (Alt)
+  50 - GranularCloud
+
+EXAMPLE OUTPUT
+────────────────────────────────────────────────────────────────────────
+Engine 32: Pitch Shifter
+
+  Summary Statistics:
+    Valid Measurements: 35 / 35 (100.0%)
+    Average Error:      2.45 cents
+    Maximum Error:      8.23 cents
+    Quality Rating:     EXCELLENT
+
+  Error by Semitone Shift:
+    -12 st:   3.12 cents  ✓
+     -7 st:   2.45 cents  ✓
+     -5 st:   1.98 cents  ✓
+      0 st:   0.87 cents  ✓
+     +5 st:   2.34 cents  ✓
+     +7 st:   2.89 cents  ✓
+    +12 st:   4.21 cents  ✓
+
+TROUBLESHOOTING
+────────────────────────────────────────────────────────────────────────
+Build fails:
+  → Run 'make' first to build JUCE and engines
+  → Check JUCE_DIR path in run_pitch_accuracy_test.sh
+
+Test crashes:
+  → Check engine IDs are valid
+  → Run with individual engines to isolate issues
+
+Analysis fails:
+  → Install Python dependencies: pip3 install numpy matplotlib
+  → Check build/pitch_accuracy_results.csv exists
+
+No plots generated:
+  → Check matplotlib installed: python3 -c "import matplotlib"
+  → Check build/pitch_accuracy_plots/ directory created
+
+MORE INFORMATION
+────────────────────────────────────────────────────────────────────────
+See PITCH_ACCURACY_TEST_README.md for complete documentation.
+
+╔════════════════════════════════════════════════════════════════════════╗
+║                        HAPPY TESTING!                                  ║
+╚════════════════════════════════════════════════════════════════════════╝

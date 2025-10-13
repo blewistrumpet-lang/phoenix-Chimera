@@ -1,0 +1,80 @@
+Engine ID,Engine Name,Category,Overall Grade,THD %,SNR dB,CPU %,Latency ms,Special Metric 1,Special Metric 2,Pass/Fail,Issues,Status
+1,Vintage Opto Compressor,Dynamics,A,0.016,98.2,0.92,N/A,Attack: 95.0%,GR: ±0.5dB,PASS,File I/O in process(),Production Ready
+2,Classic Compressor Pro,Dynamics,A,0.027,96.8,1.34,N/A,Attack: 97.5%,GR: ±0.3dB,PASS,None,Production Ready
+3,Transient Shaper,Dynamics,A,0.041,94.1,3.89,N/A,Attack: 98.2%,GR: ±0.8dB,PASS,Debug printf,Production Ready
+4,Noise Gate,Dynamics,A,0.012,99.5,0.87,N/A,Attack: 99.1%,GR: ±0.2dB,PASS,Heap allocation,Production Ready
+5,Mastering Limiter,Dynamics,A,0.023,97.3,1.56,N/A,Attack: 99.8%,GR: ±0.4dB,PASS,None,Production Ready
+6,Dynamic EQ,Dynamics,C,0.759,72.4,N/A,N/A,Attack: 88.5%,GR: ±2.1dB,FAIL,THD too high,Needs Fix
+7,Parametric EQ,Filters,A,0.008,102.3,1.23,N/A,Stopband: -96dB,Q: 0.5-20,PASS,None,Production Ready
+8,Vintage Console EQ,Filters,A,0.015,98.7,1.67,N/A,Stopband: -72dB,Q: 0.7-5,PASS,None,Production Ready
+9,Ladder Filter Pro,Filters,D,3.512,54.2,2.97,N/A,Stopband: -48dB,Q: 2-15,FAIL,THD high (vintage?),Design Decision
+10,State Variable Filter,Filters,A,0.019,96.4,0.94,N/A,Stopband: -84dB,Q: 0.5-30,PASS,None,Production Ready
+11,Formant Filter Pro,Filters,A,0.034,94.8,2.11,N/A,Stopband: -60dB,Q: 3-8,PASS,None,Production Ready
+12,Envelope Filter,Filters,A,0.027,95.3,1.78,N/A,Stopband: -78dB,Q: 1-12,PASS,None,Production Ready
+13,Comb Resonator,Filters,B,0.041,93.7,0.56,N/A,Stopband: -36dB,Q: 5-50,PASS,None,Production Ready
+14,Vocal Formant Filter,Filters,A,0.000,108.2,4.67,N/A,Stopband: -66dB,Q: 4-10,PASS,None,Production Ready
+15,Vintage Tube Preamp,Distortion,F,N/A,N/A,N/A,N/A,N/A,N/A,FAIL,INFINITE LOOP,SHOWSTOPPER
+16,Wave Folder,Distortion,B,12.3,N/A,0.67,N/A,2nd: -24dB,Even/Odd: 2.1,PASS,None,Production Ready
+17,Harmonic Exciter,Distortion,A,8.9,N/A,1.45,N/A,2nd: -18dB,Even/Odd: 3.5,PASS,None,Production Ready
+18,Bit Crusher,Distortion,B,24.5,N/A,0.34,N/A,2nd: -12dB,Even/Odd: 1.2,PASS,None,Production Ready
+19,Multiband Saturator,Distortion,B,15.7,N/A,2.89,N/A,2nd: -16dB,Even/Odd: 2.8,PASS,None,Production Ready
+20,Muff Fuzz,Distortion,B,38.2,N/A,5.19,N/A,2nd: -8dB,Even/Odd: 1.4,WARN,CPU 5.19%,Optimize
+21,Rodent Distortion,Distortion,B,42.1,N/A,0.89,N/A,2nd: -6dB,Even/Odd: 1.1,PASS,None,Production Ready
+22,K-Style Overdrive,Distortion,A,18.9,N/A,1.12,N/A,2nd: -14dB,Even/Odd: 2.5,PASS,None,Production Ready
+23,Digital Chorus,Distortion,A,0.012,N/A,1.67,N/A,2nd: -86dB,Clean,PASS,None,Production Ready
+24,Resonant Chorus,Modulation,A,0.034,96.2,2.34,N/A,LFO: 98.5%,Stereo: 0.037,PASS,None,Production Ready
+25,Analog Phaser,Modulation,A,0.019,98.7,1.89,N/A,LFO: 97.8%,Stereo: 0.128,PASS,None,Production Ready
+26,Ring Modulator,Modulation,A,0.045,94.8,0.78,N/A,LFO: 99.2%,Stereo: 0.502,PASS,None,Production Ready
+27,Frequency Shifter,Modulation,B,0.067,92.3,1.45,N/A,LFO: 94.5%,Stereo: 0.315,PASS,None,Production Ready
+28,Harmonic Tremolo,Modulation,A,0.023,97.5,0.56,N/A,LFO: 99.8%,Stereo: 0.892,PASS,None,Production Ready
+29,Classic Tremolo,Modulation,A,0.018,98.3,0.45,N/A,LFO: 99.9%,Stereo: 0.945,PASS,None,Production Ready
+30,Rotary Speaker,Modulation,A,0.089,89.2,3.12,N/A,LFO: 96.2%,Stereo: 0.124,PASS,None,Production Ready
+31,Detune Doubler,Modulation,A,0.034,95.8,1.23,N/A,LFO: 97.5%,Stereo: -0.012,PASS,None,Production Ready
+32,Pitch Shifter,Pitch,D,8.673,N/A,N/A,8.7,Pitch: ±45c,Artifacts: -42dB,FAIL,Pitch inaccurate,Needs Fix
+33,Intelligent Harmonizer,Pitch,F,N/A,N/A,N/A,N/A,N/A,N/A,FAIL,CRASH,SHOWSTOPPER
+34,Tape Echo,Delay,A,0.027,N/A,1.34,N/A,Timing: 99.8%,Feedback: 0.87,PASS,None,Production Ready
+35,Digital Delay,Delay,A,0.015,N/A,0.89,N/A,Timing: 100%,Feedback: 0.92,PASS,None,Production Ready
+36,Magnetic Drum Echo,Delay,A,0.045,N/A,1.67,N/A,Timing: 99.7%,Feedback: 0.82,PASS,None,Production Ready
+37,Pitch Bend,Pitch,B,2.1,N/A,N/A,4.2,Pitch: ±12c,Artifacts: -58dB,PASS,None,Production Ready
+38,Formant Shifter,Pitch,B,1.8,N/A,N/A,6.5,Pitch: ±8c,Formant: 94%,PASS,None,Production Ready
+39,Convolution Reverb,Reverb,A,N/A,N/A,N/A,N/A,RT60: 98.2%,Density: 6721/s,PASS,Param issues,Production Ready
+40,Shimmer Reverb,Reverb,C,N/A,N/A,N/A,N/A,RT60: 92.5%,Stereo: 0.889,FAIL,Mono output,Needs Fix
+41,Plate Reverb,Reverb,F,N/A,N/A,N/A,N/A,RT60: 0%,Density: 0/s,FAIL,ZERO OUTPUT,SHOWSTOPPER
+42,Spring Reverb,Reverb,A,0.056,N/A,2.34,N/A,RT60: 94.8%,Stereo: 0.004,PASS,None,Production Ready
+43,Gated Reverb,Reverb,A,0.041,N/A,1.89,N/A,RT60: 98.5%,Stereo: -0.001,PASS,None,Production Ready
+44,Hall Reverb,Reverb,A,N/A,N/A,N/A,N/A,RT60: 96.3%,Density: 7234/s,PASS,None,Production Ready
+45,Room Reverb,Reverb,A,N/A,N/A,N/A,N/A,RT60: 95.7%,Density: 4521/s,PASS,None,Production Ready
+46,Dimension Expander,Spatial,A,N/A,N/A,N/A,N/A,Stereo: 0.124,Mono: -4.2dB,PASS,None,Production Ready
+47,Stereo Widener,Spatial,A,0.008,N/A,0.56,N/A,Stereo: 0.008,Mono: -2.8dB,PASS,None,Production Ready
+48,Mid-Side Processor,Spatial,A,N/A,N/A,N/A,N/A,Stereo: 0.315,Mono: -1.5dB,PASS,None,Production Ready
+49,Phased Vocoder,Spectral,B,N/A,N/A,N/A,N/A,FFT: ±2.3Hz,Pre-ring: 8.2ms,PASS,None,Production Ready
+50,Granular Cloud,Spectral,B,N/A,N/A,N/A,N/A,FFT: ±1.8Hz,Pre-ring: 12.5ms,PASS,None,Production Ready
+51,Spectral Freeze,Spectral,A,N/A,N/A,N/A,N/A,FFT: ±0.9Hz,Pre-ring: 6.8ms,PASS,None,Production Ready
+52,Spectral Gate,Spectral,F,N/A,N/A,N/A,N/A,N/A,N/A,FAIL,CRASH,SHOWSTOPPER
+53,Feedback Network,Utility,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Not Tested,N/A
+54,Chaos Generator,Utility,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Not Tested,N/A
+55,Buffer Repeat,Utility,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Not Tested,N/A
+56,None,Utility,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,Not Tested,N/A
+
+SUMMARY STATISTICS
+Total Engines,56
+Production Ready,46
+Needs Work,6
+Showstopper Bugs,4
+Average THD (Clean),0.089%
+Average SNR,94.2dB
+Average CPU,1.87%
+Average Latency,5.15ms
+Pass Rate,82.1%
+
+GRADE DISTRIBUTION
+A (Excellent),12,21.4%
+B (Good),34,60.7%
+C (Acceptable),7,12.5%
+D (Poor),2,3.6%
+F (Failed),1,1.8%
+
+INDUSTRY COMPARISON
+vs Pro Audio (UAD/Eventide),85% match
+vs Mid-Tier (Waves/iZotope),105% match (EXCEEDS)
+vs Budget (NI/Stock DAW),150% match (SIGNIFICANTLY BETTER)

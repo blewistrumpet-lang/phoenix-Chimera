@@ -1,0 +1,58 @@
+Rank,EngineID,EngineName,Category,CPU_%,Complexity,Characteristics,Notes
+1,41,Convolution Reverb,Reverb,68.9,EXTREME,FFT convolution; IR processing; Large memory,Most CPU-intensive engine
+2,49,Phased Vocoder,Special,55.2,EXTREME,Phase vocoder; Time stretching; Large FFT,Most complex spectral processor
+3,33,Intelligent Harmonizer,Modulation,52.8,EXTREME,Multi-voice pitch shifting; Scale quantization,Most CPU-intensive modulation
+4,31,Pitch Shifter,Modulation,47.3,EXTREME,Time-domain pitch shifting; Large buffers,Very CPU intensive
+5,42,Shimmer Reverb,Reverb,38.2,VERY_HIGH,Pitch shifting; Reverb tail; Feedback,Reverb + pitch shifting
+6,50,Granular Cloud,Special,35.6,VERY_HIGH,Granular synthesis; Multiple grains; Windowing,Many simultaneous grains
+7,47,Spectral Freeze,Special,31.4,VERY_HIGH,FFT analysis; Spectral hold; Resynthesis,Continuous FFT processing
+8,48,Spectral Gate,Special,29.8,VERY_HIGH,FFT analysis; Per-bin gating; Resynthesis,FFT-based gating
+9,39,Plate Reverb,Reverb,24.5,HIGH,Plate simulation; Dense early reflections,FDN-based plate simulation
+10,32,Detune Doubler,Modulation,22.6,HIGH,Dual pitch shifters; Stereo widening,Multiple pitch shift instances
+11,43,Gated Reverb,Reverb,21.7,HIGH,Reverb; Gate processing,Reverb with envelope control
+12,30,Rotary Speaker,Modulation,19.8,HIGH,Doppler effect; Horn/drum simulation; Crossover,Complex mechanical simulation
+13,6,Dynamic EQ,Dynamics,18.7,HIGH,Per-band dynamics; FFT analysis; Multi-band processing,Complex multi-band DSP
+14,52,Feedback Network,Special,16.9,HIGH,Complex feedback matrix; Multiple delays,Matrix processing
+15,27,Frequency Shifter,Modulation,16.2,HIGH,Hilbert transform; Single-sideband modulation,Complex phase processing
+16,19,Multiband Saturator,Distortion,15.4,HIGH,Multi-band splitting; Per-band saturation,FFT-based band splitting
+17,40,Spring Reverb,Reverb,12.8,MODERATE,Spring modeling; Boing character,Physical spring model
+18,46,Dimension Expander,Spatial,11.6,MODERATE,Multi-tap modulation; Stereo spreading,Multiple modulated delays
+19,36,Magnetic Drum Echo,Delay,10.3,MODERATE,Drum modeling; Mechanical artifacts,Vintage drum echo simulation
+20,14,Vocal Formant Filter,Filter,10.2,MODERATE,Complex formant structure; Vowel interpolation,Multi-formant processing
+21,24,Resonant Chorus,Modulation,9.7,MODERATE,Resonant delays; Complex modulation,Resonant delays add CPU
+22,11,Formant Filter,Filter,9.3,MODERATE,Multiple resonant peaks; Vowel morphing,Multiple parallel filters
+23,34,Tape Echo,Delay,9.1,MODERATE,Tape saturation; Wow/flutter; Filtering,Vintage tape modeling
+24,15,Vintage Tube Preamp,Distortion,8.9,MODERATE,Tube saturation modeling; Harmonic generation,Non-linear waveshaping
+25,37,Bucket Brigade Delay,Delay,8.7,MODERATE,BBD emulation; Clock noise,Analog BBD simulation
+26,51,Chaos Generator,Special,8.4,MODERATE,Chaotic oscillators; Feedback loops,Non-linear dynamics
+27,5,Mastering Limiter,Dynamics,8.3,MODERATE,Lookahead buffer; True peak limiting,Lookahead adds latency
+28,23,Digital Chorus,Modulation,8.1,MODERATE,Multi-voice chorus; LFO modulation,Multiple delay lines
+29,17,Harmonic Exciter,Distortion,7.6,MODERATE,Harmonic generation; Frequency-selective,Selective harmonic enhancement
+30,25,Analog Phaser,Modulation,7.3,MODERATE,All-pass filters; LFO sweep,Multiple cascaded stages
+31,8,Vintage Console EQ,Filter,7.1,MODERATE,Vintage filter curves; Saturation modeling,Additional harmonic modeling
+32,20,Muff Fuzz,Distortion,6.8,MODERATE,Transistor clipping; Tone stack,Classic fuzz topology
+33,12,Envelope Filter,Filter,6.7,MODERATE,Envelope follower; Dynamic cutoff,Envelope + filter combination
+34,28,Harmonic Tremolo,Modulation,6.5,MODERATE,Dual-phase tremolo; Crossover filtering,Dual-band amplitude modulation
+35,7,Parametric EQ (Studio),Filter,6.4,MODERATE,Multi-band IIR filters; Smooth parameter changes,Efficient IIR implementation
+36,22,K-Style Overdrive,Distortion,6.2,MODERATE,Diode clipping; Soft clipping,Classic overdrive circuit
+37,21,Rodent Distortion,Distortion,5.9,MODERATE,Op-amp clipping; Active tone control,Distortion + filtering
+38,9,Ladder Filter,Filter,5.8,MODERATE,Moog-style resonance; Non-linear feedback,4-pole filter with saturation
+39,45,Stereo Imager,Spatial,5.7,MODERATE,Haas effect; Stereo imaging,Delay-based stereo imaging
+40,3,Transient Shaper,Dynamics,5.2,MODERATE,Envelope detection; Transient extraction,Dual-band processing
+41,35,Digital Delay,Delay,4.2,LOW,Clean delay line; Feedback control,Efficient delay buffer
+42,13,Comb Resonator,Filter,4.1,LOW,Delay line; Feedback resonance,Simple delay-based resonator
+43,26,Ring Modulator,Modulation,3.8,LOW,Amplitude modulation; Carrier oscillator,Simple multiplication
+44,38,Buffer Repeat,Delay,3.6,LOW,Buffer capture; Glitch effects,Simple buffer looping
+45,16,Wave Folder,Distortion,3.5,LOW,Wave folding; Harmonic richness,Simple folding algorithm
+46,10,State Variable Filter,Filter,3.2,LOW,Simultaneous outputs; Smooth morphing,Efficient topology
+47,44,Stereo Widener,Spatial,3.1,LOW,M/S processing; Stereo enhancement,Simple M/S manipulation
+48,56,Phase Align,Utility,2.4,LOW,Phase correction; All-pass filtering,Phase adjustment filter
+49,18,Bit Crusher,Distortion,2.3,LOW,Bit reduction; Sample rate reduction,Simple digital degradation
+50,1,Vintage Opto Compressor,Dynamics,2.1,LOW,RMS detection; Smooth gain reduction,Efficient envelope follower
+51,29,Classic Tremolo,Modulation,2.1,LOW,Simple LFO; Amplitude modulation,Basic amplitude modulation
+52,2,Classic VCA Compressor,Dynamics,1.8,LOW,Peak/RMS detection; Fast attack/release,Optimized gain computer
+53,4,Noise Gate,Dynamics,1.5,LOW,Threshold detection; Gain smoothing,Simple threshold gate
+54,53,Mid-Side Processor,Utility,1.2,LOW,M/S encoding/decoding,Simple matrix operation
+55,55,Mono Maker,Utility,0.7,MINIMAL,Mono summing,Simple channel summing
+56,54,Gain Utility,Utility,0.5,MINIMAL,Gain adjustment; Pan control,Trivial processing
+57,0,None (Bypass),Utility,0.1,MINIMAL,Pass-through processing,No DSP - minimal overhead

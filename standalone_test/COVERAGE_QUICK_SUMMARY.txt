@@ -1,0 +1,127 @@
+================================================================================
+  ChimeraPhoenix v3.0 Code Coverage - Quick Summary
+================================================================================
+
+Date: October 11, 2025
+Engines Tested: 59
+Test Result: 55 passed, 1 skipped, 3 failed
+
+--------------------------------------------------------------------------------
+OVERALL COVERAGE METRICS
+--------------------------------------------------------------------------------
+
+Line Coverage:     61.75%  (9,990 / 16,178 lines)
+Branch Coverage:   33.78%  (1,973 / 5,840 branches)
+Function Coverage: 64.61%  (836 / 1,294 functions)
+
+STATUS: ⚠️ NEEDS IMPROVEMENT
+
+--------------------------------------------------------------------------------
+TOP PERFORMERS (>80% Line Coverage)
+--------------------------------------------------------------------------------
+
+1. EngineFactory           96.7%  ✅ Excellent
+2. HarmonicTremolo         87.7%  ✅ Excellent
+3. RotarySpeaker           82.1%  ✅ Good
+4. FrequencyShifter        81.7%  ✅ Good
+5. PhaseAlign              81.2%  ✅ Good
+
+--------------------------------------------------------------------------------
+CRITICAL ISSUES (0% Coverage)
+--------------------------------------------------------------------------------
+
+❌ PitchShifter (Engine 48)        - NOT TESTED
+❌ PitchShiftFactory (Engine 49)   - NOT TESTED
+❌ SMBPitchShiftFixed (Engine 50)  - NOT TESTED
+
+⚠️  Entire pitch shifting category untested! CRITICAL!
+
+--------------------------------------------------------------------------------
+VERY LOW COVERAGE (<35%)
+--------------------------------------------------------------------------------
+
+SpectralGate            20.6%  ❌
+BufferRepeat            32.2%  ❌
+SpectralFreeze          35.4%  ⚠️
+
+--------------------------------------------------------------------------------
+FAILED ENGINES (Instantiation Failure)
+--------------------------------------------------------------------------------
+
+Engine 57: ChaosGenerator      - Failed to create
+Engine 58: GainUtility         - Failed to create
+Engine 59: MonoMaker           - Failed to create
+
+--------------------------------------------------------------------------------
+SKIPPED ENGINES (Test Hangs)
+--------------------------------------------------------------------------------
+
+Engine 31: DetuneDoubler       - Causes infinite loop/hang
+
+--------------------------------------------------------------------------------
+TOP PRIORITIES
+--------------------------------------------------------------------------------
+
+P0 (CRITICAL - Fix Immediately):
+  [ ] Fix and test all 3 pitch shifting engines (0% coverage)
+  [ ] Debug ChaosGenerator, GainUtility, MonoMaker creation failures
+  [ ] Fix DetuneDoubler hang issue
+  [ ] Improve SpectralGate coverage (currently 20.6%)
+
+P1 (HIGH - Next Sprint):
+  [ ] Achieve 80% line coverage (currently 61.75%)
+  [ ] Achieve 60% branch coverage (currently 33.78%)
+  [ ] Fix low-coverage engines: BufferRepeat, SpectralFreeze
+  [ ] Add edge case and error handling tests
+
+P2 (MEDIUM - Following Sprint):
+  [ ] Test different buffer sizes and sample rates
+  [ ] Test mono and multi-channel configurations
+  [ ] Add parameter automation tests
+  [ ] Integration testing (engine chains)
+
+--------------------------------------------------------------------------------
+VIEW DETAILED REPORTS
+--------------------------------------------------------------------------------
+
+HTML (Interactive):  open build_coverage/coverage/html/index.html
+Dashboard:           open build_coverage/coverage/dashboard.html
+Full Report:         cat COVERAGE_REPORT.md
+Analysis:            cat build_coverage/coverage/analysis_report.txt
+Test Results:        cat coverage_results.txt
+
+--------------------------------------------------------------------------------
+RE-RUN COVERAGE
+--------------------------------------------------------------------------------
+
+Quick:   ./generate_coverage_report.sh
+
+Manual:
+  1. ./build_with_coverage.sh
+  2. ./build_coverage/coverage_test_simple
+  3. xcrun llvm-profdata merge -sparse default.profraw -o build_coverage/coverage_test_simple.profdata
+  4. xcrun llvm-cov report ...
+  5. python3 analyze_coverage.py
+
+--------------------------------------------------------------------------------
+COVERAGE BY CATEGORY
+--------------------------------------------------------------------------------
+
+Category          Engines  Avg Line Coverage  Status
+---------------- --------  -----------------  ------
+Dynamics (1-7)        6         62.2%          ⚠️
+Filter/EQ (8-14)      7         65.8%          ⚠️
+Distortion (15-23)    8         66.0%          ⚠️
+Modulation (24-32)    9         68.8%          ⚠️
+Delay/Reverb (33-42) 10         65.1%          ⚠️
+Spatial (43-47)       5         74.1%          ✅
+Pitch (48-51)         4         14.8%          ❌ CRITICAL
+Spectral (52-55)      4         45.6%          ❌
+Utility (56-59)       4         57.3%          ⚠️
+
+OVERALL:             57         61.7%          ⚠️
+
+================================================================================
+BOTTOM LINE: Code is functional but undercovered. Fix critical pitch engines,
+improve branch coverage, and resolve failed engines before production release.
+================================================================================

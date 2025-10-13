@@ -1,0 +1,355 @@
+# ChimeraPhoenix Buildkite Pipeline
+# Alternative to GitHub Actions for Buildkite users
+
+agents:
+  queue: "macos"
+
+env:
+  JUCE_DIR: "/usr/local/JUCE"
+  BUILD_TYPE: "Release"
+  THD_THRESHOLD: "1.0"
+  CPU_THRESHOLD_PERCENT: "50.0"
+
+steps:
+  # =============================================================================
+  # STEP 1: Build
+  # =============================================================================
+  - label: ":hammer: Build All Components"
+    key: "build"
+    command: |
+      echo "--- :package: Installing dependencies"
+      brew install cmake harfbuzz || true
+
+      echo "--- :juce: Setting up JUCE"
+      if [ ! -d "\$JUCE_DIR" ]; then
+        git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git \$JUCE_DIR
+      fi
+
+      echo "--- :building_construction: Building standalone test suite"
+      cd standalone_test
+      ./build_all.sh
+
+      echo "--- :chart_with_upwards_trend: Building benchmarks"
+      ./build_cpu_benchmark.sh
+      ./build_comprehensive_thd.sh
+
+      echo "--- :white_check_mark: Verifying build"
+      ls -lh build/
+
+    artifact_paths:
+      - "standalone_test/build/*"
+      - "standalone_test/*.log"
+
+    timeout_in_minutes: 15
+
+  # =============================================================================
+  # STEP 2: Functional Tests (Parallel)
+  # =============================================================================
+  - label: ":test_tube: Functional Tests"
+    depends_on: "build"
+    parallelism: 7
+    command: |
+      # Determine which test to run based on parallel job index
+      case \$BUILDKITE_PARALLEL_JOB in
+        0) TEST_NAME="reverb_test" ;;
+        1) TEST_NAME="filter_test" ;;
+        2) TEST_NAME="distortion_test" ;;
+        3) TEST_NAME="dynamics_test" ;;
+        4) TEST_NAME="modulation_test" ;;
+        5) TEST_NAME="pitch_test" ;;
+        6) TEST_NAME="spatial_test" ;;
+      esac
+
+      echo "--- :test_tube: Running \$TEST_NAME"
+      cd standalone_test
+      chmod +x build/\$TEST_NAME
+      ./build/\$TEST_NAME 2>&1 | tee \${TEST_NAME}_results.txt
+
+      echo "--- :mag: Analyzing results"
+      PASSED=\$(grep -c "PASS\\|✓" \${TEST_NAME}_results.txt || echo "0")
+      FAILED=\$(grep -c "FAIL\\|✗" \${TEST_NAME}_results.txt || echo "0")
+
+      echo "Results: \$PASSED passed, \$FAILED failed"
+
+      if [ "\$FAILED" -gt 0 ]; then
+        buildkite-agent annotate --style "error" "\$TEST_NAME: \$FAILED tests failed"
+        exit 1
+      else
+        buildkite-agent annotate --style "success" "\$TEST_NAME: All tests passed"
+      fi
+
+    artifact_paths:
+      - "standalone_test/*_results.txt"
+      - "standalone_test/*.csv"
+      - "standalone_test/*.json"
+
+    timeout_in_minutes: 30
+
+  # =============================================================================
+  # STEP 3: THD Measurements
+  # =============================================================================
+  - label: ":musical_note: THD Analysis"
+    depends_on: "build"
+    command: |
+      echo "--- :chart_with_upwards_trend: Running THD measurements"
+      cd standalone_test
+      chmod +x build/test_comprehensive_thd
+      ./build/test_comprehensive_thd 2>&1 | tee thd_output.txt
+
+      echo "--- :bar_chart: Analyzing THD results"
+      if [ -f "comprehensive_thd_results.csv" ]; then
+        FAILED_THD=\$(awk -F',' -v threshold=\$THD_THRESHOLD '
+          NR>1 && \$3 ~ /^[0-9.]+\$/ && \$3 > threshold { count++ }
+          END { print count+0 }
+        ' comprehensive_thd_results.csv)
+
+        WORST_THD=\$(awk -F',' 'NR>1 && \$3 ~ /^[0-9.]+\$/ {
+          if (\$3 > max) { max=\$3; engine=\$2 }
+        } END { print max " - " engine }' comprehensive_thd_results.csv)
+
+        echo "Engines exceeding \${THD_THRESHOLD}% THD: \$FAILED_THD"
+        echo "Worst THD: \$WORST_THD"
+
+        # Create annotation
+        cat > thd_annotation.md << EOF
+      ### 📊 THD Measurement Results
+
+      **Threshold:** \${THD_THRESHOLD}%
+      **Failed Engines:** \$FAILED_THD
+      **Worst Case:** \$WORST_THD
+
+      <details>
+      <summary>View Results</summary>
+
+      \`\`\`
+      \$(cat comprehensive_thd_results.csv | head -20)
+      \`\`\`
+
+      </details>
+      EOF
+
+        buildkite-agent annotate --style "info" < thd_annotation.md
+
+        if [ "\$FAILED_THD" -gt 5 ]; then
+          buildkite-agent annotate --style "error" "Too many engines exceed THD threshold!"
+          exit 1
+        fi
+      fi
+
+    artifact_paths:
+      - "standalone_test/comprehensive_thd_results.csv"
+      - "standalone_test/comprehensive_thd_report.txt"
+      - "standalone_test/thd_output.txt"
+
+    timeout_in_minutes: 30
+
+  # =============================================================================
+  # STEP 4: CPU Performance Benchmarks
+  # =============================================================================
+  - label: ":rocket: CPU Benchmarks"
+    depends_on: "build"
+    command: |
+      echo "--- :stopwatch: Running CPU benchmarks"
+      cd standalone_test
+      chmod +x build/cpu_benchmark_all_engines
+      ./build/cpu_benchmark_all_engines 2>&1 | tee cpu_output.txt
+
+      echo "--- :chart_with_upwards_trend: Analyzing performance"
+      if [ -f "cpu_benchmark_results.csv" ]; then
+        AVG_CPU=\$(awk -F',' 'NR>1 && \$6 ~ /^[0-9.]+\$/ { sum+=\$6; count++ }
+          END { print sum/count }' cpu_benchmark_results.csv)
+
+        HEAVY_COUNT=\$(awk -F',' -v threshold=\$CPU_THRESHOLD_PERCENT '
+          NR>1 && \$6 ~ /^[0-9.]+\$/ && \$6 > threshold { count++ }
+          END { print count+0 }
+        ' cpu_benchmark_results.csv)
+
+        echo "Average CPU: \${AVG_CPU}%"
+        echo "Engines exceeding \${CPU_THRESHOLD_PERCENT}%: \$HEAVY_COUNT"
+
+        # Create annotation with top 10
+        cat > perf_annotation.md << EOF
+      ### ⚡ CPU Performance Results
+
+      **Average CPU:** \${AVG_CPU}%
+      **Heavy Engines (>\${CPU_THRESHOLD_PERCENT}%):** \$HEAVY_COUNT
+
+      **Top 10 Most CPU-Intensive:**
+
+      \`\`\`
+      \$(awk -F',' 'NR>1 && NR<=11 { printf "%2d. %-35s %6.2f%%\n", \$1, \$3, \$6 }' cpu_benchmark_results.csv)
+      \`\`\`
+      EOF
+
+        buildkite-agent annotate --style "info" < perf_annotation.md
+
+        # Check for regressions (if previous results exist)
+        if buildkite-agent artifact download "cpu_benchmark_results.csv" previous/ --step "cpu-benchmarks" 2>/dev/null; then
+          echo "--- :mag: Checking for regressions"
+
+          python3 << 'PYTHON_EOF'
+      import csv
+      import sys
+
+      def load_benchmarks(filename):
+          results = {}
+          with open(filename, 'r') as f:
+              reader = csv.DictReader(f)
+              for row in reader:
+                  engine_id = row['EngineID']
+                  cpu = float(row['CPU_%']) if row['CPU_%'].replace('.','').isdigit() else 0
+                  results[engine_id] = cpu
+          return results
+
+      try:
+          current = load_benchmarks('cpu_benchmark_results.csv')
+          previous = load_benchmarks('previous/cpu_benchmark_results.csv')
+
+          regressions = []
+          REGRESSION_THRESHOLD = 10.0
+
+          for engine_id, current_cpu in current.items():
+              if engine_id in previous:
+                  prev_cpu = previous[engine_id]
+                  if prev_cpu > 0:
+                      percent_change = ((current_cpu - prev_cpu) / prev_cpu) * 100
+                      if percent_change > REGRESSION_THRESHOLD:
+                          regressions.append(f"Engine {engine_id}: +{percent_change:.1f}% (was {prev_cpu:.1f}%, now {current_cpu:.1f}%)")
+
+          if regressions:
+              print("⚠️ PERFORMANCE REGRESSIONS DETECTED:")
+              for r in regressions:
+                  print(f"  {r}")
+              sys.exit(1)
+          else:
+              print("✓ No significant performance regressions")
+
+      except Exception as e:
+          print(f"Error comparing: {e}")
+          sys.exit(0)
+      PYTHON_EOF
+
+          if [ \$? -eq 1 ]; then
+            buildkite-agent annotate --style "error" "Performance regressions detected - see logs"
+          fi
+        fi
+      fi
+
+    artifact_paths:
+      - "standalone_test/cpu_benchmark_results.csv"
+      - "standalone_test/cpu_output.txt"
+
+    timeout_in_minutes: 60
+
+  # =============================================================================
+  # STEP 5: Report Generation
+  # =============================================================================
+  - label: ":memo: Generate Report"
+    depends_on:
+      - "build"
+      - "functional-tests"
+      - "thd-analysis"
+      - "cpu-benchmarks"
+    allow_dependency_failure: true
+    command: |
+      echo "--- :bar_chart: Generating comprehensive report"
+
+      cat > CI_REPORT.md << 'EOF'
+      # ChimeraPhoenix CI Report
+
+      **Build:** \$BUILDKITE_BUILD_NUMBER
+      **Commit:** \$BUILDKITE_COMMIT
+      **Branch:** \$BUILDKITE_BRANCH
+      **Author:** \$BUILDKITE_BUILD_CREATOR
+
+      ---
+
+      ## Summary
+
+      EOF
+
+      # Download all artifacts
+      buildkite-agent artifact download "standalone_test/*_results.txt" . || true
+      buildkite-agent artifact download "standalone_test/comprehensive_thd_results.csv" . || true
+      buildkite-agent artifact download "standalone_test/cpu_benchmark_results.csv" . || true
+
+      # Analyze results
+      echo "### Test Results" >> CI_REPORT.md
+      echo "" >> CI_REPORT.md
+
+      for suite in reverb filter distortion dynamics modulation pitch spatial; do
+        if [ -f "standalone_test/\${suite}_test_results.txt" ]; then
+          echo "- ✓ \${suite} tests completed" >> CI_REPORT.md
+        else
+          echo "- ⚠️ \${suite} tests incomplete" >> CI_REPORT.md
+        fi
+      done
+
+      echo "" >> CI_REPORT.md
+      echo "### Performance Metrics" >> CI_REPORT.md
+      echo "" >> CI_REPORT.md
+
+      if [ -f "standalone_test/cpu_benchmark_results.csv" ]; then
+        AVG_CPU=\$(awk -F',' 'NR>1 && \$6 ~ /^[0-9.]+\$/ { sum+=\$6; count++ } END { print sum/count }' standalone_test/cpu_benchmark_results.csv)
+        echo "- Average CPU Usage: \${AVG_CPU}%" >> CI_REPORT.md
+      fi
+
+      if [ -f "standalone_test/comprehensive_thd_results.csv" ]; then
+        FAILED_THD=\$(awk -F',' -v threshold=1.0 'NR>1 && \$3 ~ /^[0-9.]+\$/ && \$3 > threshold { count++ } END { print count+0 }' standalone_test/comprehensive_thd_results.csv)
+        echo "- Engines exceeding THD threshold: \$FAILED_THD" >> CI_REPORT.md
+      fi
+
+      echo "" >> CI_REPORT.md
+      echo "---" >> CI_REPORT.md
+      echo "*Generated by Buildkite CI*" >> CI_REPORT.md
+
+      # Display report
+      cat CI_REPORT.md
+
+      # Annotate build
+      buildkite-agent annotate --style "info" < CI_REPORT.md
+
+    artifact_paths:
+      - "CI_REPORT.md"
+
+  # =============================================================================
+  # STEP 6: Notify (on failure)
+  # =============================================================================
+  - label: ":bell: Notify on Failure"
+    depends_on:
+      - "build"
+      - "functional-tests"
+      - "thd-analysis"
+      - "cpu-benchmarks"
+    allow_dependency_failure: true
+    command: |
+      if [ "\$BUILDKITE_COMMAND_EXIT_STATUS" != "0" ]; then
+        if [ -n "\$SLACK_WEBHOOK_URL" ]; then
+          echo "--- :slack: Sending Slack notification"
+          curl -X POST "\$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"🚨 ChimeraPhoenix Build Failed\",
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"*ChimeraPhoenix Build Failed*\n\n*Branch:* \`\$BUILDKITE_BRANCH\`\n*Build:* <\$BUILDKITE_BUILD_URL|#\$BUILDKITE_BUILD_NUMBER>\n*Author:* \$BUILDKITE_BUILD_CREATOR\"
+                  }
+                }
+              ]
+            }"
+        fi
+      fi
+
+# =============================================================================
+# Notify Configuration
+# =============================================================================
+notify:
+  - slack:
+      channels:
+        - "#chimera-ci"
+      message: |
+        Build #${BUILDKITE_BUILD_NUMBER} ${BUILDKITE_MESSAGE}
+        ${BUILDKITE_BUILD_URL}

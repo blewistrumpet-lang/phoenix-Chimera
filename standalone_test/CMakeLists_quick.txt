@@ -1,0 +1,35 @@
+cmake_minimum_required(VERSION 3.15)
+project(ReverbQuickTest)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
+
+# JUCE setup
+add_subdirectory(/Users/Branden/JUCE JUCE)
+
+# Add the test executable
+add_executable(test_reverb_quick
+    test_reverb_quick.cpp
+    ../JUCE_Plugin/Source/PlateReverb.cpp
+    ../JUCE_Plugin/Source/SpringReverb.cpp
+    ../JUCE_Plugin/Source/ShimmerReverb.cpp
+    ../JUCE_Plugin/Source/GatedReverb.cpp
+    ../JUCE_Plugin/Source/ConvolutionReverb.cpp
+)
+
+target_include_directories(test_reverb_quick PRIVATE
+    ../JUCE_Plugin/Source
+    ../JUCE_Plugin/JuceLibraryCode
+)
+
+target_link_libraries(test_reverb_quick PRIVATE
+    juce::juce_audio_basics
+    juce::juce_core
+    juce::juce_dsp
+)
+
+target_compile_definitions(test_reverb_quick PRIVATE
+    JUCE_STANDALONE_APPLICATION=1
+    JUCE_USE_CURL=0
+    JUCE_WEB_BROWSER=0
+)

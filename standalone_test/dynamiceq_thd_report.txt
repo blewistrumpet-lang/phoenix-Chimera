@@ -1,0 +1,194 @@
+
+╔═══════════════════════════════════════════════════════════════╗
+║  DynamicEQ THD Measurement Test - Bug #9 Investigation        ║
+╚═══════════════════════════════════════════════════════════════╝
+
+Engine: DynamicEQ (Engine 6)
+Sample Rate: 48000.000000 Hz
+Block Size: 512 samples
+Test Signal: 1kHz sine wave @ -6dBFS
+Target THD: < 1.0%
+
+
+----------------------------------------
+Test: 1. Bypass (Mix = 0%)
+----------------------------------------
+Parameters:
+  Mix (6): 0.000000
+
+Results:
+
+Status: FAIL (THD >= 0.010000%)
+
+----------------------------------------
+Test: 2. Neutral Settings (no compression)
+----------------------------------------
+Parameters:
+  Frequency (0): 0.500000
+  Threshold (1): 1.000000
+  Ratio (2): 0.000000
+  Gain (5): 0.500000
+  Mix (6): 1.000000
+
+Results:
+
+Status: FAIL (THD >= 0.100000%)
+
+----------------------------------------
+Test: 3. Static EQ (+6dB @ 1kHz)
+----------------------------------------
+Parameters:
+  Frequency (0): 0.500000
+  Threshold (1): 1.000000
+  Ratio (2): 0.000000
+  Gain (5): 0.700000
+  Mix (6): 1.000000
+
+Results:
+
+Status: FAIL (THD >= 0.500000%)
+
+----------------------------------------
+Test: 4. Light Compression (3:1, -40dB threshold)
+----------------------------------------
+Parameters:
+  Frequency (0): 0.500000
+  Threshold (1): 0.300000
+  Ratio (2): 0.500000
+  Attack (3): 0.200000
+  Release (4): 0.300000
+  Gain (5): 0.500000
+  Mix (6): 1.000000
+  Mode (7): 0.000000
+
+Results:
+
+Status: FAIL (THD >= 1.000000%)
+
+----------------------------------------
+Test: 5. Heavy Compression (8:1, -30dB threshold)
+----------------------------------------
+Parameters:
+  Frequency (0): 0.500000
+  Threshold (1): 0.500000
+  Ratio (2): 0.800000
+  Attack (3): 0.100000
+  Release (4): 0.200000
+  Gain (5): 0.500000
+  Mix (6): 1.000000
+  Mode (7): 0.000000
+
+Results:
+
+Status: FAIL (THD >= 1.000000%)
+
+----------------------------------------
+Test: 6. Expander Mode
+----------------------------------------
+Parameters:
+  Frequency (0): 0.500000
+  Threshold (1): 0.400000
+  Ratio (2): 0.600000
+  Attack (3): 0.300000
+  Release (4): 0.400000
+  Gain (5): 0.500000
+  Mix (6): 1.000000
+  Mode (7): 0.500000
+
+Results:
+
+Status: FAIL (THD >= 1.000000%)
+
+----------------------------------------
+Test: 7. Gate Mode
+----------------------------------------
+Parameters:
+  Frequency (0): 0.500000
+  Threshold (1): 0.200000
+  Ratio (2): 0.500000
+  Attack (3): 0.200000
+  Release (4): 0.300000
+  Gain (5): 0.500000
+  Mix (6): 1.000000
+  Mode (7): 1.000000
+
+Results:
+
+Status: FAIL (THD >= 1.000000%)
+
+----------------------------------------
+Test: 8. High Q Filter (narrow band)
+----------------------------------------
+Parameters:
+  Frequency (0): 0.500000
+  Threshold (1): 0.400000
+  Ratio (2): 0.500000
+  Gain (5): 0.600000
+  Mix (6): 1.000000
+
+Results:
+
+Status: FAIL (THD >= 1.000000%)
+
+----------------------------------------
+Test: 9. Extreme Settings (10:1, +12dB gain)
+----------------------------------------
+Parameters:
+  Frequency (0): 0.500000
+  Threshold (1): 0.700000
+  Ratio (2): 1.000000
+  Attack (3): 0.000000
+  Release (4): 0.000000
+  Gain (5): 0.800000
+  Mix (6): 1.000000
+  Mode (7): 0.000000
+
+Results:
+
+Status: FAIL (THD >= 1.000000%)
+
+╔═══════════════════════════════════════════════════════════════╗
+║                        TEST SUMMARY                            ║
+╚═══════════════════════════════════════════════════════════════╝
+
+Test Results:
+-------------
+1. Bypass (Mix = 0%): FAIL (THD = 57.821487%)
+2. Neutral Settings (no compression): FAIL (THD = 60.442108%)
+3. Static EQ (+6dB @ 1kHz): FAIL (THD = 58.207302%)
+4. Light Compression (3:1, -40dB threshold): FAIL (THD = 58.361412%)
+5. Heavy Compression (8:1, -30dB threshold): FAIL (THD = 58.571602%)
+6. Expander Mode: FAIL (THD = 60.276974%)
+7. Gate Mode: FAIL (THD = 60.276974%)
+8. High Q Filter (narrow band): FAIL (THD = 60.483093%)
+9. Extreme Settings (10:1, +12dB gain): FAIL (THD = 60.362465%)
+
+Statistics:
+-----------
+Total Tests:   9
+Passed:        0
+Failed:        9
+Success Rate:  0.000000%
+
+Worst THD:     60.483093% (8. High Q Filter (narrow band))
+
+╔═══════════════════════════════════════════════════════════════╗
+║                         DIAGNOSIS                              ║
+╚═══════════════════════════════════════════════════════════════╝
+
+CRITICAL: THD exceeds 4% - severe nonlinearity detected!
+
+Potential causes:
+1. Logarithmic/exponential operations in gain calculation
+   - Line 189: std::log10() in envelope detection
+   - Line 195, 201: std::pow(10.0f, ...) in gain reduction
+   - Line 143, 389-390: dbToLinear/linearToDb conversions
+
+2. Filter nonlinearity
+   - Line 82: std::tan() in TPT filter coefficient calculation
+   - Filter may be unstable at certain Q values
+
+3. Commented-out saturation still causing issues
+   - Check if analog saturation is actually disabled
+
+

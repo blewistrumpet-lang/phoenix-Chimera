@@ -1,0 +1,243 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                 FREQUENCY RESPONSE TEST SUITE - QUICK START                  ║
+║                      Filter & EQ Engines 8-14                                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+WHAT THIS TEST DOES:
+────────────────────────────────────────────────────────────────────────────────
+✓ Generates sine sweeps from 20Hz to 20kHz (100 frequency points)
+✓ Measures output amplitude at each frequency
+✓ Plots frequency response curves for each filter/EQ
+✓ Verifies filters actually filter (attenuate frequencies)
+✓ Creates detailed frequency response report with analysis
+
+
+ENGINES TESTED:
+────────────────────────────────────────────────────────────────────────────────
+  8  - VintageConsoleEQ_Studio   (Vintage Console EQ)
+  9  - LadderFilter              (Moog-style 4-pole Ladder)
+  10 - StateVariableFilter       (Multi-mode: LP/BP/HP/Notch)
+  11 - FormantFilter             (Vowel Formant Filter)
+  12 - EnvelopeFilter            (Auto-Wah / Envelope Filter)
+  13 - CombResonator             (Harmonic Comb Resonator)
+  14 - VocalFormantFilter        (Advanced Vocal Formant)
+
+
+RUN THE COMPLETE TEST SUITE:
+────────────────────────────────────────────────────────────────────────────────
+  ./run_frequency_response_suite.sh
+
+This one command does everything:
+  1. Compiles the test executable
+  2. Runs frequency response measurements
+  3. Generates CSV data files
+  4. Creates visualization plots
+  5. Generates comprehensive reports
+
+Expected runtime: ~5 minutes
+
+
+OUTPUT FILES:
+────────────────────────────────────────────────────────────────────────────────
+CSV Data (per engine):
+  frequency_response_engine_8.csv
+  frequency_response_engine_9.csv
+  frequency_response_engine_10.csv
+  frequency_response_engine_11.csv
+  frequency_response_engine_12.csv
+  frequency_response_engine_13.csv
+  frequency_response_engine_14.csv
+
+Plots (visualizations):
+  frequency_response_plots/frequency_response_engine_N.png   (individual)
+  frequency_response_plots/frequency_response_combined.png   (all overlaid)
+  frequency_response_plots/frequency_response_grid.png       (comparison grid)
+
+Reports (analysis):
+  FREQUENCY_RESPONSE_REPORT.txt           (detailed analysis)
+  FREQUENCY_RESPONSE_TEST_SUMMARY.md      (summary document)
+  frequency_response_test_output.log      (test execution log)
+
+
+VIEW RESULTS:
+────────────────────────────────────────────────────────────────────────────────
+Read the report:
+  cat FREQUENCY_RESPONSE_REPORT.txt
+
+View plots (macOS):
+  open frequency_response_plots/frequency_response_combined.png
+
+View CSV data:
+  column -t -s, < frequency_response_engine_9.csv | less
+
+
+MANUAL STEP-BY-STEP:
+────────────────────────────────────────────────────────────────────────────────
+If you prefer manual control:
+
+1. Build:
+   ./build_frequency_response_test.sh
+
+2. Run test:
+   ./test_frequency_response_8_14
+
+3. Generate plots:
+   python3 plot_frequency_response.py
+
+   (requires: pip3 install matplotlib pandas numpy)
+
+
+INTERPRETING RESULTS:
+────────────────────────────────────────────────────────────────────────────────
+Key Metrics:
+
+  Max Gain:     Peak boost/attenuation in dB
+  Min Gain:     Maximum attenuation in dB
+  Gain Range:   Max - Min (measures filtering effectiveness)
+  Cutoff (-3dB): Frequency where gain drops 3dB below peak
+
+Pass Criteria:
+
+  ✓ Created:    Engine instantiated successfully
+  ✓ Stable:     No NaN/Inf values (numerical stability)
+  ✓ Filters:    Gain range > 6dB (effective filtering)
+
+
+EXAMPLE OUTPUT:
+────────────────────────────────────────────────────────────────────────────────
+┌────────┬──────────────────────────┬─────────┬────────┬──────────┬──────────┐
+│ Engine │ Name                     │ Created │ Stable │ Filters  │ Max Gain │
+├────────┼──────────────────────────┼─────────┼────────┼──────────┼──────────┤
+│      8 │ VintageConsoleEQ_Studio  │ YES     │ YES    │ YES      │ +3.2 dB  │
+│      9 │ LadderFilter             │ YES     │ YES    │ YES      │ +2.1 dB  │
+│     10 │ StateVariableFilter      │ YES     │ YES    │ YES      │ -0.5 dB  │
+│     11 │ FormantFilter            │ YES     │ YES    │ YES      │ +5.8 dB  │
+│     12 │ EnvelopeFilter           │ YES     │ YES    │ YES      │ +1.2 dB  │
+│     13 │ CombResonator            │ YES     │ YES    │ YES      │ +4.5 dB  │
+│     14 │ VocalFormantFilter       │ YES     │ YES    │ YES      │ +6.2 dB  │
+└────────┴──────────────────────────┴─────────┴────────┴──────────┴──────────┘
+
+
+FREQUENCY RESPONSE CURVES:
+────────────────────────────────────────────────────────────────────────────────
+The plots show gain (dB) vs. frequency (Hz) on a logarithmic scale.
+
+Lowpass Filter (e.g., LadderFilter):
+  +3 ─┐
+   0 ─┤██████████╗                   ← Flat passband (low frequencies)
+  -3 ─┤          ╚╗                  ← Cutoff (-3dB point)
+  -6 ─┤           ╚╗
+ -12 ─┤            ╚╗                ← Filter rolloff
+ -24 ─┤             ╚═══════════     ← Stopband (high frequencies)
+      └────────────────────────────► Frequency
+     20Hz      1kHz     10kHz    20kHz
+
+Formant Filter (e.g., FormantFilter):
+  +6 ─┐    ┌──╗   ┌──╗   ┌──╗       ← Formant peaks (F1, F2, F3)
+  +3 ─┤   ┌┘  ╚┐ ┌┘  ╚┐ ┌┘  ╚┐
+   0 ─┤  ┌┘    ╚┐┘    ╚┐┘    ╚┐
+  -3 ─┤ ┌┘      └┘     └┘     ╚┐
+  -6 ─┤─┘                      ╚─   ← Valleys between formants
+      └────────────────────────────►
+        F1      F2      F3
+
+
+TROUBLESHOOTING:
+────────────────────────────────────────────────────────────────────────────────
+Build fails:
+  • Check JUCE path in build_frequency_response_test.sh
+  • Verify engine source files exist in ../JUCE_Plugin/Source/
+
+Test fails (exit code ≠ 0):
+  • Check frequency_response_test_output.log for errors
+  • Look for "EXCEPTION" or "FAILED" messages
+
+No plots generated:
+  • Install Python packages: pip3 install matplotlib pandas numpy
+  • Check if CSV files exist: ls frequency_response_engine_*.csv
+
+"Filters correctly: NO" warning:
+  • Check if mix parameter is set to 100%
+  • Verify filter parameters are configured correctly
+  • May indicate filter in bypass mode or implementation issue
+
+
+DOCUMENTATION:
+────────────────────────────────────────────────────────────────────────────────
+Full documentation: FREQUENCY_RESPONSE_TEST_SUITE_README.md
+
+  • Complete methodology
+  • Advanced usage examples
+  • Detailed troubleshooting
+  • Technical specifications
+  • Contributing guidelines
+
+
+TECHNICAL DETAILS:
+────────────────────────────────────────────────────────────────────────────────
+Sample Rate:        48,000 Hz
+Block Size:         512 samples
+Test Frequencies:   100 points (20Hz - 20kHz, logarithmic)
+Input Level:        -6 dB (0.5 linear amplitude)
+Test Duration:      0.5 seconds per frequency
+Settling Time:      100 ms (excluded from measurement)
+Measurement:        RMS level (root mean square)
+Gain Calculation:   20 × log10(output / input) dB
+
+
+EXPECTED BEHAVIOR PER ENGINE:
+────────────────────────────────────────────────────────────────────────────────
+Engine  8 (VintageConsoleEQ_Studio):  EQ curves with boost/cut
+Engine  9 (LadderFilter):             Lowpass with 24dB/oct rolloff
+Engine 10 (StateVariableFilter):      Clean multi-mode filtering (12dB/oct)
+Engine 11 (FormantFilter):            Multiple bandpass peaks (vowel formants)
+Engine 12 (EnvelopeFilter):           Dynamic filtering (may vary with signal)
+Engine 13 (CombResonator):            Harmonic peaks at regular intervals
+Engine 14 (VocalFormantFilter):       Complex multi-peak response (5 formants)
+
+
+CONTINUOUS INTEGRATION:
+────────────────────────────────────────────────────────────────────────────────
+To run in CI/CD pipeline:
+
+  ./run_frequency_response_suite.sh
+  EXIT_CODE=$?
+
+  if [ $EXIT_CODE -eq 0 ]; then
+      echo "✓ Frequency response tests PASSED"
+  else
+      echo "✗ Frequency response tests FAILED"
+      # Archive test artifacts for debugging
+      tar -czf artifacts.tar.gz frequency_response_*
+  fi
+
+
+SUPPORT:
+────────────────────────────────────────────────────────────────────────────────
+For issues or questions:
+  1. Check FREQUENCY_RESPONSE_TEST_SUITE_README.md
+  2. Review test output logs
+  3. Examine CSV data for anomalies
+  4. Compare with previous test results
+
+
+VERSION HISTORY:
+────────────────────────────────────────────────────────────────────────────────
+Version 1.0 (2025-10-11) - Initial release
+  • 7 engines (8-14)
+  • 100 frequency points
+  • CSV export
+  • Plot generation
+  • Comprehensive reporting
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+Ready to start? Run:
+
+    ./run_frequency_response_suite.sh
+
+Expected runtime: ~5 minutes
+Output: CSV data, plots, and comprehensive report
+
+════════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,80 @@
+{
+  "oracle_basic": {
+    "status": "PASSED",
+    "errors": [],
+    "corpus_size": 150
+  },
+  "oracle_string_ids": {
+    "status": "FAILED",
+    "errors": [
+      "No presets loaded"
+    ]
+  },
+  "oracle_faiss": {
+    "status": "PASSED",
+    "errors": [],
+    "presets_count": 150,
+    "faiss_vectors": 150,
+    "vector_dimension": 53
+  },
+  "engine_matching": {
+    "status": "PASSED",
+    "errors": [],
+    "test_results": [
+      {
+        "test": "vintage",
+        "matches": 3,
+        "best_score": 0.02973342183430205,
+        "preset_name": "Formant Web Storm"
+      },
+      {
+        "test": "aggressive",
+        "matches": 3,
+        "best_score": 0.028781976832915345,
+        "preset_name": "Harmonic Web Flux"
+      },
+      {
+        "test": "simple",
+        "matches": 3,
+        "best_score": 0.050817267565773906,
+        "preset_name": "Kaleidoscope Engineering Test 9"
+      }
+    ]
+  },
+  "similarity_search": {
+    "status": "PASSED",
+    "errors": [],
+    "vibe_tests": [
+      {
+        "vibe": "warm vintage analog",
+        "matches": 5,
+        "top_preset": "Kaleidoscope Engineering Test 9"
+      },
+      {
+        "vibe": "bright aggressive digital",
+        "matches": 5,
+        "top_preset": "Kaleidoscope Engineering Test 9"
+      },
+      {
+        "vibe": "spacious ambient ethereal",
+        "matches": 5,
+        "top_preset": "Kaleidoscope Engineering Test 9"
+      },
+      {
+        "vibe": "experimental chaos glitch",
+        "matches": 5,
+        "top_preset": "Kaleidoscope Engineering Test 9"
+      }
+    ]
+  },
+  "fallback_handling": {
+    "status": "PASSED",
+    "errors": []
+  },
+  "summary": {
+    "total_tests": 6,
+    "passed": 5,
+    "failed": 1,
+    "success_rate": 0.8333333333333334
+  }
+}

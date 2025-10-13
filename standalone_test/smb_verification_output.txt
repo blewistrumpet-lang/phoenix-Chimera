@@ -1,0 +1,22 @@
+
+================================================================================
+SMBPitchShiftFixed DEEP VERIFICATION
+================================================================================
+Engine: SMBPitchShiftFixed (Engine 34)
+Algorithm: Signalsmith Stretch (Phase-vocoder based)
+Sample Rate: 44100 Hz
+Block Size: 512 samples
+Target Accuracy: ±5 cents
+Target THD: < 5%
+
+================================================================================
+TEST 1: FREQUENCY ACCURACY
+================================================================================
+
+Testing all frequency × shift combinations...
+
+Input frequency: 55 Hz
+     55.00 Hz ->    27.50 Hz (      -12.00 st): measured=   27.86 Hz, error=  22.79 cents, THD= 0.35% [FAIL]
+     55.00 Hz ->    36.71 Hz (      -7.00 st): measured=   37.26 Hz, error=  26.02 cents, THD= 0.29% [FAIL]
+     55.00 Hz ->    41.20 Hz (      -5.00 st): measured=   41.36 Hz, error=   6.62 cents, THD= 0.33% [FAIL]
+     55.00 Hz ->    49.00 Hz (      -2.00 st): measured=   49.32 Hz, error=  11.46 cents, THD= 0.27% [FAIL]

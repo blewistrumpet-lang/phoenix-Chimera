@@ -1,0 +1,213 @@
+{
+  "timestamp": "2025-09-18T23:51:40.585771",
+  "summary": {
+    "total_issues": 25,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 25,
+    "health_score": 75
+  },
+  "issues": [
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0001",
+      "issue": "Missing parameter",
+      "expected": "slot4_param0",
+      "found": "Missing",
+      "fix": "Add slot4_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0001",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0001",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0002",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0002",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0003",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0003",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0004",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0004",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0005",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0005",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0006",
+      "issue": "Missing parameter",
+      "expected": "slot4_param0",
+      "found": "Missing",
+      "fix": "Add slot4_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0006",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0006",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0007",
+      "issue": "Missing parameter",
+      "expected": "slot4_param0",
+      "found": "Missing",
+      "fix": "Add slot4_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0007",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0007",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0008",
+      "issue": "Missing parameter",
+      "expected": "slot4_param0",
+      "found": "Missing",
+      "fix": "Add slot4_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0008",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0008",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0009",
+      "issue": "Missing parameter",
+      "expected": "slot4_param0",
+      "found": "Missing",
+      "fix": "Add slot4_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0009",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0009",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0010",
+      "issue": "Missing parameter",
+      "expected": "slot5_param0",
+      "found": "Missing",
+      "fix": "Add slot5_param0 with default value 0.5"
+    },
+    {
+      "severity": "low",
+      "location": "/Users/Branden/branden/Project_Chimera_v3.0_Phoenix/JUCE_Plugin/GoldenCorpus_v3/faiss_index/presets_clean.json:GC_0010",
+      "issue": "Missing parameter",
+      "expected": "slot6_param0",
+      "found": "Missing",
+      "fix": "Add slot6_param0 with default value 0.5"
+    }
+  ]
+}

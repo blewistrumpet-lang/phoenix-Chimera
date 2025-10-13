@@ -1,0 +1,58 @@
+EngineID,EngineName,Category,ExpectedStereo,LRCorrelation,StereoWidth,PhaseCoherence,MidLevel,SideLevel,MidSideRatio_dB,MonoCompatibility,PeakL,PeakR,RMS_L,RMS_R,BalanceRatio,HasStereoContent,IsMonoCollapsed,IsPhaseReversed,IsImbalanced,QualityGrade,Status,Warnings,ErrorMessage
+0,None (Bypass),Utility,No,0.965937,0.131630,0.965937,0.350529,0.046140,-17.613,0.991448,0.500000,0.500000,0.353553,0.353553,1.000000,Yes,No,No,No,A,PASS,,
+1,Vintage Opto Compressor,Dynamics,Yes,0.965938,0.131629,0.965938,0.209238,0.027542,-17.613,0.991448,0.498834,0.498821,0.211038,0.211047,0.999956,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+2,Classic VCA Compressor,Dynamics,Yes,0.965937,0.131631,0.965937,0.245423,0.032305,-17.613,0.991448,0.518522,0.517856,0.247537,0.247544,0.999973,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+3,Transient Shaper,Dynamics,Yes,0.965937,0.131630,0.965937,0.350529,0.046140,-17.613,0.991448,0.500000,0.500000,0.353553,0.353553,1.000000,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+4,Noise Gate,Dynamics,Yes,0.965934,0.131636,0.965934,0.346200,0.045572,-17.613,0.991447,0.498732,0.498731,0.349190,0.349183,1.000020,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+5,Mastering Limiter,Dynamics,Yes,0.965938,0.131629,0.965938,0.124943,0.016446,-17.613,0.991448,0.257040,0.258979,0.126016,0.126025,0.999929,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+6,Dynamic EQ,Dynamics,Yes,0.990668,0.213795,0.990668,0.929379,0.198696,-13.400,0.997760,3.389471,1.475834,1.120139,0.742791,1.508014,Yes,Yes,No,Yes,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95; IMBALANCED: L/R ratio = 1.51,
+7,Parametric EQ (Studio),Filter,Yes,0.965936,0.131632,0.965936,0.350622,0.046153,-17.613,0.991448,0.518522,0.517856,0.353646,0.353646,0.999999,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+8,Vintage Console EQ,Filter,Yes,0.965936,0.131633,0.965936,0.350077,0.046082,-17.613,0.991447,0.528271,0.527441,0.353097,0.353097,0.999998,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+9,Ladder Filter,Filter,Yes,0.796905,0.260718,0.872706,0.143140,0.037319,-11.677,0.967653,0.352349,0.352273,0.147876,0.147974,0.999337,Yes,No,No,No,A,PASS,,
+10,State Variable Filter,Filter,Yes,0.965936,0.131633,0.965936,0.800951,0.105431,-17.613,0.991447,1.358703,1.358378,0.807865,0.807855,1.000012,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+11,Formant Filter,Filter,Yes,0.956920,0.148373,0.956920,0.362369,0.053766,-16.573,0.989171,0.709919,0.754592,0.366288,0.366384,0.999738,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+12,Envelope Filter,Filter,Yes,0.965996,0.131514,0.965996,0.351468,0.046223,-17.621,0.991463,0.578287,0.608805,0.354497,0.354492,1.000012,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+13,Comb Resonator,Filter,Yes,0.964316,0.134816,0.964316,0.328837,0.044333,-17.405,0.991039,0.492045,0.478465,0.330813,0.332807,0.994007,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+14,Vocal Formant Filter,Filter,Yes,0.965880,0.131743,0.965880,0.015711,0.002070,-17.605,0.991433,0.035528,0.036666,0.015846,0.015848,0.999906,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+15,Vintage Tube Preamp,Distortion,Yes,0.073649,0.928722,0.074279,0.024927,0.023150,-0.642,0.733894,0.477056,0.405686,0.032057,0.035874,0.893611,Yes,No,No,No,A,PASS,,
+16,Wave Folder,Distortion,Yes,0.910335,0.216649,0.910335,0.195247,0.042300,-13.285,0.977327,0.245405,0.240374,0.199765,0.199789,0.999880,Yes,No,No,No,C,WARNING,,
+17,Harmonic Exciter,Distortion,Yes,0.965278,0.132919,0.965278,0.332843,0.044241,-17.528,0.991282,0.484885,0.484912,0.335769,0.335772,0.999993,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+18,Bit Crusher,Distortion,Yes,0.965931,0.131643,0.965931,0.350026,0.046079,-17.612,0.991446,0.500000,0.499997,0.353046,0.353047,0.999997,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+19,Multiband Saturator,Distortion,Yes,0.860732,0.273580,0.860732,0.052905,0.014474,-11.258,0.964555,0.580517,0.582857,0.054855,0.054843,1.000226,Yes,No,No,No,B,PASS,,
+20,Muff Fuzz,Distortion,Yes,0.965911,0.131683,0.965911,0.340446,0.044831,-17.609,0.991441,0.504118,0.503615,0.343385,0.343385,0.999999,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+21,Rodent Distortion,Distortion,Yes,0.937285,0.179923,0.937285,0.291153,0.052385,-14.898,0.984196,0.362523,0.364266,0.295828,0.295827,1.000004,Yes,No,No,No,C,WARNING,,
+22,K-Style Overdrive,Distortion,Yes,0.965104,0.133258,0.965104,0.339207,0.045202,-17.506,0.991238,0.468175,0.467824,0.342205,0.342205,0.999999,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+23,Digital Chorus,Modulation,Yes,0.416614,0.642634,0.416614,0.210864,0.135508,-3.841,0.841852,0.626222,0.551866,0.259846,0.241106,1.077725,Yes,No,No,No,A,PASS,,
+24,Resonant Chorus,Modulation,Yes,0.929283,0.192011,0.929283,0.177603,0.034102,-14.333,0.982165,0.451266,0.413070,0.183474,0.178183,1.029694,Yes,No,No,No,C,WARNING,,
+25,Analog Phaser,Modulation,Yes,0.965926,0.131652,0.965926,0.175259,0.023073,-17.611,0.991445,0.250179,0.250072,0.176771,0.176773,0.999989,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+26,Ring Modulator,Modulation,Yes,-0.025944,1.026288,-0.025944,0.099200,0.101808,0.225,0.697885,0.454822,0.456917,0.141356,0.142932,0.988976,Yes,No,No,No,A,PASS,,
+27,Frequency Shifter,Modulation,Yes,0.856582,0.277936,0.856582,0.181615,0.050477,-11.121,0.963479,0.384490,0.385936,0.188559,0.188439,1.000638,Yes,No,No,No,B,PASS,,
+28,Harmonic Tremolo,Modulation,Yes,0.956667,0.148526,0.956832,0.474469,0.070471,-16.564,0.989149,0.809852,0.804876,0.479733,0.479615,1.000248,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+29,Classic Tremolo,Modulation,Yes,0.965823,0.131855,0.965823,0.272377,0.035914,-17.598,0.991419,0.500301,0.500358,0.274781,0.274688,1.000340,Yes,Yes,No,No,F,FAIL_MONO_COLLAPSED,MONO_COLLAPSED: Correlation > 0.95,
+30,Rotary Speaker,Modulation,Yes,0.657875,0.454327,0.657875,0.290138,0.131818,-6.853,0.910465,0.546698,0.546152,0.316378,0.320962,0.985719,Yes,No,No,No,A,PASS,,
+31,Pitch Shifter,Modulation,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+32,Detune Doubler,Modulation,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+33,Intelligent Harmonizer,Modulation,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+34,Tape Echo,Delay,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+35,Digital Delay,Delay,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+36,Magnetic Drum Echo,Delay,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+37,Bucket Brigade Delay,Delay,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+38,Buffer Repeat,Delay,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+39,Plate Reverb,Reverb,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+40,Spring Reverb,Reverb,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+41,Convolution Reverb,Reverb,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+42,Shimmer Reverb,Reverb,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+43,Gated Reverb,Reverb,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+44,Stereo Widener,Spatial,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+45,Stereo Imager,Spatial,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+46,Dimension Expander,Spatial,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+47,Spectral Freeze,Special,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+48,Spectral Gate,Special,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+49,Phased Vocoder,Special,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+50,Granular Cloud,Special,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+51,Chaos Generator,Special,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+52,Feedback Network,Special,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+53,Mid-Side Processor,Utility,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+54,Gain Utility,Utility,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+55,Mono Maker,Utility,No,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found
+56,Phase Align,Utility,Yes,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No,No,No,No,?,NO_DATA,,No stereo data file found

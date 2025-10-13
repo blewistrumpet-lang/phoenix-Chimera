@@ -1,0 +1,102 @@
+{
+  "timestamp": "2025-10-04T20:50:53.772711",
+  "base_url": "http://localhost:8000",
+  "total_tests": 9,
+  "passed": 9,
+  "failed": 0,
+  "results": [
+    {
+      "test": "Health Endpoint",
+      "passed": true,
+      "details": "All components ready: visionary, calculator, alchemist",
+      "timestamp": "2025-10-04T20:50:53.777922",
+      "data": {
+        "status": "healthy",
+        "components": {
+          "visionary": "ready",
+          "calculator": "intelligent",
+          "alchemist": "ready"
+        },
+        "features": {
+          "parameter_parsing": true,
+          "time_subdivisions": true,
+          "percentage_extraction": true,
+          "ratio_conversion": true
+        },
+        "timestamp": "2025-10-04T20:50:53.777518"
+      }
+    },
+    {
+      "test": "Basic Preset Generation",
+      "passed": true,
+      "details": "Preset: Sunset Boulevard Echoes, 5 engines, Structure valid: True",
+      "timestamp": "2025-10-04T20:51:28.035304",
+      "data": {
+        "has_slots": true,
+        "slot_count": true,
+        "has_name": true,
+        "all_params": true,
+        "param_ranges": true,
+        "active_engines": 5
+      }
+    },
+    {
+      "test": "Parameter Clamping",
+      "passed": true,
+      "details": "Preset: Infinite Echo Vortex, 4 engines, Structure valid: True",
+      "timestamp": "2025-10-04T20:51:57.414232",
+      "data": {
+        "has_slots": true,
+        "slot_count": true,
+        "has_name": true,
+        "all_params": true,
+        "param_ranges": true,
+        "active_engines": 4
+      }
+    },
+    {
+      "test": "Parameter Value Ranges",
+      "passed": true,
+      "details": "All 90 parameters within [0.0, 1.0]",
+      "timestamp": "2025-10-04T20:51:57.414273"
+    },
+    {
+      "test": "Concurrent Requests",
+      "passed": true,
+      "details": "3/3 succeeded in 35.3s",
+      "timestamp": "2025-10-04T20:52:32.693714"
+    },
+    {
+      "test": "Performance Benchmarks",
+      "passed": true,
+      "details": "Avg: 39.2s, Max: 41.9s",
+      "timestamp": "2025-10-04T20:53:51.160984"
+    },
+    {
+      "test": "Engine Knowledge Base",
+      "passed": true,
+      "details": "57 engines, Essential: All present",
+      "timestamp": "2025-10-04T20:53:51.164489"
+    },
+    {
+      "test": "Debug Output Validation",
+      "passed": true,
+      "details": "Preset: Echoing Debug, 4 engines, Structure valid: True",
+      "timestamp": "2025-10-04T20:54:18.373265",
+      "data": {
+        "has_slots": true,
+        "slot_count": true,
+        "has_name": true,
+        "all_params": true,
+        "param_ranges": true,
+        "active_engines": 4
+      }
+    },
+    {
+      "test": "Debug Information",
+      "passed": true,
+      "details": "All required fields present: prompt, timestamp, visionary, calculator, alchemist, processing_time_seconds",
+      "timestamp": "2025-10-04T20:54:18.373291"
+    }
+  ]
+}

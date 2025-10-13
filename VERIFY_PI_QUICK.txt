@@ -1,0 +1,52 @@
+================================================================================
+RASPBERRY PI BUILD VERIFICATION - QUICK REFERENCE
+================================================================================
+
+RUN THESE COMMANDS ON PI (ssh pi@192.168.68.63):
+
+1. CHECK BINARY:
+   file ~/phoenix-Chimera/pi_deployment/JUCE_Plugin/Builds/LinuxMakefile/build/ChimeraPhoenix_Pi
+
+   Expected: "ELF 64-bit LSB executable, ARM aarch64"
+   Expected Size: >1MB
+
+2. CHECK SYMBOLS:
+   strings ~/phoenix-Chimera/pi_deployment/JUCE_Plugin/Builds/LinuxMakefile/build/ChimeraPhoenix_Pi | grep -E "updateUIFromProgress|stopProgressMonitoring"
+
+   Expected: Both strings found
+
+3. CHECK LINE COUNT:
+   wc -l ~/phoenix-Chimera/pi_deployment/JUCE_Plugin/Source/PluginEditor_Pi.cpp
+
+   Expected: 936 lines (or close)
+
+4. CRITICAL - CHECK FIELD NAMES:
+   grep 'progress\["' ~/phoenix-Chimera/pi_deployment/JUCE_Plugin/Source/PluginEditor_Pi.cpp | grep -v "//" | sort -u
+
+   Expected OUTPUT:
+   progress["message"]
+   progress["overall_progress"]    <-- NOT "percent"!
+   progress["preset_name"]
+   progress["stage"]
+
+   ❌ WRONG: progress["percent"]
+   ✅ CORRECT: progress["overall_progress"]
+
+5. CHECK HEADER VARIABLES:
+   grep -E "currentRequestId|progressMonitor" ~/phoenix-Chimera/pi_deployment/JUCE_Plugin/Source/PluginEditor_Pi.h
+
+   Expected: Both variables declared
+
+================================================================================
+AUTOMATED SCRIPT:
+
+scp /Users/Branden/branden/Project_Chimera_v3.0_Phoenix/verify_pi_build.sh pi@192.168.68.63:~/
+ssh pi@192.168.68.63 "chmod +x ~/verify_pi_build.sh && ~/verify_pi_build.sh"
+
+================================================================================
+BUILD STATUS:
+✅ SUCCESS = All checks pass
+❌ FAIL = Binary missing, symbols missing, or wrong field names
+
+MOST CRITICAL CHECK: Field names must be "overall_progress" NOT "percent"
+================================================================================

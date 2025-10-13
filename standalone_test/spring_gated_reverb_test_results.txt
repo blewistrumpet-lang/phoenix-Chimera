@@ -1,0 +1,85 @@
+
+======================================================================
+  ChimeraPhoenix Spring & Gated Reverb Test Suite
+  Engines 42-43: Impulse Response & Reverb Metrics Analysis
+======================================================================
+
+======================================================================
+Engine 42: Spring Reverb
+======================================================================
+
+IMPULSE RESPONSE ANALYSIS:
+  Sample count:    48,000 samples (~1.00s @ 48kHz)
+  Peak amplitude:  0.0135
+  Tail amplitude:  6.946102e-06
+  DC offset:       1.146842e-05
+
+DECAY CHARACTERISTICS (RT60):
+  RT60:            0.000 seconds (too short)
+  Early Decay:     0.000 seconds
+  Decay linearity: 8.50
+
+STEREO WIDTH:
+  Correlation:     0.004 (good stereo)
+
+ARTIFACT DETECTION:
+  Gating:          DETECTED (threshold: -25.2 dB)
+
+======================================================================
+TEST RESULTS:
+======================================================================
+  RT60 Valid:      FAIL   (0.05s - 15s)
+  Stereo Image:    PASS   (-0.9 to 0.9)
+  Peak Amplitude:  PASS   (0.001 - 100.0)
+  DC Offset:       PASS   (< 0.01)
+
+----------------------------------------------------------------------
+  OVERALL:         FAILED
+----------------------------------------------------------------------
+
+
+======================================================================
+Engine 43: Gated Reverb
+======================================================================
+
+IMPULSE RESPONSE ANALYSIS:
+  Sample count:    48,000 samples (~1.00s @ 48kHz)
+  Peak amplitude:  0.0153
+  Tail amplitude:  0.000000e+00
+  DC offset:       7.999333e-08
+
+DECAY CHARACTERISTICS (RT60):
+  RT60:            0.009 seconds (too short)
+  Early Decay:     0.000 seconds
+  Decay linearity: 283.33
+
+STEREO WIDTH:
+  Correlation:     -0.001 (wide/decorrelated)
+
+ARTIFACT DETECTION:
+  Gating:          DETECTED (threshold: -33.3 dB)
+
+======================================================================
+TEST RESULTS:
+======================================================================
+  RT60 Valid:      FAIL   (0.05s - 15s)
+  Stereo Image:    PASS   (-0.9 to 0.9)
+  Peak Amplitude:  PASS   (0.001 - 100.0)
+  DC Offset:       PASS   (< 0.01)
+  Gating Present:  PASS   (expected for GatedReverb)
+
+----------------------------------------------------------------------
+  OVERALL:         FAILED
+----------------------------------------------------------------------
+
+
+======================================================================
+FINAL SUMMARY
+======================================================================
+  Engine 42: Spring Reverb        FAILED
+  Engine 43: Gated Reverb         FAILED
+
+----------------------------------------------------------------------
+  ALL TESTS:       FAILED
+----------------------------------------------------------------------
+

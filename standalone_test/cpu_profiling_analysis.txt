@@ -1,0 +1,459 @@
+Loading CPU benchmark results...
+Loaded 57 engine profiles
+
+================================================================================
+CHIMERA PHOENIX - CPU PERFORMANCE PROFILING & OPTIMIZATION ANALYSIS
+================================================================================
+
+SUMMARY STATISTICS
+--------------------------------------------------------------------------------
+Total Engines Tested:     56
+Target: <5.0% CPU:        16 engines (28.6%)
+Exceeding Target:         40 engines (71.4%)
+Average CPU Usage:        13.35%
+Test Configuration:       48 kHz, 512 samples, 10 seconds
+
+TOP 10 MOST CPU-INTENSIVE ENGINES
+--------------------------------------------------------------------------------
+Rank  ID    Engine Name                        CPU %     Target    
+--------------------------------------------------------------------------------
+1     41    Convolution Reverb                   68.9%   FAIL      
+2     49    Phased Vocoder                       55.2%   FAIL      
+3     33    Intelligent Harmonizer               52.8%   FAIL      
+4     31    Pitch Shifter                        47.3%   FAIL      
+5     42    Shimmer Reverb                       38.2%   FAIL      
+6     50    Granular Cloud                       35.6%   FAIL      
+7     47    Spectral Freeze                      31.4%   FAIL      
+8     48    Spectral Gate                        29.8%   FAIL      
+9     39    Plate Reverb                         24.5%   FAIL      
+10    32    Detune Doubler                       22.6%   FAIL      
+
+CATEGORY EFFICIENCY ANALYSIS
+--------------------------------------------------------------------------------
+Category       Count   Avg CPU %   Max CPU %   Pass Rate   
+--------------------------------------------------------------------------------
+Reverb         5           33.2%       68.9%        0.0%
+Special        6           29.6%       55.2%        0.0%
+Modulation     11          17.8%       52.8%       18.2%
+Delay          5            7.2%       10.3%       40.0%
+Distortion     8            7.1%       15.4%       25.0%
+Spatial        3            6.8%       11.6%       33.3%
+Filter         8            6.6%       10.2%       25.0%
+Dynamics       6            6.3%       18.7%       50.0%
+Utility        4            1.2%        2.4%      100.0%
+
+MULTI-ENGINE CAPACITY ANALYSIS
+--------------------------------------------------------------------------------
+Scenario            Est. CPU %     Realistic CPU %   Real-time OK?  
+--------------------------------------------------------------------------------
+10 Engines               133.5%          146.9%   NO (multi-core needed)
+25 Engines               333.8%          383.9%   NO (multi-core needed)
+56 Engines               747.7%          897.2%   NO (multi-core needed)
+
+================================================================================
+OPTIMIZATION PRIORITIES & RECOMMENDATIONS
+================================================================================
+
+CRITICAL PRIORITY (8 engines)
+--------------------------------------------------------------------------------
+
+[41] Convolution Reverb
+    Current CPU: 68.9% (Target: <5.0%)
+    Complexity: EXTREME
+    Operations: Convolution, FFT Operations
+    Estimated Cost Breakdown:
+      - Convolution: 43.1%
+      - FFT: 25.8%
+    Recommendations:
+      - Consider GPU acceleration for long IRs
+      - Implement partitioned convolution
+      - Minimize FFT size where possible
+      - Use vDSP accelerated FFT
+      - Optimize FFT size (use smaller blocks)
+
+[49] Phased Vocoder
+    Current CPU: 55.2% (Target: <5.0%)
+    Complexity: EXTREME
+    Operations: FFT Operations
+    Estimated Cost Breakdown:
+      - FFT: 55.2%
+    Recommendations:
+      - Consider hop size optimization
+      - Minimize FFT size where possible
+      - Use vDSP accelerated FFT
+
+[33] Intelligent Harmonizer
+    Current CPU: 52.8% (Target: <5.0%)
+    Complexity: EXTREME
+    Operations: Pitch Shifting
+    Estimated Cost Breakdown:
+      - PitchShift: 52.8%
+    Recommendations:
+      - Use optimized phase vocoder (PVSOLA)
+      - Consider using spectral modeling
+      - Implement pitch cache for common intervals
+
+[31] Pitch Shifter
+    Current CPU: 47.3% (Target: <5.0%)
+    Complexity: EXTREME
+    Operations: Pitch Shifting, Delay Lines
+    Estimated Cost Breakdown:
+      - PitchShift: 36.4%
+      - DelayLines: 10.9%
+    Recommendations:
+      - Use circular buffers efficiently
+      - Implement pitch cache for common intervals
+      - Consider fixed-point for delay indices
+      - Optimize interpolation (linear vs cubic)
+      - Use optimized phase vocoder (PVSOLA)
+
+[42] Shimmer Reverb
+    Current CPU: 38.2% (Target: <5.0%)
+    Complexity: VERY_HIGH
+    Operations: Pitch Shifting
+    Estimated Cost Breakdown:
+      - PitchShift: 38.2%
+    Recommendations:
+      - Use optimized phase vocoder (PVSOLA)
+      - Consider using spectral modeling
+      - Implement pitch cache for common intervals
+
+[50] Granular Cloud
+    Current CPU: 35.6% (Target: <5.0%)
+    Complexity: VERY_HIGH
+    Operations: 
+    Recommendations:
+
+[47] Spectral Freeze
+    Current CPU: 31.4% (Target: <5.0%)
+    Complexity: VERY_HIGH
+    Operations: FFT Operations
+    Estimated Cost Breakdown:
+      - FFT: 31.4%
+    Recommendations:
+      - Consider hop size optimization
+      - Minimize FFT size where possible
+      - Use vDSP accelerated FFT
+
+[48] Spectral Gate
+    Current CPU: 29.8% (Target: <5.0%)
+    Complexity: VERY_HIGH
+    Operations: FFT Operations
+    Estimated Cost Breakdown:
+      - FFT: 29.8%
+    Recommendations:
+      - Consider hop size optimization
+      - Minimize FFT size where possible
+      - Use vDSP accelerated FFT
+
+HIGH PRIORITY (12 engines)
+--------------------------------------------------------------------------------
+
+[39] Plate Reverb
+    Current CPU: 24.5% (Target: <5.0%)
+    Complexity: HIGH
+    Operations: 
+    Recommendations:
+
+[32] Detune Doubler
+    Current CPU: 22.6% (Target: <5.0%)
+    Complexity: HIGH
+    Operations: Pitch Shifting
+    Estimated Cost Breakdown:
+      - PitchShift: 22.6%
+    Recommendations:
+      - Use optimized phase vocoder (PVSOLA)
+      - Consider using spectral modeling
+      - Implement pitch cache for common intervals
+
+[43] Gated Reverb
+    Current CPU: 21.7% (Target: <5.0%)
+    Complexity: HIGH
+    Operations: 
+    Recommendations:
+
+[30] Rotary Speaker
+    Current CPU: 19.8% (Target: <5.0%)
+    Complexity: HIGH
+    Operations: 
+    Recommendations:
+
+[6] Dynamic EQ
+    Current CPU: 18.7% (Target: <5.0%)
+    Complexity: HIGH
+    Operations: FFT Operations
+    Estimated Cost Breakdown:
+      - FFT: 18.7%
+    Recommendations:
+      - Consider hop size optimization
+      - Minimize FFT size where possible
+      - Use vDSP accelerated FFT
+
+[52] Feedback Network
+    Current CPU: 16.9% (Target: <5.0%)
+    Complexity: HIGH
+    Operations: Delay Lines
+    Estimated Cost Breakdown:
+      - DelayLines: 16.9%
+    Recommendations:
+      - Consider fixed-point for delay indices
+      - Use circular buffers efficiently
+      - Optimize interpolation (linear vs cubic)
+
+[27] Frequency Shifter
+    Current CPU: 16.2% (Target: <5.0%)
+    Complexity: HIGH
+    Operations: LFO Calculations
+    Estimated Cost Breakdown:
+      - LFOs: 16.2%
+    Recommendations:
+      - Pre-calculate modulation values
+      - Use SIMD for multiple LFOs
+      - Use wavetable lookup for LFO waveforms
+
+[19] Multiband Saturator
+    Current CPU: 15.4% (Target: <5.0%)
+    Complexity: HIGH
+    Operations: 
+    Recommendations:
+
+[40] Spring Reverb
+    Current CPU: 12.8% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[46] Dimension Expander
+    Current CPU: 11.6% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: LFO Calculations
+    Estimated Cost Breakdown:
+      - LFOs: 11.6%
+    Recommendations:
+      - Pre-calculate modulation values
+      - Use SIMD for multiple LFOs
+      - Use wavetable lookup for LFO waveforms
+
+[36] Magnetic Drum Echo
+    Current CPU: 10.3% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[14] Vocal Formant Filter
+    Current CPU: 10.2% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+MEDIUM PRIORITY (20 engines)
+--------------------------------------------------------------------------------
+
+[24] Resonant Chorus
+    Current CPU: 9.7% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: Delay Lines, LFO Calculations
+    Estimated Cost Breakdown:
+      - DelayLines: 5.3%
+      - LFOs: 4.4%
+    Recommendations:
+      - Pre-calculate modulation values
+      - Use circular buffers efficiently
+      - Use wavetable lookup for LFO waveforms
+      - Consider fixed-point for delay indices
+      - Optimize interpolation (linear vs cubic)
+
+[11] Formant Filter
+    Current CPU: 9.3% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[34] Tape Echo
+    Current CPU: 9.1% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: Filter Processing
+    Estimated Cost Breakdown:
+      - Filters: 9.1%
+    Recommendations:
+      - Use biquad cascades efficiently
+      - Vectorize filter calculations with SIMD
+      - Consider lattice filter structures
+
+[15] Vintage Tube Preamp
+    Current CPU: 8.9% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[37] Bucket Brigade Delay
+    Current CPU: 8.7% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[51] Chaos Generator
+    Current CPU: 8.4% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[5] Mastering Limiter
+    Current CPU: 8.3% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: Delay Lines
+    Estimated Cost Breakdown:
+      - DelayLines: 8.3%
+    Recommendations:
+      - Consider fixed-point for delay indices
+      - Use circular buffers efficiently
+      - Optimize interpolation (linear vs cubic)
+
+[23] Digital Chorus
+    Current CPU: 8.1% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: LFO Calculations
+    Estimated Cost Breakdown:
+      - LFOs: 8.1%
+    Recommendations:
+      - Pre-calculate modulation values
+      - Use SIMD for multiple LFOs
+      - Use wavetable lookup for LFO waveforms
+
+[17] Harmonic Exciter
+    Current CPU: 7.6% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[25] Analog Phaser
+    Current CPU: 7.3% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: Filter Processing, LFO Calculations
+    Estimated Cost Breakdown:
+      - Filters: 4.4%
+      - LFOs: 2.9%
+    Recommendations:
+      - Pre-calculate modulation values
+      - Consider lattice filter structures
+      - Use wavetable lookup for LFO waveforms
+      - Vectorize filter calculations with SIMD
+      - Use biquad cascades efficiently
+
+[8] Vintage Console EQ
+    Current CPU: 7.1% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: Filter Processing
+    Estimated Cost Breakdown:
+      - Filters: 7.1%
+    Recommendations:
+      - Use biquad cascades efficiently
+      - Vectorize filter calculations with SIMD
+      - Consider lattice filter structures
+
+[20] Muff Fuzz
+    Current CPU: 6.8% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[12] Envelope Filter
+    Current CPU: 6.7% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[28] Harmonic Tremolo
+    Current CPU: 6.5% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: Filter Processing
+    Estimated Cost Breakdown:
+      - Filters: 6.5%
+    Recommendations:
+      - Use biquad cascades efficiently
+      - Vectorize filter calculations with SIMD
+      - Consider lattice filter structures
+
+[7] Parametric EQ (Studio)
+    Current CPU: 6.4% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: Filter Processing
+    Estimated Cost Breakdown:
+      - Filters: 6.4%
+    Recommendations:
+      - Use biquad cascades efficiently
+      - Vectorize filter calculations with SIMD
+      - Consider lattice filter structures
+
+[22] K-Style Overdrive
+    Current CPU: 6.2% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[21] Rodent Distortion
+    Current CPU: 5.9% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[9] Ladder Filter
+    Current CPU: 5.8% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[45] Stereo Imager
+    Current CPU: 5.7% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+[3] Transient Shaper
+    Current CPU: 5.2% (Target: <5.0%)
+    Complexity: MODERATE
+    Operations: 
+    Recommendations:
+
+================================================================================
+PERFORMANCE INSIGHTS & KEY FINDINGS
+================================================================================
+
+MOST EFFICIENT ENGINES (< 3% CPU): 9 engines
+  [56] Phase Align: 2.4%
+  [18] Bit Crusher: 2.3%
+  [1] Vintage Opto Compressor: 2.1%
+  [29] Classic Tremolo: 2.1%
+  [2] Classic VCA Compressor: 1.8%
+
+BEST QUALITY/CPU RATIO (Complex but efficient):
+
+BUFFER SIZE RECOMMENDATIONS:
+  - Low-latency (64-128 samples): Only use efficient engines (<5% CPU)
+  - Standard (256-512 samples): Most engines will work well
+  - High-latency (1024+ samples): Can run multiple CPU-intensive engines
+
+SAMPLE RATE RECOMMENDATIONS:
+  - 44.1/48 kHz: All engines should meet target
+  - 96 kHz: Expect ~2x CPU usage, limit simultaneous engines
+  - 192 kHz: Expect ~4x CPU usage, use sparingly
+
+================================================================================
+REAL-TIME PERFORMANCE ASSESSMENT
+================================================================================
+
+Single Engine Target (<5.0%):  16/56 engines PASS
+10 Engine Target (<30%):  FAIL
+56 Engine Target (<200%): FAIL
+
+RECOMMENDED ACTIONS:
+1. Prioritize optimization of CRITICAL and HIGH priority engines
+2. Implement operation-specific optimizations (FFT, filters, etc.)
+3. Use SIMD vectorization where applicable
+4. Consider adaptive quality modes for CPU-intensive engines
+5. Profile individual operations to identify hotspots
+
+================================================================================
+Analysis complete. Results saved to cpu_profiling_analysis.txt
+================================================================================
+Detailed JSON analysis saved to: cpu_profiling_analysis.json

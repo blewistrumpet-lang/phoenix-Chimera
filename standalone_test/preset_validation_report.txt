@@ -1,0 +1,345 @@
+============================================
+PRESET VALIDATION REPORT
+============================================
+
+SUMMARY
+-------
+Total Presets Tested: 30
+Passed: 30 (100%)
+Failed: 0 (0%)
+Total Errors: 0
+Total Warnings: 0
+
+PRESETS BY CATEGORY
+-------------------
+Character & Color: 5
+Creative Sound Design: 3
+Dynamic Processing: 3
+Experimental: 4
+Experimental Laboratory: 2
+Movement & Rhythm: 1
+Spatial Design: 6
+Studio Essentials: 4
+Textural Effects: 1
+World Music: 1
+
+ENGINE USAGE STATISTICS
+-----------------------
+Top 10 Most Used Engines:
+  DynamicEQ (ID 6): 4 times
+  HarmonicExciter (ID 17): 3 times
+  PhasedVocoder (ID 49): 3 times
+  VCACompressor (ID 2): 3 times
+  ShimmerReverb (ID 42): 3 times
+  SpringReverb (ID 40): 3 times
+  TapeEcho (ID 34): 3 times
+  HarmonicTremolo (ID 28): 3 times
+  MuffFuzz (ID 20): 3 times
+  MultibandSaturator (ID 19): 3 times
+
+DETAILED RESULTS
+================
+
+Preset: Velvet Thunder (GC_001)
+Category: Studio Essentials / Vocal Processing
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: None, OptoCompressor, FrequencyShifter
+
+Preset: Crystal Palace (GC_002)
+Category: Spatial Design / Impossible Spaces
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 2
+  Engines Used: VCACompressor, BitCrusher
+
+Preset: Broken Radio (GC_003)
+Category: Character & Color / Lo-Fi Character
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: IntelligentHarmonizer, HarmonicTremolo, MasteringLimiter
+
+Preset: Midnight Oil (GC_004)
+Category: Character & Color / Harmonic Enhancement
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: DetuneDoubler, TapeEcho, EnvelopeFilter
+
+Preset: Glass Cathedral (GC_005)
+Category: Spatial Design / Realistic Spaces
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: NoiseGate, HarmonicExciter, MuffFuzz
+
+Preset: Neon Dreams (GC_006)
+Category: Creative Sound Design / Synthetic Textures
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: MultibandSaturator, FormantFilter, MidSideProcessor
+
+Preset: Liquid Sunshine (GC_007)
+Category: Movement & Rhythm / Organic Motion
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: RodentDistortion, OptoCompressor, RingModulator
+
+Preset: Iron Butterfly (GC_008)
+Category: Dynamic Processing / Responsive Effects
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: SpectralGate, DimensionExpander, PitchShifter
+
+Preset: Phantom Embrace (GC_009)
+Category: Spatial Design / Surround Effects
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 2
+  Engines Used: DigitalChorus, GatedReverb
+
+Preset: Solar Flare (GC_010)
+Category: Creative Sound Design / Spectral Manipulation
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: ShimmerReverb, PlateReverb, PhasedVocoder
+
+Preset: Dust & Echoes (GC_011)
+Category: Textural Effects / Granular Processing
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: WaveFolder, VintageConsoleEQ, DynamicEQ
+
+Preset: Thunder & Silk (GC_012)
+Category: Dynamic Processing / Transient Design
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: MuffFuzz, ClassicTremolo, ParametricEQ
+
+Preset: Quantum Garden (GC_013)
+Category: Experimental / Glitch & Chaos
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: ConvolutionReverb, SpringReverb, FeedbackNetwork
+
+Preset: Copper Resonance (GC_014)
+Category: Character & Color / Metallic Tones
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: VintageTube, HarmonicTremolo, TapeEcho
+
+Preset: Aurora Borealis (GC_015)
+Category: Spatial Design / Atmospheric Effects
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: StereoImager, VocalFormant, StereoWidener
+
+Preset: Digital Erosion (GC_016)
+Category: Creative Sound Design / Digital Degradation
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: IntelligentHarmonizer, SpringReverb, MultibandSaturator
+
+Preset: Velvet Hammer (GC_017)
+Category: Studio Essentials / Mix Enhancement
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: DynamicEQ, DetuneDoubler, RingModulator
+
+Preset: Whisper Network (GC_018)
+Category: Studio Essentials / Transparent Processing
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 2
+  Engines Used: DynamicEQ, TransientShaper
+
+Preset: Cosmic Strings (GC_019)
+Category: Experimental / Quantum Effects
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: ShimmerReverb, DigitalChorus, StereoImager
+
+Preset: Rust & Bones (GC_020)
+Category: Character & Color / Industrial Decay
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: DigitalDelay, MasteringLimiter, SpectralGate
+
+Preset: Silk Road Echo (GC_021)
+Category: World Music / Eastern Flavors
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: LadderFilter, HarmonicExciter, ResonantChorus
+
+Preset: Neural Bloom (GC_022)
+Category: Experimental / Organic Processing
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: ShimmerReverb, PhasedVocoder, DimensionExpander
+
+Preset: Tidal Force (GC_023)
+Category: Dynamic Processing / Power Dynamics
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: GranularCloud, ClassicTremolo, BitCrusher
+
+Preset: Amber Preservation (GC_024)
+Category: Studio Essentials / Vintage Enhancement
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: None, FrequencyShifter, DynamicEQ
+
+Preset: Zero Point Field (GC_025)
+Category: Experimental / Quantum Audio
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: SpectralFreeze, WaveFolder, PlateReverb
+
+Preset: Arctic Drift (GC_026)
+Category: Spatial Design / Frozen Landscapes
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 2
+  Engines Used: VCACompressor, SpringReverb
+
+Preset: Brass Furnace (GC_027)
+Category: Character & Color / Harmonic Enhancement
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 3
+  Engines Used: TapeEcho, PitchShifter, HarmonicExciter
+
+Preset: Mycelial Network (GC_028)
+Category: Experimental Laboratory / Organic Systems
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 1
+  Engines Used: PhasedVocoder
+
+Preset: Stained Glass (GC_029)
+Category: Spatial Design / Sacred Spaces
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 4
+  Engines Used: MultibandSaturator, HarmonicTremolo, VCACompressor, RodentDistortion
+
+Preset: Voltage Storm (GC_030)
+Category: Experimental Laboratory / Electrical Phenomena
+Status: PASS
+  Valid Structure: YES
+  Valid Engine IDs: YES
+  Valid Parameters: YES
+  Valid Slots: YES
+  Number of Engines: 4
+  Engines Used: ConvolutionReverb, SpectralFreeze, VintageTube, MuffFuzz
+
+============================================
+END OF REPORT
+============================================

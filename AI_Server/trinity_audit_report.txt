@@ -1,0 +1,310 @@
+================================================================================
+TRINITY ENGINE KNOWLEDGE BASE AUDIT
+================================================================================
+
+Total engines found: 57
+
+
+================================================================================
+AUDIT SUMMARY
+================================================================================
+Total engines audited: 57
+Engines with issues: 29
+
+Critical issues:     12
+Data quality issues: 121
+Completeness issues: 0
+
+
+================================================================================
+DETAILED ISSUE REPORT
+================================================================================
+
+Engine 42: Shimmer Reverb
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 3 (Size): Very short description: 'Room size'
+
+Engine 1: Vintage Opto Compressor
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (4) >= param_count (4)
+
+Engine 23: Stereo Chorus
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (5) >= param_count (4)
+  DATA QUALITY ISSUES:
+    - Param 0 (Rate): Very short description: 'LFO rate'
+  RECOMMENDATIONS:
+    - Suggested mix_param_index: 2 (parameter: 'Mix')
+
+Engine 17: Harmonic Exciter
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (7) >= param_count (3)
+  RECOMMENDATIONS:
+    - Suggested mix_param_index: 2 (parameter: 'Mix')
+
+Engine 8: Vintage Console EQ
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Low): Very short description: 'Low shelf'
+
+Engine 7: Parametric EQ
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (13) >= param_count (9)
+  DATA QUALITY ISSUES:
+    - Param 2 (Q 1): Very short description: 'Band 1 Q'
+    - Param 5 (Q 2): Very short description: 'Band 2 Q'
+    - Param 8 (Q 3): Very short description: 'Band 3 Q'
+
+Engine 3: Transient Shaper
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (9) >= param_count (3)
+  RECOMMENDATIONS:
+    - Suggested mix_param_index: 2 (parameter: 'Mix')
+
+Engine 47: Spectral Freeze
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 1 (Size): Very short description: 'FFT size'
+
+Engine 38: Buffer Repeat
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (7) >= param_count (4)
+  RECOMMENDATIONS:
+    - Suggested mix_param_index: 3 (parameter: 'Mix')
+
+Engine 43: Gated Reverb
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 5 (Size): Very short description: 'Room size'
+
+Engine 49: Phased Vocoder
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (6) >= param_count (4)
+  RECOMMENDATIONS:
+    - Suggested mix_param_index: 3 (parameter: 'Mix')
+
+Engine 4: Noise Gate
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 2 (Hold): Very short description: 'Hold time'
+
+Engine 12: Envelope Filter
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (7) >= param_count (5)
+  RECOMMENDATIONS:
+    - Suggested mix_param_index: 4 (parameter: 'Mix')
+
+Engine 52: Feedback Network
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (6) >= param_count (4)
+  RECOMMENDATIONS:
+    - Suggested mix_param_index: 3 (parameter: 'Mix')
+
+Engine 5: Mastering Limiter
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (9) >= param_count (4)
+
+Engine 24: Resonant Chorus
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (7) >= param_count (4)
+  DATA QUALITY ISSUES:
+    - Param 0 (Rate): Very short description: 'LFO rate'
+  RECOMMENDATIONS:
+    - Suggested mix_param_index: 3 (parameter: 'Mix')
+
+Engine 6: Dynamic EQ
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 5 (Gain): Very short description: 'EQ gain'
+
+Engine 13: Comb Resonator
+--------------------------------------------------------------------------------
+  CRITICAL ISSUES:
+    - mix_param_index (7) >= param_count (3)
+  RECOMMENDATIONS:
+    - Suggested mix_param_index: 2 (parameter: 'Mix')
+
+Engine 10: State Variable Filter
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 11: Formant Filter
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 14: Vocal Formant Filter
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 16: Wave Folder
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 18: Bit Crusher
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 19: Multiband Saturator
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 25: Analog Phaser
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 26: Ring Modulator
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 27: Frequency Shifter
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 36: Magnetic Drum Echo
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+Engine 37: Bucket Brigade Delay
+--------------------------------------------------------------------------------
+  DATA QUALITY ISSUES:
+    - Param 0 (Param 1): Generic parameter name: 'Param 1'
+    - Param 1 (Param 2): Generic parameter name: 'Param 2'
+    - Param 2 (Param 3): Generic parameter name: 'Param 3'
+    - Param 3 (Param 4): Generic parameter name: 'Param 4'
+    - Param 4 (Param 5): Generic parameter name: 'Param 5'
+    - Param 5 (Param 6): Generic parameter name: 'Param 6'
+    - Param 6 (Param 7): Generic parameter name: 'Param 7'
+    - Param 7 (Param 8): Generic parameter name: 'Param 8'
+    - Param 8 (Param 9): Generic parameter name: 'Param 9'
+    - Param 9 (Param 10): Generic parameter name: 'Param 10'
+
+================================================================================
+GENERATING FIXED VERSION
+================================================================================
+Engine 1 (Vintage Opto Compressor): Fixing mix_param_index 4 -> -1
+Engine 23 (Stereo Chorus): Fixing mix_param_index 5 -> 2
+Engine 17 (Harmonic Exciter): Fixing mix_param_index 7 -> 2
+Engine 7 (Parametric EQ): Fixing mix_param_index 13 -> -1
+Engine 3 (Transient Shaper): Fixing mix_param_index 9 -> 2
+Engine 38 (Buffer Repeat): Fixing mix_param_index 7 -> 3
+Engine 49 (Phased Vocoder): Fixing mix_param_index 6 -> 3
+Engine 12 (Envelope Filter): Fixing mix_param_index 7 -> 4
+Engine 52 (Feedback Network): Fixing mix_param_index 6 -> 3
+Engine 5 (Mastering Limiter): Fixing mix_param_index 9 -> -1
+Engine 24 (Resonant Chorus): Fixing mix_param_index 7 -> 3
+Engine 13 (Comb Resonator): Fixing mix_param_index 7 -> 2
+
+Total fixes applied: 12
+Fixed version saved to: /Users/Branden/branden/Project_Chimera_v3.0_Phoenix/AI_Server/trinity_engine_knowledge_COMPLETE_FIXED.json

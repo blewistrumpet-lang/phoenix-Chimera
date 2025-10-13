@@ -1,0 +1,1472 @@
+{
+  "analysis_type": "stereo_quality",
+  "total_engines": 57,
+  "engines": [
+    {
+      "id": 0,
+      "name": "None (Bypass)",
+      "category": "Utility",
+      "expected_stereo": false,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659371817682155,
+        "stereo_width": 0.13163017850112263,
+        "phase_coherence": 0.9659371817682149,
+        "mid_side_ratio_db": -17.612890595297635,
+        "mono_compatibility": 0.9914477247359578,
+        "balance_ratio": 0.99999981630145
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "A",
+      "status": "PASS",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 1,
+      "name": "Vintage Opto Compressor",
+      "category": "Dynamics",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659380177207701,
+        "stereo_width": 0.13162853493014845,
+        "phase_coherence": 0.9659380188466771,
+        "mid_side_ratio_db": -17.612999050405605,
+        "mono_compatibility": 0.9914479358148794,
+        "balance_ratio": 0.999955995789867
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 2,
+      "name": "Classic VCA Compressor",
+      "category": "Dynamics",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659367096528076,
+        "stereo_width": 0.13163110334068892,
+        "phase_coherence": 0.9659367116051059,
+        "mid_side_ratio_db": -17.612829568059986,
+        "mono_compatibility": 0.991447606182771,
+        "balance_ratio": 0.9999734645415446
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 3,
+      "name": "Transient Shaper",
+      "category": "Dynamics",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659371817682155,
+        "stereo_width": 0.13163017850112263,
+        "phase_coherence": 0.9659371817682149,
+        "mid_side_ratio_db": -17.612890595297635,
+        "mono_compatibility": 0.9914477247359578,
+        "balance_ratio": 0.99999981630145
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 4,
+      "name": "Noise Gate",
+      "category": "Dynamics",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659341786210972,
+        "stereo_width": 0.1316360781462622,
+        "phase_coherence": 0.9659341805249324,
+        "mid_side_ratio_db": -17.612501303732156,
+        "mono_compatibility": 0.9914469679535083,
+        "balance_ratio": 1.0000201961117117
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 5,
+      "name": "Mastering Limiter",
+      "category": "Dynamics",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659376471245517,
+        "stereo_width": 0.13162926712910147,
+        "phase_coherence": 0.96593764785488,
+        "mid_side_ratio_db": -17.612950734274047,
+        "mono_compatibility": 0.9914478422735765,
+        "balance_ratio": 0.9999289537892441
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 6,
+      "name": "Dynamic EQ",
+      "category": "Dynamics",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9906681610391278,
+        "stereo_width": 0.213794545355975,
+        "phase_coherence": 0.9906681433591855,
+        "mid_side_ratio_db": -13.40006758703689,
+        "mono_compatibility": 0.9977602470074883,
+        "balance_ratio": 1.5080143793282945
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": true
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95",
+        "IMBALANCED: L/R ratio = 1.51"
+      ],
+      "error": ""
+    },
+    {
+      "id": 7,
+      "name": "Parametric EQ (Studio)",
+      "category": "Filter",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659363762734187,
+        "stereo_width": 0.13163175769013724,
+        "phase_coherence": 0.9659363783696234,
+        "mid_side_ratio_db": -17.61278638986865,
+        "mono_compatibility": 0.9914475221537512,
+        "balance_ratio": 0.9999990706097116
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 8,
+      "name": "Vintage Console EQ",
+      "category": "Filter",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659356568263477,
+        "stereo_width": 0.13163317196465021,
+        "phase_coherence": 0.9659356588629271,
+        "mid_side_ratio_db": -17.612693067660075,
+        "mono_compatibility": 0.9914473407254056,
+        "balance_ratio": 0.9999982387616804
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 9,
+      "name": "Ladder Filter",
+      "category": "Filter",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.7969053492599449,
+        "stereo_width": 0.26071761323476145,
+        "phase_coherence": 0.8727055298887698,
+        "mid_side_ratio_db": -11.676592566332111,
+        "mono_compatibility": 0.9676532291771945,
+        "balance_ratio": 0.9993372987809991
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "A",
+      "status": "PASS",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 10,
+      "name": "State Variable Filter",
+      "category": "Filter",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659358955846123,
+        "stereo_width": 0.13163270483522682,
+        "phase_coherence": 0.9659358965812728,
+        "mid_side_ratio_db": -17.612723891515163,
+        "mono_compatibility": 0.991447400667951,
+        "balance_ratio": 1.0000119001972332
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 11,
+      "name": "Formant Filter",
+      "category": "Filter",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9569196228410735,
+        "stereo_width": 0.14837250556505413,
+        "phase_coherence": 0.9569196215542866,
+        "mid_side_ratio_db": -16.57293138648437,
+        "mono_compatibility": 0.9891712749306478,
+        "balance_ratio": 0.9997376352673312
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 12,
+      "name": "Envelope Filter",
+      "category": "Filter",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.965996210186269,
+        "stereo_width": 0.13151408528293806,
+        "phase_coherence": 0.9659962186740914,
+        "mid_side_ratio_db": -17.620554626668117,
+        "mono_compatibility": 0.9914626111647652,
+        "balance_ratio": 1.0000119966717316
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 13,
+      "name": "Comb Resonator",
+      "category": "Filter",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9643155091795077,
+        "stereo_width": 0.13481618667245202,
+        "phase_coherence": 0.9643155096168344,
+        "mid_side_ratio_db": -17.40515922418982,
+        "mono_compatibility": 0.9910388064948961,
+        "balance_ratio": 0.9940069957785701
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 14,
+      "name": "Vocal Formant Filter",
+      "category": "Filter",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9658800107886177,
+        "stereo_width": 0.1317425246090138,
+        "phase_coherence": 0.9658800085237121,
+        "mid_side_ratio_db": -17.60548036681099,
+        "mono_compatibility": 0.9914333080443486,
+        "balance_ratio": 0.9999057337615335
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 15,
+      "name": "Vintage Tube Preamp",
+      "category": "Distortion",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.07364876492013267,
+        "stereo_width": 0.9287217461103269,
+        "phase_coherence": 0.07427907146876876,
+        "mid_side_ratio_db": -0.6422877057046039,
+        "mono_compatibility": 0.7338941117412238,
+        "balance_ratio": 0.8936112807643891
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "A",
+      "status": "PASS",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 16,
+      "name": "Wave Folder",
+      "category": "Distortion",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.910334732107364,
+        "stereo_width": 0.21664936614780467,
+        "phase_coherence": 0.9103347255036747,
+        "mid_side_ratio_db": -13.284851544908165,
+        "mono_compatibility": 0.9773266408494209,
+        "balance_ratio": 0.9998797196676522
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "C",
+      "status": "WARNING",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 17,
+      "name": "Harmonic Exciter",
+      "category": "Distortion",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9652784150224916,
+        "stereo_width": 0.1329192036995186,
+        "phase_coherence": 0.9652784147208879,
+        "mid_side_ratio_db": -17.528245383668654,
+        "mono_compatibility": 0.9912815984172588,
+        "balance_ratio": 0.9999926732700612
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 18,
+      "name": "Bit Crusher",
+      "category": "Distortion",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659305664155043,
+        "stereo_width": 0.13164318136734712,
+        "phase_coherence": 0.9659305664073653,
+        "mid_side_ratio_db": -17.612032616646452,
+        "mono_compatibility": 0.9914460566282551,
+        "balance_ratio": 0.9999969850837198
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 19,
+      "name": "Multiband Saturator",
+      "category": "Distortion",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.8607315790464998,
+        "stereo_width": 0.2735800926428199,
+        "phase_coherence": 0.8607315826693457,
+        "mid_side_ratio_db": -11.258310154383476,
+        "mono_compatibility": 0.9645547118855907,
+        "balance_ratio": 1.0002256260570859
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "B",
+      "status": "PASS",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 20,
+      "name": "Muff Fuzz",
+      "category": "Distortion",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9659105286615313,
+        "stereo_width": 0.13168255553655275,
+        "phase_coherence": 0.9659105306060798,
+        "mid_side_ratio_db": -17.60943507570814,
+        "mono_compatibility": 0.9914410044491041,
+        "balance_ratio": 0.9999986286760498
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 21,
+      "name": "Rodent Distortion",
+      "category": "Distortion",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9372853551278523,
+        "stereo_width": 0.17992341596214184,
+        "phase_coherence": 0.9372853546034209,
+        "mid_side_ratio_db": -14.898246242663959,
+        "mono_compatibility": 0.9841964627561989,
+        "balance_ratio": 1.000003635664524
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "C",
+      "status": "WARNING",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 22,
+      "name": "K-Style Overdrive",
+      "category": "Distortion",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9651044648546335,
+        "stereo_width": 0.13325763474086216,
+        "phase_coherence": 0.9651044663971222,
+        "mid_side_ratio_db": -17.50615799036682,
+        "mono_compatibility": 0.9912377278930441,
+        "balance_ratio": 0.9999993586431595
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 23,
+      "name": "Digital Chorus",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.4166136426867403,
+        "stereo_width": 0.6426343700860379,
+        "phase_coherence": 0.4166136715442294,
+        "mid_side_ratio_db": -3.8407210148578503,
+        "mono_compatibility": 0.8418521459576294,
+        "balance_ratio": 1.0777251200981106
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "A",
+      "status": "PASS",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 24,
+      "name": "Resonant Chorus",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9292828270535209,
+        "stereo_width": 0.19201143292085968,
+        "phase_coherence": 0.929282822933309,
+        "mid_side_ratio_db": -14.333458227323217,
+        "mono_compatibility": 0.9821654542016032,
+        "balance_ratio": 1.0296942656755914
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "C",
+      "status": "WARNING",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 25,
+      "name": "Analog Phaser",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.965926296472624,
+        "stereo_width": 0.13165157362727073,
+        "phase_coherence": 0.9659262964726179,
+        "mid_side_ratio_db": -17.611478908362088,
+        "mono_compatibility": 0.9914449799342423,
+        "balance_ratio": 0.9999891761969266
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 26,
+      "name": "Ring Modulator",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": -0.025943512316070342,
+        "stereo_width": 1.0262875054471117,
+        "phase_coherence": -0.025943699117637824,
+        "mid_side_ratio_db": 0.22538083224232203,
+        "mono_compatibility": 0.6978853116365051,
+        "balance_ratio": 0.9889762330368977
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "A",
+      "status": "PASS",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 27,
+      "name": "Frequency Shifter",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.8565823417094824,
+        "stereo_width": 0.27793580647023247,
+        "phase_coherence": 0.8565823352179656,
+        "mid_side_ratio_db": -11.121109989194803,
+        "mono_compatibility": 0.9634786841964258,
+        "balance_ratio": 1.000637973178597
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "B",
+      "status": "PASS",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 28,
+      "name": "Harmonic Tremolo",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9566672222640364,
+        "stereo_width": 0.14852605982906494,
+        "phase_coherence": 0.9568323275246197,
+        "mid_side_ratio_db": -16.563946799389424,
+        "mono_compatibility": 0.9891492122491595,
+        "balance_ratio": 1.0002476395090742
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 29,
+      "name": "Classic Tremolo",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.9658226484551806,
+        "stereo_width": 0.13185523875209154,
+        "phase_coherence": 0.9658226493588435,
+        "mid_side_ratio_db": -17.59805221070976,
+        "mono_compatibility": 0.9914188444707398,
+        "balance_ratio": 1.000339510810453
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": true,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "F",
+      "status": "FAIL_MONO_COLLAPSED",
+      "warnings": [
+        "MONO_COLLAPSED: Correlation > 0.95"
+      ],
+      "error": ""
+    },
+    {
+      "id": 30,
+      "name": "Rotary Speaker",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": true,
+      "metrics": {
+        "lr_correlation": 0.6578749021797496,
+        "stereo_width": 0.45432694065058127,
+        "phase_coherence": 0.6578751656719509,
+        "mid_side_ratio_db": -6.8526301930941695,
+        "mono_compatibility": 0.910464953220234,
+        "balance_ratio": 0.9857186901303305
+      },
+      "flags": {
+        "has_stereo_content": true,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "A",
+      "status": "PASS",
+      "warnings": [],
+      "error": ""
+    },
+    {
+      "id": 31,
+      "name": "Pitch Shifter",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 32,
+      "name": "Detune Doubler",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 33,
+      "name": "Intelligent Harmonizer",
+      "category": "Modulation",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 34,
+      "name": "Tape Echo",
+      "category": "Delay",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 35,
+      "name": "Digital Delay",
+      "category": "Delay",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 36,
+      "name": "Magnetic Drum Echo",
+      "category": "Delay",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 37,
+      "name": "Bucket Brigade Delay",
+      "category": "Delay",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 38,
+      "name": "Buffer Repeat",
+      "category": "Delay",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 39,
+      "name": "Plate Reverb",
+      "category": "Reverb",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 40,
+      "name": "Spring Reverb",
+      "category": "Reverb",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 41,
+      "name": "Convolution Reverb",
+      "category": "Reverb",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 42,
+      "name": "Shimmer Reverb",
+      "category": "Reverb",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 43,
+      "name": "Gated Reverb",
+      "category": "Reverb",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 44,
+      "name": "Stereo Widener",
+      "category": "Spatial",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 45,
+      "name": "Stereo Imager",
+      "category": "Spatial",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 46,
+      "name": "Dimension Expander",
+      "category": "Spatial",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 47,
+      "name": "Spectral Freeze",
+      "category": "Special",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 48,
+      "name": "Spectral Gate",
+      "category": "Special",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 49,
+      "name": "Phased Vocoder",
+      "category": "Special",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 50,
+      "name": "Granular Cloud",
+      "category": "Special",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 51,
+      "name": "Chaos Generator",
+      "category": "Special",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 52,
+      "name": "Feedback Network",
+      "category": "Special",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 53,
+      "name": "Mid-Side Processor",
+      "category": "Utility",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 54,
+      "name": "Gain Utility",
+      "category": "Utility",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 55,
+      "name": "Mono Maker",
+      "category": "Utility",
+      "expected_stereo": false,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    },
+    {
+      "id": 56,
+      "name": "Phase Align",
+      "category": "Utility",
+      "expected_stereo": true,
+      "has_data": false,
+      "metrics": {
+        "lr_correlation": null,
+        "stereo_width": null,
+        "phase_coherence": null,
+        "mid_side_ratio_db": null,
+        "mono_compatibility": null,
+        "balance_ratio": null
+      },
+      "flags": {
+        "has_stereo_content": false,
+        "is_mono_collapsed": false,
+        "is_phase_reversed": false,
+        "is_imbalanced": false
+      },
+      "quality_grade": "?",
+      "status": "NO_DATA",
+      "warnings": [],
+      "error": "No stereo data file found"
+    }
+  ]
+}

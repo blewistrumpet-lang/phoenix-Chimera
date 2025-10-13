@@ -1,0 +1,45 @@
+REAL-WORLD MUSICAL TEST MATERIALS
+======================================================================
+
+1. drum_loop_120bpm
+   Description: 120 BPM drum loop with kick, snare, hi-hats (4 bars)
+   Duration: 8.00s
+   Purpose: Test dynamics, transients, compression, and multiband processing
+   Test Targets: Dynamics, Compressors, Transient Shapers, EQ, Distortion
+
+2. bass_line_e1_e2
+   Description: Bass line with fundamental 40-80Hz
+   Duration: 4.00s
+   Purpose: Test sub-frequency handling, filters, EQ, distortion
+   Test Targets: Filters, EQ, Distortion, Subharmonics, Phase
+
+3. vocal_sample_formants
+   Description: Vocal-like sample with formants, vibrato, sibilance
+   Duration: 3.00s
+   Purpose: Test pitch shifters, formant processing, de-essers, dynamics
+   Test Targets: Pitch Shifters, Formant, De-esser, Compressor, EQ
+
+4. guitar_chord_emajor
+   Description: Acoustic guitar E major chord (full frequency range)
+   Duration: 4.00s
+   Purpose: Test reverbs, delays, modulation, stereo processing
+   Test Targets: Reverb, Delay, Chorus, Stereo Width, Modulation
+
+5. piano_notes_c1_c4_c7
+   Description: Piano notes across full frequency range (C1, C4, C7)
+   Duration: 6.00s
+   Purpose: Test full frequency range, reverb density, delay feedback
+   Test Targets: Reverb, Delay, EQ, Filters, Dynamics
+
+6. white_noise_burst
+   Description: White noise burst (0.5s, full spectrum)
+   Duration: 2.00s
+   Purpose: Test spectral processing, gate/expander behavior
+   Test Targets: Spectral Processing, Gates, Expanders, Filters, EQ
+
+7. pink_noise_sustained
+   Description: Sustained pink noise (3s, balanced spectrum)
+   Duration: 3.00s
+   Purpose: Test frequency response accuracy, check for artifacts
+   Test Targets: Frequency Response, Filters, EQ, Dynamics, Distortion
+

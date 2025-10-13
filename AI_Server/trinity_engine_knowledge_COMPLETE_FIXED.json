@@ -1,0 +1,5361 @@
+{
+  "engines": {
+    "22": {
+      "id": 22,
+      "name": "K-Style Overdrive",
+      "category": "Distortion",
+      "param_count": 4,
+      "mix_param_index": 3,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Amount of tube saturation",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "EQ balance from dark to bright",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Level",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level with makeup gain",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet balance",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Smooth overdrive",
+      "combines_well_with": [
+        15,
+        34,
+        39
+      ],
+      "frequency_impact": "Adds harmonics and overtones",
+      "gain_impact": "Can add significant gain",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 4,
+      "function": "Klon-style transparent overdrive",
+      "character": "Transparent, mid-forward, amp-like",
+      "use_cases": [
+        "Blues guitar",
+        "Boost",
+        "Amp pushing"
+      ],
+      "detailed_description": "Klon-style transparent overdrive. Transparent, mid-forward, amp-like",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "15": {
+      "id": 15,
+      "name": "Vintage Tube Preamp",
+      "category": "Saturation",
+      "param_count": 10,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Input Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input amplification ±20dB",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube saturation amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Bias",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube bias point",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Bass",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low frequency control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid frequency control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Treble",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Presence",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency clarity",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Output Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level ±20dB",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Tube Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube characteristic (12AX7/12AU7/12AT7/6SN7/ECC88/6V6/EL34/EL84)",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet balance",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Warm tube saturation",
+      "combines_well_with": [
+        9,
+        34,
+        39
+      ],
+      "frequency_impact": "Adds harmonics and overtones",
+      "gain_impact": "Can add significant gain",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 4,
+      "function": "Warm tube saturation and harmonic enhancement",
+      "character": "Warm, smooth, musical, even harmonics",
+      "use_cases": [
+        "Warming digital sources",
+        "Drums",
+        "Mix bus"
+      ],
+      "detailed_description": "Warm tube saturation and harmonic enhancement. Warm, smooth, musical, even harmonics",
+      "sound_design_notes": "Adds warmth and analog character"
+    },
+    "34": {
+      "id": 34,
+      "name": "Tape Echo",
+      "category": "Delay",
+      "param_count": 5,
+      "mix_param_index": 4,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Time",
+          "default": 0.375,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Delay time from 10ms to 2000ms",
+          "units": "percent",
+          "skew": 0.3
+        },
+        {
+          "name": "Feedback",
+          "default": 0.35,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Regeneration amount (>0.75 = self-oscillation)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Wow & Flutter",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tape transport instability and wobble",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Saturation",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tape compression and harmonic distortion",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.35,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet balance",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Vintage tape delay character",
+      "combines_well_with": [
+        39,
+        40
+      ],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "moderate",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 6,
+      "function": "Vintage tape delay with wow/flutter",
+      "character": "Warm, degraded, vintage, analog",
+      "use_cases": [
+        "Dub",
+        "Vintage delays",
+        "Ambient"
+      ],
+      "detailed_description": "Vintage tape delay with wow/flutter. Warm, degraded, vintage, analog",
+      "sound_design_notes": "Adds warmth and analog character"
+    },
+    "42": {
+      "id": 42,
+      "name": "Shimmer Reverb",
+      "category": "Reverb",
+      "param_count": 10,
+      "mix_param_index": 9,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pitch Shift",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pitch shift amount",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "name": "Shimmer",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Octave-up shimmer amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Room size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Feedback",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Modulation",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Ethereal shimmer effects",
+      "combines_well_with": [
+        23,
+        46
+      ],
+      "frequency_impact": "Adds frequency diffusion",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "heavy",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 7,
+      "function": "Reverb with pitched overtones",
+      "character": "Ethereal, angelic, ambient",
+      "use_cases": [
+        "Ambient",
+        "Pads",
+        "Cinematic"
+      ],
+      "detailed_description": "Reverb with pitched overtones. Ethereal, angelic, ambient",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "39": {
+      "id": 39,
+      "name": "Plate Reverb",
+      "category": "Reverb",
+      "param_count": 10,
+      "mix_param_index": 3,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Plate size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time up to 100ms",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Width",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Freeze",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Freeze reverb tail",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Early Reflections",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Early reflections level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Diffusion",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Diffusion amount",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Classic plate reverb",
+      "combines_well_with": [
+        7,
+        2,
+        23
+      ],
+      "frequency_impact": "Adds frequency diffusion",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "moderate",
+      "sweet_spots": {
+        "subtle": {
+          "mix": 0.2,
+          "size": 0.3,
+          "damping": 0.6
+        },
+        "spacious": {
+          "mix": 0.4,
+          "size": 0.7,
+          "damping": 0.4
+        }
+      },
+      "signal_chain_position": 7,
+      "function": "Classic studio plate reverb",
+      "character": "Bright, dense, vintage studio",
+      "use_cases": [
+        "Vocals",
+        "Drums",
+        "Classic mixing"
+      ],
+      "detailed_description": "Classic studio plate reverb. Bright, dense, vintage studio",
+      "sound_design_notes": "Vintage analog character and coloration"
+    },
+    "40": {
+      "id": 40,
+      "name": "Spring Reverb",
+      "category": "Reverb",
+      "param_count": 9,
+      "mix_param_index": 7,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Tension",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Spring tension",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Decay",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Decay time",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input drive",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Chirp",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Spring chirp amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Boingy spring reverb",
+      "combines_well_with": [],
+      "frequency_impact": "Adds frequency diffusion",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "moderate",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 7,
+      "function": "Guitar amp spring reverb",
+      "character": "Boingy, metallic, surf",
+      "use_cases": [
+        "Guitar",
+        "Surf",
+        "Vintage effects"
+      ],
+      "detailed_description": "Guitar amp spring reverb. Boingy, metallic, surf",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "1": {
+      "id": 1,
+      "name": "Vintage Opto Compressor",
+      "category": "Dynamics",
+      "param_count": 4,
+      "mix_param_index": -1,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression threshold",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "name": "Speed",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack/release speed",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Makeup",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Makeup gain",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Smooth optical compression for vocals/bass",
+      "combines_well_with": [
+        7,
+        8,
+        39
+      ],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Controls dynamic range",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 3,
+      "function": "Smooth optical compression inspired by LA-2A",
+      "character": "Warm, musical, slow attack, natural sustain",
+      "use_cases": [
+        "Vocals",
+        "Bass",
+        "Mix bus glue"
+      ],
+      "detailed_description": "Smooth optical compression inspired by LA-2A. Warm, musical, slow attack, natural sustain",
+      "sound_design_notes": "Adds warmth and analog character"
+    },
+    "2": {
+      "id": 2,
+      "name": "Classic Compressor",
+      "category": "Dynamics",
+      "param_count": 7,
+      "mix_param_index": 6,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression threshold",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Knee",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Knee softness",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Makeup",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Makeup gain",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Punchy VCA compression for drums/mix bus",
+      "combines_well_with": [
+        7,
+        8,
+        5
+      ],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Controls dynamic range",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "gentle": {
+          "threshold": 0.7,
+          "ratio": 0.3,
+          "attack": 0.5
+        },
+        "punchy": {
+          "threshold": 0.4,
+          "ratio": 0.6,
+          "attack": 0.2
+        }
+      },
+      "signal_chain_position": 3,
+      "function": "VCA-style compression for precise dynamic control",
+      "character": "Clean, punchy, fast response, transparent",
+      "use_cases": [
+        "Drums",
+        "Percussion",
+        "Mix bus",
+        "Mastering"
+      ],
+      "detailed_description": "VCA-style compression for precise dynamic control. Clean, punchy, fast response, transparent",
+      "sound_design_notes": "Transparent processing without coloration"
+    },
+    "23": {
+      "id": 23,
+      "name": "Stereo Chorus",
+      "category": "Modulation",
+      "param_count": 4,
+      "mix_param_index": 2,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "LFO rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Feedback",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 0.7,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Classic stereo widening",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Classic stereo chorus for width and movement",
+      "character": "Lush, wide, shimmering",
+      "use_cases": [
+        "80s sounds",
+        "Pad widening",
+        "Clean guitar"
+      ],
+      "detailed_description": "Classic stereo chorus for width and movement. Lush, wide, shimmering",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "35": {
+      "id": 35,
+      "name": "Digital Delay",
+      "category": "Delay",
+      "param_count": 4,
+      "mix_param_index": 2,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Time",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Delay time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Feedback",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.9,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency cutoff",
+          "units": "Hz",
+          "skew": 0.3
+        }
+      ],
+      "typical_usage": "Clean digital delays",
+      "combines_well_with": [
+        39,
+        42
+      ],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "moderate",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 6,
+      "function": "Clean, precise digital delay",
+      "character": "Clean, precise, modern",
+      "use_cases": [
+        "Rhythmic delays",
+        "Tempo-synced effects",
+        "Clarity"
+      ],
+      "detailed_description": "Clean, precise digital delay. Clean, precise, modern",
+      "sound_design_notes": "Transparent processing without coloration"
+    },
+    "29": {
+      "id": 29,
+      "name": "Classic Tremolo",
+      "category": "Modulation",
+      "param_count": 8,
+      "mix_param_index": 7,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Shape",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "LFO waveform shape",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Stereo",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo phase",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo type",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Symmetry",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Waveform symmetry",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Volume",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output volume",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Simple amplitude modulation",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Simple amplitude modulation",
+      "character": "Vintage, simple, rhythmic",
+      "use_cases": [
+        "Vintage sounds",
+        "Rhythmic effects",
+        "Surf guitar"
+      ],
+      "detailed_description": "Simple amplitude modulation. Vintage, simple, rhythmic",
+      "sound_design_notes": "Vintage analog character and coloration"
+    },
+    "28": {
+      "id": 28,
+      "name": "Harmonic Tremolo",
+      "category": "Modulation",
+      "param_count": 4,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tremolo depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Harmonics",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Harmonic content (crossover frequency)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Stereo Phase",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Phase offset",
+          "units": "degrees",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Complex tremolo variations",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Frequency-split tremolo for complex modulation",
+      "character": "Complex, vintage, Fender-like",
+      "use_cases": [
+        "Vintage amp tremolo",
+        "Guitar",
+        "Organ"
+      ],
+      "detailed_description": "Frequency-split tremolo for complex modulation. Complex, vintage, Fender-like",
+      "sound_design_notes": "Vintage analog character and coloration"
+    },
+    "46": {
+      "id": 46,
+      "name": "Dimension Expander",
+      "category": "Spatial",
+      "param_count": 3,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dimension size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Add dimension and width",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 8,
+      "function": "Creates depth and dimension",
+      "character": "3D, spacious, depth",
+      "use_cases": [
+        "Mix depth",
+        "3D placement",
+        "Ambience"
+      ],
+      "detailed_description": "Creates depth and dimension. 3D, spacious, depth",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "17": {
+      "id": 17,
+      "name": "Harmonic Exciter",
+      "category": "Enhancement",
+      "param_count": 3,
+      "mix_param_index": 2,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Harmonics",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Harmonic generation",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Frequency",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Frequency range",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Add harmonics and brightness",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 4,
+      "function": "Adds brightness and presence through harmonic generation",
+      "character": "Bright, airy, present, clarity",
+      "use_cases": [
+        "Vocal air",
+        "Mix brightness",
+        "Presence boost"
+      ],
+      "detailed_description": "Adds brightness and presence through harmonic generation. Bright, airy, present, clarity",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "53": {
+      "id": 53,
+      "name": "Mid-Side Processor",
+      "category": "Spatial",
+      "param_count": 10,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Mid Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid channel gain (-20dB to +20dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Side Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Side channel gain (-20dB to +20dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width (0-200%)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid Low",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid low shelf EQ (-15dB to +15dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid High",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid high shelf EQ (-15dB to +15dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Side Low",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Side low shelf EQ (-15dB to +15dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Side High",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Side high shelf EQ (-15dB to +15dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Bass Mono",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Bass mono frequency (off to 500Hz)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Solo Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Solo monitoring (off/mid/side)",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Presence",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Presence boost (0-6dB @ 10kHz)",
+          "units": "dB",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Mid/Side processing",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 8,
+      "function": "Separate processing of mid/side signals",
+      "character": "Width control, surgical",
+      "use_cases": [
+        "Mastering",
+        "Width adjustment",
+        "Problem solving"
+      ],
+      "detailed_description": "Separate processing of mid/side signals. Width control, surgical",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "8": {
+      "id": 8,
+      "name": "Vintage Console EQ",
+      "category": "EQ",
+      "param_count": 5,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Low",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low shelf",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Mid",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low mid band",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "High Mid",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High mid band",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "High",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High shelf",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Console saturation",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Musical analog-style EQ",
+      "combines_well_with": [
+        1,
+        15,
+        34
+      ],
+      "frequency_impact": "Shapes frequency content",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 2,
+      "function": "Musical EQ modeled after classic consoles",
+      "character": "Warm, musical, broad strokes",
+      "use_cases": [
+        "Mix bus",
+        "Drums",
+        "Full mixes"
+      ],
+      "detailed_description": "Musical EQ modeled after classic consoles. Warm, musical, broad strokes",
+      "sound_design_notes": "Adds warmth and analog character"
+    },
+    "7": {
+      "id": 7,
+      "name": "Parametric EQ",
+      "category": "EQ",
+      "param_count": 9,
+      "mix_param_index": -1,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Freq 1",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 1 frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Gain 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 1 gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Q 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 1 Q",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "name": "Freq 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 2 frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Gain 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 2 gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Q 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 2 Q",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "name": "Freq 3",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 3 frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Gain 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 3 gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Q 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Band 3 Q",
+          "units": "Q",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Surgical EQ corrections",
+      "combines_well_with": [
+        2,
+        15,
+        39
+      ],
+      "frequency_impact": "Shapes frequency content",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 2,
+      "function": "Precise frequency shaping with 3 bands",
+      "character": "Clean, surgical, transparent",
+      "use_cases": [
+        "Mixing",
+        "Corrective EQ",
+        "Tone shaping"
+      ],
+      "detailed_description": "Precise frequency shaping with 3 bands. Clean, surgical, transparent",
+      "sound_design_notes": "Transparent processing without coloration"
+    },
+    "3": {
+      "id": 3,
+      "name": "Transient Shaper",
+      "category": "Dynamics",
+      "param_count": 3,
+      "mix_param_index": 2,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Attack",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack enhancement",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Sustain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Sustain control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Enhance attack/sustain of drums",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Controls dynamic range",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 3,
+      "function": "Enhances or softens attack transients",
+      "character": "Punch control without traditional compression",
+      "use_cases": [
+        "Drums",
+        "Percussion",
+        "Plucked instruments"
+      ],
+      "detailed_description": "Enhances or softens attack transients. Punch control without traditional compression",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "31": {
+      "id": 31,
+      "name": "Pitch Shifter",
+      "category": "Pitch",
+      "param_count": 3,
+      "mix_param_index": 2,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Pitch",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pitch shift amount",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "name": "Fine",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Fine tuning",
+          "units": "cents",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Pitch shifting up/down",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Real-time pitch shifting up or down",
+      "character": "Harmonizing, octaves, pitch correction",
+      "use_cases": [
+        "Harmonies",
+        "Octave effects",
+        "Formant shift"
+      ],
+      "detailed_description": "Real-time pitch shifting up or down. Harmonizing, octaves, pitch correction",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "47": {
+      "id": 47,
+      "name": "Spectral Freeze",
+      "category": "Spectral",
+      "param_count": 3,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Freeze",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Freeze trigger",
+          "units": "gate",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "FFT size",
+          "units": "samples",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Freeze spectral content",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Freezes spectral content for drones",
+      "character": "Frozen, sustained, ethereal",
+      "use_cases": [
+        "Ambient",
+        "Transitions",
+        "Sound design"
+      ],
+      "detailed_description": "Freezes spectral content for drones. Frozen, sustained, ethereal",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "50": {
+      "id": 50,
+      "name": "Granular Cloud",
+      "category": "Texture",
+      "param_count": 5,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Grains",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Grain density",
+          "units": "grains/sec",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Grain size",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Position",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Playhead position",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pitch",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pitch variation",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Granular textures",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "heavy",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Granular synthesis for textures",
+      "character": "Textural, cloudy, evolving",
+      "use_cases": [
+        "Ambient textures",
+        "Sound design",
+        "Experimental"
+      ],
+      "detailed_description": "Granular synthesis for textures. Textural, cloudy, evolving",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "38": {
+      "id": 38,
+      "name": "Buffer Repeat",
+      "category": "Glitch",
+      "param_count": 4,
+      "mix_param_index": 3,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Buffer size",
+          "units": "beats",
+          "skew": 0.5
+        },
+        {
+          "name": "Rate",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Repeat rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Feedback",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.85,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Glitch/stutter effects",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Glitchy buffer sampling and looping",
+      "character": "Glitchy, stuttering, rhythmic",
+      "use_cases": [
+        "Glitch effects",
+        "Beat repeat",
+        "IDM"
+      ],
+      "detailed_description": "Glitchy buffer sampling and looping. Glitchy, stuttering, rhythmic",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "51": {
+      "id": 51,
+      "name": "Chaos Generator",
+      "category": "Experimental",
+      "param_count": 8,
+      "mix_param_index": 7,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Chaos rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Chaos depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Chaos type",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Smoothing",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Smoothing amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Target",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Target parameter",
+          "units": "param",
+          "skew": 0.5
+        },
+        {
+          "name": "Sync",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tempo sync",
+          "units": "beats",
+          "skew": 0.5
+        },
+        {
+          "name": "Seed",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Random seed",
+          "units": "seed",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Chaotic modulation",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "heavy",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Controlled random modulation",
+      "character": "Chaotic, random, evolving",
+      "use_cases": [
+        "Generative music",
+        "Modulation source",
+        "Experimental"
+      ],
+      "detailed_description": "Controlled random modulation. Chaotic, random, evolving",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "33": {
+      "id": 33,
+      "name": "Intelligent Harmonizer",
+      "category": "Pitch",
+      "param_count": 8,
+      "mix_param_index": 4,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Interval",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Harmony interval",
+          "units": "semitones",
+          "skew": 0.5
+        },
+        {
+          "name": "Key",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Musical key",
+          "units": "note",
+          "skew": 0.5
+        },
+        {
+          "name": "Scale",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Scale type",
+          "units": "scale",
+          "skew": 0.5
+        },
+        {
+          "name": "Voices",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Number of voices",
+          "units": "voices",
+          "skew": 0.5
+        },
+        {
+          "name": "Spread",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo spread",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Humanize",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Humanization amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Formant",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Formant correction",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Intelligent harmony generation",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Scale-aware harmony generation",
+      "character": "Musical harmonies, intelligent intervals",
+      "use_cases": [
+        "Vocal harmonies",
+        "Lead doubling",
+        "Chord generation"
+      ],
+      "detailed_description": "Scale-aware harmony generation. Musical harmonies, intelligent intervals",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "43": {
+      "id": 43,
+      "name": "Gated Reverb",
+      "category": "Reverb",
+      "param_count": 10,
+      "mix_param_index": 7,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Threshold",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Hold",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate hold time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Release",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate release time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate attack time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Room size",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "80s gated reverb",
+      "combines_well_with": [],
+      "frequency_impact": "Adds frequency diffusion",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "moderate",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 7,
+      "function": "80s-style gated reverb",
+      "character": "Big, punchy, abrupt cutoff",
+      "use_cases": [
+        "80s drums",
+        "Phil Collins snare",
+        "Big impacts"
+      ],
+      "detailed_description": "80s-style gated reverb. Big, punchy, abrupt cutoff",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "41": {
+      "id": 41,
+      "name": "Convolution Reverb",
+      "category": "Reverb",
+      "param_count": 10,
+      "mix_param_index": 0,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "IR Select",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Impulse response selection",
+          "units": "index",
+          "skew": 0.5
+        },
+        {
+          "name": "Size",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "IR size scaling",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Pre-Delay",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-delay time",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Damping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency damping",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Reverse",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Reverse impulse response",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Early/Late",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Early vs late reflections",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Low Cut",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "High Cut",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High cut filter",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Width",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Realistic space simulation",
+      "combines_well_with": [],
+      "frequency_impact": "Adds frequency diffusion",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "heavy",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 7,
+      "function": "Impulse response-based real space simulation",
+      "character": "Realistic, authentic spaces",
+      "use_cases": [
+        "Film scoring",
+        "Classical",
+        "Realistic spaces"
+      ],
+      "detailed_description": "Impulse response-based real space simulation. Realistic, authentic spaces",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "32": {
+      "id": 32,
+      "name": "Detune Doubler",
+      "category": "Pitch",
+      "param_count": 5,
+      "mix_param_index": 4,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Detune Amount",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Detune amount (0-50 cents)",
+          "units": "cents",
+          "skew": 0.5
+        },
+        {
+          "name": "Delay Time",
+          "default": 0.15,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Base delay time (10-60ms)",
+          "units": "ms",
+          "skew": 0.5
+        },
+        {
+          "name": "Stereo Width",
+          "default": 0.7,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo spread of doubled voices",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Thickness",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Voice blending thickness",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Thickening via detuning",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Creates width through micro-pitch shifting",
+      "character": "Wide, thick, chorused",
+      "use_cases": [
+        "Vocal thickening",
+        "Guitar doubling",
+        "Widening"
+      ],
+      "detailed_description": "Creates width through micro-pitch shifting. Wide, thick, chorused",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "49": {
+      "id": 49,
+      "name": "Phased Vocoder",
+      "category": "Spectral",
+      "param_count": 4,
+      "mix_param_index": 3,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Bands",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Number of bands",
+          "units": "bands",
+          "skew": 0.5
+        },
+        {
+          "name": "Shift",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Frequency shift",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Formant",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Formant shift",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Vocoder-like effects",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Complex spectral processing",
+      "character": "Robotic, vocoded, spectral",
+      "use_cases": [
+        "Vocoding",
+        "Robot voices",
+        "Spectral effects"
+      ],
+      "detailed_description": "Complex spectral processing. Robotic, vocoded, spectral",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "48": {
+      "id": 48,
+      "name": "Spectral Gate",
+      "category": "Dynamics",
+      "param_count": 8,
+      "mix_param_index": 7,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.25,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Freq Low",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Freq High",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Lookahead",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Lookahead time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Frequency-based gating",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Controls dynamic range",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 3,
+      "function": "Frequency-selective gating",
+      "character": "Filtered, gated, rhythmic",
+      "use_cases": [
+        "Trance gates",
+        "Rhythmic filtering",
+        "Creative gating"
+      ],
+      "detailed_description": "Frequency-selective gating. Filtered, gated, rhythmic",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "4": {
+      "id": 4,
+      "name": "Noise Gate",
+      "category": "Dynamics",
+      "param_count": 5,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Hold",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Hold time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Range",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Gate range",
+          "units": "dB",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Remove noise between notes",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Controls dynamic range",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 1,
+      "function": "Removes noise and bleed between notes",
+      "character": "Clean gating with adjustable range",
+      "use_cases": [
+        "Remove amp noise",
+        "Clean up drums",
+        "Tighten bass"
+      ],
+      "detailed_description": "Removes noise and bleed between notes. Clean gating with adjustable range",
+      "sound_design_notes": "Transparent processing without coloration"
+    },
+    "12": {
+      "id": 12,
+      "name": "Envelope Filter",
+      "category": "Filter",
+      "param_count": 5,
+      "mix_param_index": 4,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Sensitivity",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Envelope sensitivity",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.1,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Range",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter range",
+          "units": "octaves",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Dynamic filter following input",
+      "combines_well_with": [],
+      "frequency_impact": "Removes/emphasizes frequencies",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 2,
+      "function": "Auto-wah following input dynamics",
+      "character": "Funky, responsive, expressive",
+      "use_cases": [
+        "Funk guitar",
+        "Bass",
+        "Synth leads"
+      ],
+      "detailed_description": "Auto-wah following input dynamics. Funky, responsive, expressive",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "52": {
+      "id": 52,
+      "name": "Feedback Network",
+      "category": "Experimental",
+      "param_count": 4,
+      "mix_param_index": 3,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Feedback",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.85,
+          "description": "Feedback amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Delay",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Delay time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Modulation",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Complex feedback loops",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Complex feedback routing",
+      "character": "Resonant, complex, self-oscillating",
+      "use_cases": [
+        "Experimental",
+        "Feedback effects",
+        "Drones"
+      ],
+      "detailed_description": "Complex feedback routing. Resonant, complex, self-oscillating",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "5": {
+      "id": 5,
+      "name": "Mastering Limiter",
+      "category": "Dynamics",
+      "param_count": 4,
+      "mix_param_index": -1,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Threshold",
+          "default": 0.9,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Limiting threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Release",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Knee",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Knee softness",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Lookahead",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Lookahead time",
+          "units": "ms",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Final limiting for loudness",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Controls dynamic range",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 9,
+      "function": "Transparent peak limiting for loudness maximization",
+      "character": "Clean, transparent, no pumping",
+      "use_cases": [
+        "Final mastering",
+        "Mix bus protection",
+        "Broadcast limiting"
+      ],
+      "detailed_description": "Transparent peak limiting for loudness maximization. Clean, transparent, no pumping",
+      "sound_design_notes": "Transparent processing without coloration"
+    },
+    "44": {
+      "id": 44,
+      "name": "Stereo Widener",
+      "category": "Spatial",
+      "param_count": 3,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Bass Mono",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Bass mono frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Widen stereo image",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 8,
+      "function": "Enhances stereo width",
+      "character": "Wide, spacious, open",
+      "use_cases": [
+        "Mix widening",
+        "Stereo enhancement",
+        "Mastering"
+      ],
+      "detailed_description": "Enhances stereo width. Wide, spacious, open",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "24": {
+      "id": 24,
+      "name": "Resonant Chorus",
+      "category": "Modulation",
+      "param_count": 4,
+      "mix_param_index": 3,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Rate",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "LFO rate",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Depth",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Modulation depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Resonance",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 0.9,
+          "description": "Filter resonance",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Rich resonant chorus",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Chorus with resonant feedback for unique textures",
+      "character": "Metallic, resonant, unique",
+      "use_cases": [
+        "Experimental",
+        "Ambient",
+        "Sound design"
+      ],
+      "detailed_description": "Chorus with resonant feedback for unique textures. Metallic, resonant, unique",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "6": {
+      "id": 6,
+      "name": "Dynamic EQ",
+      "category": "EQ",
+      "param_count": 8,
+      "mix_param_index": 6,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Frequency",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 0.9,
+          "description": "Center frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Threshold",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dynamic threshold",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Ratio",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression ratio",
+          "units": "ratio",
+          "skew": 0.5
+        },
+        {
+          "name": "Attack",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Attack time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Release",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Release time",
+          "units": "ms",
+          "skew": 0.3
+        },
+        {
+          "name": "Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "EQ gain",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Compression/expansion mode",
+          "units": "mode",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Frequency-specific compression",
+      "combines_well_with": [],
+      "frequency_impact": "Shapes frequency content",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 2,
+      "function": "Frequency-selective compression/expansion",
+      "character": "Surgical dynamic control of problem frequencies",
+      "use_cases": [
+        "De-essing",
+        "Resonance control",
+        "Dynamic brightening"
+      ],
+      "detailed_description": "Frequency-selective compression/expansion. Surgical dynamic control of problem frequencies",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "45": {
+      "id": 45,
+      "name": "Stereo Imager",
+      "category": "Spatial",
+      "param_count": 4,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Width",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Center",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Center level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Rotation",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo rotation",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Precise stereo control",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 8,
+      "function": "Multiband stereo width control",
+      "character": "Controlled width, mono-compatible",
+      "use_cases": [
+        "Mastering",
+        "Mix placement",
+        "Width control"
+      ],
+      "detailed_description": "Multiband stereo width control. Controlled width, mono-compatible",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "21": {
+      "id": 21,
+      "name": "Rodent Distortion",
+      "category": "Distortion",
+      "param_count": 8,
+      "mix_param_index": 5,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input gain (0-60dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Filter",
+          "default": 0.4,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Pre-distortion filter (60Hz-5kHz)",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Clipping",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Clipping intensity",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tone control (500Hz-12kHz)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Output",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output level",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Circuit mode (RAT/TS/Muff/Fuzz)",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Presence",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency emphasis",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Aggressive distortion",
+      "combines_well_with": [],
+      "frequency_impact": "Adds harmonics and overtones",
+      "gain_impact": "Can add significant gain",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 4,
+      "function": "RAT-style distortion pedal",
+      "character": "Aggressive, cutting, tight low end",
+      "use_cases": [
+        "Rock guitar",
+        "Punk",
+        "Industrial"
+      ],
+      "detailed_description": "RAT-style distortion pedal. Aggressive, cutting, tight low end",
+      "sound_design_notes": "Adds aggression and intensity"
+    },
+    "20": {
+      "id": 20,
+      "name": "Muff Fuzz",
+      "category": "Distortion",
+      "param_count": 7,
+      "mix_param_index": 6,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Sustain",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Sustain amount",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Tone",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tone control",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Volume",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output volume",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Gate",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Noise gate threshold",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mids",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid scoop depth",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Variant",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Big Muff variant",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Classic fuzz tone",
+      "combines_well_with": [],
+      "frequency_impact": "Adds harmonics and overtones",
+      "gain_impact": "Can add significant gain",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 4,
+      "function": "Big Muff-style fuzz distortion",
+      "character": "Thick, sustained, creamy fuzz",
+      "use_cases": [
+        "Lead guitar",
+        "Bass",
+        "Synths"
+      ],
+      "detailed_description": "Big Muff-style fuzz distortion. Thick, sustained, creamy fuzz",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "30": {
+      "id": 30,
+      "name": "Rotary Speaker",
+      "category": "Modulation",
+      "param_count": 6,
+      "mix_param_index": 5,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Speed",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Rotor speed (chorale to tremolo)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Acceleration",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Speed transition acceleration",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Tube preamp drive",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mic Distance",
+          "default": 0.6,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Microphone distance",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Stereo Width",
+          "default": 0.8,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo microphone angle",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Leslie speaker simulation",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Leslie rotating speaker simulation",
+      "character": "Swirling, doppler, organic",
+      "use_cases": [
+        "Organ",
+        "Guitar",
+        "Psychedelic"
+      ],
+      "detailed_description": "Leslie rotating speaker simulation. Swirling, doppler, organic",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "13": {
+      "id": 13,
+      "name": "Comb Resonator",
+      "category": "Filter",
+      "param_count": 3,
+      "mix_param_index": 2,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Frequency",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Resonance frequency",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Resonance",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 0.95,
+          "description": "Resonance amount",
+          "units": "Q",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Metallic resonance effects",
+      "combines_well_with": [],
+      "frequency_impact": "Removes/emphasizes frequencies",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 2,
+      "function": "Creates pitched resonances and metallic tones",
+      "character": "Metallic, pitched, resonant",
+      "use_cases": [
+        "Special effects",
+        "Karplus-Strong synthesis",
+        "Drones"
+      ],
+      "detailed_description": "Creates pitched resonances and metallic tones. Metallic, pitched, resonant",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "9": {
+      "id": 9,
+      "name": "Ladder Filter",
+      "category": "Filter",
+      "param_count": 7,
+      "mix_param_index": 6,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Cutoff",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter cutoff frequency (20Hz-20kHz)",
+          "units": "Hz",
+          "skew": 0.3
+        },
+        {
+          "name": "Resonance",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter resonance/feedback",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Drive",
+          "default": 0.2,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Input saturation drive",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Filter Type",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Morphable filter type (LP24/LP12/BP/HP/Notch/AP)",
+          "units": "type",
+          "skew": 0.5
+        },
+        {
+          "name": "Asymmetry",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Saturation asymmetry",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Vintage Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Vintage vs modern character",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Classic synthesizer filtering",
+      "combines_well_with": [],
+      "frequency_impact": "Removes/emphasizes frequencies",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 2,
+      "function": "Moog-style resonant low-pass filter",
+      "character": "Warm, fat, self-oscillating resonance",
+      "use_cases": [
+        "Synth bass",
+        "Filter sweeps",
+        "Acid sounds"
+      ],
+      "detailed_description": "Moog-style resonant low-pass filter. Warm, fat, self-oscillating resonance",
+      "sound_design_notes": "Adds warmth and analog character"
+    },
+    "54": {
+      "id": 54,
+      "name": "Gain Utility",
+      "category": "Utility",
+      "param_count": 10,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Main gain control (-24dB to +24dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Left Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Left channel gain (-12dB to +12dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Right Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Right channel gain (-12dB to +12dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid (M) gain (-12dB to +12dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Side Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Side (S) gain (-12dB to +12dB)",
+          "units": "dB",
+          "skew": 0.5
+        },
+        {
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Processing mode (stereo/M-S/mono)",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Phase L",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Left channel phase invert",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Phase R",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Right channel phase invert",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Channel Swap",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Swap L/R channels",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Auto Gain",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Auto gain compensation",
+          "units": "toggle",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Gain staging",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Direct gain control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 9,
+      "function": "Simple gain and pan control",
+      "character": "Transparent, utility",
+      "use_cases": [
+        "Level matching",
+        "Gain staging",
+        "Basic control"
+      ],
+      "detailed_description": "Simple gain and pan control. Transparent, utility",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "55": {
+      "id": 55,
+      "name": "Mono Maker",
+      "category": "Utility",
+      "param_count": 8,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Frequency",
+          "default": 0.3,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mono below this frequency (20Hz-1kHz)",
+          "units": "Hz",
+          "skew": 0.5
+        },
+        {
+          "name": "Slope",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Filter slope (6-48 dB/oct)",
+          "units": "dB/oct",
+          "skew": 0.5
+        },
+        {
+          "name": "Mode",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Processing mode (standard/elliptical/M-S)",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "Bass Mono",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Bass mono amount (0-100%)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Preserve Phase",
+          "default": 0.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Phase preservation (minimum/linear)",
+          "units": "mode",
+          "skew": 0.5
+        },
+        {
+          "name": "DC Filter",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "DC blocking filter",
+          "units": "toggle",
+          "skew": 0.5
+        },
+        {
+          "name": "Width Above",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Stereo width above cutoff (0-200%)",
+          "units": "percent",
+          "skew": 0.5
+        },
+        {
+          "name": "Output Gain",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Output gain compensation (-6 to +6 dB)",
+          "units": "dB",
+          "skew": 0.5
+        }
+      ],
+      "typical_usage": "Mono compatibility",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 9,
+      "function": "Frequency-selective mono summing",
+      "character": "Mono-compatible, controlled",
+      "use_cases": [
+        "Bass mono",
+        "Vinyl mastering",
+        "Mono compatibility"
+      ],
+      "detailed_description": "Frequency-selective mono summing. Mono-compatible, controlled",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "56": {
+      "id": 56,
+      "name": "Phase Align",
+      "category": "Utility",
+      "param_count": 4,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Low Phase",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Low frequency phase (-180° to +180°)",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "Mid Phase",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Mid frequency phase (-180° to +180°)",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "High Phase",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "High frequency phase (-180° to +180°)",
+          "units": "degrees",
+          "skew": 0.5
+        },
+        {
+          "name": "Mix",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Dry/wet mix",
+          "units": "percent",
+          "skew": 0.0
+        }
+      ],
+      "typical_usage": "Phase correction",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 9,
+      "function": "Phase correction and alignment",
+      "character": "Phase-coherent, corrective",
+      "use_cases": [
+        "Multi-mic alignment",
+        "Phase issues",
+        "Comb filtering fix"
+      ],
+      "detailed_description": "Phase correction and alignment. Phase-coherent, corrective",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "0": {
+      "id": 0,
+      "name": "None",
+      "category": "Special",
+      "param_count": 0,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [],
+      "typical_usage": "Process audio with Special effect",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Bypass/passthrough with no processing",
+      "character": "Transparent - no coloration",
+      "use_cases": [
+        "Empty slot",
+        "Disable processing"
+      ],
+      "detailed_description": "Bypass/passthrough with no processing. Transparent - no coloration",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "10": {
+      "id": 10,
+      "name": "State Variable Filter",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 9,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Versatile filter types",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Versatile filter with multiple modes",
+      "character": "Clean, precise, versatile",
+      "use_cases": [
+        "Sound design",
+        "DJ filtering",
+        "Creative processing"
+      ],
+      "detailed_description": "Versatile filter with multiple modes. Clean, precise, versatile",
+      "sound_design_notes": "Transparent processing without coloration"
+    },
+    "11": {
+      "id": 11,
+      "name": "Formant Filter",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 5,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Vocal formant shaping",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Vowel-like resonances for vocal effects",
+      "character": "Vocal, talking, organic",
+      "use_cases": [
+        "Talk box effects",
+        "Vocal processing",
+        "Synths"
+      ],
+      "detailed_description": "Vowel-like resonances for vocal effects. Vocal, talking, organic",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "14": {
+      "id": 14,
+      "name": "Vocal Formant Filter",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 7,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Vowel-like filtering",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Advanced formant shaping for vocal character",
+      "character": "Vocal transformation, gender shifting",
+      "use_cases": [
+        "Vocal effects",
+        "Harmonizer support",
+        "Choir effects"
+      ],
+      "detailed_description": "Advanced formant shaping for vocal character. Vocal transformation, gender shifting",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "16": {
+      "id": 16,
+      "name": "Wave Folder",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 7,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Harsh digital folding",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Folds waveform back on itself for complex harmonics",
+      "character": "Aggressive, metallic, bell-like overtones",
+      "use_cases": [
+        "Extreme distortion",
+        "Sound design",
+        "West Coast synthesis"
+      ],
+      "detailed_description": "Folds waveform back on itself for complex harmonics. Aggressive, metallic, bell-like overtones",
+      "sound_design_notes": "Adds aggression and intensity"
+    },
+    "18": {
+      "id": 18,
+      "name": "Bit Crusher",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 3,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Lo-fi digital degradation",
+      "combines_well_with": [],
+      "frequency_impact": "Reduces high frequency content",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Digital degradation and lo-fi effects",
+      "character": "Digital, crunchy, retro, 8-bit",
+      "use_cases": [
+        "Lo-fi effects",
+        "Retro gaming",
+        "Glitch"
+      ],
+      "detailed_description": "Digital degradation and lo-fi effects. Digital, crunchy, retro, 8-bit",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "19": {
+      "id": 19,
+      "name": "Multiband Saturator",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 6,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Frequency-specific saturation",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Frequency-selective saturation across 3 bands",
+      "character": "Controlled warmth, frequency-specific drive",
+      "use_cases": [
+        "Mastering",
+        "Mix bus",
+        "Drum bus"
+      ],
+      "detailed_description": "Frequency-selective saturation across 3 bands. Controlled warmth, frequency-specific drive",
+      "sound_design_notes": "Adds warmth and analog character"
+    },
+    "25": {
+      "id": 25,
+      "name": "Analog Phaser",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 7,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Swooshing phase effects",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Classic phase shifting for swooshing effects",
+      "character": "Swoosh, vintage, psychedelic",
+      "use_cases": [
+        "70s sounds",
+        "Guitar",
+        "Rhodes"
+      ],
+      "detailed_description": "Classic phase shifting for swooshing effects. Swoosh, vintage, psychedelic",
+      "sound_design_notes": "Vintage analog character and coloration"
+    },
+    "26": {
+      "id": 26,
+      "name": "Ring Modulator",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": -1,
+      "has_mix": false,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Metallic ring modulation",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Creates metallic, bell-like tones",
+      "character": "Robotic, metallic, atonal",
+      "use_cases": [
+        "Sci-fi effects",
+        "Experimental",
+        "Daleks"
+      ],
+      "detailed_description": "Creates metallic, bell-like tones. Robotic, metallic, atonal",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "27": {
+      "id": 27,
+      "name": "Frequency Shifter",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 2,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Pitch shifting without changing tempo",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Shifts all frequencies by fixed amount",
+      "character": "Dissonant, ethereal, otherworldly",
+      "use_cases": [
+        "Psychedelic effects",
+        "Feedback control",
+        "Sound design"
+      ],
+      "detailed_description": "Shifts all frequencies by fixed amount. Dissonant, ethereal, otherworldly",
+      "sound_design_notes": "Specialized audio processing"
+    },
+    "36": {
+      "id": 36,
+      "name": "Magnetic Drum Echo",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 7,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Unique drum echo sound",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Rare drum-based echo unit",
+      "character": "Unique, vintage, mechanical",
+      "use_cases": [
+        "Vintage effects",
+        "Dub",
+        "Experimental"
+      ],
+      "detailed_description": "Rare drum-based echo unit. Unique, vintage, mechanical",
+      "sound_design_notes": "Vintage analog character and coloration"
+    },
+    "37": {
+      "id": 37,
+      "name": "Bucket Brigade Delay",
+      "category": "Unknown",
+      "param_count": 10,
+      "mix_param_index": 5,
+      "has_mix": true,
+      "parameters": [
+        {
+          "name": "Param 1",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 1",
+          "units": "percent"
+        },
+        {
+          "name": "Param 2",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 2",
+          "units": "percent"
+        },
+        {
+          "name": "Param 3",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 3",
+          "units": "percent"
+        },
+        {
+          "name": "Param 4",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 4",
+          "units": "percent"
+        },
+        {
+          "name": "Param 5",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 5",
+          "units": "percent"
+        },
+        {
+          "name": "Param 6",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 6",
+          "units": "percent"
+        },
+        {
+          "name": "Param 7",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 7",
+          "units": "percent"
+        },
+        {
+          "name": "Param 8",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 8",
+          "units": "percent"
+        },
+        {
+          "name": "Param 9",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 9",
+          "units": "percent"
+        },
+        {
+          "name": "Param 10",
+          "default": 0.5,
+          "min": 0.0,
+          "max": 1.0,
+          "description": "Parameter 10",
+          "units": "percent"
+        }
+      ],
+      "typical_usage": "Analog delay character",
+      "combines_well_with": [],
+      "frequency_impact": "Minimal frequency change",
+      "gain_impact": "Minimal gain change with mix control",
+      "cpu_load": "light",
+      "sweet_spots": {
+        "default": {
+          "param1": 0.5,
+          "mix": 0.5
+        }
+      },
+      "signal_chain_position": 5,
+      "function": "Analog BBD delay with characteristic darkness",
+      "character": "Dark, analog, degraded, musical",
+      "use_cases": [
+        "Analog delays",
+        "Vintage sounds",
+        "Ambience"
+      ],
+      "detailed_description": "Analog BBD delay with characteristic darkness. Dark, analog, degraded, musical",
+      "sound_design_notes": "Specialized audio processing"
+    }
+  },
+  "total_engines": 57,
+  "slot_count": 6,
+  "musical_contexts": {
+    "warm": {
+      "engines": [
+        15,
+        34,
+        39,
+        40
+      ],
+      "description": "Analog warmth and vintage character"
+    },
+    "bright": {
+      "engines": [
+        17,
+        7,
+        42
+      ],
+      "description": "Enhanced highs and presence"
+    },
+    "aggressive": {
+      "engines": [
+        22,
+        20,
+        21,
+        18
+      ],
+      "description": "Heavy distortion and edge"
+    },
+    "spacious": {
+      "engines": [
+        46,
+        42,
+        41,
+        39
+      ],
+      "description": "Wide, ambient space"
+    },
+    "tight": {
+      "engines": [
+        4,
+        3,
+        5
+      ],
+      "description": "Controlled dynamics"
+    },
+    "vintage": {
+      "engines": [
+        15,
+        1,
+        8,
+        34,
+        40
+      ],
+      "description": "Classic analog sound"
+    },
+    "modern": {
+      "engines": [
+        35,
+        18,
+        47,
+        48
+      ],
+      "description": "Digital precision and effects"
+    },
+    "psychedelic": {
+      "engines": [
+        25,
+        26,
+        51,
+        42
+      ],
+      "description": "Trippy, experimental sounds"
+    }
+  },
+  "good_combinations": {
+    "vocal_chain": [
+      7,
+      2,
+      32,
+      39
+    ],
+    "guitar_lead": [
+      22,
+      15,
+      34,
+      39
+    ],
+    "drum_bus": [
+      3,
+      2,
+      5
+    ],
+    "ambient_pad": [
+      9,
+      23,
+      46,
+      42
+    ],
+    "bass_tight": [
+      7,
+      2,
+      19
+    ],
+    "master_bus": [
+      7,
+      6,
+      53,
+      5
+    ]
+  },
+  "avoid_combinations": [
+    [
+      18,
+      19
+    ],
+    [
+      31,
+      32,
+      33
+    ],
+    [
+      41,
+      42,
+      43
+    ],
+    [
+      20,
+      21,
+      22
+    ]
+  ],
+  "signal_chain_order": [
+    "Input",
+    "Noise Gate",
+    "EQ/Filter",
+    "Compression",
+    "Distortion/Saturation",
+    "Modulation",
+    "Delay",
+    "Reverb",
+    "Utility/Output"
+  ],
+  "format_requirements": {
+    "slots": "0-indexed (0-5)",
+    "parameters": "Objects with 'name' and 'value' properties",
+    "parameter_names": "param1, param2, ... paramN",
+    "response_structure": "data.preset wrapper required"
+  },
+  "parameter_guidelines": {
+    "mix_parameters": "Control dry/wet balance (0=dry, 1=wet)",
+    "threshold_parameters": "Lower = more effect",
+    "feedback_parameters": ">0.75 can self-oscillate",
+    "resonance_parameters": "High values can be harsh",
+    "time_parameters": "Sync to tempo when possible"
+  },
+  "engine_selection_rules": {
+    "shimmer_reverb": {
+      "keywords": [
+        "shimmer",
+        "ethereal",
+        "angelic",
+        "celestial"
+      ],
+      "engine_id": 42,
+      "engine_name": "Shimmer Reverb"
+    },
+    "spring_reverb": {
+      "keywords": [
+        "spring",
+        "surf",
+        "vintage reverb",
+        "twangy"
+      ],
+      "engine_id": 40,
+      "engine_name": "Spring Reverb"
+    },
+    "plate_reverb": {
+      "keywords": [
+        "plate",
+        "studio reverb",
+        "classic reverb"
+      ],
+      "engine_id": 39,
+      "engine_name": "Plate Reverb"
+    },
+    "chorus": {
+      "keywords": [
+        "chorus",
+        "ensemble",
+        "thicken"
+      ],
+      "engine_id": 23,
+      "engine_name": "Digital Chorus"
+    },
+    "noise_gate": {
+      "keywords": [
+        "gate",
+        "noise gate",
+        "tight",
+        "clean up"
+      ],
+      "engine_id": 4,
+      "engine_name": "Noise Gate"
+    },
+    "parallel_compression": {
+      "keywords": [
+        "parallel compression",
+        "new york compression"
+      ],
+      "engine_id": 2,
+      "engine_name": "Classic Compressor",
+      "special_setup": "Set mix to 40-50% for parallel processing"
+    }
+  },
+  "ai_instructions": {
+    "critical": [
+      "ONLY use engine IDs from this knowledge base",
+      "NEVER invent engine names or IDs",
+      "ALWAYS use minimum 4 engines per preset",
+      "ALWAYS fulfill specific requests (if user asks for spring reverb, use Spring Reverb ID 40)",
+      "NEVER describe engines that don't exist in the knowledge base"
+    ],
+    "engine_mapping": {
+      "When user says 'shimmer'": "Use Engine 42 (Shimmer Reverb)",
+      "When user says 'spring reverb'": "Use Engine 40 (Spring Reverb)",
+      "When user says 'chorus'": "Use Engine 23 (Digital Chorus)",
+      "When user says 'phaser'": "Use Engine 24 (Analog Phaser)",
+      "When user says 'noise gate'": "Use Engine 4 (Noise Gate)",
+      "When user says 'tape'": "Use Engine 34 (Tape Echo) or 15 (Vintage Tube Preamp)"
+    }
+  }
+}

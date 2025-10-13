@@ -1,0 +1,383 @@
+================================================================================
+ChimeraPhoenix Code Coverage Analysis Report
+================================================================================
+
+OVERALL COVERAGE SUMMARY
+--------------------------------------------------------------------------------
+Line Coverage:       9990 /  16178 ( 61.75%)
+Branch Coverage:     1973 /   5840 ( 33.78%)
+Function Coverage:    836 /   1294 ( 64.61%)
+
+PER-FILE COVERAGE BREAKDOWN
+--------------------------------------------------------------------------------
+
+EngineFactory.cpp
+  Lines:      117/ 121 ( 96.7%)
+  Branches:   114/ 116 ( 98.3%)
+  Functions:    1/   1 (100.0%)
+
+HarmonicTremolo.cpp
+  Lines:      250/ 285 ( 87.7%)
+  Branches:    52/  72 ( 72.2%)
+  Functions:   19/  22 ( 86.4%)
+
+RotarySpeaker_Platinum.cpp
+  Lines:      183/ 223 ( 82.1%)
+  Branches:    22/  62 ( 35.5%)
+  Functions:   12/  14 ( 85.7%)
+
+FrequencyShifter.cpp
+  Lines:      183/ 224 ( 81.7%)
+  Branches:    38/  88 ( 43.2%)
+  Functions:    8/  10 ( 80.0%)
+
+PhaseAlign_Platinum.cpp
+  Lines:      181/ 223 ( 81.2%)
+  Branches:    31/  76 ( 40.8%)
+  Functions:   11/  15 ( 73.3%)
+
+KStyleOverdrive.cpp
+  Lines:       75/  94 ( 79.8%)
+  Branches:    19/  46 ( 41.3%)
+  Functions:    4/   6 ( 66.7%)
+
+StereoWidener.cpp
+  Lines:      130/ 163 ( 79.8%)
+  Branches:    17/  54 ( 31.5%)
+  Functions:    6/  10 ( 60.0%)
+
+AnalogPhaser.cpp
+  Lines:      160/ 202 ( 79.2%)
+  Branches:    30/  62 ( 48.4%)
+  Functions:   21/  28 ( 75.0%)
+
+DimensionExpander.cpp
+  Lines:      118/ 150 ( 78.7%)
+  Branches:    12/  42 ( 28.6%)
+  Functions:    5/   8 ( 62.5%)
+
+HarmonicExciter_Platinum.cpp
+  Lines:      296/ 379 ( 78.1%)
+  Branches:    43/  96 ( 44.8%)
+  Functions:   34/  39 ( 87.2%)
+
+DigitalDelay.cpp
+  Lines:      283/ 369 ( 76.7%)
+  Branches:    47/ 110 ( 42.7%)
+  Functions:   29/  39 ( 74.4%)
+
+LadderFilter.cpp
+  Lines:      252/ 331 ( 76.1%)
+  Branches:    44/ 100 ( 44.0%)
+  Functions:   21/  24 ( 87.5%)
+
+GatedReverb.cpp
+  Lines:      221/ 291 ( 75.9%)
+  Branches:    47/ 122 ( 38.5%)
+  Functions:   25/  31 ( 80.6%)
+
+MagneticDrumEcho.cpp
+  Lines:      379/ 500 ( 75.8%)
+  Branches:    54/ 130 ( 41.5%)
+  Functions:   35/  44 ( 79.5%)
+
+CombResonator.cpp
+  Lines:      162/ 214 ( 75.7%)
+  Branches:    29/  56 ( 51.8%)
+  Functions:   12/  15 ( 80.0%)
+
+MonoMaker_Platinum.cpp
+  Lines:      234/ 310 ( 75.5%)
+  Branches:    37/  90 ( 41.1%)
+  Functions:   25/  32 ( 78.1%)
+
+MultibandSaturator.cpp
+  Lines:      178/ 240 ( 74.2%)
+  Branches:    27/  56 ( 48.2%)
+  Functions:   25/  32 ( 78.1%)
+
+NoiseGate_Platinum.cpp
+  Lines:      224/ 303 ( 73.9%)
+  Branches:    31/  94 ( 33.0%)
+  Functions:   23/  35 ( 65.7%)
+
+GranularCloud.cpp
+  Lines:      165/ 233 ( 70.8%)
+  Branches:    41/  92 ( 44.6%)
+  Functions:    6/   9 ( 66.7%)
+
+StereoImager.cpp
+  Lines:      183/ 260 ( 70.4%)
+  Branches:    25/  84 ( 29.8%)
+  Functions:   12/  16 ( 75.0%)
+
+MuffFuzz.cpp
+  Lines:      251/ 360 ( 69.7%)
+  Branches:    43/ 114 ( 37.7%)
+  Functions:   17/  23 ( 73.9%)
+
+VintageConsoleEQ_Studio.cpp
+  Lines:      215/ 310 ( 69.4%)
+  Branches:    62/ 118 ( 52.5%)
+  Functions:   11/  15 ( 73.3%)
+
+VocalFormantFilter.cpp
+  Lines:      198/ 287 ( 69.0%)
+  Branches:    26/  98 ( 26.5%)
+  Functions:   20/  25 ( 80.0%)
+
+ShimmerReverb.cpp
+  Lines:      165/ 240 ( 68.8%)
+  Branches:    36/ 102 ( 35.3%)
+  Functions:   12/  17 ( 70.6%)
+
+VintageOptoCompressor_Platinum.cpp
+  Lines:      165/ 240 ( 68.8%)
+  Branches:    31/  80 ( 38.8%)
+  Functions:    7/  10 ( 70.0%)
+
+DetuneDoubler.cpp
+  Lines:      123/ 180 ( 68.3%)
+  Branches:    11/  52 ( 21.2%)
+  Functions:    6/   9 ( 66.7%)
+
+WaveFolder.cpp
+  Lines:      227/ 337 ( 67.4%)
+  Branches:    52/ 112 ( 46.4%)
+  Functions:   21/  31 ( 67.7%)
+
+StereoChorus.cpp
+  Lines:      109/ 165 ( 66.1%)
+  Branches:    18/  50 ( 36.0%)
+  Functions:    6/   9 ( 66.7%)
+
+StateVariableFilter.cpp
+  Lines:      103/ 157 ( 65.6%)
+  Branches:    21/  94 ( 22.3%)
+  Functions:    6/   8 ( 75.0%)
+
+TapeEcho.cpp
+  Lines:      128/ 196 ( 65.3%)
+  Branches:    31/  92 ( 33.7%)
+  Functions:    9/  16 ( 56.2%)
+
+SpringReverb.cpp
+  Lines:      147/ 228 ( 64.5%)
+  Branches:    32/ 100 ( 32.0%)
+  Functions:   17/  23 ( 73.9%)
+
+ChaosGenerator.cpp
+  Lines:       76/ 118 ( 64.4%)
+  Branches:    18/  62 ( 29.0%)
+  Functions:    4/   9 ( 44.4%)
+
+DynamicEQ.cpp
+  Lines:       95/ 149 ( 63.8%)
+  Branches:    22/  64 ( 34.4%)
+  Functions:    4/   8 ( 50.0%)
+
+MasteringLimiter_Platinum.cpp
+  Lines:      200/ 314 ( 63.7%)
+  Branches:    54/ 116 ( 46.6%)
+  Functions:   18/  27 ( 66.7%)
+
+EnvelopeFilter.cpp
+  Lines:      301/ 477 ( 63.1%)
+  Branches:    44/ 124 ( 35.5%)
+  Functions:   38/  47 ( 80.9%)
+
+RodentDistortion.cpp
+  Lines:      221/ 358 ( 61.7%)
+  Branches:    54/ 110 ( 49.1%)
+  Functions:    9/  16 ( 56.2%)
+
+MidSideProcessor_Platinum.cpp
+  Lines:      224/ 372 ( 60.2%)
+  Branches:    24/  88 ( 27.3%)
+  Functions:   22/  33 ( 66.7%)
+
+ResonantChorus_Platinum.cpp
+  Lines:      278/ 463 ( 60.0%)
+  Branches:    47/ 144 ( 32.6%)
+  Functions:   31/  62 ( 50.0%)
+
+TransientShaper_Platinum.cpp
+  Lines:      276/ 464 ( 59.5%)
+  Branches:    24/  98 ( 24.5%)
+  Functions:   32/  44 ( 72.7%)
+
+IntelligentHarmonizer_FINAL.cpp
+  Lines:      205/ 346 ( 59.2%)
+  Branches:    55/ 182 ( 30.2%)
+  Functions:   19/  26 ( 73.1%)
+
+PlateReverb.cpp
+  Lines:      113/ 191 ( 59.2%)
+  Branches:    25/  90 ( 27.8%)
+  Functions:    9/  16 ( 56.2%)
+
+FormantFilter.cpp
+  Lines:      131/ 224 ( 58.5%)
+  Branches:    24/  84 ( 28.6%)
+  Functions:    8/  13 ( 61.5%)
+
+FeedbackNetwork.cpp
+  Lines:       44/  77 ( 57.1%)
+  Branches:     6/  32 ( 18.8%)
+  Functions:    5/   8 ( 62.5%)
+
+GainUtility_Platinum.cpp
+  Lines:      219/ 384 ( 57.0%)
+  Branches:    29/ 132 ( 22.0%)
+  Functions:   27/  43 ( 62.8%)
+
+PlatinumRingModulator.cpp
+  Lines:       96/ 171 ( 56.1%)
+  Branches:    17/  66 ( 25.8%)
+  Functions:   10/  13 ( 76.9%)
+
+PhasedVocoder.cpp
+  Lines:      281/ 507 ( 55.4%)
+  Branches:    58/ 192 ( 30.2%)
+  Functions:   19/  29 ( 65.5%)
+
+ConvolutionReverb.cpp
+  Lines:      220/ 409 ( 53.8%)
+  Branches:    67/ 176 ( 38.1%)
+  Functions:   10/  18 ( 55.6%)
+
+ClassicCompressor.cpp
+  Lines:      171/ 320 ( 53.4%)
+  Branches:    42/ 136 ( 30.9%)
+  Functions:    6/   8 ( 75.0%)
+
+BucketBrigadeDelay.cpp
+  Lines:      176/ 332 ( 53.0%)
+  Branches:    28/ 112 ( 25.0%)
+  Functions:   16/  41 ( 39.0%)
+
+BitCrusher.cpp
+  Lines:       33/  65 ( 50.8%)
+  Branches:    12/  46 ( 26.1%)
+  Functions:    3/   5 ( 60.0%)
+
+VintageTubePreamp_Studio.cpp
+  Lines:       78/ 154 ( 50.6%)
+  Branches:    19/  70 ( 27.1%)
+  Functions:    6/   9 ( 66.7%)
+
+ClassicTremolo.cpp
+  Lines:      239/ 481 ( 49.7%)
+  Branches:    53/ 138 ( 38.4%)
+  Functions:   17/  36 ( 47.2%)
+
+ParametricEQ_Studio.cpp
+  Lines:      117/ 280 ( 41.8%)
+  Branches:    55/ 188 ( 29.3%)
+  Functions:    9/  16 ( 56.2%)
+
+SpectralFreeze.cpp
+  Lines:      125/ 353 ( 35.4%)
+  Branches:    24/ 126 ( 19.0%)
+  Functions:   13/  25 ( 52.0%)
+
+BufferRepeat_Platinum.cpp
+  Lines:      231/ 718 ( 32.2%)
+  Branches:    47/ 274 ( 17.2%)
+  Functions:   31/  77 ( 40.3%)
+
+SpectralGate_Platinum.cpp
+  Lines:       35/ 170 ( 20.6%)
+  Branches:     2/  70 (  2.9%)
+  Functions:    4/  11 ( 36.4%)
+
+PitchShiftFactory.cpp
+  Lines:        0/  20 (  0.0%)
+  Branches:     0/  12 (  0.0%)
+  Functions:    0/   3 (  0.0%)
+
+PitchShifter.cpp
+  Lines:        0/ 365 (  0.0%)
+  Branches:     0/ 236 (  0.0%)
+  Functions:    0/  19 (  0.0%)
+
+SMBPitchShiftFixed.cpp
+  Lines:        0/  81 (  0.0%)
+  Branches:     0/  12 (  0.0%)
+  Functions:    0/  16 (  0.0%)
+
+
+================================================================================
+FILES WITH LOW COVERAGE (< 50%)
+--------------------------------------------------------------------------------
+
+PitchShiftFactory.cpp: 0.0% (0/20 lines)
+PitchShifter.cpp: 0.0% (0/365 lines)
+SMBPitchShiftFixed.cpp: 0.0% (0/81 lines)
+SpectralGate_Platinum.cpp: 20.6% (35/170 lines)
+BufferRepeat_Platinum.cpp: 32.2% (231/718 lines)
+SpectralFreeze.cpp: 35.4% (125/353 lines)
+ParametricEQ_Studio.cpp: 41.8% (117/280 lines)
+ClassicTremolo.cpp: 49.7% (239/481 lines)
+
+================================================================================
+UNTESTED OR PARTIALLY TESTED ENGINES
+--------------------------------------------------------------------------------
+
+  • PitchShiftFactory.cpp: 0.0% coverage
+  • PitchShifter.cpp: 0.0% coverage
+  • SMBPitchShiftFixed.cpp: 0.0% coverage
+  • SpectralGate_Platinum.cpp: 20.6% coverage
+  • BufferRepeat_Platinum.cpp: 32.2% coverage
+  • SpectralFreeze.cpp: 35.4% coverage
+  • ParametricEQ_Studio.cpp: 41.8% coverage
+  • ClassicTremolo.cpp: 49.7% coverage
+  • VintageTubePreamp_Studio.cpp: 50.6% coverage
+  • BitCrusher.cpp: 50.8% coverage
+  • BucketBrigadeDelay.cpp: 53.0% coverage
+  • ClassicCompressor.cpp: 53.4% coverage
+  • ConvolutionReverb.cpp: 53.8% coverage
+  • PhasedVocoder.cpp: 55.4% coverage
+  • PlatinumRingModulator.cpp: 56.1% coverage
+  • GainUtility_Platinum.cpp: 57.0% coverage
+  • FeedbackNetwork.cpp: 57.1% coverage
+  • FormantFilter.cpp: 58.5% coverage
+  • PlateReverb.cpp: 59.2% coverage
+  • IntelligentHarmonizer_FINAL.cpp: 59.2% coverage
+  • TransientShaper_Platinum.cpp: 59.5% coverage
+  • ResonantChorus_Platinum.cpp: 60.0% coverage
+  • MidSideProcessor_Platinum.cpp: 60.2% coverage
+  • RodentDistortion.cpp: 61.7% coverage
+  • EnvelopeFilter.cpp: 63.1% coverage
+  • MasteringLimiter_Platinum.cpp: 63.7% coverage
+  • DynamicEQ.cpp: 63.8% coverage
+  • ChaosGenerator.cpp: 64.4% coverage
+  • SpringReverb.cpp: 64.5% coverage
+  • TapeEcho.cpp: 65.3% coverage
+  • StateVariableFilter.cpp: 65.6% coverage
+  • StereoChorus.cpp: 66.1% coverage
+  • WaveFolder.cpp: 67.4% coverage
+  • DetuneDoubler.cpp: 68.3% coverage
+  • ShimmerReverb.cpp: 68.8% coverage
+  • VintageOptoCompressor_Platinum.cpp: 68.8% coverage
+  • VocalFormantFilter.cpp: 69.0% coverage
+  • VintageConsoleEQ_Studio.cpp: 69.4% coverage
+  • MuffFuzz.cpp: 69.7% coverage
+
+================================================================================
+RECOMMENDATIONS FOR IMPROVEMENT
+--------------------------------------------------------------------------------
+
+• Increase line coverage to at least 80%
+  - Focus on files with < 50% coverage
+  - Add tests for edge cases and error handling
+
+• Improve branch coverage to at least 70%
+  - Test all conditional branches (if/else, switch cases)
+  - Test boundary conditions
+
+• Increase function coverage to at least 90%
+  - Ensure all public API functions are tested
+  - Test helper functions and utilities
+
+

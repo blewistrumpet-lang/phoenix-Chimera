@@ -1,0 +1,766 @@
+===========================================
+COMPREHENSIVE TEST: ALL 57 ENGINES (0-56)
+===========================================
+
+Configuration:
+  Sample Rate: 48000 Hz
+  Block Size: 512 samples
+  Test Duration: 10.6667 seconds per engine
+  Total Engines: 57
+
+
+========================================
+Testing Engine 0: None
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 0 (None)
+
+========================================
+Testing Engine 1: VintageOptoCompressor
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 1 (VintageOptoCompressor)
+
+========================================
+Testing Engine 2: ClassicCompressor
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 2 (ClassicCompressor)
+
+========================================
+Testing Engine 3: TransientShaper
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 3 (TransientShaper)
+
+========================================
+Testing Engine 4: NoiseGate
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 4 (NoiseGate)
+
+========================================
+Testing Engine 5: MasteringLimiter
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 5 (MasteringLimiter)
+
+========================================
+Testing Engine 6: DynamicEQ
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 6 (DynamicEQ)
+
+========================================
+Testing Engine 7: ParametricEQ
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 7 (ParametricEQ)
+
+========================================
+Testing Engine 8: VintageConsoleEQ
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 8 (VintageConsoleEQ)
+
+========================================
+Testing Engine 9: LadderFilter
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 9 (LadderFilter)
+
+========================================
+Testing Engine 10: StateVariableFilter
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 10 (StateVariableFilter)
+
+========================================
+Testing Engine 11: FormantFilter
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 11 (FormantFilter)
+
+========================================
+Testing Engine 12: EnvelopeFilter
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 12 (EnvelopeFilter)
+
+========================================
+Testing Engine 13: CombResonator
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 13 (CombResonator)
+
+========================================
+Testing Engine 14: VocalFormantFilter
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 14 (VocalFormantFilter)
+
+========================================
+Testing Engine 15: VintageTubePreamp
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 15 (VintageTubePreamp)
+
+========================================
+Testing Engine 16: WaveFolder
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 16 (WaveFolder)
+
+========================================
+Testing Engine 17: HarmonicExciter
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 17 (HarmonicExciter)
+
+========================================
+Testing Engine 18: BitCrusher
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 18 (BitCrusher)
+
+========================================
+Testing Engine 19: MultibandSaturator
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 19 (MultibandSaturator)
+
+========================================
+Testing Engine 20: MuffFuzz
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 20 (MuffFuzz)
+
+========================================
+Testing Engine 21: RodentDistortion
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 21 (RodentDistortion)
+
+========================================
+Testing Engine 22: KStyleOverdrive
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 22 (KStyleOverdrive)
+
+========================================
+Testing Engine 23: StereoChorus
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 23 (StereoChorus)
+
+========================================
+Testing Engine 24: ResonantChorus
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 24 (ResonantChorus)
+
+========================================
+Testing Engine 25: AnalogPhaser
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 25 (AnalogPhaser)
+
+========================================
+Testing Engine 26: RingModulator
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 26 (RingModulator)
+
+========================================
+Testing Engine 27: FrequencyShifter
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 27 (FrequencyShifter)
+
+========================================
+Testing Engine 28: HarmonicTremolo
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 28 (HarmonicTremolo)
+
+========================================
+Testing Engine 29: ClassicTremolo
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 29 (ClassicTremolo)
+
+========================================
+Testing Engine 30: RotarySpeaker
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 30 (RotarySpeaker)
+
+========================================
+Testing Engine 31: PitchShifter
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 31 (PitchShifter)
+
+========================================
+Testing Engine 32: DetuneDoubler
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 32 (DetuneDoubler)
+
+========================================
+Testing Engine 33: IntelligentHarmonizer
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 33 (IntelligentHarmonizer)
+
+========================================
+Testing Engine 34: TapeEcho
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 34 (TapeEcho)
+
+========================================
+Testing Engine 35: DigitalDelay
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 35 (DigitalDelay)
+
+========================================
+Testing Engine 36: MagneticDrumEcho
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 36 (MagneticDrumEcho)
+
+========================================
+Testing Engine 37: BucketBrigadeDelay
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 37 (BucketBrigadeDelay)
+
+========================================
+Testing Engine 38: BufferRepeat
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 38 (BufferRepeat)
+
+========================================
+Testing Engine 39: PlateReverb
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 39 (PlateReverb)
+
+========================================
+Testing Engine 40: SpringReverb
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 40 (SpringReverb)
+
+========================================
+Testing Engine 41: ConvolutionReverb
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Produces output (not silent)
+Testing parameter sweeps...
+❌ FAIL: Engine 41 (ConvolutionReverb)
+   Error: Block 600: Extreme values detected (>10.0)
+
+========================================
+Testing Engine 42: ShimmerReverb
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 42 (ShimmerReverb)
+
+========================================
+Testing Engine 43: GatedReverb
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 43 (GatedReverb)
+
+========================================
+Testing Engine 44: StereoWidener
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 44 (StereoWidener)
+
+========================================
+Testing Engine 45: StereoImager
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 45 (StereoImager)
+
+========================================
+Testing Engine 46: DimensionExpander
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 46 (DimensionExpander)
+
+========================================
+Testing Engine 47: SpectralFreeze
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 47 (SpectralFreeze)
+
+========================================
+Testing Engine 48: SpectralGate
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 48 (SpectralGate)
+
+========================================
+Testing Engine 49: PhasedVocoder
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 49 (PhasedVocoder)
+
+========================================
+Testing Engine 50: GranularCloud
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 50 (GranularCloud)
+
+========================================
+Testing Engine 51: ChaosGenerator
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 51 (ChaosGenerator)
+
+========================================
+Testing Engine 52: FeedbackNetwork
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 52 (FeedbackNetwork)
+
+========================================
+Testing Engine 53: MidSideProcessor
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 53 (MidSideProcessor)
+
+========================================
+Testing Engine 54: GainUtility
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 54 (GainUtility)
+
+========================================
+Testing Engine 55: MonoMaker
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 55 (MonoMaker)
+
+========================================
+Testing Engine 56: PhaseAlign
+========================================
+✓ Engine created successfully
+✓ Engine initialized (SR: 48000 Hz, Block: 512)
+Warming up engine (100 blocks)...
+✓ Warmup complete
+Testing stability with default parameters (1000 blocks)...
+✓ Stable output (no NaN/Inf/crashes)
+✓ Produces output (not silent)
+Testing parameter sweeps...
+✅ PASS: Engine 56 (PhaseAlign)
+
+
+===========================================
+SUMMARY REPORT
+===========================================
+
+Total Engines Tested: 57
+Passing: 56 (98%)
+Failing: 1 (1%)
+
+Failed Engines:
+  Engine 41 (ConvolutionReverb):
+    - Block 600: Extreme values detected (>10.0)
+
+Detailed results written to: all_engines_test_results.csv

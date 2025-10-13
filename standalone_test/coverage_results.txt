@@ -1,0 +1,243 @@
+ChimeraPhoenix Code Coverage Results
+====================================
+
+Engine 1: VintageOptoCompressor
+  Instantiated: YES
+  Processed:    YES
+
+Engine 2: ClassicCompressor
+  Instantiated: YES
+  Processed:    YES
+
+Engine 3: TransientShaper
+  Instantiated: YES
+  Processed:    YES
+
+Engine 4: NoiseGate
+  Instantiated: YES
+  Processed:    YES
+
+Engine 5: MasteringLimiter
+  Instantiated: YES
+  Processed:    YES
+
+Engine 6: DynamicEQ
+  Instantiated: YES
+  Processed:    YES
+
+Engine 7: ParametricEQ
+  Instantiated: YES
+  Processed:    YES
+
+Engine 8: VintageConsoleEQ
+  Instantiated: YES
+  Processed:    YES
+
+Engine 9: LadderFilter
+  Instantiated: YES
+  Processed:    YES
+
+Engine 10: StateVariableFilter
+  Instantiated: YES
+  Processed:    YES
+
+Engine 11: FormantFilter
+  Instantiated: YES
+  Processed:    YES
+
+Engine 12: EnvelopeFilter
+  Instantiated: YES
+  Processed:    YES
+
+Engine 13: CombResonator
+  Instantiated: YES
+  Processed:    YES
+
+Engine 14: VocalFormantFilter
+  Instantiated: YES
+  Processed:    YES
+
+Engine 15: VintageTubePreamp
+  Instantiated: YES
+  Processed:    YES
+
+Engine 16: WaveFolder
+  Instantiated: YES
+  Processed:    YES
+
+Engine 17: HarmonicExciter
+  Instantiated: YES
+  Processed:    YES
+
+Engine 18: BitCrusher
+  Instantiated: YES
+  Processed:    YES
+
+Engine 19: MultibandSaturator
+  Instantiated: YES
+  Processed:    YES
+
+Engine 20: MuffFuzz
+  Instantiated: YES
+  Processed:    YES
+
+Engine 21: RodentDistortion
+  Instantiated: YES
+  Processed:    YES
+
+Engine 22: KStyleOverdrive
+  Instantiated: YES
+  Processed:    YES
+
+Engine 23: TapeDistortion
+  Instantiated: YES
+  Processed:    YES
+
+Engine 24: StereoChorus
+  Instantiated: YES
+  Processed:    YES
+
+Engine 25: ResonantChorus
+  Instantiated: YES
+  Processed:    YES
+
+Engine 26: AnalogPhaser
+  Instantiated: YES
+  Processed:    YES
+
+Engine 27: PlatinumRingModulator
+  Instantiated: YES
+  Processed:    YES
+
+Engine 28: ClassicTremolo
+  Instantiated: YES
+  Processed:    YES
+
+Engine 29: HarmonicTremolo
+  Instantiated: YES
+  Processed:    YES
+
+Engine 30: FrequencyShifter
+  Instantiated: YES
+  Processed:    YES
+
+Engine 31: DetuneDoubler
+  Instantiated: NO
+  Processed:    NO
+  Error:        Skipped (known to hang)
+
+Engine 32: RotarySpeaker
+  Instantiated: YES
+  Processed:    YES
+
+Engine 33: TapeEcho
+  Instantiated: YES
+  Processed:    YES
+
+Engine 34: DigitalDelay
+  Instantiated: YES
+  Processed:    YES
+
+Engine 35: BucketBrigadeDelay
+  Instantiated: YES
+  Processed:    YES
+
+Engine 36: MagneticDrumEcho
+  Instantiated: YES
+  Processed:    YES
+
+Engine 37: PlateReverb
+  Instantiated: YES
+  Processed:    YES
+
+Engine 38: SpringReverb
+  Instantiated: YES
+  Processed:    YES
+
+Engine 39: ConvolutionReverb
+  Instantiated: YES
+  Processed:    YES
+
+Engine 40: GatedReverb
+  Instantiated: YES
+  Processed:    YES
+
+Engine 41: ShimmerReverb
+  Instantiated: YES
+  Processed:    YES
+
+Engine 42: FeedbackNetwork
+  Instantiated: YES
+  Processed:    YES
+
+Engine 43: DimensionExpander
+  Instantiated: YES
+  Processed:    YES
+
+Engine 44: StereoWidener
+  Instantiated: YES
+  Processed:    YES
+
+Engine 45: StereoImager
+  Instantiated: YES
+  Processed:    YES
+
+Engine 46: MidSideProcessor
+  Instantiated: YES
+  Processed:    YES
+
+Engine 47: PhaseAlign
+  Instantiated: YES
+  Processed:    YES
+
+Engine 48: PitchShifter
+  Instantiated: YES
+  Processed:    YES
+
+Engine 49: PitchShiftFactory
+  Instantiated: YES
+  Processed:    YES
+
+Engine 50: SMBPitchShift
+  Instantiated: YES
+  Processed:    YES
+
+Engine 51: IntelligentHarmonizer
+  Instantiated: YES
+  Processed:    YES
+
+Engine 52: PhasedVocoder
+  Instantiated: YES
+  Processed:    YES
+
+Engine 53: SpectralFreeze
+  Instantiated: YES
+  Processed:    YES
+
+Engine 54: SpectralGate
+  Instantiated: YES
+  Processed:    YES
+
+Engine 55: GranularCloud
+  Instantiated: YES
+  Processed:    YES
+
+Engine 56: BufferRepeat
+  Instantiated: YES
+  Processed:    YES
+
+Engine 57: ChaosGenerator
+  Instantiated: NO
+  Processed:    NO
+  Error:        Creation failed
+
+Engine 58: GainUtility
+  Instantiated: NO
+  Processed:    NO
+  Error:        Creation failed
+
+Engine 59: MonoMaker
+  Instantiated: NO
+  Processed:    NO
+  Error:        Creation failed
+

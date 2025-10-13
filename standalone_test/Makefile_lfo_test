@@ -1,0 +1,52 @@
+# Makefile for LFO Calibration Test
+# Usage: make -f Makefile_lfo_test
+
+CXX = clang++
+CXXFLAGS = -std=c++17 -O2 -Wall -Wextra
+JUCE_PATH = /usr/local/include/JUCE
+
+# JUCE include paths
+INCLUDES = -I$(JUCE_PATH)/modules \
+           -I../JUCE_Plugin/Source \
+           -I./
+
+# JUCE frameworks (macOS)
+FRAMEWORKS = -framework Accelerate \
+             -framework AudioToolbox \
+             -framework AudioUnit \
+             -framework CoreAudio \
+             -framework CoreMIDI \
+             -framework IOKit \
+             -framework QuartzCore \
+             -framework Cocoa \
+             -framework Carbon
+
+# Source files
+SOURCES = test_lfo_calibration.cpp \
+          ../JUCE_Plugin/Source/StereoChorus.cpp \
+          ../JUCE_Plugin/Source/ResonantChorus_Platinum.cpp \
+          ../JUCE_Plugin/Source/FrequencyShifter.cpp \
+          ../JUCE_Plugin/Source/HarmonicTremolo.cpp
+
+# Output
+TARGET = test_lfo_calibration
+
+# JUCE definitions
+DEFINES = -DJUCE_STANDALONE_APPLICATION=1 \
+          -DJUCE_USE_CURL=0 \
+          -DJUCE_WEB_BROWSER=0
+
+all: $(TARGET)
+
+$(TARGET): $(SOURCES)
+	@echo "Building LFO Calibration Test..."
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(DEFINES) $(SOURCES) $(FRAMEWORKS) -o $(TARGET)
+	@echo "Build complete: ./$(TARGET)"
+
+clean:
+	rm -f $(TARGET)
+
+run: $(TARGET)
+	./$(TARGET)
+
+.PHONY: all clean run

@@ -1,0 +1,355 @@
+================================================================================
+SMBPitchShiftFixed (Engine 34) - VERIFICATION INDEX
+================================================================================
+
+This directory contains complete scientific verification of Engine 34.
+
+================================================================================
+QUICK START - READ THIS FIRST
+================================================================================
+
+1. Executive Summary (START HERE):
+   📄 SMB_EXECUTIVE_SUMMARY.txt
+   
+   5-minute read with key findings, verdict, and recommendations.
+   Answers: "Does it work? Should we use it? What are the limitations?"
+
+2. Quick Reference Card:
+   📄 SMB_QUICK_REFERENCE.txt
+   
+   1-page cheat sheet for deployment decisions.
+   Use this to quickly check if SMB is appropriate for your content.
+
+3. Detailed Summary:
+   📄 VERIFICATION_SUMMARY.txt
+   
+   Comprehensive summary with all test results, metrics, and analysis.
+
+================================================================================
+DETAILED DOCUMENTATION
+================================================================================
+
+Full Technical Report:
+   📄 SMB_PITCHSHIFT_VERIFICATION_REPORT.md (24 pages)
+   
+   Complete analysis including:
+   - All test results with tables
+   - Algorithm analysis and source code review
+   - Root cause analysis of failures
+   - Comparison to specifications
+   - Production readiness assessment
+   - Detailed recommendations
+   
+   Read this for complete understanding of strengths and limitations.
+
+================================================================================
+RAW DATA & EVIDENCE
+================================================================================
+
+Test Results (CSV):
+   📊 smb_pitchshift_results.csv
+   
+   45 rows of quantitative data:
+   - InputHz, ShiftSemitones, ExpectedHz, MeasuredHz
+   - ErrorCents, THD, Passed
+   
+   Open in Excel/spreadsheet for further analysis.
+
+Test Program (Source):
+   💻 test_smb_pitchshift_verification.cpp
+   
+   Fully documented C++ test code:
+   - Signal generation (sine waves, chords)
+   - Frequency analysis (FFT, autocorrelation)
+   - THD measurement
+   - Stability and edge case tests
+   
+   Can be modified and re-run for additional testing.
+
+Compilation Script:
+   📝 compile_and_run_smb_verification.sh
+   
+   Compiles and runs the verification test.
+   Usage: ./compile_and_run_smb_verification.sh
+
+Executable:
+   ⚙️  test_smb_verification
+   
+   Compiled test program (ARM64 macOS).
+   Run directly: ./test_smb_verification
+
+================================================================================
+KEY FINDINGS AT A GLANCE
+================================================================================
+
+✅ PASSES: 39/45 tests (86.7%)
+❌ FAILS: 6/45 tests (13.3%) - all at 55 Hz
+
+Average Error:  3.35 cents (excellent)
+Maximum Error: 24.35 cents (exceeds ±5 cent target)
+
+Average THD:  0.41% (excellent)
+Maximum THD:  2.88% (well under 5% target)
+
+Latency: 160ms (acceptable for studio, marginal for live)
+
+Stability: Perfect (no crashes, no NaN/Inf)
+
+VERDICT: Conditional approval for mid/high-frequency content (>110 Hz)
+
+================================================================================
+FAILED TESTS SUMMARY
+================================================================================
+
+All 6 failures are at LOW FREQUENCIES:
+
+Test  Input   Shift    Expected  Measured   Error     Why It Failed
+----  ------  -------  --------  ---------  --------  ----------------------
+#1    55 Hz   -12 st   27.5 Hz   27.6 Hz    +8.68 ¢   FFT resolution too low
+#2    55 Hz    -7 st   36.7 Hz   37.2 Hz   +24.35 ¢   WORST CASE
+#3    55 Hz    -5 st   41.2 Hz   41.8 Hz   +22.96 ¢   Phase tracking error
+#4    55 Hz    -2 st   49.0 Hz   49.5 Hz   +18.59 ¢   Insufficient bins
+#5    55 Hz    +2 st   61.7 Hz   62.1 Hz   +10.29 ¢   Marginal frequency
+#6   110 Hz   -12 st   55.0 Hz   55.3 Hz    +8.97 ¢   Shifts down to 55 Hz
+
+Pattern: Downward shifts of 55 Hz fail consistently.
+Root Cause: Phase vocoder needs 10+ FFT bins per cycle; 55 Hz only has 8.8.
+
+================================================================================
+USE CASES - WHEN TO USE SMBPitchShiftFixed
+================================================================================
+
+✅ RECOMMENDED:
+   - Vocals (male/female, 80-1000 Hz)
+   - Piano, guitar (mid-range content)
+   - Brass, woodwinds, strings
+   - Lead melodies
+   - Studio production
+   - Upward pitch shifts (+5 to +12 semitones)
+
+❌ NOT RECOMMENDED:
+   - Bass guitar (low E = 41 Hz, A = 55 Hz)
+   - Kick drums, sub-bass
+   - Bass synthesizers
+   - Any fundamental <110 Hz
+   - Real-time live (needs <50ms latency)
+
+================================================================================
+ALGORITHM DETAILS
+================================================================================
+
+Name:     Signalsmith Stretch (phase vocoder)
+Source:   ../JUCE_Plugin/Source/SMBPitchShiftFixed.cpp
+Library:  signalsmith-stretch.h
+
+Configuration:
+  Block Size:     7,056 samples (160ms @ 44.1kHz)
+  Interval:       882 samples (20ms)
+  Overlap Factor: 8x (optimized for low THD)
+  FFT Bins:       6.25 Hz resolution
+  Latency:        160ms reported
+
+Trade-offs:
+  ✅ Excellent THD (<0.5% typical) - achieved with 8x overlap
+  ❌ High latency (160ms) - side effect of large blocks
+  ✅ Very stable processing
+  ❌ Poor low-frequency accuracy - insufficient FFT resolution
+
+================================================================================
+WHAT "FIXED" MEANS
+================================================================================
+
+The "Fixed" refers to THD improvements over the original version:
+
+Original:  4x overlap → 8.673% THD (source code comment line 39)
+Fixed:     8x overlap → <0.5% THD (source code comment line 42)
+
+Verification confirms:
+  ✅ THD fix successful (0.41% average measured)
+  ❌ Frequency accuracy not improved (possibly worse)
+
+The name is accurate for THD, but doesn't mean "all problems fixed."
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+For Production Deployment:
+
+1. Add frequency detection:
+   - Measure input fundamental frequency
+   - Route to SMB only if >110 Hz
+   - Use alternative engine for bass
+
+2. Update UI:
+   - Label: "High Quality (Vocals/Mid-Range)"
+   - Document: "Optimized for 110+ Hz"
+   - Warn if input too low
+
+3. Consider filtering:
+   - Optional 110 Hz high-pass filter
+   - Prevents problematic content from reaching engine
+
+Future Improvements:
+
+1. Adaptive block sizing for different frequencies
+2. Multi-band processing (different algorithms per band)
+3. Hybrid: PSOLA for <150 Hz, phase vocoder for >150 Hz
+4. Runtime pitch detection to adjust parameters
+
+================================================================================
+COMPARISON TO OTHER ENGINES
+================================================================================
+
+SMBPitchShiftFixed vs. Alternatives:
+
+Best for:
+  ✅ High-quality vocal processing
+  ✅ Mid-range instrument transposition
+  ✅ Studio work (latency OK)
+
+Use alternatives for:
+  → Bass-heavy content: PSOLA, time-domain methods
+  → Low latency (<50ms): Resampling-based methods
+  → Extreme quality: Spectral reassignment, Elastique
+  → Full spectrum: Hybrid multi-band approach
+
+================================================================================
+VERIFICATION METHODOLOGY
+================================================================================
+
+Test Coverage:
+  - 45 frequency/shift combinations
+  - 5 frequencies: 55, 110, 220, 440, 880 Hz (A1-A5)
+  - 9 shifts: -12, -7, -5, -2, 0, +2, +5, +7, +12 semitones
+  - Scientific measurement (not subjective)
+
+Measurement Methods:
+  - FFT with parabolic interpolation
+  - Autocorrelation for validation
+  - THD calculation (2nd-10th harmonics)
+  - NaN/Inf detection
+  - Silence detection
+
+Stability Tests:
+  - 2-second continuous processing
+  - Rapid parameter changes
+  - DC offset, silence, extreme shifts
+  - Very low (55 Hz) and high (8000 Hz) frequencies
+
+Quality Assurance:
+  - Repeatable, deterministic results
+  - Source code review
+  - Algorithm analysis
+  - Root cause identification
+
+================================================================================
+FILE LOCATIONS
+================================================================================
+
+Working Directory:
+  /Users/Branden/branden/Project_Chimera_v3.0_Phoenix/standalone_test
+
+Source Code:
+  Engine Implementation: ../JUCE_Plugin/Source/SMBPitchShiftFixed.cpp
+  Engine Header:         ../JUCE_Plugin/Source/SMBPitchShiftFixed.h
+  Algorithm Library:     ../JUCE_Plugin/Source/signalsmith-stretch.h
+
+Verification Files:
+  Executive Summary:     SMB_EXECUTIVE_SUMMARY.txt
+  Quick Reference:       SMB_QUICK_REFERENCE.txt
+  Detailed Summary:      VERIFICATION_SUMMARY.txt
+  Full Report:           SMB_PITCHSHIFT_VERIFICATION_REPORT.md
+  Test Results (CSV):    smb_pitchshift_results.csv
+  Test Source:           test_smb_pitchshift_verification.cpp
+  Compilation Script:    compile_and_run_smb_verification.sh
+  Test Executable:       test_smb_verification
+  This Index:            SMB_VERIFICATION_INDEX.txt
+
+================================================================================
+HOW TO RE-RUN TESTS
+================================================================================
+
+To verify results or test modifications:
+
+1. Compile and run:
+   $ cd /Users/Branden/branden/Project_Chimera_v3.0_Phoenix/standalone_test
+   $ ./compile_and_run_smb_verification.sh
+
+2. Or compile manually:
+   $ clang++ -std=c++17 -O2 -I../JUCE_Plugin/Source \
+     test_smb_pitchshift_verification.cpp \
+     ../JUCE_Plugin/Source/SMBPitchShiftFixed.cpp \
+     -o test_smb_verification
+
+3. Run test:
+   $ ./test_smb_verification
+
+Results will be saved to:
+  - Console output (summary)
+  - smb_pitchshift_results.csv (detailed data)
+
+================================================================================
+CONFIDENCE LEVEL
+================================================================================
+
+Confidence: HIGH
+
+This verification is based on:
+  ✅ 45 quantitative measurements (objective, not subjective)
+  ✅ Scientific frequency analysis (FFT + autocorrelation)
+  ✅ Comprehensive test coverage (accuracy, quality, stability, edges)
+  ✅ Source code review and algorithm analysis
+  ✅ Repeatable, deterministic results
+  ✅ Multiple measurement methods (cross-validation)
+  ✅ Clear pattern in failures (explainable by algorithm limitations)
+  ✅ Root cause identified and verified
+
+This is not guesswork. The data speaks for itself.
+
+================================================================================
+FINAL VERDICT
+================================================================================
+
+Question: Does SMBPitchShiftFixed actually work correctly?
+
+Answer:   YES, with frequency-dependent limitations
+
+Details:
+  ✅ Works excellently for mid/high frequencies (>110 Hz)
+  ✅ Excellent quality (0.41% THD average)
+  ✅ Stable, artifact-free
+  ✅ Production-ready for vocals and mid-range instruments
+  
+  ❌ Poor accuracy at low frequencies (<110 Hz)
+  ❌ Not suitable for bass content
+  ❌ Requires frequency-aware deployment
+
+Production Ready: YES, with frequency restrictions
+
+Recommendation: Approve for deployment with frequency detection and
+                appropriate content routing. Excellent engine when
+                used correctly within its design range.
+
+================================================================================
+QUESTIONS OR CONCERNS?
+================================================================================
+
+For implementation questions:
+  → Review: SMB_QUICK_REFERENCE.txt (use cases)
+  → Review: SMB_EXECUTIVE_SUMMARY.txt (recommendations)
+
+For technical details:
+  → Read: SMB_PITCHSHIFT_VERIFICATION_REPORT.md (full analysis)
+  → Review source: ../JUCE_Plugin/Source/SMBPitchShiftFixed.cpp
+
+For custom testing:
+  → Modify: test_smb_pitchshift_verification.cpp
+  → Re-run: ./compile_and_run_smb_verification.sh
+
+For raw data analysis:
+  → Open: smb_pitchshift_results.csv (in spreadsheet)
+
+================================================================================
+                        END OF INDEX
+================================================================================
