@@ -510,10 +510,9 @@ void ChimeraAudioProcessorEditor::handleAIResponse(const juce::String& response)
         } else {
             // Generate a default description based on the prompt
             presetDescription = "This preset was created by the Trinity AI pipeline:\n\n"
-                               "• Oracle: Analyzed your prompt and found similar presets\n"
-                               "• Calculator: Applied intelligent parameter adjustments\n" 
-                               "• Alchemist: Validated and optimized all parameters\n"
-                               "• Visionary: Created the unique preset name\n\n"
+                               "• Visionary: Interpreted your creative vision\n"
+                               "• Calculator: Applied intelligent parameter adjustments\n"
+                               "• Alchemist: Validated and optimized all parameters\n\n"
                                "The result combines boutique analog warmth with modern precision.";
         }
         

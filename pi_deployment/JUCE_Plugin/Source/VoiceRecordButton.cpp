@@ -148,37 +148,61 @@ void VoiceRecordButton::startRecording() {
     try {
         // Initialize audio device if not already done
         if (!deviceManager->getCurrentAudioDevice()) {
-            // Try to get available input devices first
-            const auto& inputDevices = deviceManager->getAvailableDeviceTypes();
-            if (inputDevices.isEmpty()) {
-                DBG("No audio device types available");
-                showMicrophoneError("No audio input devices found.");
-                return;
-            }
-            
-            // Setup with explicit settings
+            DBG("VoiceRecordButton: Initializing USB microphone for voice input...");
+
+            // Setup with explicit settings for USB mic
             juce::AudioDeviceManager::AudioDeviceSetup setup;
             setup.inputChannels = 1;  // Mono input
             setup.outputChannels = 0; // No output needed
             setup.sampleRate = 48000;
             setup.bufferSize = 512;
-            
-            auto result = deviceManager->initialise(1, 0, nullptr, true, {}, &setup);
-            if (result.isNotEmpty()) {
-                DBG("Failed to initialize audio input: " << result);
-                showMicrophoneError("Could not access microphone.\n\n"
-                                  "Please check:\n"
-                                  "1. System Preferences > Security & Privacy > Microphone\n"
-                                  "2. Ensure ChimeraPhoenix is allowed\n"
-                                  "3. No other app is using the microphone");
+
+            // On Pi: Try ALSA first, then look for USB mic specifically
+            juce::String initError;
+
+            #if JUCE_LINUX
+            // On Linux/Pi, explicitly use ALSA and look for USB mic
+            deviceManager->setCurrentAudioDeviceType("ALSA", true);
+
+            auto* alsaType = deviceManager->getCurrentDeviceTypeObject();
+            if (alsaType) {
+                DBG("Available ALSA input devices:");
+                auto inputNames = alsaType->getDeviceNames(true);  // true = input devices
+                for (int i = 0; i < inputNames.size(); ++i) {
+                    DBG("  [" << i << "] " << inputNames[i]);
+                }
+
+                // Look for USB mic (Device contains "USB" or "PnP")
+                juce::String usbMicName;
+                for (const auto& name : inputNames) {
+                    if (name.containsIgnoreCase("USB") || name.containsIgnoreCase("PnP")) {
+                        usbMicName = name;
+                        DBG("Found USB mic: " << usbMicName);
+                        break;
+                    }
+                }
+
+                if (usbMicName.isNotEmpty()) {
+                    setup.inputDeviceName = usbMicName;
+                    DBG("Setting input device to: " << usbMicName);
+                }
+            }
+            #endif
+
+            // Initialize with setup
+            initError = deviceManager->initialise(1, 0, nullptr, true, {}, &setup);
+
+            if (initError.isNotEmpty()) {
+                DBG("Failed to initialize audio input: " << initError);
+                showMicrophoneError("Could not access USB microphone.\n\n" + initError);
                 return;
             }
-            
+
             // Update sample rate from actual device
             if (auto* device = deviceManager->getCurrentAudioDevice()) {
                 sampleRate = static_cast<int>(device->getCurrentSampleRate());
-                DBG("Audio device initialized at " << sampleRate << "Hz");
-                
+                DBG("USB mic initialized: " << device->getName() << " at " << sampleRate << "Hz");
+
                 // Reallocate buffer with correct sample rate
                 recordingBuffer.setSize(1, sampleRate * maxRecordingSeconds);
             }
