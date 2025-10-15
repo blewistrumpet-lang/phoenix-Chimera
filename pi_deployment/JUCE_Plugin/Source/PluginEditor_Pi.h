@@ -162,11 +162,45 @@ private:
     juce::String trinityServerUrl = "http://localhost:8000";  // Default to localhost
     juce::String whisperServerUrl = "https://api.openai.com/v1/audio/transcriptions";
 
-    // Modern dark theme colors for Pi display
-    juce::Colour bgColor = juce::Colour(0xff1a1a1a);      // Dark gray (not pure black)
-    juce::Colour textColor = juce::Colour(0xffe0e0e0);    // Soft white
-    juce::Colour accentColor = juce::Colour(0xff06b6d4);  // Cyan/electric blue
-    juce::Colour errorColor = juce::Colour(0xffef4444);   // Softer red
+    // ChimeraDesign - Premium Apple-esque color palette
+    // Backgrounds
+    juce::Colour bgPrimary = juce::Colour(0xff0a0a0a);      // #0A0A0A - Warmer black
+    juce::Colour bgSecondary = juce::Colour(0xff1a1a1a);    // #1A1A1A - Secondary bg
+    juce::Colour surfaceDark = juce::Colour(0xff1c1c1e);    // #1C1C1E - Empty slots
+    juce::Colour surfaceLight = juce::Colour(0xff2c2c2e);   // #2C2C2E - Hover states
+
+    // Brand colors
+    juce::Colour brandBlue = juce::Colour(0xff0a84ff);      // #0A84FF - Button start
+    juce::Colour brandPurple = juce::Colour(0xff5e5ce6);    // #5E5CE6 - Button end
+
+    // Category colors (subtle for active slots)
+    juce::Colour catDynamics = juce::Colour(0xffbf5af2);    // #BF5AF2 Purple
+    juce::Colour catFilters = juce::Colour(0xff30d158);     // #30D158 Green
+    juce::Colour catDistortion = juce::Colour(0xffff453a);  // #FF453A Red
+    juce::Colour catModulation = juce::Colour(0xff0a84ff);  // #0A84FF Blue
+    juce::Colour catReverb = juce::Colour(0xff64d2ff);      // #64D2FF Cyan
+    juce::Colour catSpatial = juce::Colour(0xffff9f0a);     // #FF9F0A Orange
+    juce::Colour catUtility = juce::Colour(0xff98989d);     // #98989D Gray
+
+    // Status colors
+    juce::Colour statusSuccess = juce::Colour(0xff30d158);  // #30D158 Green
+    juce::Colour statusWarning = juce::Colour(0xffffd60a);  // #FFD60A Yellow
+    juce::Colour statusError = juce::Colour(0xffff453a);    // #FF453A Red
+    juce::Colour statusRecording = juce::Colour(0xffff453a);// #FF453A Red pulse
+    juce::Colour statusProcessing = juce::Colour(0xffff9f0a);// #FF9F0A Orange
+
+    // Text colors
+    juce::Colour textPrimary = juce::Colours::white;                           // 100% white
+    juce::Colour textSecondary = juce::Colours::white.withAlpha(0.5f);        // 50% white
+    juce::Colour textTertiary = juce::Colours::white.withAlpha(0.3f);         // 30% white
+
+    // Legacy aliases for compatibility
+    juce::Colour bgColor = bgPrimary;
+    juce::Colour cardBg = surfaceDark;
+    juce::Colour textColor = textPrimary;
+    juce::Colour accentColor = brandBlue;
+    juce::Colour errorColor = statusError;
+    juce::Colour successGreen = statusSuccess;
 
 
     // =====================================================================

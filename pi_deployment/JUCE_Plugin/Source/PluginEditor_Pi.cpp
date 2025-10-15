@@ -3,26 +3,28 @@
 ChimeraAudioProcessorEditor_Pi::ChimeraAudioProcessorEditor_Pi(ChimeraAudioProcessor& p)
     : AudioProcessorEditor(&p), audioProcessor(p)
 {
-    setSize(480, 320);
+    setSize(800, 480);
 
-    // Title - futuristic monospace font
-    titleLabel.setText("ChimeraPhoenix Pi", juce::dontSendNotification);
-    titleLabel.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 20.0f, juce::Font::bold));
-    titleLabel.setColour(juce::Label::textColourId, accentColor);
-    titleLabel.setJustificationType(juce::Justification::centred);
+    // Title - Upper left corner (11px regular, letter-spaced, subtle)
+    titleLabel.setText("CHIMERAPHOENIX PI", juce::dontSendNotification);
+    auto titleFont = juce::Font(juce::Font::getDefaultSansSerifFontName(), 11.0f, juce::Font::plain);
+    titleFont.setExtraKerningFactor(0.15f);  // +15% letter spacing for premium feel
+    titleLabel.setFont(titleFont);
+    titleLabel.setColour(juce::Label::textColourId, textTertiary);  // 30% white, very subtle
+    titleLabel.setJustificationType(juce::Justification::left);  // Left-aligned
     addAndMakeVisible(titleLabel);
 
-    // Preset name display - futuristic monospace
+    // Preset name display - HERO ELEMENT (44px bold, bright white) - MORE PROMINENT
     presetNameLabel.setText("No Preset", juce::dontSendNotification);
-    presetNameLabel.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 16.0f, juce::Font::plain));
-    presetNameLabel.setColour(juce::Label::textColourId, textColor);
+    presetNameLabel.setFont(juce::Font(juce::Font::getDefaultSansSerifFontName(), 44.0f, juce::Font::bold));
+    presetNameLabel.setColour(juce::Label::textColourId, textPrimary);  // 100% white
     presetNameLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(presetNameLabel);
 
-    // Status label - futuristic monospace
+    // Status label - Refined typography (13px regular, subtle)
     statusLabel.setText("Ready", juce::dontSendNotification);
-    statusLabel.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 13.0f, juce::Font::plain));
-    statusLabel.setColour(juce::Label::textColourId, textColor);
+    statusLabel.setFont(juce::Font(juce::Font::getDefaultSansSerifFontName(), 13.0f, juce::Font::plain));
+    statusLabel.setColour(juce::Label::textColourId, textSecondary);  // 50% white
     statusLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(statusLabel);
 
@@ -54,6 +56,21 @@ ChimeraAudioProcessorEditor_Pi::ChimeraAudioProcessorEditor_Pi(ChimeraAudioProce
         }
     };
     addAndMakeVisible(voiceButton);
+
+    // Input/Output meters with labels
+    inputMeterLabel.setText("IN", juce::dontSendNotification);
+    inputMeterLabel.setFont(juce::Font(juce::Font::getDefaultSansSerifFontName(), 14.0f, juce::Font::bold));
+    inputMeterLabel.setColour(juce::Label::textColourId, textPrimary);
+    inputMeterLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(inputMeterLabel);
+    addAndMakeVisible(inputMeter);
+
+    outputMeterLabel.setText("OUT", juce::dontSendNotification);
+    outputMeterLabel.setFont(juce::Font(juce::Font::getDefaultSansSerifFontName(), 14.0f, juce::Font::bold));
+    outputMeterLabel.setColour(juce::Label::textColourId, textPrimary);
+    outputMeterLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(outputMeterLabel);
+    addAndMakeVisible(outputMeter);
 
     // Engine slot grid - 6 colored boxes
     addAndMakeVisible(engineSlotGrid);
@@ -134,94 +151,97 @@ int ChimeraAudioProcessorEditor_Pi::getEngineCategoryFromName(const juce::String
 
 void ChimeraAudioProcessorEditor_Pi::paint(juce::Graphics& g)
 {
-    g.fillAll(bgColor);
+    // Premium background gradient (subtle)
+    juce::ColourGradient bgGradient(
+        bgPrimary, 0, 0,
+        bgSecondary, 0, (float)getHeight(),
+        false
+    );
+    g.setGradientFill(bgGradient);
+    g.fillAll();
 
-    // Modern outer border with subtle glow
-    g.setColour(accentColor.withAlpha(0.3f));
-    g.drawRect(getLocalBounds().reduced(2), 2);
-
-    // Draw card background for preset section
-    auto bounds = getLocalBounds().reduced(10);
-    bounds.removeFromTop(40);  // Skip title
-    auto presetCard = bounds.removeFromTop(80);
-
-    // Card with subtle background and border
-    g.setColour(juce::Colour(0xff252525));
-    g.fillRoundedRectangle(presetCard.toFloat(), 6.0f);
-    g.setColour(accentColor.withAlpha(0.2f));
-    g.drawRoundedRectangle(presetCard.toFloat(), 6.0f, 1.5f);
-
-    // Draw signal flow visualization (engine chain)
-    bounds.removeFromTop(90);  // Skip to engine area
-    bounds.removeFromTop(70);  // Skip voice button
-
-    auto flowArea = bounds.reduced(5);
-    if (flowArea.getHeight() > 0) {
-        // Draw flow arrows between active engines
-        g.setColour(accentColor.withAlpha(0.5f));
-        int activeSlots = 0;
-        for (int i = 0; i < 6; ++i) {
-            if (audioProcessor.getEngine(i)) activeSlots++;
-        }
-
-        if (activeSlots > 1) {
-            // Simple horizontal flow line
-            int y = flowArea.getY() - 15;
-            g.drawLine(flowArea.getX() + 40, y, flowArea.getRight() - 40, y, 1.5f);
-
-            // Draw arrows
-            for (int i = 1; i < activeSlots; ++i) {
-                float x = flowArea.getX() + (flowArea.getWidth() * i / (float)activeSlots);
-                g.drawLine(x - 5, y - 3, x, y, 1.5f);
-                g.drawLine(x - 5, y + 3, x, y, 1.5f);
-            }
-        }
-    }
+    // No card backgrounds - cleaner, more modern
+    // Elements have their own styling
 }
 
 void ChimeraAudioProcessorEditor_Pi::resized()
 {
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds().reduced(16);  // Outer margins
 
-    // Title at top - fully centered with tiny status dot on far right
-    auto titleRow = bounds.removeFromTop(30);
-    trinityHealthLabel.setBounds(titleRow.getRight() - 20, titleRow.getY(), 20, 30);  // Tiny dot on far right
-    titleLabel.setBounds(titleRow);  // Full width for perfect centering
-    bounds.removeFromTop(5);
+    // Reserve space for input/output meters on sides (35px wide)
+    auto leftMeterArea = bounds.removeFromLeft(35);
+    bounds.removeFromLeft(16);  // Spacing
+    auto rightMeterArea = bounds.removeFromRight(35);
+    bounds.removeFromRight(16);  // Spacing
 
-    // Preset name
-    presetNameLabel.setBounds(bounds.removeFromTop(25));
-    bounds.removeFromTop(5);
+    // NO VERTICAL CENTERING - Start from very top of window
 
-    // Status
+    // HEADER (24px) - Title at very top left, Trinity status in upper right
+    auto headerArea = bounds.removeFromTop(24);
+    trinityHealthLabel.setBounds(headerArea.getRight() - 80, headerArea.getY() + 4, 20, 20);
+    titleLabel.setBounds(headerArea);  // Full header area, left-aligned
+    bounds.removeFromTop(16);  // Gap
+
+    // PRESET NAME (56px) - HERO ELEMENT with larger 44px font
+    presetNameLabel.setBounds(bounds.removeFromTop(56));
+    bounds.removeFromTop(12);  // Gap
+
+    // STATUS (20px) - Subtle
     statusLabel.setBounds(bounds.removeFromTop(20));
-    bounds.removeFromTop(2);
+    bounds.removeFromTop(6);  // Gap
 
-    // Progress bar
-    progressLabel.setBounds(bounds.removeFromTop(18));
-    bounds.removeFromTop(8);
+    // PROGRESS (16px) - Always reserve space for stable layout
+    progressLabel.setBounds(bounds.removeFromTop(16));
+    bounds.removeFromTop(20);  // Gap before button
 
-    // Voice button (larger, prominent focal point)
-    voiceButton.setBounds(bounds.removeFromTop(60));
-    bounds.removeFromTop(12);
+    // VOICE BUTTON (72px, 90% width, centered) - HERO interaction element, taller
+    auto buttonHeight = 72;
+    auto buttonArea = bounds.removeFromTop(buttonHeight);
+    auto buttonWidth = static_cast<int>(buttonArea.getWidth() * 0.90f);  // 90% width
+    auto buttonX = buttonArea.getX() + (buttonArea.getWidth() - buttonWidth) / 2;
+    voiceButton.setBounds(buttonX, buttonArea.getY(), buttonWidth, buttonHeight);
 
-    // Engine slot grid - 6x1 horizontal row at bottom
-    int gridHeight = 50;
-    engineSlotGrid.setBounds(bounds.removeFromBottom(gridHeight));
+    // Calculate remaining space and position slots in lower half (split the difference)
+    int remainingHeight = bounds.getHeight();
+    int slotsHeight = 90;
+    int gapBeforeSlots = (remainingHeight - slotsHeight) / 2;  // Split remaining space evenly
+
+    bounds.removeFromTop(gapBeforeSlots);  // Position slots in lower portion
+
+    // ENGINE SLOTS - FIXED 90px HEIGHT (balanced, readable, not dominating)
+    engineSlotGrid.setBounds(bounds.removeFromTop(90));
+
+    // Layout meters vertically on the sides
+    inputMeterLabel.setBounds(leftMeterArea.removeFromTop(20));
+    leftMeterArea.removeFromTop(4);
+    inputMeter.setBounds(leftMeterArea);
+
+    outputMeterLabel.setBounds(rightMeterArea.removeFromTop(20));
+    rightMeterArea.removeFromTop(4);
+    outputMeter.setBounds(rightMeterArea);
 }
 
 void ChimeraAudioProcessorEditor_Pi::timerCallback()
 {
+    // Update input/output meters
+    inputMeter.setLevel(audioProcessor.getCurrentInputLevel());
+    outputMeter.setLevel(audioProcessor.getCurrentOutputLevel());
+
     // Update engine slot grid - colored boxes showing active engines
     for (int i = 0; i < 6; ++i) {
         auto& engine = audioProcessor.getEngine(i);
         if (engine) {
             juce::String engineName = engine->getName();
-            // Map engine name to approximate category ID for color coding
-            int categoryID = getEngineCategoryFromName(engineName);
-            engineSlotGrid.updateSlot(i, categoryID, engineName);
+            // Treat "None" engine as empty slot
+            if (engineName == "None") {
+                engineSlotGrid.updateSlot(i, 0, "");  // 0 = empty slot
+            } else {
+                // Map engine name to approximate category ID for color coding
+                int categoryID = getEngineCategoryFromName(engineName);
+                engineSlotGrid.updateSlot(i, categoryID, engineName);
+            }
         } else {
-            engineSlotGrid.updateSlot(i, 0, "EMPTY");  // 0 = empty slot
+            engineSlotGrid.updateSlot(i, 0, "");  // 0 = empty slot
         }
     }
 
