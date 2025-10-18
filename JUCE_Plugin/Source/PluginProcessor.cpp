@@ -1,4 +1,74 @@
 #include "PluginProcessor.h"
+#ifdef __linux__
+#include <jack/jack.h>
+#include <atomic>
+
+// Static variables for JACK direct connection
+static jack_client_t* g_jackDirectClient = nullptr;
+static jack_port_t* g_jackInputL = nullptr;
+static jack_port_t* g_jackInputR = nullptr;
+static float g_jackBufferL[8192];
+static float g_jackBufferR[8192];
+static std::atomic<int> g_jackBufferSize{0};
+static std::atomic<bool> g_jackDataReady{false};
+static std::mutex g_jackMutex;
+
+static int jackDirectCallback(jack_nframes_t nframes, void* arg) {
+    float* inL = (float*)jack_port_get_buffer(g_jackInputL, nframes);
+    float* inR = (float*)jack_port_get_buffer(g_jackInputR, nframes);
+
+    // Copy to buffers with lock
+    {
+        std::lock_guard<std::mutex> lock(g_jackMutex);
+        for (jack_nframes_t i = 0; i < nframes && i < 8192; ++i) {
+            g_jackBufferL[i] = inL[i];
+            g_jackBufferR[i] = inR[i];
+        }
+        g_jackBufferSize.store(nframes);
+        g_jackDataReady.store(true);
+    }
+
+    // Debug
+    static int count = 0;
+    if (++count % 100 == 0) {
+        float max = 0;
+        for (jack_nframes_t i = 0; i < nframes; ++i) {
+            max = std::max(max, std::abs(inL[i]));
+            max = std::max(max, std::abs(inR[i]));
+        }
+        printf("JACK Direct Fix: callback %d, max=%.8f\n", count, max);
+        fflush(stdout);
+    }
+
+    return 0;
+}
+
+static void initJackDirect() {
+    if (g_jackDirectClient) return;
+
+    printf("Initializing JACK Direct Fix...\n");
+    g_jackDirectClient = jack_client_open("ChimeraFix", JackNullOption, nullptr);
+    if (!g_jackDirectClient) {
+        printf("Failed to create JACK client\n");
+        return;
+    }
+
+    jack_set_process_callback(g_jackDirectClient, jackDirectCallback, nullptr);
+
+    g_jackInputL = jack_port_register(g_jackDirectClient, "fix_in_L",
+                                     JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+    g_jackInputR = jack_port_register(g_jackDirectClient, "fix_in_R",
+                                     JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+
+    if (jack_activate(g_jackDirectClient) == 0) {
+        jack_connect(g_jackDirectClient, "system:capture_1",
+                    jack_port_name(g_jackInputL));
+        jack_connect(g_jackDirectClient, "system:capture_2",
+                    jack_port_name(g_jackInputR));
+        printf("JACK Direct Fix: Activated and connected\n");
+    }
+}
+#endif
 #include "PluginEditor.h"
 #include "PluginEditorSkunkworks.h"
 #include "PluginEditorRefined.h"
@@ -274,14 +344,28 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
     // Start AI server
     // TEMPORARILY DISABLED FOR DEBUGGING
     // startAIServer();
+
+#ifdef __linux__
+    // Initialize JACK direct connection to bypass JUCE wrapper bug
+    initJackDirect();
+#endif
 }
 
 ChimeraAudioProcessor::~ChimeraAudioProcessor() {
+#ifdef __linux__
+    // Clean up JACK direct connection
+    if (g_jackDirectClient) {
+        jack_deactivate(g_jackDirectClient);
+        jack_client_close(g_jackDirectClient);
+        g_jackDirectClient = nullptr;
+    }
+#endif
+
     // Remove parameter listeners for all slots
     for (int i = 1; i <= NUM_SLOTS; ++i) {
         parameters.removeParameterListener("slot" + juce::String(i) + "_engine", this);
     }
-    
+
     // Stop AI server
     stopAIServer();
 }
@@ -380,7 +464,26 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         buffer.clear();
         return;
     }
-    
+
+#ifdef __linux__
+    // JACK Direct Fix: Copy data from JACK buffers into processBlock buffer
+    if (g_jackDataReady.load()) {
+        std::lock_guard<std::mutex> lock(g_jackMutex);
+        int jackSize = g_jackBufferSize.load();
+        int copySize = std::min(jackSize, numSamples);
+
+        if (buffer.getNumChannels() >= 2) {
+            float* outL = buffer.getWritePointer(0);
+            float* outR = buffer.getWritePointer(1);
+            for (int i = 0; i < copySize; ++i) {
+                outL[i] = g_jackBufferL[i];
+                outR[i] = g_jackBufferR[i];
+            }
+        }
+        g_jackDataReady.store(false);
+    }
+#endif
+
     // Capture input level for metering
     float inputLevel = buffer.getMagnitude(0, numSamples);
     m_currentInputLevel.store(inputLevel);
