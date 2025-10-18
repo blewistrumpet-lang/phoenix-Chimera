@@ -8,6 +8,9 @@
 #include <memory>
 #include <atomic>
 #include <mutex>
+#ifdef __linux__
+    #include <jack/jack.h>
+#endif
 
 class ChimeraAudioProcessor : public juce::AudioProcessor,
                               private juce::AudioProcessorValueTreeState::Listener {
@@ -106,6 +109,16 @@ private:
     friend class PluginEditorNexusStatic;
 
 private:
+#ifdef __linux__
+    // Direct JACK connection to bypass JUCE wrapper bug
+    jack_client_t* jackClient = nullptr;
+    jack_port_t* jackInputL = nullptr;
+    jack_port_t* jackInputR = nullptr;
+    jack_port_t* jackOutputL = nullptr;
+    jack_port_t* jackOutputR = nullptr;
+    void initializeJackDirect();
+    void shutdownJackDirect();
+#endif
     juce::AudioProcessorValueTreeState parameters;
     static constexpr int NUM_SLOTS = CHIMERA_NUM_SLOTS;  // Using centralized configuration
     std::array<std::unique_ptr<EngineBase>, NUM_SLOTS> m_activeEngines;
