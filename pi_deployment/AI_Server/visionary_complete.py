@@ -16,6 +16,15 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+# Import the Intelligent Preset Namer
+try:
+    from preset_namer import IntelligentPresetNamer
+    INTELLIGENT_NAMING_AVAILABLE = True
+    logger.info("✅ IntelligentPresetNamer loaded successfully")
+except ImportError:
+    logger.warning("IntelligentPresetNamer not found - using standard naming")
+    INTELLIGENT_NAMING_AVAILABLE = False
+
 class CompleteVisionary:
     def __init__(self):
         """Initialize with complete engine knowledge"""
@@ -56,6 +65,19 @@ class CompleteVisionary:
         self.musical_contexts = self.knowledge["musical_contexts"]
         self.good_combinations = self.knowledge["good_combinations"]
         self.avoid_combinations = self.knowledge["avoid_combinations"]
+
+        # Initialize Intelligent Naming System
+        self.use_intelligent_naming = INTELLIGENT_NAMING_AVAILABLE
+        if self.use_intelligent_naming:
+            try:
+                self.intelligent_namer = IntelligentPresetNamer()
+                logger.info("✨ Intelligent Preset Naming enabled")
+            except Exception as e:
+                logger.error(f"Failed to initialize IntelligentPresetNamer: {e}")
+                self.use_intelligent_naming = False
+        else:
+            self.intelligent_namer = None
+            logger.info("Using standard GPT naming")
         
     def create_system_prompt(self) -> str:
         """Create comprehensive system prompt with full knowledge"""
@@ -183,7 +205,32 @@ Return ONLY valid JSON with specific engine IDs from the catalog."""
             # Preserve reasoning in the preset for downstream components
             if "reasoning" in preset:
                 preset["visionary_reasoning"] = preset.pop("reasoning")
-            
+
+            # Apply Intelligent Naming if enabled
+            original_name = preset.get('name', 'Unnamed')
+            if self.use_intelligent_naming and self.intelligent_namer:
+                try:
+                    # Extract engines for the namer
+                    engines = []
+                    for slot in preset.get('slots', []):
+                        if slot.get('engine_id', 0) != 0:
+                            engines.append({
+                                'engine_id': slot.get('engine_id'),
+                                'engine_name': slot.get('engine_name', 'Unknown')
+                            })
+
+                    # Get context for naming
+                    context = self.analyze_prompt_context(prompt)
+
+                    # Generate intelligent name
+                    intelligent_name = self.intelligent_namer.generate_name(prompt, engines, context)
+                    preset['name'] = intelligent_name
+
+                    logger.info(f"📝 Name override: '{original_name}' → '{intelligent_name}'")
+                except Exception as e:
+                    logger.error(f"Failed to generate intelligent name, keeping original: {e}")
+                    preset['name'] = original_name
+
             logger.info(f"🎯 AI Generated preset: {preset.get('name', 'Unnamed')}")
             return preset
             
@@ -605,11 +652,35 @@ For intensity '{context.get('intensity')}':
                 "parameters": []
             })
         
-        return {
+        # Create the preset with fallback name
+        preset = {
             "name": f"{context.get('intensity', 'Moderate').title()} {context.get('instrument', 'Audio').title()} Preset",
             "description": f"Fallback preset for: {prompt}",
             "slots": slots
         }
+
+        # Apply Intelligent Naming to fallback presets too
+        if self.use_intelligent_naming and self.intelligent_namer:
+            try:
+                # Extract engines for the namer
+                engines = []
+                for slot in preset.get('slots', []):
+                    if slot.get('engine_id', 0) != 0:
+                        engines.append({
+                            'engine_id': slot.get('engine_id'),
+                            'engine_name': slot.get('engine_name', 'Unknown')
+                        })
+
+                # Generate intelligent name
+                original_name = preset['name']
+                intelligent_name = self.intelligent_namer.generate_name(prompt, engines, context)
+                preset['name'] = intelligent_name
+
+                logger.info(f"📝 Fallback name override: '{original_name}' → '{intelligent_name}'")
+            except Exception as e:
+                logger.error(f"Failed to generate intelligent name for fallback: {e}")
+
+        return preset
 
 async def test_complete_visionary():
     """Test the complete visionary"""
