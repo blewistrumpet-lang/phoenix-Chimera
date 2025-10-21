@@ -4,6 +4,14 @@
 #include "PluginProcessor.h"
 #include "PluginEditor_Pi_Components.h"
 
+// Hardware integration (safe with conditional compilation)
+#define ENABLE_GPIO_HARDWARE 1
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    #include "HardwareController.h"
+    #include "HardwareDisplayComponents.h"
+#endif
+
 /**
  * Raspberry Pi UI - Voice-controlled Trinity AI preset generation
  * Features:
@@ -265,6 +273,13 @@ private:
 
     void updateUIFromProgress(const juce::var& progress);
     void stopProgressMonitoring();
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Hardware integration
+    std::unique_ptr<HardwareController> hardwareController;
+    std::unique_ptr<EncoderDisplay> encoderDisplays[3];
+    std::unique_ptr<SwitchDisplay> switchDisplays[3];
+#endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChimeraAudioProcessorEditor_Pi)
 };

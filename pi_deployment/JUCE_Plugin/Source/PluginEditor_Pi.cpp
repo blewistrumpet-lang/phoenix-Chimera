@@ -78,6 +78,51 @@ ChimeraAudioProcessorEditor_Pi::ChimeraAudioProcessorEditor_Pi(ChimeraAudioProce
     // Initial Trinity health check
     checkTrinityHealth();
 
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Initialize hardware (safe - continues without if fails)
+    try {
+        DBG("Initializing GPIO hardware controller...");
+        hardwareController = std::make_unique<HardwareController>();
+
+        // Create display components
+        for (int i = 0; i < 3; ++i) {
+            encoderDisplays[i] = std::make_unique<EncoderDisplay>(i);
+            addAndMakeVisible(encoderDisplays[i].get());
+
+            switchDisplays[i] = std::make_unique<SwitchDisplay>(i);
+            addAndMakeVisible(switchDisplays[i].get());
+        }
+
+        // Set callbacks for debug output
+        hardwareController->setEncoderCallback(
+            [](int num, int pos, bool cw) {
+                DBG("ENC" << (num+1) << ": pos=" << pos << " " << (cw ? "CW" : "CCW"));
+            });
+
+        hardwareController->setEncoderButtonCallback(
+            [](int num) {
+                DBG("ENC" << (num+1) << " BUTTON PRESSED");
+            });
+
+        hardwareController->setSwitchCallback(
+            [](int num, HardwareController::SwitchPosition pos) {
+                juce::String posStr = (pos == HardwareController::SwitchPosition::UP) ? "UP" :
+                                     (pos == HardwareController::SwitchPosition::MIDDLE) ? "MID" : "DOWN";
+                DBG("SW" << (num+1) << ": " << posStr);
+            });
+
+        hardwareController->startHardwareMonitoring();
+        DBG("✓ Hardware controller started");
+
+        // Force initial positioning of hardware displays
+        resized();
+
+    } catch (...) {
+        DBG("Hardware init failed - continuing without hardware");
+        hardwareController.reset();
+    }
+#endif
+
     // Update UI at 30Hz
     startTimer(33);
 }
@@ -86,6 +131,12 @@ ChimeraAudioProcessorEditor_Pi::~ChimeraAudioProcessorEditor_Pi()
 {
     stopTimer();
     system("pkill -9 arecord");
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    if (hardwareController) {
+        hardwareController->stopHardwareMonitoring();
+    }
+#endif
 }
 
 // Helper function to map engine name to category ID for color coding
@@ -219,13 +270,76 @@ void ChimeraAudioProcessorEditor_Pi::resized()
     outputMeterLabel.setBounds(rightMeterArea.removeFromTop(20));
     rightMeterArea.removeFromTop(4);
     outputMeter.setBounds(rightMeterArea);
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Position hardware displays using FULL window bounds (not reduced bounds)
+    // These overlay on top of the main UI
+    auto fullBounds = getLocalBounds();  // Get FULL window size: 800x480
+
+    if (encoderDisplays[0] && encoderDisplays[1] && encoderDisplays[2]) {
+        // Encoders at top - evenly spaced across full width
+        int encY = 10;
+        int encWidth = 100;
+        int encHeight = 80;
+        int windowWidth = fullBounds.getWidth();  // Should be 800
+
+        // Calculate even spacing: divide into quarters
+        int spacing = windowWidth / 4;
+
+        encoderDisplays[0]->setBounds(spacing - encWidth/2, encY, encWidth, encHeight);      // Left: 200-50 = 150
+        encoderDisplays[1]->setBounds(spacing*2 - encWidth/2, encY, encWidth, encHeight);    // Center: 400-50 = 350
+        encoderDisplays[2]->setBounds(spacing*3 - encWidth/2, encY, encWidth, encHeight);    // Right: 600-50 = 550
+
+        DBG("Encoder positions set - Window width: " << windowWidth);
+        DBG("Enc1: " << encoderDisplays[0]->getBounds().toString());
+        DBG("Enc2: " << encoderDisplays[1]->getBounds().toString());
+        DBG("Enc3: " << encoderDisplays[2]->getBounds().toString());
+    }
+
+    if (switchDisplays[0] && switchDisplays[1] && switchDisplays[2]) {
+        // Switches at bottom - evenly spaced across full width
+        int swY = fullBounds.getHeight() - 70;  // 480 - 70 = 410
+        int swWidth = 80;
+        int swHeight = 60;
+        int windowWidth = fullBounds.getWidth();
+
+        // Calculate even spacing: divide into quarters
+        int spacing = windowWidth / 4;
+
+        switchDisplays[0]->setBounds(spacing - swWidth/2, swY, swWidth, swHeight);      // Left: 200-40 = 160
+        switchDisplays[1]->setBounds(spacing*2 - swWidth/2, swY, swWidth, swHeight);    // Center: 400-40 = 360
+        switchDisplays[2]->setBounds(spacing*3 - swWidth/2, swY, swWidth, swHeight);    // Right: 600-40 = 560
+
+        DBG("Switch positions set - Window height: " << fullBounds.getHeight());
+        DBG("SW1: " << switchDisplays[0]->getBounds().toString());
+        DBG("SW2: " << switchDisplays[1]->getBounds().toString());
+        DBG("SW3: " << switchDisplays[2]->getBounds().toString());
+
+        // Ensure hardware displays are on top
+        for (int i = 0; i < 3; ++i) {
+            encoderDisplays[i]->toFront(true);
+            switchDisplays[i]->toFront(true);
+        }
+    }
+#endif
 }
 
 void ChimeraAudioProcessorEditor_Pi::timerCallback()
 {
     // Update input/output meters
-    inputMeter.setLevel(audioProcessor.getCurrentInputLevel());
-    outputMeter.setLevel(audioProcessor.getCurrentOutputLevel());
+    float inputLevel = audioProcessor.getCurrentInputLevel();
+    float outputLevel = audioProcessor.getCurrentOutputLevel();
+
+    // DEBUG: Write levels to file occasionally
+    static int debugCounter = 0;
+    if (++debugCounter % 30 == 0) {  // Every ~1 second (30 * 33ms)
+        juce::File debugFile("/tmp/meter_debug.txt");
+        juce::String debugText = "Input: " + juce::String(inputLevel, 6) + ", Output: " + juce::String(outputLevel, 6) + "\n";
+        debugFile.appendText(debugText);
+    }
+
+    inputMeter.setLevel(inputLevel);
+    outputMeter.setLevel(outputLevel);
 
     // Update engine slot grid - colored boxes showing active engines
     for (int i = 0; i < 6; ++i) {
@@ -261,6 +375,25 @@ void ChimeraAudioProcessorEditor_Pi::timerCallback()
         healthCheckCounter = 0;
         checkTrinityHealth();
     }
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Update hardware displays
+    if (hardwareController) {
+        for (int i = 0; i < 3; ++i) {
+            if (encoderDisplays[i]) {
+                auto& enc = hardwareController->getEncoder(i);
+                encoderDisplays[i]->setPosition(enc.getPosition());
+                encoderDisplays[i]->setButtonPressed(enc.isButtonPressed());
+            }
+
+            if (switchDisplays[i]) {
+                auto& sw = hardwareController->getSwitch(i);
+                auto pos = static_cast<SwitchDisplay::Position>(sw.positionValue.load());
+                switchDisplays[i]->setPosition(pos);
+            }
+        }
+    }
+#endif
 }
 
 void ChimeraAudioProcessorEditor_Pi::startVoiceRecording()
