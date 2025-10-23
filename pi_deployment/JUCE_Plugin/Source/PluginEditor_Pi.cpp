@@ -1343,7 +1343,7 @@ void ChimeraAudioProcessorEditor_Pi::updateParameterFromEncoder(int encoderIndex
     }
 
     // Handle normal APVTS parameters
-    auto* param = audioProcessor.parameters.getParameter(paramID);
+    auto* param = audioProcessor.getValueTreeState().getParameter(paramID);
     if (param) {
         // Get current normalized value
         float currentValue = param->getValue();
