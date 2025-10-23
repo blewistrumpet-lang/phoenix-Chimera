@@ -10,6 +10,8 @@
 #if ENABLE_GPIO_HARDWARE && defined(__linux__)
     #include "HardwareController.h"
     #include "HardwareDisplayComponents.h"
+    #include "EventBus.h"
+    #include "ControlState.h"
 #endif
 
 /**
@@ -279,6 +281,15 @@ private:
     std::unique_ptr<HardwareController> hardwareController;
     std::unique_ptr<EncoderDisplay> encoderDisplays[3];
     std::unique_ptr<SwitchDisplay> switchDisplays[3];
+
+    // Control system
+    std::unique_ptr<EventBus> eventBus;
+    std::unique_ptr<ControlState> controlState;
+
+    // Parameter control
+    void handleEncoderEvent(const EventBus::Event& event);
+    void handleSwitchEvent(const EventBus::Event& event);
+    void updateParameterFromEncoder(int encoderIndex, float delta);
 #endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChimeraAudioProcessorEditor_Pi)

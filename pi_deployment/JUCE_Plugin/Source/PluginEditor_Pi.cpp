@@ -84,6 +84,16 @@ ChimeraAudioProcessorEditor_Pi::ChimeraAudioProcessorEditor_Pi(ChimeraAudioProce
         DBG("Initializing GPIO hardware controller...");
         hardwareController = std::make_unique<HardwareController>();
 
+        // Initialize control system
+        eventBus = std::make_unique<EventBus>();
+        controlState = std::make_unique<ControlState>();
+
+        // Subscribe to events
+        eventBus->subscribe(EventBus::EventType::ENCODER_TURN,
+            [this](const EventBus::Event& e) { handleEncoderEvent(e); });
+        eventBus->subscribe(EventBus::EventType::SWITCH_CHANGE,
+            [this](const EventBus::Event& e) { handleSwitchEvent(e); });
+
         // Create display components
         for (int i = 0; i < 3; ++i) {
             encoderDisplays[i] = std::make_unique<EncoderDisplay>(i);
@@ -93,19 +103,62 @@ ChimeraAudioProcessorEditor_Pi::ChimeraAudioProcessorEditor_Pi(ChimeraAudioProce
             addAndMakeVisible(switchDisplays[i].get());
         }
 
-        // Set callbacks for debug output
+        // Wire hardware callbacks to event bus
         hardwareController->setEncoderCallback(
-            [](int num, int pos, bool cw) {
+            [this](int num, int pos, bool cw) {
+                // Post encoder event
+                float delta = cw ? 1.0f : -1.0f;
+                eventBus->postEvent(EventBus::Event(EventBus::EventType::ENCODER_TURN, num, delta));
+
+                // Debug output
                 DBG("ENC" << (num+1) << ": pos=" << pos << " " << (cw ? "CW" : "CCW"));
             });
 
         hardwareController->setEncoderButtonCallback(
-            [](int num) {
+            [this](int num) {
+                // Post encoder press event
+                eventBus->postEvent(EventBus::Event(EventBus::EventType::ENCODER_PRESS, num, true));
                 DBG("ENC" << (num+1) << " BUTTON PRESSED");
             });
 
         hardwareController->setSwitchCallback(
-            [](int num, HardwareController::SwitchPosition pos) {
+            [this](int num, HardwareController::SwitchPosition pos) {
+                // Post switch event
+                int posValue = (pos == HardwareController::SwitchPosition::UP) ? 0 :
+                              (pos == HardwareController::SwitchPosition::MIDDLE) ? 1 : 2;
+                eventBus->postEvent(EventBus::Event(EventBus::EventType::SWITCH_CHANGE, num, posValue));
+
+                // Update control state for MODE and VARIANT switches
+                if (num == 0) { // MODE switch
+                    switch (pos) {
+                        case HardwareController::SwitchPosition::UP:
+                            controlState->setMode(ControlState::Mode::PRESET);
+                            break;
+                        case HardwareController::SwitchPosition::MIDDLE:
+                            controlState->setMode(ControlState::Mode::MIX);
+                            break;
+                        case HardwareController::SwitchPosition::DOWN:
+                            controlState->setMode(ControlState::Mode::AI);
+                            break;
+                        default:
+                            break;
+                    }
+                } else if (num == 1) { // VARIANT switch
+                    switch (pos) {
+                        case HardwareController::SwitchPosition::UP:
+                            controlState->setVariant(ControlState::Variant::A);
+                            break;
+                        case HardwareController::SwitchPosition::MIDDLE:
+                            controlState->setVariant(ControlState::Variant::MORPH);
+                            break;
+                        case HardwareController::SwitchPosition::DOWN:
+                            controlState->setVariant(ControlState::Variant::B);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
                 juce::String posStr = (pos == HardwareController::SwitchPosition::UP) ? "UP" :
                                      (pos == HardwareController::SwitchPosition::MIDDLE) ? "MID" : "DOWN";
                 DBG("SW" << (num+1) << ": " << posStr);
@@ -377,6 +430,11 @@ void ChimeraAudioProcessorEditor_Pi::timerCallback()
     }
 
 #if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Process hardware events
+    if (eventBus) {
+        eventBus->processEvents();
+    }
+
     // Update hardware displays
     if (hardwareController) {
         for (int i = 0; i < 3; ++i) {
@@ -392,6 +450,14 @@ void ChimeraAudioProcessorEditor_Pi::timerCallback()
                 switchDisplays[i]->setPosition(pos);
             }
         }
+    }
+
+    // Update status with current mode if not processing
+    if (controlState && !isTrinityProcessing && !isRecording) {
+        auto& state = controlState->getState();
+        statusLabel.setText(state.getModeString() + " Mode | " +
+                          state.getVariantString() + " Active",
+                          juce::dontSendNotification);
     }
 #endif
 }
@@ -1219,3 +1285,96 @@ void ChimeraAudioProcessorEditor_Pi::stopProgressMonitoring()
         progressMonitor.reset();
     }
 }
+
+
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+
+// Hardware event handlers
+
+void ChimeraAudioProcessorEditor_Pi::handleEncoderEvent(const EventBus::Event& event)
+{
+    // Get encoder behavior based on current mode
+    auto behavior = controlState->getEncoderBehavior(event.deviceIndex);
+
+    // Calculate parameter delta
+    float delta = event.value * behavior.sensitivity;
+
+    // Update the appropriate parameter
+    updateParameterFromEncoder(event.deviceIndex, delta);
+}
+
+void ChimeraAudioProcessorEditor_Pi::handleSwitchEvent(const EventBus::Event& event)
+{
+    // Switch events are already handled in the callback for MODE/VARIANT
+    // This is for future expansion (e.g., LIVE switch)
+    
+    // Log the switch event
+    DBG("Switch " << event.deviceIndex << " changed to position " << event.intValue);
+}
+
+void ChimeraAudioProcessorEditor_Pi::updateParameterFromEncoder(int encoderIndex, float delta)
+{
+    // Get the parameter to control based on mode and encoder
+    auto behavior = controlState->getEncoderBehavior(encoderIndex);
+    juce::String paramID = behavior.parameterID;
+
+    // Handle special parameters that are not in the APVTS
+    if (paramID == "preset_browse") {
+        // TODO: Implement preset browsing
+        DBG("Preset browse: " << delta);
+        statusLabel.setText("Preset browsing: " + juce::String(delta > 0 ? "Next" : "Previous"), 
+                           juce::dontSendNotification);
+        return;
+    }
+    else if (paramID.startsWith("macro_")) {
+        // TODO: Implement macro control
+        DBG("Macro control: " << paramID << " delta=" << delta);
+        statusLabel.setText("Macro: " + paramID.substring(6) + " " + juce::String(delta, 2), 
+                           juce::dontSendNotification);
+        return;
+    }
+    else if (paramID.startsWith("ai_")) {
+        // TODO: Implement AI control
+        DBG("AI control: " << paramID << " delta=" << delta);
+        statusLabel.setText("AI: " + paramID.substring(3) + " " + juce::String(delta, 2), 
+                           juce::dontSendNotification);
+        return;
+    }
+
+    // Handle normal APVTS parameters
+    auto* param = audioProcessor.parameters.getParameter(paramID);
+    if (param) {
+        // Get current normalized value
+        float currentValue = param->getValue();
+
+        // Apply delta
+        float newValue = juce::jlimit(0.0f, 1.0f, currentValue + delta);
+
+        // Set the new value
+        param->setValueNotifyingHost(newValue);
+
+        // Log the change
+        DBG("Parameter " << paramID << " changed to " << newValue);
+
+        // Update status display
+        auto& state = controlState->getState();
+        juce::String encoderLabel;
+
+        switch (encoderIndex) {
+            case 0: encoderLabel = state.encoder1Label; break;
+            case 1: encoderLabel = state.encoder2Label; break;
+            case 2: encoderLabel = state.encoder3Label; break;
+            default: encoderLabel = "Unknown"; break;
+        }
+
+        // Show parameter value in status (convert from normalized)
+        float displayValue = newValue * 100.0f;  // Show as percentage
+        statusLabel.setText(encoderLabel + ": " + juce::String(displayValue, 1) + "%",
+                          juce::dontSendNotification);
+    } else {
+        DBG("Parameter not found: " << paramID);
+    }
+}
+
+#endif // ENABLE_GPIO_HARDWARE
