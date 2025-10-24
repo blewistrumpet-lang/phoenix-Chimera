@@ -1423,42 +1423,41 @@ void ChimeraAudioProcessor::runIsolatedEngineTests() {
 void ChimeraAudioProcessor::handleEncoderEvent(const EventBus::Event& event) {
     if (!controlState) return;
 
-    int encoderIndex = event.data.encoderIndex;
-    auto behavior = controlState->getEncoderBehavior(encoderIndex);
+    int encoderIndex = event.deviceIndex;
+    float delta = event.value;
 
-    DBG("Encoder " << (encoderIndex + 1) << " event: " <<
-        (event.data.direction == EventBus::EncoderDirection::CLOCKWISE ? "CW" : "CCW"));
+    DBG("Encoder " << (encoderIndex + 1) << " event: delta=" << delta);
 
-    // Handle encoder button press
-    if (event.data.buttonPressed) {
+    // Handle encoder button press (if boolValue is set)
+    if (event.boolValue) {
         DBG("Encoder " << (encoderIndex + 1) << " button pressed");
         // Could trigger preset save, parameter reset, etc.
         return;
     }
 
     // Map encoder to parameter based on current mode
-    updateParameterFromEncoder(encoderIndex, event.data.delta);
+    updateParameterFromEncoder(encoderIndex, delta);
 }
 
 void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
     if (!controlState) return;
 
-    int switchIndex = event.data.switchIndex;
-    auto position = event.data.switchPosition;
+    int switchIndex = event.deviceIndex;
+    int position = event.intValue;  // 0=UP, 1=MID, 2=DOWN
 
-    DBG("Switch " << (switchIndex + 1) << " changed to position " << static_cast<int>(position));
+    DBG("Switch " << (switchIndex + 1) << " changed to position " << position);
 
     // Switch 1 = Mode selector
     if (switchIndex == 0) {
         ControlState::Mode newMode;
         switch (position) {
-            case EventBus::SwitchPosition::UP:
+            case 0:  // UP
                 newMode = ControlState::Mode::PRESET;
                 break;
-            case EventBus::SwitchPosition::MID:
+            case 1:  // MID
                 newMode = ControlState::Mode::MIX;
                 break;
-            case EventBus::SwitchPosition::DOWN:
+            case 2:  // DOWN
                 newMode = ControlState::Mode::AI;
                 break;
         }
@@ -1470,13 +1469,13 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
     else if (switchIndex == 1) {
         ControlState::Variant newVariant;
         switch (position) {
-            case EventBus::SwitchPosition::UP:
+            case 0:  // UP
                 newVariant = ControlState::Variant::A;
                 break;
-            case EventBus::SwitchPosition::MID:
+            case 1:  // MID
                 newVariant = ControlState::Variant::MORPH;
                 break;
-            case EventBus::SwitchPosition::DOWN:
+            case 2:  // DOWN
                 newVariant = ControlState::Variant::B;
                 break;
         }
@@ -1487,7 +1486,7 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
     // Switch 3 = Live/Bypass
     else if (switchIndex == 2) {
         // Handle live/bypass functionality
-        bool bypass = (position != EventBus::SwitchPosition::UP);
+        bool bypass = (position != 0);  // 0=UP=Live, others=Bypass
         DBG("Live mode: " << (!bypass ? "ON" : "OFF"));
     }
 }
@@ -1510,11 +1509,10 @@ void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float d
 }
 
 void ChimeraAudioProcessor::processGPIOEvents() {
+    // Event processing happens automatically via the hardware monitoring thread
+    // and the EventBus subscriptions - no need to manually poll
     if (eventBus) {
         eventBus->processEvents();
-    }
-    if (hardwareController) {
-        hardwareController->pollHardware();
     }
 }
 #endif
