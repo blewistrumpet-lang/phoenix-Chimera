@@ -218,7 +218,23 @@ static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
             "Slot " + slotStr + " Solo",
             false));
     }
-    
+
+    // Global parameters for GPIO hardware control
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "input_gain",
+        "Input Gain",
+        0.0f, 2.0f, 1.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "mix_wetdry",
+        "Mix",
+        0.0f, 1.0f, 0.5f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "output_level",
+        "Output Level",
+        0.0f, 2.0f, 1.0f));
+
     return { params.begin(), params.end() };
 }
 
@@ -455,7 +471,13 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     // Capture input level for metering
     float inputLevel = buffer.getMagnitude(0, numSamples);
     m_currentInputLevel.store(inputLevel);
-    
+
+    // Apply input gain (GPIO control)
+    float inputGain = parameters.getRawParameterValue("input_gain")->load();
+    if (inputGain != 1.0f) {
+        buffer.applyGain(inputGain);
+    }
+
     // Check if any slot is soloed
     bool anySoloed = false;
     for (int slot = 0; slot < NUM_SLOTS; ++slot) {
@@ -581,7 +603,21 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             }
         }
     }
-    
+
+    // Apply global wet/dry mix (GPIO control)
+    float mixWetDry = parameters.getRawParameterValue("mix_wetdry")->load();
+    if (mixWetDry < 0.999f) {  // Only mix if not fully wet
+        for (int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+            auto* wetData = buffer.getWritePointer(ch);
+            auto* dryData = dryBuffer.getReadPointer(ch);
+
+            for (int s = 0; s < numSamples; ++s) {
+                // Mix = 0: fully dry, Mix = 1: fully wet (processed)
+                wetData[s] = dryData[s] * (1.0f - mixWetDry) + wetData[s] * mixWetDry;
+            }
+        }
+    }
+
     // Apply gentle gain compensation once at the end to prevent buildup
     // Only apply if any processing occurred
     bool anyProcessingOccurred = false;
@@ -604,7 +640,13 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             }
         }
     }
-    
+
+    // Apply output level (GPIO control)
+    float outputLevel = parameters.getRawParameterValue("output_level")->load();
+    if (outputLevel != 1.0f) {
+        buffer.applyGain(outputLevel);
+    }
+
     // Apply output limiting to prevent clipping and distortion
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
         auto* channelData = buffer.getWritePointer(channel);

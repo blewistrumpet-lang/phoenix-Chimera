@@ -100,34 +100,34 @@ public:
         switch (state.mode) {
             case Mode::PRESET:
                 switch (encoderIndex) {
-                    case 0:  // Browse presets
-                        behavior.parameterID = "preset_browse";
-                        behavior.sensitivity = 1.0f;  // Integer steps
+                    case 0:  // Input gain
+                        behavior.parameterID = "input_gain";
+                        behavior.sensitivity = 0.02f;
                         break;
                     case 1:  // Mix control
-                        behavior.parameterID = "slot1_mix";
+                        behavior.parameterID = "mix_wetdry";
                         behavior.sensitivity = 0.01f;
                         break;
                     case 2:  // Output level
-                        behavior.parameterID = "slot1_param1";  // Using param1 as output for now
-                        behavior.sensitivity = 0.01f;
+                        behavior.parameterID = "output_level";
+                        behavior.sensitivity = 0.02f;
                         break;
                 }
                 break;
 
             case Mode::MIX:
                 switch (encoderIndex) {
-                    case 0:  // Tone macro
-                        behavior.parameterID = "macro_tone";
+                    case 0:  // Input gain (for now, until macros implemented)
+                        behavior.parameterID = "input_gain";
+                        behavior.sensitivity = 0.02f;
+                        break;
+                    case 1:  // Mix wetdry (for now, until macros implemented)
+                        behavior.parameterID = "mix_wetdry";
                         behavior.sensitivity = 0.01f;
                         break;
-                    case 1:  // Space macro
-                        behavior.parameterID = "macro_space";
-                        behavior.sensitivity = 0.01f;
-                        break;
-                    case 2:  // Energy macro
-                        behavior.parameterID = "macro_energy";
-                        behavior.sensitivity = 0.01f;
+                    case 2:  // Output level (for now, until macros implemented)
+                        behavior.parameterID = "output_level";
+                        behavior.sensitivity = 0.02f;
                         break;
                 }
                 break;
@@ -159,15 +159,15 @@ private:
     void updateEncoderLabels() {
         switch (state.mode) {
             case Mode::PRESET:
-                state.encoder1Label = "Browse";
+                state.encoder1Label = "Input";
                 state.encoder2Label = "Mix";
                 state.encoder3Label = "Output";
                 break;
 
             case Mode::MIX:
-                state.encoder1Label = "Tone";
-                state.encoder2Label = "Space";
-                state.encoder3Label = "Energy";
+                state.encoder1Label = "Input";
+                state.encoder2Label = "Mix";
+                state.encoder3Label = "Output";
                 break;
 
             case Mode::AI:

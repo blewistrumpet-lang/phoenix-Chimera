@@ -16,6 +16,7 @@
     // Include necessary headers for GPIO
     #include "EventBus.h"
     #include "ControlState.h"
+    #include "ABStateEngine.h"
     // Forward declaration only for HardwareController
     class HardwareController;
 #endif
@@ -159,6 +160,7 @@ private:
     std::unique_ptr<HardwareController> hardwareController;
     std::unique_ptr<EventBus> eventBus;
     std::unique_ptr<ControlState> controlState;
+    std::unique_ptr<ABStateEngine> abStateEngine;  // Week 2: A/B parameter banks
 
     // GPIO event handlers
     void handleEncoderEvent(const EventBus::Event& event);
