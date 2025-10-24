@@ -13,10 +13,11 @@
 #define ENABLE_GPIO_HARDWARE 1
 
 #if ENABLE_GPIO_HARDWARE && defined(__linux__)
-    // Forward declarations to avoid circular dependencies
+    // Include necessary headers for GPIO
+    #include "EventBus.h"
+    #include "ControlState.h"
+    // Forward declaration only for HardwareController
     class HardwareController;
-    class EventBus;
-    class ControlState;
 #endif
 
 class ChimeraAudioProcessor : public juce::AudioProcessor,

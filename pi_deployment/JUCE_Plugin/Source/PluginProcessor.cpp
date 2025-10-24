@@ -330,11 +330,11 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
             });
 
         // Subscribe to hardware events
-        eventBus->subscribe("encoder", [this](const EventBus::Event& event) {
+        eventBus->subscribe(EventBus::EventType::ENCODER_TURN, [this](const EventBus::Event& event) {
             handleEncoderEvent(event);
         });
 
-        eventBus->subscribe("switch", [this](const EventBus::Event& event) {
+        eventBus->subscribe(EventBus::EventType::SWITCH_CHANGE, [this](const EventBus::Event& event) {
             handleSwitchEvent(event);
         });
 
@@ -1463,7 +1463,7 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
                 break;
         }
         controlState->setMode(newMode);
-        DBG("Mode changed to: " << controlState->getModeName());
+        DBG("Mode changed to: " << controlState->getState().getModeString());
     }
 
     // Switch 2 = Variant selector
@@ -1481,7 +1481,7 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
                 break;
         }
         controlState->setVariant(newVariant);
-        DBG("Variant changed to: " << controlState->getVariantName());
+        DBG("Variant changed to: " << controlState->getState().getVariantString());
     }
 
     // Switch 3 = Live/Bypass
@@ -1494,30 +1494,18 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
 
 void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float delta) {
     auto behavior = controlState->getEncoderBehavior(encoderIndex);
+    auto& state = controlState->getState();
 
-    // In PRESET mode, encoders control slot parameters
-    if (controlState->getMode() == ControlState::Mode::PRESET) {
-        int slot = behavior.slotIndex;
-        if (slot >= 0 && slot < NUM_SLOTS) {
-            auto paramID = "slot" + juce::String(slot + 1) + "_param" + juce::String(behavior.parameterIndex + 1);
-            auto* param = parameters.getParameter(paramID);
-            if (param) {
-                float currentValue = param->getValue();
-                float newValue = juce::jlimit(0.0f, 1.0f, currentValue + delta * 0.01f);
-                param->setValueNotifyingHost(newValue);
-                DBG("Parameter " << paramID << " changed to " << newValue);
-            }
-        }
-    }
-    // In MIX mode, encoders control macro parameters
-    else if (controlState->getMode() == ControlState::Mode::MIX) {
-        // Implement macro control
-        DBG("Macro control: " << behavior.macroName);
-    }
-    // In AI mode, encoders control AI parameters
-    else if (controlState->getMode() == ControlState::Mode::AI) {
-        // Implement AI control
-        DBG("AI control for encoder " << (encoderIndex + 1));
+    // Use the parameterID from behavior to control the appropriate parameter
+    auto* param = parameters.getParameter(behavior.parameterID);
+    if (param) {
+        float currentValue = param->getValue();
+        float newValue = juce::jlimit(0.0f, 1.0f, currentValue + delta * behavior.sensitivity);
+        param->setValueNotifyingHost(newValue);
+        DBG("Parameter " << behavior.parameterID << " changed to " << newValue);
+    } else {
+        // Log what parameter would be controlled (for future implementation)
+        DBG("Would control " << behavior.parameterID << " in " << state.getModeString() << " mode");
     }
 }
 
@@ -1526,7 +1514,7 @@ void ChimeraAudioProcessor::processGPIOEvents() {
         eventBus->processEvents();
     }
     if (hardwareController) {
-        hardwareController->pollHardware(*eventBus);
+        hardwareController->pollHardware();
     }
 }
 #endif
