@@ -277,14 +277,14 @@ private:
     void stopProgressMonitoring();
 
 #if ENABLE_GPIO_HARDWARE && defined(__linux__)
-    // Hardware integration
-    std::unique_ptr<HardwareController> hardwareController;
+    // Hardware integration - owned by Processor
+    HardwareController* hardwareController = nullptr;
+    EventBus* eventBus = nullptr;
+    ControlState* controlState = nullptr;
+
+    // Display components - owned by Editor
     std::unique_ptr<EncoderDisplay> encoderDisplays[3];
     std::unique_ptr<SwitchDisplay> switchDisplays[3];
-
-    // Control system
-    std::unique_ptr<EventBus> eventBus;
-    std::unique_ptr<ControlState> controlState;
 
     // Parameter control
     void handleEncoderEvent(const EventBus::Event& event);

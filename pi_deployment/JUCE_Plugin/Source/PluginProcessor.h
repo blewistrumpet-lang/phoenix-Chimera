@@ -9,6 +9,16 @@
 #include <atomic>
 #include <mutex>
 
+// GPIO Hardware support (safe with conditional compilation)
+#define ENABLE_GPIO_HARDWARE 1
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Forward declarations to avoid circular dependencies
+    class HardwareController;
+    class EventBus;
+    class ControlState;
+#endif
+
 class ChimeraAudioProcessor : public juce::AudioProcessor,
                               private juce::AudioProcessorValueTreeState::Listener {
 public:
@@ -92,7 +102,14 @@ public:
     
     // Engine loading - made public for direct Trinity preset loading
     void loadEngine(int slot, int engineID);
-    
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // GPIO Hardware access for Editor
+    HardwareController* getHardwareController() const { return hardwareController.get(); }
+    EventBus* getEventBus() const { return eventBus.get(); }
+    ControlState* getControlState() const { return controlState.get(); }
+#endif
+
 private:
     std::vector<DiagnosticResult> m_diagnosticResults;
     
@@ -135,6 +152,19 @@ private:
 
     // Always start fresh mode - don't restore saved state
     bool m_alwaysStartFresh = true;
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // GPIO Hardware control
+    std::unique_ptr<HardwareController> hardwareController;
+    std::unique_ptr<EventBus> eventBus;
+    std::unique_ptr<ControlState> controlState;
+
+    // GPIO event handlers
+    void handleEncoderEvent(const EventBus::Event& event);
+    void handleSwitchEvent(const EventBus::Event& event);
+    void updateParameterFromEncoder(int encoderIndex, float delta);
+    void processGPIOEvents();
+#endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChimeraAudioProcessor)
 };

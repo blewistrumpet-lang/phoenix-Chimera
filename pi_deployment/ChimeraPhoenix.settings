@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PROPERTIES>
+  <VALUE name="audioSetup">
+    <DEVICESETUP deviceType="JACK" audioOutputDeviceName="system" audioInputDeviceName="system"
+                 audioDeviceRate="48000.0" audioDeviceBufferSize="512"
+                 audioDeviceInChans="3" audioDeviceOutChans="3"/>
+  </VALUE>
+</PROPERTIES>

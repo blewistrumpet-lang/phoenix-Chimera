@@ -1,0 +1,61 @@
+INTELLIGENT NAMING DEPLOYMENT TO PI
+====================================
+
+Files packaged: intelligent_naming_deploy.tar.gz (14KB)
+Contains:
+  - preset_namer.py (core naming module)
+  - visionary_complete.py (updated with integration)
+  - INTELLIGENT_NAMING_SYSTEM.md (documentation)
+
+QUICK DEPLOYMENT STEPS:
+-----------------------
+
+1. Transfer the archive to Pi:
+
+   Option A - Using a USB drive:
+   - Copy intelligent_naming_deploy.tar.gz to USB
+   - Insert USB into Pi
+   - Mount and copy file
+
+   Option B - Using another method:
+   - Use VNC file transfer
+   - Or any other file transfer method
+
+2. On the Raspberry Pi, extract files:
+
+   cd /home/pi/chimera_pi/AI_Server
+   tar -xzf intelligent_naming_deploy.tar.gz
+
+3. Test the deployment:
+
+   python3 -c "from preset_namer import IntelligentPresetNamer; print('✅ Module loads!')"
+
+4. Restart the Trinity server:
+
+   sudo systemctl restart trinity_server_pi
+
+   Or if using the launch script:
+
+   cd /home/pi/chimera_pi
+   ./launch_chimera_hifiberry.sh
+
+
+VERIFICATION:
+-------------
+
+After deployment, presets will have varied names like:
+- "Studio 1973" instead of "Warm Echo"
+- "Unit 437" instead of "Test Preset"
+- "Death Machine" instead of "Heavy Distortion"
+- "Star Field" instead of "Ambient Pad"
+
+Check logs for "📝 Name override" messages to confirm it's working.
+
+
+ROLLBACK (if needed):
+--------------------
+
+To disable intelligent naming:
+1. Edit visionary_complete.py on Pi
+2. Set line 70: self.use_intelligent_naming = False
+3. Restart Trinity server

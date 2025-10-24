@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Visionary with ENFORCED engine selection
-This version REQUIRES specific engines based on keywords
+Visionary with ENFORCED engine selection + Intelligent Naming
+This version REQUIRES specific engines based on keywords AND uses varied naming
 """
 
 import json
@@ -9,14 +9,37 @@ import logging
 from typing import Dict, List, Any, Optional
 from visionary_complete import CompleteVisionary
 
-logger = logging.getLogger(__name__)
+# Import the Intelligent Preset Namer
+try:
+    from preset_namer import IntelligentPresetNamer
+    INTELLIGENT_NAMING_AVAILABLE = True
+    logger = logging.getLogger(__name__)
+    logger.info("✅ IntelligentPresetNamer loaded for EnforcedVisionary")
+except ImportError:
+    INTELLIGENT_NAMING_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("IntelligentPresetNamer not found - using standard naming")
 
 class EnforcedVisionary(CompleteVisionary):
     """Visionary that ENFORCES engine selection based on keywords"""
     
     def __init__(self):
         super().__init__()
-        
+
+        # Initialize intelligent namer
+        if INTELLIGENT_NAMING_AVAILABLE:
+            try:
+                self.intelligent_namer = IntelligentPresetNamer()
+                self.use_intelligent_naming = True
+                logger.info("✨ Intelligent naming enabled for EnforcedVisionary")
+            except Exception as e:
+                logger.error(f"Failed to initialize IntelligentPresetNamer: {e}")
+                self.intelligent_namer = None
+                self.use_intelligent_naming = False
+        else:
+            self.intelligent_namer = None
+            self.use_intelligent_naming = False
+
         # Load enforcement rules from complete knowledge base
         if "engine_selection_rules" in self.knowledge:
             self.selection_rules = self.knowledge["engine_selection_rules"]
@@ -239,7 +262,31 @@ Remember: FAILING TO INCLUDE MANDATORY ENGINES IS AN ERROR."""
                 
                 if not added:
                     logger.error(f"   Could not add {eng['name']} - no empty slots!")
-        
+
+        # Apply intelligent naming if available
+        if self.use_intelligent_naming and self.intelligent_namer:
+            original_name = preset.get('name', 'Unnamed')
+
+            # Extract engines for naming context
+            engines_for_naming = []
+            for slot in preset.get("slots", []):
+                if slot.get("engine_id", 0) != 0:
+                    engines_for_naming.append({
+                        "engine_id": slot["engine_id"],
+                        "engine_name": slot.get("engine_name", "Unknown")
+                    })
+
+            # Generate intelligent name
+            context = self.analyze_prompt_context(prompt)
+            intelligent_name = self.intelligent_namer.generate_name(
+                prompt,
+                engines_for_naming,
+                context
+            )
+
+            preset['name'] = intelligent_name
+            logger.info(f"📝 Name override: '{original_name}' → '{intelligent_name}'")
+
         # Ensure minimum 4 engines
         active_count = sum(1 for s in preset.get("slots", []) if s.get("engine_id", 0) != 0)
         if active_count < 4:

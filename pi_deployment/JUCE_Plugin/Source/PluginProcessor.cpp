@@ -27,6 +27,13 @@
 // #include "QuickEngineDiagnostic.h" // Removed - file was moved to tests
 // #include "QuickProcessingTest.h" // Removed - file was moved to tests
 
+// GPIO Hardware includes
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    #include "HardwareController.h"
+    #include "EventBus.h"
+    #include "ControlState.h"
+#endif
+
 // Engine ID to Choice Index mapping table - NEW SIMPLIFIED SYSTEM
 // Direct 1:1 mapping where engine ID = dropdown index (0-56)
 static const std::map<int, int> engineIDToChoiceMap = {
@@ -285,6 +292,59 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
         }
     }
     DBG("Explicitly initialized all engine selectors to None");
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Initialize GPIO hardware for headless operation
+    DBG("Initializing GPIO hardware controller in PluginProcessor...");
+
+    hardwareController = std::make_unique<HardwareController>();
+    eventBus = std::make_unique<EventBus>();
+    controlState = std::make_unique<ControlState>();
+
+    if (hardwareController && eventBus && controlState) {
+        DBG("✓ GPIO hardware initialized successfully in PluginProcessor");
+
+        // Wire hardware callbacks to post events
+        hardwareController->setEncoderCallback(
+            [this](int num, int pos, bool cw) {
+                float delta = cw ? 1.0f : -1.0f;
+                eventBus->postEvent(EventBus::Event(EventBus::EventType::ENCODER_TURN, num, delta));
+                DBG("ENC" << (num+1) << ": pos=" << pos << " " << (cw ? "CW" : "CCW"));
+            });
+
+        hardwareController->setEncoderButtonCallback(
+            [this](int num) {
+                eventBus->postEvent(EventBus::Event(EventBus::EventType::ENCODER_PRESS, num, true));
+                DBG("ENC" << (num+1) << " BUTTON PRESSED");
+            });
+
+        hardwareController->setSwitchCallback(
+            [this](int num, HardwareController::SwitchPosition pos) {
+                int posValue = (pos == HardwareController::SwitchPosition::UP) ? 0 :
+                              (pos == HardwareController::SwitchPosition::MIDDLE) ? 1 : 2;
+                eventBus->postEvent(EventBus::Event(EventBus::EventType::SWITCH_CHANGE, num, posValue));
+
+                juce::String posStr = (pos == HardwareController::SwitchPosition::UP) ? "UP" :
+                                     (pos == HardwareController::SwitchPosition::MIDDLE) ? "MID" : "DOWN";
+                DBG("SW" << (num+1) << ": " << posStr);
+            });
+
+        // Subscribe to hardware events
+        eventBus->subscribe("encoder", [this](const EventBus::Event& event) {
+            handleEncoderEvent(event);
+        });
+
+        eventBus->subscribe("switch", [this](const EventBus::Event& event) {
+            handleSwitchEvent(event);
+        });
+
+        // Start hardware monitoring thread
+        hardwareController->startHardwareMonitoring();
+        DBG("✓ Hardware monitoring started in PluginProcessor");
+    } else {
+        DBG("✗ Failed to initialize GPIO hardware in PluginProcessor");
+    }
+#endif
 }
 
 ChimeraAudioProcessor::~ChimeraAudioProcessor() {
@@ -383,7 +443,7 @@ bool ChimeraAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) c
 void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                                         juce::MidiBuffer& midiMessages) {
     juce::ScopedNoDenormals noDenormals;
-    
+
     // Validate buffer size to prevent crashes
     const int numSamples = buffer.getNumSamples();
     if (numSamples <= 0 || numSamples > 8192) {
@@ -1358,6 +1418,118 @@ void ChimeraAudioProcessor::runIsolatedEngineTests() {
     testFile.appendText("\n=== TESTS COMPLETE ===\n");
     */ // END OF REMOVED ISOLATED TEST CODE
 }
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+void ChimeraAudioProcessor::handleEncoderEvent(const EventBus::Event& event) {
+    if (!controlState) return;
+
+    int encoderIndex = event.data.encoderIndex;
+    auto behavior = controlState->getEncoderBehavior(encoderIndex);
+
+    DBG("Encoder " << (encoderIndex + 1) << " event: " <<
+        (event.data.direction == EventBus::EncoderDirection::CLOCKWISE ? "CW" : "CCW"));
+
+    // Handle encoder button press
+    if (event.data.buttonPressed) {
+        DBG("Encoder " << (encoderIndex + 1) << " button pressed");
+        // Could trigger preset save, parameter reset, etc.
+        return;
+    }
+
+    // Map encoder to parameter based on current mode
+    updateParameterFromEncoder(encoderIndex, event.data.delta);
+}
+
+void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
+    if (!controlState) return;
+
+    int switchIndex = event.data.switchIndex;
+    auto position = event.data.switchPosition;
+
+    DBG("Switch " << (switchIndex + 1) << " changed to position " << static_cast<int>(position));
+
+    // Switch 1 = Mode selector
+    if (switchIndex == 0) {
+        ControlState::Mode newMode;
+        switch (position) {
+            case EventBus::SwitchPosition::UP:
+                newMode = ControlState::Mode::PRESET;
+                break;
+            case EventBus::SwitchPosition::MID:
+                newMode = ControlState::Mode::MIX;
+                break;
+            case EventBus::SwitchPosition::DOWN:
+                newMode = ControlState::Mode::AI;
+                break;
+        }
+        controlState->setMode(newMode);
+        DBG("Mode changed to: " << controlState->getModeName());
+    }
+
+    // Switch 2 = Variant selector
+    else if (switchIndex == 1) {
+        ControlState::Variant newVariant;
+        switch (position) {
+            case EventBus::SwitchPosition::UP:
+                newVariant = ControlState::Variant::A;
+                break;
+            case EventBus::SwitchPosition::MID:
+                newVariant = ControlState::Variant::MORPH;
+                break;
+            case EventBus::SwitchPosition::DOWN:
+                newVariant = ControlState::Variant::B;
+                break;
+        }
+        controlState->setVariant(newVariant);
+        DBG("Variant changed to: " << controlState->getVariantName());
+    }
+
+    // Switch 3 = Live/Bypass
+    else if (switchIndex == 2) {
+        // Handle live/bypass functionality
+        bool bypass = (position != EventBus::SwitchPosition::UP);
+        DBG("Live mode: " << (!bypass ? "ON" : "OFF"));
+    }
+}
+
+void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float delta) {
+    auto behavior = controlState->getEncoderBehavior(encoderIndex);
+
+    // In PRESET mode, encoders control slot parameters
+    if (controlState->getMode() == ControlState::Mode::PRESET) {
+        int slot = behavior.slotIndex;
+        if (slot >= 0 && slot < NUM_SLOTS) {
+            auto paramID = "slot" + juce::String(slot + 1) + "_param" + juce::String(behavior.parameterIndex + 1);
+            auto* param = parameters.getParameter(paramID);
+            if (param) {
+                float currentValue = param->getValue();
+                float newValue = juce::jlimit(0.0f, 1.0f, currentValue + delta * 0.01f);
+                param->setValueNotifyingHost(newValue);
+                DBG("Parameter " << paramID << " changed to " << newValue);
+            }
+        }
+    }
+    // In MIX mode, encoders control macro parameters
+    else if (controlState->getMode() == ControlState::Mode::MIX) {
+        // Implement macro control
+        DBG("Macro control: " << behavior.macroName);
+    }
+    // In AI mode, encoders control AI parameters
+    else if (controlState->getMode() == ControlState::Mode::AI) {
+        // Implement AI control
+        DBG("AI control for encoder " << (encoderIndex + 1));
+    }
+}
+
+void ChimeraAudioProcessor::processGPIOEvents() {
+    if (eventBus) {
+        eventBus->processEvents();
+    }
+    if (hardwareController) {
+        hardwareController->pollHardware(*eventBus);
+    }
+}
+#endif
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {
     return new ChimeraAudioProcessor();

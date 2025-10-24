@@ -79,16 +79,15 @@ ChimeraAudioProcessorEditor_Pi::ChimeraAudioProcessorEditor_Pi(ChimeraAudioProce
     checkTrinityHealth();
 
 #if ENABLE_GPIO_HARDWARE && defined(__linux__)
-    // Initialize hardware (safe - continues without if fails)
-    try {
-        DBG("Initializing GPIO hardware controller...");
-        hardwareController = std::make_unique<HardwareController>();
+    // Get GPIO objects from Processor (which initializes them for headless operation)
+    hardwareController = audioProcessor.getHardwareController();
+    eventBus = audioProcessor.getEventBus();
+    controlState = audioProcessor.getControlState();
 
-        // Initialize control system
-        eventBus = std::make_unique<EventBus>();
-        controlState = std::make_unique<ControlState>();
+    if (hardwareController && eventBus && controlState) {
+        DBG("Editor using GPIO hardware from Processor");
 
-        // Subscribe to events
+        // Subscribe to events for UI updates
         eventBus->subscribe(EventBus::EventType::ENCODER_TURN,
             [this](const EventBus::Event& e) { handleEncoderEvent(e); });
         eventBus->subscribe(EventBus::EventType::SWITCH_CHANGE,
@@ -103,76 +102,12 @@ ChimeraAudioProcessorEditor_Pi::ChimeraAudioProcessorEditor_Pi(ChimeraAudioProce
             addAndMakeVisible(switchDisplays[i].get());
         }
 
-        // Wire hardware callbacks to event bus
-        hardwareController->setEncoderCallback(
-            [this](int num, int pos, bool cw) {
-                // Post encoder event
-                float delta = cw ? 1.0f : -1.0f;
-                eventBus->postEvent(EventBus::Event(EventBus::EventType::ENCODER_TURN, num, delta));
-
-                // Debug output
-                DBG("ENC" << (num+1) << ": pos=" << pos << " " << (cw ? "CW" : "CCW"));
-            });
-
-        hardwareController->setEncoderButtonCallback(
-            [this](int num) {
-                // Post encoder press event
-                eventBus->postEvent(EventBus::Event(EventBus::EventType::ENCODER_PRESS, num, true));
-                DBG("ENC" << (num+1) << " BUTTON PRESSED");
-            });
-
-        hardwareController->setSwitchCallback(
-            [this](int num, HardwareController::SwitchPosition pos) {
-                // Post switch event
-                int posValue = (pos == HardwareController::SwitchPosition::UP) ? 0 :
-                              (pos == HardwareController::SwitchPosition::MIDDLE) ? 1 : 2;
-                eventBus->postEvent(EventBus::Event(EventBus::EventType::SWITCH_CHANGE, num, posValue));
-
-                // Update control state for MODE and VARIANT switches
-                if (num == 0) { // MODE switch
-                    switch (pos) {
-                        case HardwareController::SwitchPosition::UP:
-                            controlState->setMode(ControlState::Mode::PRESET);
-                            break;
-                        case HardwareController::SwitchPosition::MIDDLE:
-                            controlState->setMode(ControlState::Mode::MIX);
-                            break;
-                        case HardwareController::SwitchPosition::DOWN:
-                            controlState->setMode(ControlState::Mode::AI);
-                            break;
-                        default:
-                            break;
-                    }
-                } else if (num == 1) { // VARIANT switch
-                    switch (pos) {
-                        case HardwareController::SwitchPosition::UP:
-                            controlState->setVariant(ControlState::Variant::A);
-                            break;
-                        case HardwareController::SwitchPosition::MIDDLE:
-                            controlState->setVariant(ControlState::Variant::MORPH);
-                            break;
-                        case HardwareController::SwitchPosition::DOWN:
-                            controlState->setVariant(ControlState::Variant::B);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                juce::String posStr = (pos == HardwareController::SwitchPosition::UP) ? "UP" :
-                                     (pos == HardwareController::SwitchPosition::MIDDLE) ? "MID" : "DOWN";
-                DBG("SW" << (num+1) << ": " << posStr);
-            });
-
-        hardwareController->startHardwareMonitoring();
-        DBG("✓ Hardware controller started");
-
-        // Force initial positioning of hardware displays
+        // Hardware callbacks are already wired in Processor
+        // Just update display positions
         resized();
 
-    } catch (...) {
-        DBG("Hardware init failed - continuing without hardware");
-        hardwareController.reset();
+    } else {
+        DBG("GPIO hardware not available from Processor");
     }
 #endif
 
