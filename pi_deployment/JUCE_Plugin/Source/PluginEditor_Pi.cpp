@@ -371,12 +371,36 @@ void ChimeraAudioProcessorEditor_Pi::timerCallback()
     }
 
     // Update hardware displays
-    if (hardwareController) {
+    if (hardwareController && controlState) {
+        // Get current bank indicator
+        auto& state = controlState->getState();
+        juce::String bankIndicator = (state.variant == ControlState::Variant::B) ? "B" : "A";
+
         for (int i = 0; i < 3; ++i) {
             if (encoderDisplays[i]) {
                 auto& enc = hardwareController->getEncoder(i);
                 encoderDisplays[i]->setPosition(enc.getPosition());
                 encoderDisplays[i]->setButtonPressed(enc.isButtonPressed());
+
+                // Update parameter info with meaningful display
+                auto behavior = controlState->getEncoderBehavior(i);
+                juce::String paramName;
+
+                // Get the label based on encoder index
+                switch (i) {
+                    case 0: paramName = state.encoder1Label; break;
+                    case 1: paramName = state.encoder2Label; break;
+                    case 2: paramName = state.encoder3Label; break;
+                }
+
+                // Get normalized parameter value (0.0 to 1.0)
+                float normalizedValue = 0.5f;  // Default
+                if (auto* param = audioProcessor.getValueTreeState().getParameter(behavior.parameterID)) {
+                    normalizedValue = param->getValue();
+                }
+
+                // Update display with formatted info
+                encoderDisplays[i]->setParameterInfo(paramName, normalizedValue, behavior.parameterID, bankIndicator);
             }
 
             if (switchDisplays[i]) {

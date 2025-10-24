@@ -87,6 +87,12 @@ public:
     void setEncoderButtonCallback(EncoderButtonCallback cb) { onEncoderButton = cb; }
     void setSwitchCallback(SwitchCallback cb) { onSwitchChange = cb; }
 
+    // Immediate synchronous read of switch positions (for initialization)
+    void readImmediateSwitchPositions();
+
+    // Check if hardware is initialized
+    bool isHardwareInitialized() const { return hardwareInitialized.load(); }
+
 private:
     void run() override;
 

@@ -4,7 +4,7 @@
 
 /**
  * Visual display component for a rotary encoder
- * Shows position value and button state
+ * Shows parameter name, formatted value, bank indicator, and button state
  */
 class EncoderDisplay : public juce::Component
 {
@@ -31,6 +31,24 @@ public:
         }
     }
 
+    /**
+     * Set parameter information for display
+     * @param name Parameter name (e.g., "Input", "Mix", "Output")
+     * @param value Normalized parameter value (0.0 to 1.0)
+     * @param paramID Parameter identifier for formatting
+     * @param bank Bank indicator ("A" or "B")
+     */
+    void setParameterInfo(const juce::String& name, float value, const juce::String& paramID, const juce::String& bank)
+    {
+        if (paramName != name || paramValue != value || parameterID != paramID || bankIndicator != bank) {
+            paramName = name;
+            paramValue = value;
+            parameterID = paramID;
+            bankIndicator = bank;
+            repaint();
+        }
+    }
+
     void paint(juce::Graphics& g) override
     {
         auto bounds = getLocalBounds();
@@ -39,26 +57,36 @@ public:
         g.setColour(juce::Colour(0xff2a2a2a));
         g.fillRoundedRectangle(bounds.toFloat(), 8.0f);
 
-        // Border
-        g.setColour(juce::Colour(0xff00b6d4));
+        // Border - change color based on bank
+        juce::Colour borderColour = bankIndicator == "B"
+            ? juce::Colour(0xffffaa00)  // Orange for Bank B
+            : juce::Colour(0xff00b6d4);  // Cyan for Bank A
+        g.setColour(borderColour);
         g.drawRoundedRectangle(bounds.toFloat().reduced(1), 8.0f, 2.0f);
 
-        // Title
+        // Bank indicator (top-left corner, subtle)
+        g.setColour(borderColour.withAlpha(0.6f));
+        g.setFont(juce::Font(10.0f, juce::Font::bold));
+        g.drawText(bankIndicator, bounds.removeFromTop(16).reduced(4, 2),
+                   juce::Justification::topLeft);
+
+        // Parameter name
         g.setColour(juce::Colours::white);
-        g.setFont(juce::Font(14.0f, juce::Font::bold));
-        g.drawText("ENC " + juce::String(number + 1),
-                   bounds.removeFromTop(20),
+        g.setFont(juce::Font(12.0f, juce::Font::bold));
+        g.drawText(paramName,
+                   bounds.removeFromTop(18),
                    juce::Justification::centred);
 
-        // Position value
-        g.setFont(juce::Font(18.0f, juce::Font::bold));
-        g.setColour(juce::Colour(0xff00b6d4));
-        g.drawText(juce::String(position),
-                   bounds.removeFromTop(30),
+        // Formatted parameter value
+        g.setFont(juce::Font(16.0f, juce::Font::bold));
+        g.setColour(borderColour);
+        juce::String formattedValue = formatParameterValue(paramValue, parameterID);
+        g.drawText(formattedValue,
+                   bounds.removeFromTop(26),
                    juce::Justification::centred);
 
         // Button indicator
-        auto buttonArea = bounds.removeFromBottom(20).reduced(25, 5);
+        auto buttonArea = bounds.removeFromBottom(16).reduced(25, 4);
         if (buttonPressed) {
             g.setColour(juce::Colour(0xffef4444)); // Red when pressed
             g.fillEllipse(buttonArea.toFloat());
@@ -72,6 +100,52 @@ private:
     int number;
     int position = 0;
     bool buttonPressed = false;
+    juce::String paramName;
+    float paramValue = 0.0f;
+    juce::String parameterID;
+    juce::String bankIndicator = "A";
+
+    /**
+     * Format parameter value based on parameter type
+     * @param normalizedValue Normalized value (0.0 to 1.0)
+     * @param paramID Parameter identifier
+     * @return Formatted string with appropriate units
+     */
+    juce::String formatParameterValue(float normalizedValue, const juce::String& paramID)
+    {
+        if (paramID == "input_gain" || paramID == "output_level") {
+            // Input/Output gain: 0.0-2.0 range, display as dB
+            // 0.0 -> 1.0 normalized maps to 0.0 -> 2.0 actual
+            float actualValue = normalizedValue * 2.0f;
+
+            // Convert to dB: 20 * log10(value)
+            // Handle special cases
+            if (actualValue <= 0.001f) {
+                return "-inf dB";
+            }
+
+            float dB = 20.0f * std::log10(actualValue);
+
+            // Format with sign
+            if (dB >= 0.05f) {
+                return "+" + juce::String(dB, 1) + " dB";
+            } else if (dB <= -0.05f) {
+                return juce::String(dB, 1) + " dB";
+            } else {
+                return "0.0 dB";
+            }
+        }
+        else if (paramID == "mix_wetdry") {
+            // Mix: 0.0-1.0 range, display as percentage
+            int percentage = static_cast<int>(normalizedValue * 100.0f);
+            return juce::String(percentage) + "%";
+        }
+        else {
+            // Default: show as percentage
+            int percentage = static_cast<int>(normalizedValue * 100.0f);
+            return juce::String(percentage) + "%";
+        }
+    }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EncoderDisplay)
 };

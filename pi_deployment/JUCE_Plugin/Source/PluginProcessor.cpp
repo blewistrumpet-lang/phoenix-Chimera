@@ -316,9 +316,11 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
     hardwareController = std::make_unique<HardwareController>();
     eventBus = std::make_unique<EventBus>();
     controlState = std::make_unique<ControlState>();
+    abStateEngine = std::make_unique<ABStateEngine>();
 
-    if (hardwareController && eventBus && controlState) {
+    if (hardwareController && eventBus && controlState && abStateEngine) {
         DBG("✓ GPIO hardware initialized successfully in PluginProcessor");
+        DBG("✓ A/B State Engine initialized");
 
         // Wire hardware callbacks to post events
         hardwareController->setEncoderCallback(
@@ -357,6 +359,68 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
         // Start hardware monitoring thread
         hardwareController->startHardwareMonitoring();
         DBG("✓ Hardware monitoring started in PluginProcessor");
+
+        // Wait for GPIO hardware to initialize in the thread
+        int waitCount = 0;
+        while (!hardwareController->isHardwareInitialized() && waitCount < 100) {
+            juce::Thread::sleep(10);
+            waitCount++;
+        }
+
+        if (hardwareController->isHardwareInitialized()) {
+            // Initialize mode and variant from actual switch positions
+            hardwareController->readImmediateSwitchPositions();  // Force immediate GPIO read
+        } else {
+            DBG("Warning: GPIO not initialized in time, using default positions");
+        }
+
+        // Read Switch 1 (MODE) position
+        auto& sw1 = hardwareController->getSwitch(0);
+        int sw1Pos = sw1.positionValue.load();
+        ControlState::Mode initialMode;
+        switch (sw1Pos) {
+            case 0:  // UP
+                initialMode = ControlState::Mode::PRESET;
+                break;
+            case 1:  // MID
+                initialMode = ControlState::Mode::MIX;
+                break;
+            case 2:  // DOWN
+                initialMode = ControlState::Mode::AI;
+                break;
+            default:
+                initialMode = ControlState::Mode::PRESET;
+                break;
+        }
+        controlState->setMode(initialMode);
+        DBG("Initialized to Mode: " << controlState->getState().getModeString() << " from switch position " << sw1Pos);
+
+        // Read Switch 2 (VARIANT) position
+        auto& sw2 = hardwareController->getSwitch(1);
+        int sw2Pos = sw2.positionValue.load();
+        ControlState::Variant initialVariant;
+        bool initialBankB;
+        switch (sw2Pos) {
+            case 0:  // UP = Bank B
+                initialVariant = ControlState::Variant::B;
+                initialBankB = true;
+                break;
+            case 1:  // MID = Bank A
+                initialVariant = ControlState::Variant::A;
+                initialBankB = false;
+                break;
+            case 2:  // DOWN = reserved
+                initialVariant = ControlState::Variant::MORPH;
+                initialBankB = false;
+                break;
+            default:
+                initialVariant = ControlState::Variant::A;
+                initialBankB = false;
+                break;
+        }
+        controlState->setVariant(initialVariant);
+        abStateEngine->switchToBank(initialBankB);
+        DBG("Initialized to Variant: " << controlState->getState().getVariantString() << " from switch position " << sw2Pos);
     } else {
         DBG("✗ Failed to initialize GPIO hardware in PluginProcessor");
     }
@@ -1507,21 +1571,71 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
         DBG("Mode changed to: " << controlState->getState().getModeString());
     }
 
-    // Switch 2 = Variant selector
+    // Switch 2 = Variant selector (A/B bank toggle)
     else if (switchIndex == 1) {
+        if (!abStateEngine) return;
+
+        // Save current parameter values to current bank before switching
+        auto& currentBank = abStateEngine->isBankB() ?
+            const_cast<ABStateEngine::ParamBank&>(abStateEngine->getBankB()) :
+            const_cast<ABStateEngine::ParamBank&>(abStateEngine->getBankA());
+
+        // Get actual values (parameters are already in their actual ranges)
+        float inputActual = parameters.getRawParameterValue("input_gain")->load();     // Already 0-2
+        float mixActual = parameters.getRawParameterValue("mix_wetdry")->load();       // Already 0-1
+        float outputActual = parameters.getRawParameterValue("output_level")->load();  // Already 0-2
+
+        currentBank.input_gain = inputActual;
+        currentBank.mix_wetdry = mixActual;
+        currentBank.output_level = outputActual;
+
+        DBG("SAVING to Bank " << (abStateEngine->isBankB() ? "B" : "A") << ":");
+        DBG("  input_gain: actual=" << currentBank.input_gain);
+        DBG("  mix_wetdry: actual=" << currentBank.mix_wetdry);
+        DBG("  output_level: actual=" << currentBank.output_level);
+
+        // Switch bank based on position (optimized for quick A/B toggling)
         ControlState::Variant newVariant;
         switch (position) {
-            case 0:  // UP
-                newVariant = ControlState::Variant::A;
-                break;
-            case 1:  // MID
-                newVariant = ControlState::Variant::MORPH;
-                break;
-            case 2:  // DOWN
+            case 0:  // UP = Bank B
                 newVariant = ControlState::Variant::B;
+                abStateEngine->switchToBank(true);   // Switch to B
+                break;
+            case 1:  // MID = Bank A (default/home position)
+                newVariant = ControlState::Variant::A;
+                abStateEngine->switchToBank(false);  // Switch to A
+                break;
+            case 2:  // DOWN = Reserved for future (MORPH or MIX)
+                newVariant = ControlState::Variant::MORPH;
+                abStateEngine->switchToBank(false);  // Use A for now
                 break;
         }
         controlState->setVariant(newVariant);
+
+        // Load parameters from new active bank
+        const auto& activeBank = abStateEngine->getActiveBank();
+
+        DBG("LOADING Bank " << (abStateEngine->isBankB() ? "B" : "A") << ":");
+        DBG("  input_gain: actual=" << activeBank.input_gain);
+        DBG("  mix_wetdry: actual=" << activeBank.mix_wetdry);
+        DBG("  output_level: actual=" << activeBank.output_level);
+
+        // Parameters expect actual values (not normalized)
+        // Use setValueNotifyingHost with normalized values for the host
+        auto* inputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("input_gain"));
+        auto* mixParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("mix_wetdry"));
+        auto* outputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("output_level"));
+
+        if (inputParam) {
+            inputParam->setValueNotifyingHost(inputParam->convertTo0to1(activeBank.input_gain));
+        }
+        if (mixParam) {
+            mixParam->setValueNotifyingHost(mixParam->convertTo0to1(activeBank.mix_wetdry));
+        }
+        if (outputParam) {
+            outputParam->setValueNotifyingHost(outputParam->convertTo0to1(activeBank.output_level));
+        }
+
         DBG("Variant changed to: " << controlState->getState().getVariantString());
     }
 
@@ -1544,6 +1658,16 @@ void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float d
         float newValue = juce::jlimit(0.0f, 1.0f, currentValue + delta * behavior.sensitivity);
         param->setValueNotifyingHost(newValue);
         DBG("Parameter " << behavior.parameterID << " changed to " << newValue);
+
+        // Also save to active A/B bank
+        if (abStateEngine) {
+            // Convert normalized value back to actual range
+            float actualValue = newValue;
+            if (behavior.parameterID == "input_gain" || behavior.parameterID == "output_level") {
+                actualValue = newValue * 2.0f;  // 0-1 → 0-2
+            }
+            abStateEngine->setParameter(behavior.parameterID, actualValue);
+        }
     } else {
         // Log what parameter would be controlled (for future implementation)
         DBG("Would control " << behavior.parameterID << " in " << state.getModeString() << " mode");

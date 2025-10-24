@@ -195,6 +195,30 @@ HardwareController::SwitchPosition HardwareController::decodeSwitchPosition(int 
     return SwitchPosition::UNKNOWN;
 }
 
+void HardwareController::readImmediateSwitchPositions()
+{
+#ifdef __linux__
+    if (!hardwareInitialized) return;
+
+    // Read all switch positions directly from GPIO pins
+    int sw1_p1 = gpiod_line_get_value(sw1_pin1);
+    int sw1_p2 = gpiod_line_get_value(sw1_pin2);
+    int sw2_p1 = gpiod_line_get_value(sw2_pin1);
+    int sw2_p2 = gpiod_line_get_value(sw2_pin2);
+    int sw3_p1 = gpiod_line_get_value(sw3_pin1);
+    int sw3_p2 = gpiod_line_get_value(sw3_pin2);
+
+    // Decode and update positions
+    switches[0].positionValue = static_cast<int>(decodeSwitchPosition(sw1_p1, sw1_p2));
+    switches[1].positionValue = static_cast<int>(decodeSwitchPosition(sw2_p1, sw2_p2));
+    switches[2].positionValue = static_cast<int>(decodeSwitchPosition(sw3_p1, sw3_p2));
+
+    DBG("Immediate switch read: SW1=" << switches[0].getPositionString()
+        << " SW2=" << switches[1].getPositionString()
+        << " SW3=" << switches[2].getPositionString());
+#endif
+}
+
 void HardwareController::pollHardware()
 {
     // Read encoder 1
