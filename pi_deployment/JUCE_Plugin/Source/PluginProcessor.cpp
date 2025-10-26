@@ -1810,32 +1810,36 @@ void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float d
         return;
     }
 
-    // Discrete parameters (preset_index) - use AudioParameterInt API
+    // Discrete parameters (preset_index) - use raw parameter value API
     if (behavior.parameterID == "preset_index") {
-        auto* intParam = dynamic_cast<juce::AudioParameterInt*>(param);
-        if (!intParam) {
-            DBG("[ENCODER-DISCRETE] ERROR: preset_index is not AudioParameterInt!");
+        // Use raw parameter value
+        auto* rawParam = parameters.getRawParameterValue("preset_index");
+        if (!rawParam) {
+            DBG("[ENCODER-DISCRETE] ERROR: Cannot get raw preset_index!");
             return;
         }
 
-        // Get current integer value (0-9)
-        const int currentIdx = intParam->get();
+        // For AudioParameterInt, raw value IS the actual integer (not normalized!)
+        const int currentIdx = static_cast<int>(rawParam->load());
 
         // Delta is already rate-limited to ±1 by drain logic
         const int deltaIdx = (delta > 0.f) ? +1 : (delta < 0.f) ? -1 : 0;
         const int newIdx = juce::jlimit(0, 9, currentIdx + deltaIdx);
 
-        // Convert to normalized for JUCE
-        const float newNorm = intParam->convertTo0to1(newIdx);
-        intParam->setValueNotifyingHost(newNorm);
+        // Set using normalized value
+        const float newNorm = static_cast<float>(newIdx) / 9.0f;
+
+        DBG("[ENCODER-DISCRETE] delta=" << delta << " deltaIdx=" << deltaIdx
+            << " | rawNorm=" << rawNorm << " currentIdx=" << currentIdx
+            << " -> newIdx=" << newIdx << " newNorm=" << newNorm
+            << " (display " << (newIdx + 1) << "/10)");
+
+        param->setValueNotifyingHost(newNorm);
 
         // Sync GPIOPresetManager index
         if (gpioPresetManager) {
             gpioPresetManager->setCurrentPresetIndex(newIdx);
         }
-
-        DBG("[ENCODER-DISCRETE] preset_index: idx " << currentIdx << " -> " << newIdx
-            << " (display " << (newIdx + 1) << "/10)");
         return;
     }
 
