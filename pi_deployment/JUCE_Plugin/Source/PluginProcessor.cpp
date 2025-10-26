@@ -1810,18 +1810,24 @@ void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float d
         return;
     }
 
-    // Discrete parameters (preset_index) - snap to 10 discrete slots (0-9)
+    // Discrete parameters (preset_index) - use AudioParameterInt API
     if (behavior.parameterID == "preset_index") {
-        const float currentNorm = param->getValue();
+        auto* intParam = dynamic_cast<juce::AudioParameterInt*>(param);
+        if (!intParam) {
+            DBG("[ENCODER-DISCRETE] ERROR: preset_index is not AudioParameterInt!");
+            return;
+        }
 
-        // Delta is already rate-limited to ±1 by drain logic, so:
-        // Convert ±1 detent to ±1 index step (not using sensitivity)
-        const int currentIdx = juce::roundToInt(currentNorm * 9.0f);
+        // Get current integer value (0-9)
+        const int currentIdx = intParam->get();
+
+        // Delta is already rate-limited to ±1 by drain logic
         const int deltaIdx = (delta > 0.f) ? +1 : (delta < 0.f) ? -1 : 0;
         const int newIdx = juce::jlimit(0, 9, currentIdx + deltaIdx);
-        const float newNorm = newIdx / 9.0f;
 
-        param->setValueNotifyingHost(newNorm);
+        // Convert to normalized for JUCE
+        const float newNorm = intParam->convertTo0to1(newIdx);
+        intParam->setValueNotifyingHost(newNorm);
 
         // Sync GPIOPresetManager index
         if (gpioPresetManager) {
