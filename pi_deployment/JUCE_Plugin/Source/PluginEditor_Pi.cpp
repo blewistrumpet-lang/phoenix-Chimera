@@ -365,10 +365,8 @@ void ChimeraAudioProcessorEditor_Pi::timerCallback()
     }
 
 #if ENABLE_GPIO_HARDWARE && defined(__linux__)
-    // Process hardware events
-    if (eventBus) {
-        eventBus->processEvents();
-    }
+    // Phase 2: Process GPIO events (includes encoder accumulator draining @ 30 Hz)
+    audioProcessor.processGPIOEvents();
 
     // Update hardware displays
     if (hardwareController && controlState) {

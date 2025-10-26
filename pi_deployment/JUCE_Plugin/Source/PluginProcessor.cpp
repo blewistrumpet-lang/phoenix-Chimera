@@ -1578,8 +1578,13 @@ void ChimeraAudioProcessor::handleEncoderEvent(const EventBus::Event& event) {
         return;
     }
 
-    // Map encoder to parameter based on current mode
-    updateParameterFromEncoder(encoderIndex, delta);
+    // Phase 2: Accumulate encoder events (hardware ISR @ ~1000 Hz)
+    // processGPIOEvents() will drain these at ~30-60 Hz
+    if (encoderIndex >= 0 && encoderIndex < 3) {
+        encoderAccum[encoderIndex].fetch_add(delta, std::memory_order_relaxed);
+        DBG("  [ACCUM] Encoder " << encoderIndex << " += " << delta
+            << " (total=" << encoderAccum[encoderIndex].load() << ")");
+    }
 }
 
 void ChimeraAudioProcessor::handleEncoderButtonEvent(int encoderNum) {
@@ -1628,9 +1633,9 @@ void ChimeraAudioProcessor::handleEncoderButtonEvent(int encoderNum) {
                 inputParam->setValueNotifyingHost(inputParam->convertTo0to1(activeBank.input_gain));
             }
             if (mixParam) {
-                // TEMP: Skip restoring mix from preset to test if this is the override source
-                DBG("[PRESET] Would restore mix_wetdry to " << activeBank.mix_wetdry << " but skipping (TEMP)");
-                // mixParam->setValueNotifyingHost(mixParam->convertTo0to1(activeBank.mix_wetdry));
+                // ✅ Phase 2: RE-ENABLED mix restore (per-bank in presets)
+                mixParam->setValueNotifyingHost(mixParam->convertTo0to1(activeBank.mix_wetdry));
+                DBG("[PRESET] Restored mix_wetdry to " << activeBank.mix_wetdry);
             }
             if (outputParam) {
                 outputParam->setValueNotifyingHost(outputParam->convertTo0to1(activeBank.output_level));
@@ -1713,51 +1718,67 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
     else if (switchIndex == 1) {
         if (!abStateEngine) return;
 
-        // NOTE: Bank is already synchronized by encoder updates (line 1909)
-        // No need to re-read from APVTS here - encoder changes already saved
-
-        // Switch bank based on position (optimized for quick A/B toggling)
-        ControlState::Variant newVariant;
-        switch (position) {
-            case 0:  // UP = Bank B
-                newVariant = ControlState::Variant::B;
-                abStateEngine->switchToBank(true);   // Switch to B
-                break;
-            case 1:  // MID = Bank A (default/home position)
-                newVariant = ControlState::Variant::A;
-                abStateEngine->switchToBank(false);  // Switch to A
-                break;
-            case 2:  // DOWN = Reserved for future (MORPH or MIX)
-                newVariant = ControlState::Variant::MORPH;
-                abStateEngine->switchToBank(false);  // Use A for now
-                break;
+        // Phase 2: Debounce to prevent mechanical bounce double-triggers
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastBankSwitchTime).count();
+        if (elapsed < BANK_SWITCH_DEBOUNCE_MS) {
+            DBG("[AB_SWITCH] Debounce: ignoring (only " << elapsed << "ms since last switch)");
+            return;
         }
-        controlState->setVariant(newVariant);
+        lastBankSwitchTime = now;
 
-        // Load parameters from new active bank
-        const auto& activeBank = abStateEngine->getActiveBank();
-
-        DBG("LOADING Bank " << (abStateEngine->isBankB() ? "B" : "A") << ":");
-        DBG("  input_gain: actual=" << activeBank.input_gain);
-        DBG("  mix_wetdry: actual=" << activeBank.mix_wetdry);
-        DBG("  output_level: actual=" << activeBank.output_level);
-
-        // Parameters expect actual values (not normalized)
-        // Use setValueNotifyingHost with normalized values for the host
+        // Phase 2: CAPTURE current bank BEFORE switching
+        auto& currentBank = abStateEngine->getActiveBank();
         auto* inputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("input_gain"));
         auto* mixParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("mix_wetdry"));
         auto* outputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("output_level"));
 
+        if (inputParam)  currentBank.input_gain = inputParam->get();
+        if (mixParam)    currentBank.mix_wetdry = mixParam->get();  // ✅ Capture mix (per-bank)
+        if (outputParam) currentBank.output_level = outputParam->get();
+
+        DBG("[AB_SWITCH] CAPTURED " << (abStateEngine->isBankB() ? "Bank B" : "Bank A") << ":");
+        DBG("  input_gain=" << currentBank.input_gain);
+        DBG("  mix_wetdry=" << currentBank.mix_wetdry);
+        DBG("  output_level=" << currentBank.output_level);
+
+        // Phase 2: SWITCH to new bank
+        ControlState::Variant newVariant;
+        bool switchToBankB = false;
+        switch (position) {
+            case 0:  // UP = Bank B
+                newVariant = ControlState::Variant::B;
+                switchToBankB = true;
+                break;
+            case 1:  // MID = Bank A (default/home position)
+                newVariant = ControlState::Variant::A;
+                switchToBankB = false;
+                break;
+            case 2:  // DOWN = Reserved for future (MORPH or MIX)
+                newVariant = ControlState::Variant::MORPH;
+                switchToBankB = false;
+                break;
+        }
+        controlState->setVariant(newVariant);
+        abStateEngine->switchToBank(switchToBankB);
+
+        // Phase 2: APPLY new active bank values
+        const auto& newBank = abStateEngine->getActiveBank();
+
+        DBG("[AB_SWITCH] APPLYING " << (abStateEngine->isBankB() ? "Bank B" : "Bank A") << ":");
+        DBG("  input_gain=" << newBank.input_gain);
+        DBG("  mix_wetdry=" << newBank.mix_wetdry);
+        DBG("  output_level=" << newBank.output_level);
+
         if (inputParam) {
-            inputParam->setValueNotifyingHost(inputParam->convertTo0to1(activeBank.input_gain));
+            inputParam->setValueNotifyingHost(inputParam->convertTo0to1(newBank.input_gain));
         }
         if (mixParam) {
-            // TEMP: Skip restoring mix from A/B bank to test if this is the override source
-            DBG("[AB_SWITCH] Would restore mix_wetdry to " << activeBank.mix_wetdry << " but skipping (TEMP)");
-            // mixParam->setValueNotifyingHost(mixParam->convertTo0to1(activeBank.mix_wetdry));
+            // ✅ Phase 2: RE-ENABLED mix restore (per-bank independence)
+            mixParam->setValueNotifyingHost(mixParam->convertTo0to1(newBank.mix_wetdry));
         }
         if (outputParam) {
-            outputParam->setValueNotifyingHost(outputParam->convertTo0to1(activeBank.output_level));
+            outputParam->setValueNotifyingHost(outputParam->convertTo0to1(newBank.output_level));
         }
 
         DBG("Variant changed to: " << controlState->getState().getVariantString());
@@ -1783,25 +1804,26 @@ void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float d
         return;
     }
 
-    // Discrete parameters (preset_index) use index stepping, not normalized addition
+    // Discrete parameters (preset_index) - snap to 10 discrete slots (0-9)
     if (behavior.parameterID == "preset_index") {
-        const int numSteps = 10;  // 10 presets (0-9)
         const float currentNorm = param->getValue();
-        int currentIdx = juce::roundToInt(currentNorm * (numSteps - 1));
+        const float stepNorm = delta * behavior.sensitivity;
+        float newNorm = juce::jlimit(0.0f, 1.0f, currentNorm + stepNorm);
 
-        // Step by ±1 index per detent (ignore sensitivity for discrete)
-        const int deltaIdx = (delta > 0.f) ? +1 : (delta < 0.f) ? -1 : 0;
-        const int newIdx = juce::jlimit(0, numSteps - 1, currentIdx + deltaIdx);
-        const float newNorm = newIdx / static_cast<float>(numSteps - 1);
+        // Snap to 10 discrete slots: 0, 1/9, 2/9, ..., 9/9
+        // This ensures clean stepping: 1→2→...→10 in UI (0→9 internally)
+        newNorm = juce::roundToInt(newNorm * 9.0f) / 9.0f;
 
         param->setValueNotifyingHost(newNorm);
 
+        // Sync GPIOPresetManager index
         if (gpioPresetManager) {
+            int newIdx = juce::roundToInt(newNorm * 9.0f);
             gpioPresetManager->setCurrentPresetIndex(newIdx);
         }
 
-        DBG("[ENCODER-DISCRETE] id=" << behavior.parameterID
-            << " idx " << currentIdx << " -> " << newIdx);
+        DBG("[ENCODER-DISCRETE] preset_index: " << currentNorm << " -> " << newNorm
+            << " (slot " << juce::roundToInt(newNorm * 9.0f) + 1 << "/10)");
         return;
     }
 
@@ -1829,10 +1851,34 @@ void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float d
 }
 
 void ChimeraAudioProcessor::processGPIOEvents() {
-    // Event processing happens automatically via the hardware monitoring thread
-    // and the EventBus subscriptions - no need to manually poll
+    // Process hardware events via EventBus
     if (eventBus) {
         eventBus->processEvents();
+    }
+
+    // Phase 2: Drain encoder accumulators @ ~30-60 Hz (coalescing)
+    // This prevents fast encoder spins (1000 Hz ISR) from causing parameter jumps
+    if (!controlState) return;
+
+    for (int i = 0; i < 3; ++i) {
+        // Atomically read and clear the accumulator
+        float detents = encoderAccum[i].exchange(0.f, std::memory_order_acq_rel);
+        if (detents == 0.f) continue;
+
+        const auto behavior = controlState->getEncoderBehavior(i);
+
+        // Discrete parameters (preset_index): rate-limit to ±1 step per drain cycle
+        if (behavior.parameterID == "preset_index") {
+            const float oneStep = (detents > 0.f) ? +1.f : -1.f;
+            updateParameterFromEncoder(i, oneStep);
+            DBG("[DRAIN-DISCRETE] E" << (i+1) << " accumulated " << detents
+                << " detents, applying " << oneStep << " step");
+        }
+        // Continuous parameters: apply all accumulated motion
+        else {
+            updateParameterFromEncoder(i, detents);
+            DBG("[DRAIN-CONTINUOUS] E" << (i+1) << " applying " << detents << " detents");
+        }
     }
 }
 

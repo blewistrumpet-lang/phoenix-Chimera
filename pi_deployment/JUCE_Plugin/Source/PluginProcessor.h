@@ -4,6 +4,7 @@
 #include "EngineBase.h"
 #include "ParameterDefinitions.h"
 #include "SlotConfiguration.h"
+#include "DebugFlags.h"  // Phase 2: Dev logging control
 #include <array>
 #include <memory>
 #include <atomic>
@@ -165,6 +166,13 @@ private:
     std::unique_ptr<ControlState> controlState;
     std::unique_ptr<ABStateEngine> abStateEngine;  // Week 2 Phase 1: A/B parameter banks
     std::unique_ptr<GPIOPresetManager> gpioPresetManager;  // Week 2 Phase 2: 10-slot presets
+
+    // Phase 2: Encoder event coalescing (1000 Hz ISR → 30-60 Hz parameter updates)
+    std::atomic<float> encoderAccum[3] { 0.f, 0.f, 0.f };
+
+    // Phase 2: A/B bank switch debouncing (prevents mechanical bounce double-triggers)
+    std::chrono::steady_clock::time_point lastBankSwitchTime;
+    static constexpr int BANK_SWITCH_DEBOUNCE_MS = 10;
 
     // GPIO event handlers
     void handleEncoderEvent(const EventBus::Event& event);
