@@ -1813,23 +1813,23 @@ void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float d
     // Discrete parameters (preset_index) - snap to 10 discrete slots (0-9)
     if (behavior.parameterID == "preset_index") {
         const float currentNorm = param->getValue();
-        const float stepNorm = delta * behavior.sensitivity;
-        float newNorm = juce::jlimit(0.0f, 1.0f, currentNorm + stepNorm);
 
-        // Snap to 10 discrete slots: 0, 1/9, 2/9, ..., 9/9
-        // This ensures clean stepping: 1→2→...→10 in UI (0→9 internally)
-        newNorm = juce::roundToInt(newNorm * 9.0f) / 9.0f;
+        // Delta is already rate-limited to ±1 by drain logic, so:
+        // Convert ±1 detent to ±1 index step (not using sensitivity)
+        const int currentIdx = juce::roundToInt(currentNorm * 9.0f);
+        const int deltaIdx = (delta > 0.f) ? +1 : (delta < 0.f) ? -1 : 0;
+        const int newIdx = juce::jlimit(0, 9, currentIdx + deltaIdx);
+        const float newNorm = newIdx / 9.0f;
 
         param->setValueNotifyingHost(newNorm);
 
         // Sync GPIOPresetManager index
         if (gpioPresetManager) {
-            int newIdx = juce::roundToInt(newNorm * 9.0f);
             gpioPresetManager->setCurrentPresetIndex(newIdx);
         }
 
-        DBG("[ENCODER-DISCRETE] preset_index: " << currentNorm << " -> " << newNorm
-            << " (slot " << juce::roundToInt(newNorm * 9.0f) + 1 << "/10)");
+        DBG("[ENCODER-DISCRETE] preset_index: idx " << currentIdx << " -> " << newIdx
+            << " (display " << (newIdx + 1) << "/10)");
         return;
     }
 
