@@ -1810,36 +1810,30 @@ void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float d
         return;
     }
 
-    // Discrete parameters (preset_index) - use raw parameter value API
+    // Discrete parameters (preset_index) - use GPIOPresetManager as source of truth
     if (behavior.parameterID == "preset_index") {
-        // Use raw parameter value
-        auto* rawParam = parameters.getRawParameterValue("preset_index");
-        if (!rawParam) {
-            DBG("[ENCODER-DISCRETE] ERROR: Cannot get raw preset_index!");
+        if (!gpioPresetManager) {
+            DBG("[ENCODER-DISCRETE] ERROR: GPIOPresetManager not initialized!");
             return;
         }
 
-        // For AudioParameterInt, raw value IS the actual integer (not normalized!)
-        const int currentIdx = static_cast<int>(rawParam->load());
+        // Use GPIOPresetManager's index as current value (avoid reading corrupted param)
+        const int currentIdx = gpioPresetManager->getCurrentPresetIndex();
 
         // Delta is already rate-limited to ±1 by drain logic
         const int deltaIdx = (delta > 0.f) ? +1 : (delta < 0.f) ? -1 : 0;
         const int newIdx = juce::jlimit(0, 9, currentIdx + deltaIdx);
 
-        // Set using normalized value
-        const float newNorm = static_cast<float>(newIdx) / 9.0f;
-
         DBG("[ENCODER-DISCRETE] delta=" << delta << " deltaIdx=" << deltaIdx
-            << " | rawNorm=" << rawNorm << " currentIdx=" << currentIdx
-            << " -> newIdx=" << newIdx << " newNorm=" << newNorm
+            << " currentIdx=" << currentIdx << " -> newIdx=" << newIdx
             << " (display " << (newIdx + 1) << "/10)");
 
-        param->setValueNotifyingHost(newNorm);
+        // Update GPIOPresetManager FIRST
+        gpioPresetManager->setCurrentPresetIndex(newIdx);
 
-        // Sync GPIOPresetManager index
-        if (gpioPresetManager) {
-            gpioPresetManager->setCurrentPresetIndex(newIdx);
-        }
+        // Then sync to JUCE parameter
+        param->setValueNotifyingHost(static_cast<float>(newIdx) / 9.0f);
+
         return;
     }
 
