@@ -179,8 +179,11 @@ private:
     void handleEncoderButtonEvent(int encoderNum);  // Week 2 Phase 2: button callbacks
     void handleSwitchEvent(const EventBus::Event& event);
     void updateParameterFromEncoder(int encoderIndex, float delta);
-    void processGPIOEvents();
 
+public:
+    void processGPIOEvents();  // PUBLIC: called from Editor timer
+
+private:
     // Preset operations
     juce::File getGPIOPresetsFile() const;
     juce::File getPresetIndexCacheFile() const;

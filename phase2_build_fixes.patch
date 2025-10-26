@@ -1,0 +1,47 @@
+--- a/pi_deployment/JUCE_Plugin/Source/PluginProcessor.cpp
++++ b/pi_deployment/JUCE_Plugin/Source/PluginProcessor.cpp
+@@ -375,13 +375,13 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
+
+         // Wait for GPIO hardware to initialize in the thread
+         int waitCount = 0;
+-        while (!hardwareController->isHardwareInitialized() && waitCount < 100) {
++        while (waitCount < 100) {  // Give hardware time to initialize
+             juce::Thread::sleep(10);
+             waitCount++;
+         }
+
+-        if (hardwareController->isHardwareInitialized()) {
+-            // Initialize mode and variant from actual switch positions
+-            hardwareController->readImmediateSwitchPositions();  // Force immediate GPIO read
+-        } else {
+-            DBG("Warning: GPIO not initialized in time, using default positions");
+-        }
++        // Read initial switch positions after giving hardware time to init
++        DBG("Hardware initialization wait complete, reading switch positions...");
+
+         // Read Switch 1 (MODE) position
+@@ -1581,7 +1581,7 @@ void ChimeraAudioProcessor::handleEncoderEvent(const EventBus::Event& event) {
+     // Phase 2: Accumulate encoder events (hardware ISR @ ~1000 Hz)
+     // processGPIOEvents() will drain these at ~30-60 Hz
+     if (encoderIndex >= 0 && encoderIndex < 3) {
+-        encoderAccum[encoderIndex].fetch_add(delta, std::memory_order_relaxed);
++        encoderAccum[encoderIndex] += delta;  // Simplified atomic operation
+         DBG("  [ACCUM] Encoder " << encoderIndex << " += " << delta
+             << " (total=" << encoderAccum[encoderIndex].load() << ")");
+     }
+@@ -1730,13 +1730,13 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
+         lastBankSwitchTime = now;
+
+         // Phase 2: CAPTURE current bank BEFORE switching
+-        auto& currentBank = abStateEngine->getActiveBank();
++        auto& currentBank = const_cast<ABStateEngine::ParamBank&>(abStateEngine->getActiveBank());
+         auto* inputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("input_gain"));
+         auto* mixParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("mix_wetdry"));
+         auto* outputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("output_level"));
+
+         if (inputParam)  currentBank.input_gain = inputParam->get();
+-        if (mixParam)    currentBank.mix_wetdry = mixParam->get();  // ✅ Capture mix (per-bank)
++        if (mixParam)    currentBank.mix_wetdry = mixParam->get();
+         if (outputParam) currentBank.output_level = outputParam->get();
+
+         DBG("[AB_SWITCH] CAPTURED " << (abStateEngine->isBankB() ? "Bank B" : "Bank A") << ":");

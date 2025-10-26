@@ -1581,7 +1581,12 @@ void ChimeraAudioProcessor::handleEncoderEvent(const EventBus::Event& event) {
     // Phase 2: Accumulate encoder events (hardware ISR @ ~1000 Hz)
     // processGPIOEvents() will drain these at ~30-60 Hz
     if (encoderIndex >= 0 && encoderIndex < 3) {
-        encoderAccum[encoderIndex].fetch_add(delta, std::memory_order_relaxed);
+        // Atomic add using compare_exchange (fetch_add not available for float in all toolchains)
+        float current = encoderAccum[encoderIndex].load(std::memory_order_relaxed);
+        while (!encoderAccum[encoderIndex].compare_exchange_weak(current, current + delta,
+                                                                  std::memory_order_relaxed)) {
+            // Loop retries if another thread modified the value
+        }
         DBG("  [ACCUM] Encoder " << encoderIndex << " += " << delta
             << " (total=" << encoderAccum[encoderIndex].load() << ")");
     }
@@ -1728,7 +1733,8 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
         lastBankSwitchTime = now;
 
         // Phase 2: CAPTURE current bank BEFORE switching
-        auto& currentBank = abStateEngine->getActiveBank();
+        // Use const_cast to modify the bank (getActiveBank() returns const ref)
+        auto& currentBank = const_cast<ABStateEngine::ParamBank&>(abStateEngine->getActiveBank());
         auto* inputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("input_gain"));
         auto* mixParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("mix_wetdry"));
         auto* outputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("output_level"));
