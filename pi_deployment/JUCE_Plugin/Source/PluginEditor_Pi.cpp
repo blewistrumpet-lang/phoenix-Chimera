@@ -384,19 +384,38 @@ void ChimeraAudioProcessorEditor_Pi::timerCallback()
 
                 // Update parameter info with meaningful display
                 auto behavior = controlState->getEncoderBehavior(i);
-                juce::String paramName;
-
-                // Get the label based on encoder index
-                switch (i) {
-                    case 0: paramName = state.encoder1Label; break;
-                    case 1: paramName = state.encoder2Label; break;
-                    case 2: paramName = state.encoder3Label; break;
-                }
 
                 // Get normalized parameter value (0.0 to 1.0)
                 float normalizedValue = 0.5f;  // Default
                 if (auto* param = audioProcessor.getValueTreeState().getParameter(behavior.parameterID)) {
                     normalizedValue = param->getValue();
+                }
+
+                juce::String paramName;
+
+                // Get preset name if browsing presets
+                if (behavior.parameterID == "preset_index") {
+                    // Get the actual preset index from the int parameter
+                    if (auto* presetParam = dynamic_cast<juce::AudioParameterInt*>(
+                        audioProcessor.getValueTreeState().getParameter("preset_index"))) {
+                        int presetIndex = presetParam->get();
+                        if (audioProcessor.getGPIOPresetManager()) {
+                            paramName = audioProcessor.getGPIOPresetManager()->getPresetName(presetIndex);
+                        } else {
+                            paramName = "Preset " + juce::String(presetIndex + 1);
+                        }
+                        // Update normalized value for display
+                        normalizedValue = static_cast<float>(presetIndex) / 9.0f;
+                    } else {
+                        paramName = "Preset";
+                    }
+                } else {
+                    // Get the label based on encoder index
+                    switch (i) {
+                        case 0: paramName = state.encoder1Label; break;
+                        case 1: paramName = state.encoder2Label; break;
+                        case 2: paramName = state.encoder3Label; break;
+                    }
                 }
 
                 // Update display with formatted info

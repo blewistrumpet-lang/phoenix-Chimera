@@ -1,7 +1,6 @@
 #pragma once
 
 #include "JuceHeader.h"
-#include "EventBus.h"
 
 /**
  * Control State Management for Trinity GPIO
@@ -94,8 +93,8 @@ public:
 
     EncoderBehavior getEncoderBehavior(int encoderIndex) const {
         EncoderBehavior behavior;
-        behavior.sensitivity = 0.005f;  // Default sensitivity (reduced for smoother control)
-        behavior.needsPickup = false;   // Disabled for testing - enable later with proper pickup logic
+        behavior.sensitivity = 0.01f;  // Default sensitivity
+        behavior.needsPickup = true;   // Always require pickup for now
 
         switch (state.mode) {
             case Mode::PRESET:
@@ -107,11 +106,11 @@ public:
                         break;
                     case 1:  // Mix control
                         behavior.parameterID = "mix_wetdry";
-                        behavior.sensitivity = 0.005f;
+                        behavior.sensitivity = 0.01f;
                         break;
                     case 2:  // Output level
                         behavior.parameterID = "output_level";
-                        behavior.sensitivity = 0.01f;
+                        behavior.sensitivity = 0.02f;
                         break;
                 }
                 break;
@@ -120,15 +119,15 @@ public:
                 switch (encoderIndex) {
                     case 0:  // Input gain (for now, until macros implemented)
                         behavior.parameterID = "input_gain";
-                        behavior.sensitivity = 0.01f;
+                        behavior.sensitivity = 0.02f;
                         break;
                     case 1:  // Mix wetdry (for now, until macros implemented)
                         behavior.parameterID = "mix_wetdry";
-                        behavior.sensitivity = 0.005f;
+                        behavior.sensitivity = 0.01f;
                         break;
                     case 2:  // Output level (for now, until macros implemented)
                         behavior.parameterID = "output_level";
-                        behavior.sensitivity = 0.01f;
+                        behavior.sensitivity = 0.02f;
                         break;
                 }
                 break;

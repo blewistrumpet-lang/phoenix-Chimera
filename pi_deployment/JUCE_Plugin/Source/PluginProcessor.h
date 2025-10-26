@@ -8,6 +8,7 @@
 #include <memory>
 #include <atomic>
 #include <mutex>
+#include <chrono>  // For preset debouncing timer
 
 // GPIO Hardware support (safe with conditional compilation)
 #define ENABLE_GPIO_HARDWARE 1
@@ -17,6 +18,7 @@
     #include "EventBus.h"
     #include "ControlState.h"
     #include "ABStateEngine.h"
+    #include "GPIOPresetManager.h"
     // Forward declaration only for HardwareController
     class HardwareController;
 #endif
@@ -110,6 +112,7 @@ public:
     HardwareController* getHardwareController() const { return hardwareController.get(); }
     EventBus* getEventBus() const { return eventBus.get(); }
     ControlState* getControlState() const { return controlState.get(); }
+    GPIOPresetManager* getGPIOPresetManager() const { return gpioPresetManager.get(); }
 #endif
 
 private:
@@ -160,13 +163,19 @@ private:
     std::unique_ptr<HardwareController> hardwareController;
     std::unique_ptr<EventBus> eventBus;
     std::unique_ptr<ControlState> controlState;
-    std::unique_ptr<ABStateEngine> abStateEngine;  // Week 2: A/B parameter banks
+    std::unique_ptr<ABStateEngine> abStateEngine;  // Week 2 Phase 1: A/B parameter banks
+    std::unique_ptr<GPIOPresetManager> gpioPresetManager;  // Week 2 Phase 2: 10-slot presets
 
     // GPIO event handlers
     void handleEncoderEvent(const EventBus::Event& event);
+    void handleEncoderButtonEvent(int encoderNum);  // Week 2 Phase 2: button callbacks
     void handleSwitchEvent(const EventBus::Event& event);
     void updateParameterFromEncoder(int encoderIndex, float delta);
     void processGPIOEvents();
+
+    // Preset operations
+    juce::File getGPIOPresetsFile() const;
+    juce::File getPresetIndexCacheFile() const;
 #endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChimeraAudioProcessor)

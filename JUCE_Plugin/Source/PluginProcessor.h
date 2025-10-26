@@ -10,6 +10,9 @@
 #include <mutex>
 #ifdef __linux__
     #include <jack/jack.h>
+    #include "HardwareController.h"
+    #include "ABStateEngine.h"
+    #include "GPIOPresetManager.h"
 #endif
 
 class ChimeraAudioProcessor : public juce::AudioProcessor,
@@ -144,6 +147,22 @@ private:
     // Thread safety for engine management
     mutable std::mutex m_engineMutex;
     std::atomic<bool> m_engineChangePending{false};
+
+#ifdef __linux__
+    // Trinity GPIO hardware integration
+    std::unique_ptr<HardwareController> hardwareController;
+    std::unique_ptr<ABStateEngine> abStateEngine;
+    std::unique_ptr<GPIOPresetManager> gpioPresetManager;
+
+    // GPIO hardware callbacks
+    void handleEncoderEvent(int encoderNum, int position, bool clockwise);
+    void handleEncoderButtonEvent(int encoderNum);
+    void handleSwitchEvent(int switchNum, HardwareController::SwitchPosition position);
+
+    // GPIO preset file helpers
+    juce::File getGPIOPresetsFile() const;
+    juce::File getPresetIndexCacheFile() const;
+#endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChimeraAudioProcessor)
 };

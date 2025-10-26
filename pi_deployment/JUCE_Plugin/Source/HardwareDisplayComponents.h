@@ -140,6 +140,11 @@ private:
             int percentage = static_cast<int>(normalizedValue * 100.0f);
             return juce::String(percentage) + "%";
         }
+        else if (paramID == "preset_index") {
+            // Don't show number here - the preset NAME will be shown as paramName
+            // Just show "Empty" or blank for the value field
+            return "";
+        }
         else {
             // Default: show as percentage
             int percentage = static_cast<int>(normalizedValue * 100.0f);

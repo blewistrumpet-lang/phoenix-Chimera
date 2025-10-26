@@ -228,12 +228,19 @@ static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "mix_wetdry",
         "Mix",
-        0.0f, 1.0f, 0.5f));
+        juce::NormalisableRange<float>(0.0f, 1.0f, 0.0f),  // No interval/quantization
+        0.5f));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "output_level",
         "Output Level",
         0.0f, 2.0f, 1.0f));
+
+    // GPIO Preset browsing (0-9)
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        "preset_index",
+        "Preset",
+        0, 9, 0));
 
     return { params.begin(), params.end() };
 }
@@ -317,10 +324,12 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
     eventBus = std::make_unique<EventBus>();
     controlState = std::make_unique<ControlState>();
     abStateEngine = std::make_unique<ABStateEngine>();
+    gpioPresetManager = std::make_unique<GPIOPresetManager>();
 
-    if (hardwareController && eventBus && controlState && abStateEngine) {
+    if (hardwareController && eventBus && controlState && abStateEngine && gpioPresetManager) {
         DBG("✓ GPIO hardware initialized successfully in PluginProcessor");
         DBG("✓ A/B State Engine initialized");
+        DBG("✓ GPIO Preset Manager initialized");
 
         // Wire hardware callbacks to post events
         hardwareController->setEncoderCallback(
@@ -350,6 +359,10 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
         // Subscribe to hardware events
         eventBus->subscribe(EventBus::EventType::ENCODER_TURN, [this](const EventBus::Event& event) {
             handleEncoderEvent(event);
+        });
+
+        eventBus->subscribe(EventBus::EventType::ENCODER_PRESS, [this](const EventBus::Event& event) {
+            handleEncoderButtonEvent(event.deviceIndex);
         });
 
         eventBus->subscribe(EventBus::EventType::SWITCH_CHANGE, [this](const EventBus::Event& event) {
@@ -421,6 +434,30 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
         controlState->setVariant(initialVariant);
         abStateEngine->switchToBank(initialBankB);
         DBG("Initialized to Variant: " << controlState->getState().getVariantString() << " from switch position " << sw2Pos);
+
+        // Load presets from JSON if available
+        juce::File presetsFile = getGPIOPresetsFile();
+        if (presetsFile.existsAsFile()) {
+            if (gpioPresetManager->loadFromJSON(presetsFile)) {
+                DBG("Loaded GPIO presets from: " << presetsFile.getFullPathName());
+            }
+        } else {
+            DBG("No preset file found at: " << presetsFile.getFullPathName());
+        }
+
+        // Load cached preset index
+        juce::File cacheFile = getPresetIndexCacheFile();
+        if (cacheFile.existsAsFile()) {
+            if (gpioPresetManager->loadPresetIndexCache(cacheFile)) {
+                int cachedIndex = gpioPresetManager->getCurrentPresetIndex();
+                DBG("Restored preset index from cache: " << cachedIndex);
+
+                // Update the preset_index parameter to match
+                if (auto* param = parameters.getParameter("preset_index")) {
+                    param->setValueNotifyingHost(cachedIndex / 9.0f);  // Normalize 0-9 to 0-1
+                }
+            }
+        }
     } else {
         DBG("✗ Failed to initialize GPIO hardware in PluginProcessor");
     }
@@ -1537,12 +1574,113 @@ void ChimeraAudioProcessor::handleEncoderEvent(const EventBus::Event& event) {
     // Handle encoder button press (if boolValue is set)
     if (event.boolValue) {
         DBG("Encoder " << (encoderIndex + 1) << " button pressed");
-        // Could trigger preset save, parameter reset, etc.
+        handleEncoderButtonEvent(encoderIndex);
         return;
     }
 
     // Map encoder to parameter based on current mode
     updateParameterFromEncoder(encoderIndex, delta);
+}
+
+void ChimeraAudioProcessor::handleEncoderButtonEvent(int encoderNum) {
+    if (!controlState || !gpioPresetManager || !abStateEngine) return;
+
+    auto& state = controlState->getState();
+
+    // Only handle encoder buttons in PRESET mode
+    if (state.mode != ControlState::Mode::PRESET) {
+        DBG("Encoder button " << (encoderNum + 1) << " pressed in " << state.getModeString() << " mode - ignoring");
+        return;
+    }
+
+    DBG("Encoder button " << (encoderNum + 1) << " pressed in PRESET mode");
+
+    // Get current preset index from parameter
+    auto* presetParam = dynamic_cast<juce::AudioParameterInt*>(parameters.getParameter("preset_index"));
+    if (!presetParam) {
+        DBG("ERROR: Could not get preset_index parameter");
+        return;
+    }
+
+    int currentPresetIndex = presetParam->get();
+
+    // E1 button = LOAD preset
+    if (encoderNum == 0) {
+        DBG("LOAD PRESET " << currentPresetIndex);
+
+        ABStateEngine::ParamBank loadedBankA, loadedBankB;
+        if (gpioPresetManager->loadPreset(currentPresetIndex, loadedBankA, loadedBankB)) {
+            // Update both banks in ABStateEngine
+            abStateEngine->loadBanks(loadedBankA, loadedBankB);
+
+            // Apply the currently active bank to parameters
+            const auto& activeBank = abStateEngine->getActiveBank();
+
+            DBG("Loading preset " << currentPresetIndex << " - applying " <<
+                (abStateEngine->isBankB() ? "Bank B" : "Bank A"));
+
+            // Apply to parameters using denormalized values
+            auto* inputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("input_gain"));
+            auto* mixParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("mix_wetdry"));
+            auto* outputParam = dynamic_cast<juce::AudioParameterFloat*>(parameters.getParameter("output_level"));
+
+            if (inputParam) {
+                inputParam->setValueNotifyingHost(inputParam->convertTo0to1(activeBank.input_gain));
+            }
+            if (mixParam) {
+                // TEMP: Skip restoring mix from preset to test if this is the override source
+                DBG("[PRESET] Would restore mix_wetdry to " << activeBank.mix_wetdry << " but skipping (TEMP)");
+                // mixParam->setValueNotifyingHost(mixParam->convertTo0to1(activeBank.mix_wetdry));
+            }
+            if (outputParam) {
+                outputParam->setValueNotifyingHost(outputParam->convertTo0to1(activeBank.output_level));
+            }
+
+            // Update preset manager's current index
+            gpioPresetManager->setCurrentPresetIndex(currentPresetIndex);
+
+            // Save preset index cache
+            juce::File cacheFile = getPresetIndexCacheFile();
+            gpioPresetManager->savePresetIndexCache(cacheFile);
+
+            DBG("✓ Preset " << currentPresetIndex << " loaded successfully");
+        } else {
+            DBG("✗ Failed to load preset " << currentPresetIndex << " (empty slot)");
+        }
+    }
+    // E2 button = QUICK SAVE to current preset slot
+    else if (encoderNum == 1) {
+        DBG("QUICK SAVE to preset " << currentPresetIndex);
+
+        // Get current parameter values from both banks
+        const auto& bankA = abStateEngine->getBankA();
+        const auto& bankB = abStateEngine->getBankB();
+
+        // Generate default preset name
+        juce::String presetName = "Preset " + juce::String(currentPresetIndex + 1);
+
+        // Save preset
+        gpioPresetManager->savePreset(currentPresetIndex, presetName, bankA, bankB);
+
+        // Update preset manager's current index
+        gpioPresetManager->setCurrentPresetIndex(currentPresetIndex);
+
+        // Save to JSON file
+        juce::File presetsFile = getGPIOPresetsFile();
+        if (gpioPresetManager->saveToJSON(presetsFile)) {
+            DBG("✓ Preset " << currentPresetIndex << " saved successfully");
+        } else {
+            DBG("✗ Failed to save preset " << currentPresetIndex << " to JSON");
+        }
+
+        // Save preset index cache
+        juce::File cacheFile = getPresetIndexCacheFile();
+        gpioPresetManager->savePresetIndexCache(cacheFile);
+    }
+    // E3 button = reserved for future use
+    else if (encoderNum == 2) {
+        DBG("E3 button pressed - reserved for future use");
+    }
 }
 
 void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
@@ -1575,24 +1713,8 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
     else if (switchIndex == 1) {
         if (!abStateEngine) return;
 
-        // Save current parameter values to current bank before switching
-        auto& currentBank = abStateEngine->isBankB() ?
-            const_cast<ABStateEngine::ParamBank&>(abStateEngine->getBankB()) :
-            const_cast<ABStateEngine::ParamBank&>(abStateEngine->getBankA());
-
-        // Get actual values (parameters are already in their actual ranges)
-        float inputActual = parameters.getRawParameterValue("input_gain")->load();     // Already 0-2
-        float mixActual = parameters.getRawParameterValue("mix_wetdry")->load();       // Already 0-1
-        float outputActual = parameters.getRawParameterValue("output_level")->load();  // Already 0-2
-
-        currentBank.input_gain = inputActual;
-        currentBank.mix_wetdry = mixActual;
-        currentBank.output_level = outputActual;
-
-        DBG("SAVING to Bank " << (abStateEngine->isBankB() ? "B" : "A") << ":");
-        DBG("  input_gain: actual=" << currentBank.input_gain);
-        DBG("  mix_wetdry: actual=" << currentBank.mix_wetdry);
-        DBG("  output_level: actual=" << currentBank.output_level);
+        // NOTE: Bank is already synchronized by encoder updates (line 1909)
+        // No need to re-read from APVTS here - encoder changes already saved
 
         // Switch bank based on position (optimized for quick A/B toggling)
         ControlState::Variant newVariant;
@@ -1630,7 +1752,9 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
             inputParam->setValueNotifyingHost(inputParam->convertTo0to1(activeBank.input_gain));
         }
         if (mixParam) {
-            mixParam->setValueNotifyingHost(mixParam->convertTo0to1(activeBank.mix_wetdry));
+            // TEMP: Skip restoring mix from A/B bank to test if this is the override source
+            DBG("[AB_SWITCH] Would restore mix_wetdry to " << activeBank.mix_wetdry << " but skipping (TEMP)");
+            // mixParam->setValueNotifyingHost(mixParam->convertTo0to1(activeBank.mix_wetdry));
         }
         if (outputParam) {
             outputParam->setValueNotifyingHost(outputParam->convertTo0to1(activeBank.output_level));
@@ -1648,30 +1772,60 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
 }
 
 void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float delta) {
-    auto behavior = controlState->getEncoderBehavior(encoderIndex);
-    auto& state = controlState->getState();
+    if (!controlState) return;
 
-    // Use the parameterID from behavior to control the appropriate parameter
+    const auto behavior = controlState->getEncoderBehavior(encoderIndex);
+
+    // Get the parameter
     auto* param = parameters.getParameter(behavior.parameterID);
-    if (param) {
-        float currentValue = param->getValue();
-        float newValue = juce::jlimit(0.0f, 1.0f, currentValue + delta * behavior.sensitivity);
-        param->setValueNotifyingHost(newValue);
-        DBG("Parameter " << behavior.parameterID << " changed to " << newValue);
-
-        // Also save to active A/B bank
-        if (abStateEngine) {
-            // Convert normalized value back to actual range
-            float actualValue = newValue;
-            if (behavior.parameterID == "input_gain" || behavior.parameterID == "output_level") {
-                actualValue = newValue * 2.0f;  // 0-1 → 0-2
-            }
-            abStateEngine->setParameter(behavior.parameterID, actualValue);
-        }
-    } else {
-        // Log what parameter would be controlled (for future implementation)
-        DBG("Would control " << behavior.parameterID << " in " << state.getModeString() << " mode");
+    if (!param) {
+        DBG("[ENCODER] ERROR: Parameter not found: " << behavior.parameterID);
+        return;
     }
+
+    // Discrete parameters (preset_index) use index stepping, not normalized addition
+    if (behavior.parameterID == "preset_index") {
+        const int numSteps = 10;  // 10 presets (0-9)
+        const float currentNorm = param->getValue();
+        int currentIdx = juce::roundToInt(currentNorm * (numSteps - 1));
+
+        // Step by ±1 index per detent (ignore sensitivity for discrete)
+        const int deltaIdx = (delta > 0.f) ? +1 : (delta < 0.f) ? -1 : 0;
+        const int newIdx = juce::jlimit(0, numSteps - 1, currentIdx + deltaIdx);
+        const float newNorm = newIdx / static_cast<float>(numSteps - 1);
+
+        param->setValueNotifyingHost(newNorm);
+
+        if (gpioPresetManager) {
+            gpioPresetManager->setCurrentPresetIndex(newIdx);
+        }
+
+        DBG("[ENCODER-DISCRETE] id=" << behavior.parameterID
+            << " idx " << currentIdx << " -> " << newIdx);
+        return;
+    }
+
+    // Continuous parameters: work in normalized space with sensitivity
+    const float currentNorm = param->getValue();
+    const float stepNorm = delta * behavior.sensitivity;
+    float newNorm = juce::jlimit(0.0f, 1.0f, currentNorm + stepNorm);
+
+    param->setValueNotifyingHost(newNorm);
+
+    // Verify the value stuck for mix_wetdry
+    if (behavior.parameterID == "mix_wetdry") {
+        float verify = param->getValue();
+        if (std::abs(verify - newNorm) > 0.001f) {
+            DBG("[ENCODER] ⚠️ mix_wetdry OVERRIDDEN! Set " << newNorm << " but reads " << verify);
+        }
+    }
+
+    DBG("[ENCODER] id=" << behavior.parameterID
+        << " delta=" << delta
+        << " sens=" << behavior.sensitivity
+        << " current=" << currentNorm
+        << " step=" << stepNorm
+        << " new=" << newNorm);
 }
 
 void ChimeraAudioProcessor::processGPIOEvents() {
@@ -1680,6 +1834,32 @@ void ChimeraAudioProcessor::processGPIOEvents() {
     if (eventBus) {
         eventBus->processEvents();
     }
+}
+
+juce::File ChimeraAudioProcessor::getGPIOPresetsFile() const {
+    // Store presets in ~/.config/ChimeraPhoenix/gpio_presets/presets.json
+    juce::File configDir = juce::File::getSpecialLocation(juce::File::userHomeDirectory)
+                               .getChildFile(".config")
+                               .getChildFile("ChimeraPhoenix")
+                               .getChildFile("gpio_presets");
+
+    // Create directory if it doesn't exist
+    configDir.createDirectory();
+
+    return configDir.getChildFile("presets.json");
+}
+
+juce::File ChimeraAudioProcessor::getPresetIndexCacheFile() const {
+    // Store preset index cache in ~/.config/ChimeraPhoenix/gpio_presets/preset_cache.json
+    juce::File configDir = juce::File::getSpecialLocation(juce::File::userHomeDirectory)
+                               .getChildFile(".config")
+                               .getChildFile("ChimeraPhoenix")
+                               .getChildFile("gpio_presets");
+
+    // Create directory if it doesn't exist
+    configDir.createDirectory();
+
+    return configDir.getChildFile("preset_cache.json");
 }
 #endif
 
