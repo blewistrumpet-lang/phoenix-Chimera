@@ -13,22 +13,29 @@ public:
     // Control modes (from MODE switch)
     enum class Mode {
         PRESET,     // Browse/load/save presets
-        MIX,        // Macro controls (tone/space/energy)
+        MIX,        // Macro controls (warmth/size/punch)
         AI          // AI generation/refinement
     };
 
-    // Variant states (from VARIANT switch)
+    // Variant states (from VARIANT switch - SW2)
     enum class Variant {
         A,          // Bank A active
         MORPH,      // Morphing between A and B (future)
         B           // Bank B active
     };
 
+    // Bypass states (from BYPASS switch - SW3)
+    enum class Bypass {
+        TRUE_BYPASS,  // Dry signal only
+        PROCESS,      // Normal processing
+        KILL_DRY      // 100% wet signal
+    };
+
     // Current system state
     struct State {
         Mode mode = Mode::PRESET;
         Variant variant = Variant::A;
-        bool liveActive = false;  // LIVE switch (future)
+        Bypass bypass = Bypass::PROCESS;  // SW3 bypass state
 
         // Encoder assignments for current mode
         juce::String encoder1Label = "Browse";
@@ -52,6 +59,16 @@ public:
                 case Variant::MORPH: return "MORPH";
                 case Variant::B:     return "B";
                 default:             return "UNKNOWN";
+            }
+        }
+
+        // Get bypass as string
+        juce::String getBypassString() const {
+            switch (bypass) {
+                case Bypass::TRUE_BYPASS: return "BYPASS";
+                case Bypass::PROCESS:     return "PROCESS";
+                case Bypass::KILL_DRY:    return "WET ONLY";
+                default:                  return "UNKNOWN";
             }
         }
     };
@@ -79,10 +96,12 @@ public:
         }
     }
 
-    // LIVE control (future)
-    void setLiveActive(bool active) {
-        state.liveActive = active;
-        DBG("LIVE mode: " << (active ? "ON" : "OFF"));
+    // Bypass control (SW3)
+    void setBypass(Bypass newBypass) {
+        if (state.bypass != newBypass) {
+            state.bypass = newBypass;
+            DBG("Bypass changed to: " << state.getBypassString());
+        }
     }
 
     // Get encoder behavior for current mode
@@ -118,17 +137,20 @@ public:
 
             case Mode::MIX:
                 switch (encoderIndex) {
-                    case 0:  // Input gain (for now, until macros implemented)
-                        behavior.parameterID = "input_gain";
+                    case 0:  // WARMTH macro (dark ← → bright)
+                        behavior.parameterID = "macro_warmth";
                         behavior.sensitivity = 0.01f;
+                        behavior.needsPickup = true;  // Enable pickup for mode switch
                         break;
-                    case 1:  // Mix wetdry (for now, until macros implemented)
-                        behavior.parameterID = "mix_wetdry";
-                        behavior.sensitivity = 0.005f;
-                        break;
-                    case 2:  // Output level (for now, until macros implemented)
-                        behavior.parameterID = "output_level";
+                    case 1:  // SIZE macro (tight ← → spacious)
+                        behavior.parameterID = "macro_size";
                         behavior.sensitivity = 0.01f;
+                        behavior.needsPickup = true;
+                        break;
+                    case 2:  // PUNCH macro (soft ← → aggressive)
+                        behavior.parameterID = "macro_punch";
+                        behavior.sensitivity = 0.01f;
+                        behavior.needsPickup = true;
                         break;
                 }
                 break;
@@ -166,9 +188,9 @@ private:
                 break;
 
             case Mode::MIX:
-                state.encoder1Label = "Input";
-                state.encoder2Label = "Mix";
-                state.encoder3Label = "Output";
+                state.encoder1Label = "Warmth";
+                state.encoder2Label = "Size";
+                state.encoder3Label = "Punch";
                 break;
 
             case Mode::AI:

@@ -167,6 +167,9 @@ private:
     std::unique_ptr<ABStateEngine> abStateEngine;  // Week 2 Phase 1: A/B parameter banks
     std::unique_ptr<GPIOPresetManager> gpioPresetManager;  // Week 2 Phase 2: 10-slot presets
 
+    // Week 3 Phase 1: Macro parameter system
+    class MacroParameterSystem* macroSystem = nullptr;  // Forward declaration
+
     // Phase 2: Encoder event coalescing (1000 Hz ISR → 30-60 Hz parameter updates)
     std::atomic<float> encoderAccum[3] { 0.f, 0.f, 0.f };
 

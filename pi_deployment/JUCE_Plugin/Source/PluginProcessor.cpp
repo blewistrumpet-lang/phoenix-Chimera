@@ -32,6 +32,7 @@
     #include "HardwareController.h"
     #include "EventBus.h"
     #include "ControlState.h"
+    #include "MacroParameterSystem.h"
 #endif
 
 // Engine ID to Choice Index mapping table - NEW SIMPLIFIED SYSTEM
@@ -325,11 +326,13 @@ ChimeraAudioProcessor::ChimeraAudioProcessor()
     controlState = std::make_unique<ControlState>();
     abStateEngine = std::make_unique<ABStateEngine>();
     gpioPresetManager = std::make_unique<GPIOPresetManager>();
+    macroSystem = new MacroParameterSystem();
 
-    if (hardwareController && eventBus && controlState && abStateEngine && gpioPresetManager) {
+    if (hardwareController && eventBus && controlState && abStateEngine && gpioPresetManager && macroSystem) {
         DBG("✓ GPIO hardware initialized successfully in PluginProcessor");
         DBG("✓ A/B State Engine initialized");
         DBG("✓ GPIO Preset Manager initialized");
+        DBG("✓ Macro Parameter System initialized");
 
         // Wire hardware callbacks to post events
         hardwareController->setEncoderCallback(
@@ -469,9 +472,17 @@ ChimeraAudioProcessor::~ChimeraAudioProcessor() {
     for (int i = 1; i <= NUM_SLOTS; ++i) {
         parameters.removeParameterListener("slot" + juce::String(i) + "_engine", this);
     }
-    
+
     // Stop AI server
     stopAIServer();
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Clean up macro system
+    if (macroSystem) {
+        delete macroSystem;
+        macroSystem = nullptr;
+    }
+#endif
 }
 
 void ChimeraAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
@@ -568,10 +579,24 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         buffer.clear();
         return;
     }
-    
+
     // Capture input level for metering
     float inputLevel = buffer.getMagnitude(0, numSamples);
     m_currentInputLevel.store(inputLevel);
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Check BYPASS state (SW3)
+    if (controlState) {
+        ControlState::Bypass bypassMode = controlState->getState().bypass;
+
+        if (bypassMode == ControlState::Bypass::TRUE_BYPASS) {
+            // TRUE BYPASS: Return dry signal without any processing
+            return;  // Skip all processing
+        }
+
+        // For KILL_DRY mode, we'll handle it after processing
+    }
+#endif
 
     // Apply input gain (GPIO control)
     float inputGain = parameters.getRawParameterValue("input_gain")->load();
@@ -782,6 +807,20 @@ void ChimeraAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     if (maxLevel > currentLevel) {
         m_currentOutputLevel.store(maxLevel);
     }
+
+#if ENABLE_GPIO_HARDWARE && defined(__linux__)
+    // Apply KILL_DRY mode if needed (100% wet signal)
+    if (controlState) {
+        ControlState::Bypass bypassMode = controlState->getState().bypass;
+
+        if (bypassMode == ControlState::Bypass::KILL_DRY) {
+            // KILL_DRY: Remove dry signal, keep only wet
+            // This would require storing dry signal before processing
+            // For now, this mode acts as full processing
+            DBG("[BYPASS] KILL_DRY mode active - 100% wet signal");
+        }
+    }
+#endif
 
     // Feed Input 2 to voice recorder for Pi build
     #ifdef JUCE_LINUX
@@ -1790,11 +1829,24 @@ void ChimeraAudioProcessor::handleSwitchEvent(const EventBus::Event& event) {
         DBG("Variant changed to: " << controlState->getState().getVariantString());
     }
 
-    // Switch 3 = Live/Bypass
+    // Switch 3 = BYPASS control
     else if (switchIndex == 2) {
-        // Handle live/bypass functionality
-        bool bypass = (position != 0);  // 0=UP=Live, others=Bypass
-        DBG("Live mode: " << (!bypass ? "ON" : "OFF"));
+        ControlState::Bypass newBypass;
+        switch (position) {
+            case 0:  // UP = True Bypass (dry signal only)
+                newBypass = ControlState::Bypass::TRUE_BYPASS;
+                break;
+            case 1:  // MID = Process (normal)
+                newBypass = ControlState::Bypass::PROCESS;
+                break;
+            case 2:  // DOWN = Kill Dry (100% wet)
+                newBypass = ControlState::Bypass::KILL_DRY;
+                break;
+        }
+        controlState->setBypass(newBypass);
+        DBG("Bypass mode changed to: " << controlState->getState().getBypassString());
+
+        // TODO: Apply bypass in processBlock()
     }
 }
 
@@ -1802,6 +1854,37 @@ void ChimeraAudioProcessor::updateParameterFromEncoder(int encoderIndex, float d
     if (!controlState) return;
 
     const auto behavior = controlState->getEncoderBehavior(encoderIndex);
+
+    // Handle macro parameters in MIX mode
+    if (behavior.parameterID.startsWith("macro_") && macroSystem) {
+        MacroParameterSystem::MacroType macro;
+        float currentValue = 0.5f;
+
+        if (behavior.parameterID == "macro_warmth") {
+            macro = MacroParameterSystem::MacroType::WARMTH;
+            currentValue = macroSystem->getMacroValue(macro);
+        } else if (behavior.parameterID == "macro_size") {
+            macro = MacroParameterSystem::MacroType::SIZE;
+            currentValue = macroSystem->getMacroValue(macro);
+        } else if (behavior.parameterID == "macro_punch") {
+            macro = MacroParameterSystem::MacroType::PUNCH;
+            currentValue = macroSystem->getMacroValue(macro);
+        } else {
+            DBG("[ENCODER] Unknown macro parameter: " << behavior.parameterID);
+            return;
+        }
+
+        // Update macro value (0.5 is neutral)
+        const float stepValue = delta * behavior.sensitivity;
+        float newValue = juce::jlimit(0.0f, 1.0f, currentValue + stepValue);
+        macroSystem->setMacroValue(macro, newValue);
+
+        // TODO: Apply macro to engine parameters here
+        // For now, just log the change
+        DBG("[ENCODER-MACRO] " << behavior.parameterID << ": "
+            << currentValue << " -> " << newValue);
+        return;
+    }
 
     // Get the parameter
     auto* param = parameters.getParameter(behavior.parameterID);
