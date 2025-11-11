@@ -73,17 +73,17 @@ bool HardwareController::initializeGPIO()
     enc2_b = gpiod_chip_get_line(chip, 24);
     enc2_btn = gpiod_chip_get_line(chip, 25);
 
-    // Get encoder 3 lines
-    enc3_a = gpiod_chip_get_line(chip, 17);
-    enc3_b = gpiod_chip_get_line(chip, 27);
-    enc3_btn = gpiod_chip_get_line(chip, 22);
+    // Get encoder 3 lines (remapped due to hardware shorts)
+    enc3_a = gpiod_chip_get_line(chip, 4);
+    enc3_b = gpiod_chip_get_line(chip, 14);
+    enc3_btn = gpiod_chip_get_line(chip, 16);
 
-    // Get switch lines
-    sw1_pin1 = gpiod_chip_get_line(chip, 19);
-    sw1_pin2 = gpiod_chip_get_line(chip, 21);
+    // Get switch lines (remapped to avoid HiFiBerry I2S conflict)
+    sw1_pin1 = gpiod_chip_get_line(chip, 7);
+    sw1_pin2 = gpiod_chip_get_line(chip, 8);
 
-    sw2_pin1 = gpiod_chip_get_line(chip, 16);
-    sw2_pin2 = gpiod_chip_get_line(chip, 20);
+    sw2_pin1 = gpiod_chip_get_line(chip, 11);
+    sw2_pin2 = gpiod_chip_get_line(chip, 10);
 
     sw3_pin1 = gpiod_chip_get_line(chip, 12);
     sw3_pin2 = gpiod_chip_get_line(chip, 13);

@@ -15,13 +15,16 @@
  * Manages 3 rotary encoders and 3 three-way switches
  * Based on working test_encoder.py implementation
  *
- * Hardware Configuration:
+ * Hardware Configuration (Nov 3, 2025 - Final Working):
  * - Encoder 1: A=GPIO5,  B=GPIO6,  Button=GPIO26
  * - Encoder 2: A=GPIO23, B=GPIO24, Button=GPIO25
- * - Encoder 3: A=GPIO17, B=GPIO27, Button=GPIO22
- * - Switch 1:  Pin1=GPIO19, Pin2=GPIO21
- * - Switch 2:  Pin1=GPIO16, Pin2=GPIO20
+ * - Encoder 3: A=GPIO4,  B=GPIO14, Button=GPIO16 (remapped: 17,27,22 had shorts)
+ * - Switch 1:  Pin1=GPIO7,  Pin2=GPIO8  (remapped: 19,21 conflict with I2S)
+ * - Switch 2:  Pin1=GPIO11, Pin2=GPIO10 (remapped: 16,20 conflict with I2S)
  * - Switch 3:  Pin1=GPIO12, Pin2=GPIO13
+ *
+ * Reserved by HiFiBerry: GPIO 2,3 (I2C), GPIO 18-21 (I2S)
+ * Hardware Shorts Found: GPIO 9, 15, 17, 22, 27 (avoid these)
  */
 class HardwareController : public juce::Thread
 {
