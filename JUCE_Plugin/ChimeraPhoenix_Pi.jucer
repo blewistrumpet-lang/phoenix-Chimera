@@ -11,6 +11,10 @@
             file="Source/PluginProcessor.cpp"/>
       <FILE id="a2BLzG" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
+      <FILE id="hw1234" name="HardwareController.cpp" compile="1" resource="0"
+            file="Source/HardwareController.cpp"/>
+      <FILE id="hw5678" name="HardwareController.h" compile="0" resource="0"
+            file="Source/HardwareController.h"/>
       <FILE id="lAXnvN" name="PluginEditor.cpp" compile="0" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="OwzXnH" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
@@ -157,7 +161,7 @@
       <FILE id="vOiC02" name="VoiceRecordButton.cpp" compile="1" resource="0" file="Source/VoiceRecordButton.cpp"/>
       <FILE id="TR01xx" name="TrinityEditor.cpp" compile="1" resource="0" file="Source/TrinityEditor.cpp"/>
       <FILE id="TR02xx" name="TrinityEditor.h" compile="0" resource="0" file="Source/TrinityEditor.h"/>
-      <FILE id="TA01xx" name="TrinityAIClient.cpp" compile="1" resource="0" file="Source/TrinityAIClient.cpp"/>
+      <FILE id="TA01xx" name="TrinityAIClient.cpp" compile="0" resource="0" file="Source/TrinityAIClient.cpp"/>
       <FILE id="TA02xx" name="TrinityAIClient.h" compile="0" resource="0" file="Source/TrinityAIClient.h"/>
       <FILE id="TL01xx" name="TrinityLookAndFeel.cpp" compile="1" resource="0" file="Source/TrinityLookAndFeel.cpp"/>
       <FILE id="TL02xx" name="TrinityLookAndFeel.h" compile="0" resource="0" file="Source/TrinityLookAndFeel.h"/>
@@ -467,8 +471,12 @@
   <EXPORTFORMATS>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="ChimeraPhoenix_Pi" defines="USE_BASIC_UI=1 CHIMERA_PI=1"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="ChimeraPhoenix_Pi" defines="USE_BASIC_UI=1 CHIMERA_PI=1"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="ChimeraPhoenix_Pi"
+                       defines="USE_BASIC_UI=1&#10;CHIMERA_PI=1&#10;ENABLE_GPIO_HARDWARE=1"
+                       linkerFlags="-lgpiod"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="ChimeraPhoenix_Pi"
+                       defines="USE_BASIC_UI=1&#10;CHIMERA_PI=1&#10;ENABLE_GPIO_HARDWARE=1"
+                       linkerFlags="-lgpiod"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="~/JUCE/modules"/>

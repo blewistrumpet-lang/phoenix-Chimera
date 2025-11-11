@@ -54,9 +54,11 @@ void HardwareController::run()
 
 bool HardwareController::initializeGPIO()
 {
+    std::cout << "🔧 GPIO: Initializing hardware..." << std::endl;
     DBG("Initializing GPIO hardware...");
 
     // Open GPIO chip
+    std::cout << "🔧 GPIO: Opening gpiochip4..." << std::endl;
     chip = gpiod_chip_open_by_name("gpiochip4");
     if (!chip) {
         DBG("ERROR: Failed to open gpiochip4");
@@ -212,6 +214,10 @@ void HardwareController::readImmediateSwitchPositions()
     switches[0].positionValue = static_cast<int>(decodeSwitchPosition(sw1_p1, sw1_p2));
     switches[1].positionValue = static_cast<int>(decodeSwitchPosition(sw2_p1, sw2_p2));
     switches[2].positionValue = static_cast<int>(decodeSwitchPosition(sw3_p1, sw3_p2));
+
+    std::cout << "📍 Switch Positions: SW1=" << switches[0].getPositionString()
+        << " SW2=" << switches[1].getPositionString()
+        << " SW3=" << switches[2].getPositionString() << std::endl;
 
     DBG("Immediate switch read: SW1=" << switches[0].getPositionString()
         << " SW2=" << switches[1].getPositionString()
