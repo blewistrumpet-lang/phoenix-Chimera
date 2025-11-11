@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Figure 6: A/B Bank System</title>
+    <style>
+        @page {
+            size: 11in 8.5in;
+            margin: 0.5in;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: white;
+        }
+        .container {
+            width: 950px;
+            height: 700px;
+            position: relative;
+            margin: 0 auto;
+        }
+        .bank-box {
+            border: 3px solid black;
+            padding: 15px;
+            position: absolute;
+            width: 220px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .switch-box {
+            border: 3px solid black;
+            padding: 20px;
+            background: #ffffcc;
+            position: absolute;
+            width: 140px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .apvts-box {
+            border: 3px solid black;
+            padding: 15px;
+            background: #e6ffe6;
+            position: absolute;
+            width: 280px;
+            text-align: center;
+        }
+        .arrow {
+            position: absolute;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .arrow-label {
+            position: absolute;
+            font-size: 11px;
+            font-style: italic;
+            font-weight: bold;
+        }
+        .title {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Bank A (left) -->
+        <div class="bank-box" style="left: 50px; top: 80px; background: #cce6ff;">
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: black;">BANK A</div>
+            <div style="font-weight: bold;">Parameter Storage:</div>
+            <div style="margin-top: 5px; font-family: 'Courier New', monospace; font-size: 11px;">
+                • input_gain = 1.0<br>
+                • mix_wetdry = 0.40<br>
+                • output_level = 0.85<br>
+                • macro_warmth = 0.70<br>
+                • macro_size = 0.50<br>
+                • macro_punch = 0.35
+            </div>
+            <div style="margin-top: 10px; padding: 8px; background: white; border: 1px solid #999; font-size: 10px;">
+                + All slot parameters<br>
+                (6 slots × 5-10 params)
+            </div>
+        </div>
+
+        <!-- Arrows Bank A to Switch -->
+        <div class="arrow" style="left: 300px; top: 145px;">→</div>
+        <div class="arrow-label" style="left: 305px; top: 130px; color: black;">Apply</div>
+
+        <div class="arrow" style="left: 300px; top: 185px;">←</div>
+        <div class="arrow-label" style="left: 280px; top: 200px; color: black;">Capture</div>
+
+        <!-- Switch (center) -->
+        <div class="switch-box" style="left: 350px; top: 130px;">
+            <div style="font-size: 20px; margin-bottom: 10px;">SW2</div>
+            <div style="font-size: 13px;">Hardware<br>Switch</div>
+            <div style="margin-top: 10px; font-size: 18px;">A ↔ B</div>
+        </div>
+
+        <!-- Arrows Switch to Bank B -->
+        <div class="arrow" style="left: 520px; top: 145px;">→</div>
+        <div class="arrow-label" style="left: 525px; top: 130px; color: black;">Apply</div>
+
+        <div class="arrow" style="left: 520px; top: 185px;">←</div>
+        <div class="arrow-label" style="left: 500px; top: 200px; color: black;">Capture</div>
+
+        <!-- Bank B (right) -->
+        <div class="bank-box" style="left: 570px; top: 80px; background: #ffe6cc;">
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: black;">BANK B</div>
+            <div style="font-weight: bold;">Parameter Storage:</div>
+            <div style="margin-top: 5px; font-family: 'Courier New', monospace; font-size: 11px;">
+                • input_gain = 1.0<br>
+                • mix_wetdry = 0.80<br>
+                • output_level = 0.60<br>
+                • macro_warmth = 0.30<br>
+                • macro_size = 0.75<br>
+                • macro_punch = 0.65
+            </div>
+            <div style="margin-top: 10px; padding: 8px; background: white; border: 1px solid #999; font-size: 10px;">
+                + All slot parameters<br>
+                (independent from A)
+            </div>
+        </div>
+
+        <!-- Arrow down from switch to APVTS (moved lower to avoid overlap) -->
+        <div class="arrow" style="left: 425px; top: 270px; font-size: 32px;">↓</div>
+
+        <!-- APVTS (Active Parameters) - moved down to avoid covering Bank boxes -->
+        <div class="apvts-box" style="left: 285px; top: 320px;">
+            <div style="font-size: 15px; font-weight: bold; margin-bottom: 8px;">
+                APVTS (Active Parameter Tree View State)
+            </div>
+            <div style="font-size: 13px; margin: 5px 0;">
+                Currently Active: <strong style="color: black;">Bank A</strong>
+            </div>
+            <div style="margin-top: 8px; font-size: 11px; color: black;">
+                (Audio Processing Thread reads from APVTS)
+            </div>
+        </div>
+
+        <!-- Workflow description -->
+        <div style="position: absolute; left: 50px; top: 450px; border: 2px solid #666; padding: 15px; background: #fafafa; width: 850px;">
+            <div style="font-weight: bold; font-size: 13px; margin-bottom: 8px;">Switching Workflow:</div>
+            <div style="font-size: 11px; font-family: 'Courier New', monospace; line-height: 1.8;">
+                1. User adjusts parameters in Bank A (e.g., Mix = 40%, Output = +3dB)<br>
+                2. User flips SW2 switch to Bank B position<br>
+                3. System CAPTURES current Bank A parameters from APVTS → stores in bankA<br>
+                4. System SWITCHES active bank pointer from A to B<br>
+                5. System APPLIES Bank B parameters from bankB → writes to APVTS<br>
+                6. Audio immediately reflects Bank B settings (e.g., Mix = 80%, Output = -6dB)<br>
+                7. User toggles SW2 back and forth for instant A/B comparison
+            </div>
+        </div>
+
+        <div class="title">Figure 6: A/B Bank Comparison System Architecture</div>
+    </div>
+</body>
+</html>

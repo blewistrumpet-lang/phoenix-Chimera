@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Figure 5: Audio Signal Flow</title>
+    <style>
+        @page {
+            size: 11in 8.5in;
+            margin: 0.5in;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: white;
+        }
+        .container {
+            width: 1000px;
+            height: 700px;
+            position: relative;
+            margin: 0 auto;
+        }
+        .box {
+            border: 2px solid black;
+            padding: 8px;
+            background: white;
+            text-align: center;
+            position: absolute;
+            font-size: 11px;
+            line-height: 1.3;
+            width: 85px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .arrow {
+            position: absolute;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .title {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="position: absolute; left: 20px; top: 10px; font-size: 14px; font-weight: bold;">
+            Audio Signal Flow (48 kHz, 24-bit Stereo)
+        </div>
+
+        <!-- Top row: Input → Gain → Slots 1-5 (LEFT TO RIGHT) -->
+        <div class="box" style="left: 20px; top: 60px; background: #e6f3ff;">Input<br>Audio</div>
+        <div class="arrow" style="left: 115px; top: 73px;">→</div>
+
+        <div class="box" style="left: 145px; top: 60px; background: #ffe6cc;">Input<br>Gain<br><span style="font-size: 9px;">0 to +12dB</span></div>
+        <div class="arrow" style="left: 240px; top: 73px;">→</div>
+
+        <div class="box" style="left: 270px; top: 60px; background: #ccffcc;">Slot 1<br><span style="font-size: 9px;">Eng 1-57</span></div>
+        <div class="arrow" style="left: 365px; top: 73px;">→</div>
+
+        <div class="box" style="left: 395px; top: 60px; background: #ccffcc;">Slot 2<br><span style="font-size: 9px;">Eng 1-57</span></div>
+        <div class="arrow" style="left: 490px; top: 73px;">→</div>
+
+        <div class="box" style="left: 520px; top: 60px; background: #ccffcc;">Slot 3<br><span style="font-size: 9px;">Eng 1-57</span></div>
+        <div class="arrow" style="left: 615px; top: 73px;">→</div>
+
+        <div class="box" style="left: 645px; top: 60px; background: #ccffcc;">Slot 4<br><span style="font-size: 9px;">Eng 1-57</span></div>
+        <div class="arrow" style="left: 740px; top: 73px;">→</div>
+
+        <div class="box" style="left: 770px; top: 60px; background: #ccffcc;">Slot 5<br><span style="font-size: 9px;">Eng 1-57</span></div>
+
+        <!-- Arrow down from Slot 5 -->
+        <div class="arrow" style="left: 815px; top: 120px;">↓</div>
+
+        <!-- Bottom row: Slot 6 ← Mix ← Output ← Audio Out (RIGHT TO LEFT with left arrows) -->
+        <div class="box" style="left: 770px; top: 160px; background: #ccffcc;">Slot 6<br><span style="font-size: 9px;">Eng 1-57</span></div>
+        <div class="arrow" style="left: 740px; top: 173px; color: black;">◄</div>
+
+        <div class="box" style="left: 645px; top: 160px; background: #ffe6cc;">Global<br>Mix<br><span style="font-size: 9px;">Wet/Dry<br>0-100%</span></div>
+        <div class="arrow" style="left: 615px; top: 173px; color: black;">◄</div>
+
+        <div class="box" style="left: 520px; top: 160px; background: #fff3e6;">Output<br>Level<br><span style="font-size: 9px;">-∞ to +6dB</span></div>
+        <div class="arrow" style="left: 490px; top: 173px; color: black;">◄</div>
+
+        <div class="box" style="left: 395px; top: 160px; background: #e6f3ff;">Audio<br>Output</div>
+
+        <!-- Example chain -->
+        <div style="position: absolute; left: 50px; top: 260px; border: 2px dashed #999; padding: 15px; background: #f9f9f9; width: 880px; font-size: 12px;">
+            <div style="font-weight: bold; margin-bottom: 10px;">Example: "Warm Vintage Guitar" Preset</div>
+            <div style="font-family: 'Courier New', monospace; font-size: 11px; line-height: 2;">
+                Input (+2dB) → Slot 1: Opto Compressor (ratio=0.35) →
+                Slot 2: Parametric EQ (low+0.15, high-0.10) →<br>
+                Slot 3: Tube Preamp (drive=0.42) →
+                Slot 4: Tape Echo (375ms, feedback=0.28) →<br>
+                Slot 5: Plate Reverb (size=0.55, mix=0.22) →
+                Slot 6: (empty) →<br>
+                Global Mix (80% wet) → Output Level (-1dB) → Audio Output
+            </div>
+        </div>
+
+        <div class="title">Figure 5: Audio Signal Flow and 6-Slot Processing Chain</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Figure 10: Signal Chain Optimization</title>
+    <style>
+        @page {
+            size: 11in 8.5in;
+            margin: 0.5in;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: white;
+        }
+        .container {
+            width: 950px;
+            height: 700px;
+            position: relative;
+            margin: 0 auto;
+        }
+        .section-box {
+            border: 3px solid black;
+            padding: 15px;
+            background: white;
+            position: absolute;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .arrow {
+            position: absolute;
+            font-size: 40px;
+            font-weight: bold;
+        }
+        .title {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Unordered effects (top left) -->
+        <div class="section-box" style="left: 50px; top: 50px; width: 280px; background: #ffcccc;">
+            <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">
+                Unordered Effects<br>(AI/User Generated)
+            </div>
+            <div style="border-top: 2px solid #999; padding-top: 8px; font-family: 'Courier New', monospace; font-size: 11px;">
+                • Plate Reverb (39)<br>
+                • VCA Compressor (2)<br>
+                • Parametric EQ (7)<br>
+                • Tube Preamp (15)<br>
+                • Digital Delay (35)
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; font-style: italic; color: #666;">
+                Random order → Not optimal<br>
+                for audio quality
+            </div>
+        </div>
+
+        <!-- Big arrow to algorithm -->
+        <div class="arrow" style="left: 370px; top: 120px;">→</div>
+
+        <!-- Algorithm box (top right) -->
+        <div class="section-box" style="left: 450px; top: 50px; width: 420px; background: #ffffcc;">
+            <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">
+                ALCHEMIST Optimization Algorithm
+            </div>
+            <div style="border-top: 2px solid #999; padding-top: 8px; font-family: 'Courier New', monospace; font-size: 11px;">
+                Sort engines by optimal category order:<br><br>
+                &nbsp;1. Dynamics (Compressor, Gate, Limiter)<br>
+                &nbsp;2. Filter (EQ, Hi/Lo-Pass, Formant)<br>
+                &nbsp;3. Distortion (Tube, Fuzz, Overdrive)<br>
+                &nbsp;4. Modulation (Chorus, Flanger, Phaser)<br>
+                &nbsp;5. Pitch (Shifter, Harmonizer)<br>
+                &nbsp;6. Delay (Tape, Digital, BBD)<br>
+                &nbsp;7. Reverb (Plate, Spring, Shimmer)<br>
+                &nbsp;8. Spatial (Widener, Imager)<br>
+                &nbsp;9. Utility (Gain, Phase, DC Filter)
+            </div>
+        </div>
+
+        <!-- Big arrow down -->
+        <div class="arrow" style="left: 465px; top: 300px;">↓</div>
+
+        <!-- Optimized chain (moved down significantly to avoid overlap) -->
+        <div class="section-box" style="left: 120px; top: 350px; width: 700px; background: #ccffcc;">
+            <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">
+                Optimized Signal Chain (Professional Audio Engineering Order)
+            </div>
+            <div style="border-top: 2px solid #999; padding-top: 10px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 2;">
+                Slot 1: VCA Compressor (2) &nbsp;&nbsp;&nbsp;<em style="font-family: Arial; font-size: 10px;">← Dynamics first (control levels)</em><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+                Slot 2: Parametric EQ (7) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em style="font-family: Arial; font-size: 10px;">← Shape frequency content</em><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+                Slot 3: Tube Preamp (15) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em style="font-family: Arial; font-size: 10px;">← Add harmonic saturation</em><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+                Slot 4: Digital Delay (35) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em style="font-family: Arial; font-size: 10px;">← Time-based effect</em><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+                Slot 5: Plate Reverb (39) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em style="font-family: Arial; font-size: 10px;">← Reverb last (spatial ambience)</em>
+            </div>
+        </div>
+
+        <!-- Why it matters (bottom) -->
+        <div style="position: absolute; left: 80px; top: 580px; border: 2px dashed #999; padding: 12px; background: #fafafa; font-size: 11px; width: 790px;">
+            <strong>Why Order Matters:</strong>
+            Compressor controls dynamic range before tone shaping │
+            EQ shapes tone before distortion │
+            Distortion adds harmonics to shaped signal │
+            Delay repeats fully processed sound │
+            Reverb creates spatial context as final element
+        </div>
+
+        <div class="title">Figure 10: Automatic Signal Chain Optimization Algorithm</div>
+    </div>
+</body>
+</html>

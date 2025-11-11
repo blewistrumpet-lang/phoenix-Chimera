@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Figure 12: Multi-Modal Interaction</title>
+    <style>
+        @page {
+            size: 11in 8.5in;
+            margin: 0.5in;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background: white;
+        }
+        .container {
+            width: 950px;
+            height: 700px;
+            position: relative;
+            margin: 0 auto;
+        }
+        .mode-box {
+            border: 3px solid black;
+            padding: 15px;
+            background: white;
+            position: absolute;
+            width: 250px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .center-box {
+            border: 4px solid black;
+            padding: 20px;
+            background: #f0f0f0;
+            position: absolute;
+            text-align: center;
+            font-weight: bold;
+        }
+        .arrow {
+            position: absolute;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .label {
+            position: absolute;
+            font-size: 11px;
+            font-weight: bold;
+            font-style: italic;
+        }
+        .title {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="position: absolute; left: 50%; top: 10px; transform: translateX(-50%); font-size: 15px; font-weight: bold; text-align: center;">
+            Multi-Modal Interaction System
+        </div>
+
+        <!-- Center: Audio Processing Engine -->
+        <div class="center-box" style="left: 320px; top: 280px; width: 280px;">
+            <div style="font-size: 16px; margin-bottom: 10px;">AUDIO PROCESSING<br>ENGINE</div>
+            <div style="font-size: 11px; font-weight: normal;">
+                Trinity AI + 57 DSP Engines<br>
+                6-Slot Serial Chain<br>
+                Real-Time Processing
+            </div>
+        </div>
+
+        <!-- Top: Voice Input -->
+        <div class="mode-box" style="left: 330px; top: 50px; background: #e6f3ff;">
+            <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px;">1. VOICE INPUT</div>
+            <div style="font-size: 11px;">
+                • Hold SPEAK button<br>
+                • Natural language command<br>
+                • "Warm spring reverb"<br>
+                • AI generates preset
+            </div>
+        </div>
+        <div class="arrow" style="left: 450px; top: 160px;">↓</div>
+        <div class="label" style="left: 410px; top: 190px;">Create Presets</div>
+
+        <!-- Left: Hardware Encoders -->
+        <div class="mode-box" style="left: 20px; top: 250px; background: #ffffcc;">
+            <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px;">2. ENCODER CONTROL</div>
+            <div style="font-size: 11px;">
+                • E1: Browse/Warmth<br>
+                • E2: Mix/Size<br>
+                • E3: Output/Punch<br>
+                • Real-time adjustment<br>
+                • Tactile feedback
+            </div>
+        </div>
+        <div class="arrow" style="left: 290px; top: 310px;">→</div>
+        <div class="label" style="left: 280px; top: 340px;">Adjust<br>Parameters</div>
+
+        <!-- Right: Switches -->
+        <div class="mode-box" style="left: 650px; top: 250px; background: #ffcccc;">
+            <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px;">3. SWITCH CONTROL</div>
+            <div style="font-size: 11px;">
+                • SW1: Mode (PRESET/MIX/AI)<br>
+                • SW2: Bank A/B toggle<br>
+                • SW3: Bypass control<br>
+                • Instant mode changes<br>
+                • A/B comparison
+            </div>
+        </div>
+        <div class="arrow" style="left: 610px; top: 310px;">←</div>
+        <div class="label" style="left: 595px; top: 340px;">Mode<br>Selection</div>
+
+        <!-- Bottom: Display Feedback -->
+        <div class="mode-box" style="left: 330px; top: 480px; background: #ccffcc;">
+            <div style="font-weight: bold; font-size: 14px; margin-bottom: 8px;">4. VISUAL FEEDBACK</div>
+            <div style="font-size: 11px;">
+                • OLED display 480×320<br>
+                • Shows preset name<br>
+                • Shows parameter values<br>
+                • Shows bank (A/B)<br>
+                • Real-time updates (30 Hz)
+            </div>
+        </div>
+        <div class="arrow" style="left: 450px; top: 440px;">↑</div>
+        <div class="label" style="left: 405px; top: 450px;">Display Status</div>
+
+        <!-- Interaction flow description -->
+        <div style="position: absolute; left: 50px; top: 620px; border: 2px solid #999; padding: 12px; background: #fafafa; width: 850px; font-size: 11px;">
+            <strong>Interaction Flow:</strong>
+            User speaks command (Voice) → AI generates preset → User refines with encoders (Hardware) →
+            User switches modes (Switches) → Visual feedback confirms (Display) → Seamless multi-modal workflow
+        </div>
+
+        <div class="title">Figure 12: Multi-Modal Interaction Diagram</div>
+    </div>
+</body>
+</html>

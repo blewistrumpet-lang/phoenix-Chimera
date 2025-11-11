@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Figure 7: Intelligent Fallback System</title>
+    <style>
+        @page {
+            size: 11in 8.5in;
+            margin: 0.5in;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: white;
+        }
+        .container {
+            width: 950px;
+            height: 950px;
+            position: relative;
+            margin: 0 auto;
+        }
+        .box {
+            border: 3px solid black;
+            padding: 12px;
+            background: white;
+            text-align: center;
+            position: absolute;
+            font-size: 12px;
+            line-height: 1.3;
+            font-weight: bold;
+        }
+        .diamond {
+            width: 140px;
+            height: 140px;
+            border: 3px solid black;
+            background: #ffffcc;
+            transform: rotate(45deg);
+            position: absolute;
+        }
+        .diamond-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-weight: bold;
+            font-size: 13px;
+            text-align: center;
+            width: 90px;
+        }
+        .arrow {
+            position: absolute;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .path-label {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+        .title {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- INPUT -->
+        <div class="box" style="left: 400px; top: 20px; width: 150px; background: #e6f3ff;">
+            User Request<br>
+            <span style="font-size: 10px; font-weight: normal;">(Voice or Text)</span>
+        </div>
+
+        <div class="arrow" style="left: 470px; top: 90px;">↓</div>
+
+        <!-- DECISION 1: Cloud Available? -->
+        <div class="diamond" style="left: 405px; top: 130px;">
+            <div class="diamond-text">Cloud<br>Available?</div>
+        </div>
+
+        <!-- PATH 1: CLOUD (LEFT) - INCREASED SPACING -->
+        <div class="arrow" style="left: 320px; top: 190px;">←</div>
+        <div class="path-label" style="left: 340px; top: 165px; background: #90EE90;">YES</div>
+
+        <div class="box" style="left: 80px; top: 170px; width: 200px; background: #cce6ff;">
+            Trinity AI<br>
+            <span style="font-size: 11px; font-weight: normal;">
+            Cloud Processing<br>
+            Time: 2-4 sec<br>
+            Cost: $0.001-0.015
+            </span>
+        </div>
+
+        <div class="arrow" style="left: 175px; top: 290px;">↓</div>
+        <div class="arrow" style="left: 175px; top: 400px;">↓</div>
+        <div class="arrow" style="left: 175px; top: 510px;">↓</div>
+        <div class="arrow" style="left: 175px; top: 620px;">↓</div>
+        <div class="arrow" style="left: 280px; top: 700px;">→</div>
+
+        <!-- PATH 2 & 3: FALLBACK (RIGHT) -->
+        <div class="arrow" style="left: 580px; top: 190px;">→</div>
+        <div class="path-label" style="left: 590px; top: 165px; background: #FFB6C1;">NO</div>
+
+        <!-- DECISION 2: Keyword Match? -->
+        <div class="diamond" style="left: 680px; top: 130px;">
+            <div class="diamond-text">Keyword<br>Match?</div>
+        </div>
+
+        <!-- PATH 2: MATCHED ENGINE (MIDDLE COLUMN) - INCREASED SPACING -->
+        <div class="arrow" style="left: 755px; top: 280px;">↓</div>
+        <div class="path-label" style="left: 765px; top: 165px; background: #90EE90; font-size: 11px;">YES</div>
+
+        <div class="box" style="left: 680px; top: 320px; width: 150px; background: #ccffcc;">
+            Matched<br>Engine<br>
+            <span style="font-size: 10px; font-weight: normal;">
+            "spring reverb"<br>
+            → Engine 40<br>
+            &lt;20ms, Free
+            </span>
+        </div>
+
+        <div class="arrow" style="left: 750px; top: 430px;">↓</div>
+        <div class="arrow" style="left: 750px; top: 540px;">↓</div>
+        <div class="arrow" style="left: 750px; top: 650px;">↓</div>
+        <div class="arrow" style="left: 640px; top: 700px;">←</div>
+
+        <!-- PATH 3: CHARACTER DETECTION (RIGHT COLUMN) - INCREASED SPACING -->
+        <div class="arrow" style="left: 850px; top: 190px;">→</div>
+        <div class="path-label" style="left: 860px; top: 165px; background: #FFB6C1; font-size: 11px;">NO</div>
+
+        <div class="box" style="left: 850px; top: 320px; width: 150px; background: #ffffcc;">
+            Character<br>Detection<br>
+            <span style="font-size: 10px; font-weight: normal;">
+            Analyze:<br>
+            warm, harsh,<br>
+            ethereal...
+            </span>
+        </div>
+
+        <div class="arrow" style="left: 920px; top: 430px;">↓</div>
+
+        <div class="box" style="left: 850px; top: 470px; width: 150px; background: #ffffcc;">
+            Template<br>Selection<br>
+            <span style="font-size: 10px; font-weight: normal;">
+            Pre-tested<br>
+            presets
+            </span>
+        </div>
+
+        <div class="arrow" style="left: 920px; top: 570px;">↓</div>
+        <div class="arrow" style="left: 920px; top: 660px;">↓</div>
+        <div class="arrow" style="left: 810px; top: 700px;">←</div>
+
+        <!-- FINAL CONVERGENCE (CENTER BOTTOM) - MOVED WAY DOWN -->
+        <div class="box" style="left: 350px; top: 680px; width: 250px; height: 80px; background: #e6ccff;">
+            <div style="font-size: 14px; margin-bottom: 5px;">GENERATED PRESET</div>
+            <span style="font-size: 11px; font-weight: normal;">
+            Loaded into Audio Engine<br>
+            Cloud: 2-4s | Fallback: &lt;20ms
+            </span>
+        </div>
+
+        <div class="title" style="bottom: -30px;">Figure 7: Intelligent Fallback System Decision Tree</div>
+    </div>
+</body>
+</html>

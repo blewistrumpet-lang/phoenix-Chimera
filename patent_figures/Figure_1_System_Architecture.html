@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Figure 1: System Architecture</title>
+    <style>
+        @page {
+            size: 11in 8.5in;
+            margin: 0.5in;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: white;
+            color: black;
+        }
+        .container {
+            width: 900px;
+            height: 600px;
+            position: relative;
+            margin: 20px auto;
+        }
+        .box {
+            border: 3px solid black;
+            padding: 15px;
+            background: white;
+            text-align: center;
+            position: absolute;
+            width: 160px;
+            font-size: 13px;
+            line-height: 1.4;
+            font-weight: bold;
+            color: black;
+        }
+        .arrow {
+            position: absolute;
+            font-size: 28px;
+            font-weight: bold;
+            color: black;
+        }
+        .title {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Row 1: Voice Input → Whisper → Trinity AI → DSP Engines -->
+        <div class="box" style="left: 20px; top: 80px;">
+            Voice Input<br>
+            <span style="font-size: 11px; font-weight: normal;">(USB Microphone)</span>
+        </div>
+
+        <div class="arrow" style="left: 205px; top: 105px;">►</div>
+
+        <div class="box" style="left: 250px; top: 80px;">
+            Whisper API<br>
+            <span style="font-size: 11px; font-weight: normal;">(Speech-to-Text)</span>
+        </div>
+
+        <div class="arrow" style="left: 435px; top: 105px;">►</div>
+
+        <div class="box" style="left: 480px; top: 80px;">
+            Trinity AI<br>
+            <span style="font-size: 11px; font-weight: normal;">(Preset Generation)</span>
+        </div>
+
+        <div class="arrow" style="left: 665px; top: 105px;">►</div>
+
+        <div class="box" style="left: 710px; top: 80px;">
+            57 DSP Engines<br>
+            <span style="font-size: 11px; font-weight: normal;">(6-Slot Chain)</span>
+        </div>
+
+        <!-- Vertical arrow down from DSP Engines -->
+        <div class="arrow" style="left: 785px; top: 160px;">▼</div>
+
+        <!-- Row 2: Hardware Controls ← Display ← Mix ← Audio Out -->
+        <div class="box" style="left: 710px; top: 200px;">
+            Hardware Controls<br>
+            <span style="font-size: 11px; font-weight: normal;">(Encoders/Switches)</span>
+        </div>
+
+        <div class="arrow" style="left: 665px; top: 225px;">◄</div>
+
+        <div class="box" style="left: 480px; top: 200px;">
+            Display<br>
+            <span style="font-size: 11px; font-weight: normal;">(OLED 480×320)</span>
+        </div>
+
+        <div class="arrow" style="left: 435px; top: 225px;">◄</div>
+
+        <div class="box" style="left: 250px; top: 200px;">
+            Mix Control<br>
+            <span style="font-size: 11px; font-weight: normal;">(Wet/Dry Blend)</span>
+        </div>
+
+        <div class="arrow" style="left: 205px; top: 225px;">◄</div>
+
+        <div class="box" style="left: 20px; top: 200px;">
+            Audio Output<br>
+            <span style="font-size: 11px; font-weight: normal;">(HiFiBerry DAC)</span>
+        </div>
+
+        <div class="title">Figure 1: Overall System Architecture</div>
+    </div>
+</body>
+</html>

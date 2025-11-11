@@ -1,58 +1,165 @@
 #!/bin/bash
-# ChimeraPhoenix Raspberry Pi 5 Deployment Script
-# Run this on your Mac to prepare deployment package
+
+# Chimera Phoenix - Deploy to Raspberry Pi Script
+# Usage: ./deploy_to_pi.sh [pi_host] [gpio|no-gpio]
+# Example: ./deploy_to_pi.sh pi@192.168.1.100 gpio
 
 set -e
 
-echo "🎯 ChimeraPhoenix → Raspberry Pi 5 Deployment"
-echo "=============================================="
-echo ""
-
 # Configuration
-PI_USER="${PI_USER:-pi}"
-PI_HOST="${PI_HOST:-raspberrypi.local}"
-PROJECT_DIR="/Users/Branden/branden/Project_Chimera_v3.0_Phoenix"
-DEPLOY_DIR="${PROJECT_DIR}/pi_deployment"
+PI_HOST="${1:-pi@raspberrypi.local}"
+BUILD_TYPE="${2:-no-gpio}"
+PROJECT_DIR="$(dirname "$0")"
+REMOTE_DIR="~/chimera_phoenix"
 
-echo "📦 Step 1: Creating deployment package..."
+echo "================================================"
+echo "Chimera Phoenix v3.1 - Raspberry Pi Deployment"
+echo "================================================"
+echo "Target: $PI_HOST"
+echo "Build Type: $BUILD_TYPE"
+echo ""
 
-# Create deployment directory
-rm -rf "${DEPLOY_DIR}"
-mkdir -p "${DEPLOY_DIR}"
+# Check connection
+echo "Checking connection to Pi..."
+if ! ssh -q -o ConnectTimeout=5 $PI_HOST "echo 'Connected!'"; then
+    echo "ERROR: Cannot connect to $PI_HOST"
+    echo "Please check:"
+    echo "  1. Pi is powered on and connected to network"
+    echo "  2. SSH is enabled on the Pi"
+    echo "  3. IP address is correct"
+    exit 1
+fi
 
-# Copy essential files
-echo "   Copying JUCE plugin source..."
-rsync -av --exclude='Builds/MacOSX/build' \
-          --exclude='*.o' \
-          --exclude='*.a' \
-          --exclude='.git' \
-          "${PROJECT_DIR}/JUCE_Plugin/" "${DEPLOY_DIR}/JUCE_Plugin/"
+# Create remote directory
+echo "Creating remote directory..."
+ssh $PI_HOST "mkdir -p $REMOTE_DIR/JUCE_Plugin"
 
-echo "   Copying AI Server..."
-rsync -av "${PROJECT_DIR}/AI_Server/" "${DEPLOY_DIR}/AI_Server/"
+# Sync source files
+echo "Syncing source files..."
+rsync -avz --delete \
+    --exclude 'Builds/MacOSX' \
+    --exclude '.git' \
+    --exclude '*.o' \
+    --exclude '*.d' \
+    --exclude 'build/' \
+    --exclude '.DS_Store' \
+    --exclude 'test_*.cpp' \
+    --exclude '*.backup' \
+    $PROJECT_DIR/JUCE_Plugin/ $PI_HOST:$REMOTE_DIR/JUCE_Plugin/
 
-echo "   Copying setup script..."
-cp "${PROJECT_DIR}/pi_setup.sh" "${DEPLOY_DIR}/" 2>/dev/null || true
+# Copy build scripts
+echo "Copying build scripts..."
+cat > /tmp/build_no_gpio.sh << 'EOF'
+#!/bin/bash
+echo "Building Chimera Phoenix WITHOUT GPIO support..."
+cd ~/chimera_phoenix/JUCE_Plugin/Builds/LinuxMakefile
+
+if [ ! -f Makefile ]; then
+    echo "Generating Makefile with Projucer..."
+    cd ~/chimera_phoenix/JUCE_Plugin
+    Projucer --resave ChimeraPhoenix.jucer
+    cd Builds/LinuxMakefile
+fi
+
+make clean
+time make CONFIG=Release -j4
+
+if [ -f build/ChimeraPhoenix ]; then
+    echo ""
+    echo "✅ Build successful!"
+    echo "Binary location: ~/chimera_phoenix/JUCE_Plugin/Builds/LinuxMakefile/build/ChimeraPhoenix"
+    echo ""
+    echo "To run: ./build/ChimeraPhoenix"
+else
+    echo "❌ Build failed!"
+    exit 1
+fi
+EOF
+
+cat > /tmp/build_with_gpio.sh << 'EOF'
+#!/bin/bash
+echo "Building Chimera Phoenix WITH GPIO support..."
+cd ~/chimera_phoenix/JUCE_Plugin/Builds/LinuxMakefile
+
+if [ ! -f Makefile ]; then
+    echo "Generating Makefile with Projucer..."
+    cd ~/chimera_phoenix/JUCE_Plugin
+    Projucer --resave ChimeraPhoenix.jucer
+    cd Builds/LinuxMakefile
+fi
+
+make clean
+time make CONFIG=Release CPPFLAGS="-DENABLE_GPIO=1" -j4
+
+if [ -f build/ChimeraPhoenix ]; then
+    echo ""
+    echo "✅ Build successful with GPIO!"
+    echo "Binary location: ~/chimera_phoenix/JUCE_Plugin/Builds/LinuxMakefile/build/ChimeraPhoenix"
+    echo ""
+    echo "To run with GPIO: sudo ./build/ChimeraPhoenix"
+else
+    echo "❌ Build failed!"
+    exit 1
+fi
+EOF
+
+scp /tmp/build_no_gpio.sh /tmp/build_with_gpio.sh $PI_HOST:$REMOTE_DIR/
+ssh $PI_HOST "chmod +x $REMOTE_DIR/build_*.sh"
+
+# Check if Projucer is installed
+echo "Checking Projucer installation..."
+if ! ssh $PI_HOST "which Projucer > /dev/null 2>&1"; then
+    echo ""
+    echo "⚠️  Projucer not found on Pi!"
+    echo "Please install Projucer first:"
+    echo "  1. SSH to Pi: ssh $PI_HOST"
+    echo "  2. Run: ~/chimera_phoenix/install_projucer.sh"
+    echo ""
+
+    # Create Projucer install script
+    cat > /tmp/install_projucer.sh << 'EOF'
+#!/bin/bash
+echo "Installing JUCE and Projucer..."
+sudo apt-get update
+sudo apt-get install -y git build-essential pkg-config \
+    libfreetype6-dev libx11-dev libxinerama-dev libxrandr-dev \
+    libxcursor-dev libxcomposite-dev mesa-common-dev \
+    libasound2-dev libjack-jackd2-dev libcurl4-openssl-dev \
+    libwebkit2gtk-4.0-dev libgtk-3-dev
+
+if [ ! -d ~/JUCE ]; then
+    git clone https://github.com/juce-framework/JUCE.git ~/JUCE
+fi
+
+cd ~/JUCE/extras/Projucer/Builds/LinuxMakefile
+make CONFIG=Release -j4
+sudo cp build/Projucer /usr/local/bin/
+echo "Projucer installed!"
+EOF
+    scp /tmp/install_projucer.sh $PI_HOST:$REMOTE_DIR/
+    ssh $PI_HOST "chmod +x $REMOTE_DIR/install_projucer.sh"
+fi
+
+# Build based on type
+echo ""
+echo "Starting build process..."
+if [ "$BUILD_TYPE" = "gpio" ]; then
+    ssh $PI_HOST "$REMOTE_DIR/build_with_gpio.sh"
+else
+    ssh $PI_HOST "$REMOTE_DIR/build_no_gpio.sh"
+fi
 
 echo ""
-echo "✅ Deployment package created at: ${DEPLOY_DIR}"
+echo "================================================"
+echo "Deployment Complete!"
+echo "================================================"
 echo ""
-echo "📡 Step 2: Transfer to Raspberry Pi"
-echo "   Choose your method:"
-echo ""
-echo "   Option A - SSH Transfer (requires Pi on network):"
-echo "   --------------------------------------------------"
-echo "   rsync -avz --progress ${DEPLOY_DIR}/ ${PI_USER}@${PI_HOST}:~/ChimeraPhoenix/"
-echo ""
-echo "   Option B - USB/SD Card Transfer:"
-echo "   ---------------------------------"
-echo "   1. Insert USB drive or SD card"
-echo "   2. cp -r ${DEPLOY_DIR} /Volumes/YOUR_DRIVE/ChimeraPhoenix"
-echo "   3. Eject and move to Pi"
-echo "   4. On Pi: cp -r /media/pi/YOUR_DRIVE/ChimeraPhoenix ~/"
-echo ""
-echo "📋 Step 3: On the Raspberry Pi, run:"
-echo "   cd ~/ChimeraPhoenix"
-echo "   chmod +x pi_setup.sh"
-echo "   ./pi_setup.sh"
+echo "To test on Pi:"
+echo "  ssh $PI_HOST"
+echo "  cd $REMOTE_DIR/JUCE_Plugin/Builds/LinuxMakefile"
+if [ "$BUILD_TYPE" = "gpio" ]; then
+    echo "  sudo ./build/ChimeraPhoenix"
+else
+    echo "  ./build/ChimeraPhoenix"
+fi
 echo ""

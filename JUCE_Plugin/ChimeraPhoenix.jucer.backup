@@ -236,6 +236,12 @@
       <FILE id="yI3jK4" name="SimplePitchShift.h" compile="0" resource="0" file="Source/SimplePitchShift.h"/>
       <FILE id="zL5mN6" name="PitchShiftFactory.cpp" compile="1" resource="0"
             file="Source/PitchShiftFactory.cpp"/>
+      <FILE id="aB7cD8" name="SMBPitchShiftFixed.h" compile="0" resource="0" file="Source/SMBPitchShiftFixed.h"/>
+      <FILE id="eF9gH0" name="SMBPitchShiftFixed.cpp" compile="1" resource="0"
+            file="Source/SMBPitchShiftFixed.cpp"/>
+      <FILE id="iJ1kL2" name="PhaseVocoderPitchShift.h" compile="0" resource="0" file="Source/PhaseVocoderPitchShift.h"/>
+      <FILE id="mN3oP4" name="PhaseVocoderPitchShift.cpp" compile="1" resource="0"
+            file="Source/PhaseVocoderPitchShift.cpp"/>
       <FILE id="vW6xY7" name="PhasedVocoder.h" compile="0" resource="0" file="Source/PhasedVocoder.h"/>
       <FILE id="zA8bC9" name="PhasedVocoder.cpp" compile="1" resource="0"
             file="Source/PhasedVocoder.cpp"/>

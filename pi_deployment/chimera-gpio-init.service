@@ -1,0 +1,13 @@
+[Unit]
+Description=Chimera Phoenix GPIO Pull-Up Initialization
+Documentation=https://github.com/blewistrumpet-lang/phoenix-Chimera
+DefaultDependencies=no
+Before=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/chimera_gpio_init.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

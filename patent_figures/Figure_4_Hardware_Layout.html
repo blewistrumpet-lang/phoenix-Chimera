@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Figure 4: Hardware Layout</title>
+    <style>
+        @page {
+            size: 11in 8.5in;
+            margin: 0.5in;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: white;
+        }
+        .container {
+            width: 900px;
+            height: 650px;
+            position: relative;
+            margin: 20px auto;
+        }
+        .device {
+            border: 4px solid black;
+            border-radius: 15px;
+            background: white;
+            position: absolute;
+            left: 100px;
+            top: 50px;
+            width: 700px;
+            height: 550px;
+        }
+        .encoder {
+            width: 90px;
+            height: 90px;
+            border: 3px solid black;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 22px;
+            box-shadow: inset 0 -3px 6px rgba(0,0,0,0.3);
+        }
+        .display {
+            border: 3px solid black;
+            background: white;
+            color: black;
+            position: absolute;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        .switch {
+            border: 3px solid black;
+            background: white;
+            position: absolute;
+            width: 80px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        .label {
+            position: absolute;
+            font-size: 11px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .pin-label {
+            position: absolute;
+            font-size: 9px;
+            color: black;
+            font-family: 'Courier New', monospace;
+        }
+        .title {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .connector {
+            position: absolute;
+            border: 2px solid black;
+            background: #444;
+            width: 30px;
+            height: 15px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="device">
+            <!-- Three Encoders at top -->
+            <div class="encoder" style="left: 90px; top: 50px;">
+                <div>E1</div>
+            </div>
+            <div class="label" style="left: 75px; top: 150px; width: 120px;">
+                PRESET BROWSE<br>
+                Warmth Macro
+            </div>
+            <div class="pin-label" style="left: 90px; top: 175px;">GPIO: 5,6,26</div>
+
+            <div class="encoder" style="left: 305px; top: 50px;">
+                <div>E2</div>
+            </div>
+            <div class="label" style="left: 290px; top: 150px; width: 120px;">
+                MIX CONTROL<br>
+                Size Macro
+            </div>
+            <div class="pin-label" style="left: 300px; top: 175px;">GPIO: 23,24,25</div>
+
+            <div class="encoder" style="left: 520px; top: 50px;">
+                <div>E3</div>
+            </div>
+            <div class="label" style="left: 505px; top: 150px; width: 120px;">
+                OUTPUT LEVEL<br>
+                Punch Macro
+            </div>
+            <div class="pin-label" style="left: 510px; top: 175px;">GPIO: 4,14,16</div>
+
+            <!-- Display in center -->
+            <div class="display" style="left: 190px; top: 230px; width: 320px; height: 130px;">
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">┌─ CHIMERA PHOENIX ─┐</div>
+                <div style="font-size: 13px; margin: 5px 0;">Preset: Warm Vocal Reverb</div>
+                <div style="font-size: 12px; margin: 5px 0;">Bank A │ Mix: 45% │ Out: -2dB</div>
+                <div style="font-size: 11px; margin-top: 8px;">
+                    [VISIONARY] [CALCULATOR] [ALCHEMIST]
+                </div>
+                <div style="font-size: 10px; margin-top: 5px;">
+                    OLED Display 480×320 px
+                </div>
+            </div>
+
+            <!-- Three switches at bottom -->
+            <div class="switch" style="left: 90px; top: 430px;">
+                <div>SW1</div>
+            </div>
+            <div class="label" style="left: 80px; top: 490px; width: 100px;">
+                MODE SELECT<br>
+                (PRESET/MIX/AI)
+            </div>
+            <div class="pin-label" style="left: 100px; top: 510px;">GPIO: 7,8</div>
+
+            <div class="switch" style="left: 310px; top: 430px;">
+                <div>SW2</div>
+            </div>
+            <div class="label" style="left: 305px; top: 490px; width: 90px;">
+                BANK A/B<br>
+                SWITCH
+            </div>
+            <div class="pin-label" style="left: 315px; top: 510px;">GPIO: 11,10</div>
+
+            <div class="switch" style="left: 520px; top: 430px;">
+                <div>SW3</div>
+            </div>
+            <div class="label" style="left: 510px; top: 490px; width: 100px;">
+                BYPASS<br>
+                CONTROL
+            </div>
+            <div class="pin-label" style="left: 520px; top: 510px;">GPIO: 12,13</div>
+        </div>
+
+        <!-- Audio connectors on side (visual representation) -->
+        <div class="label" style="left: 20px; top: 250px; font-size: 11px; text-align: right; width: 60px;">
+            Audio In<br>
+            ──▶
+        </div>
+        <div class="connector" style="left: 85px; top: 260px;"></div>
+
+        <div class="connector" style="left: 815px; top: 260px;"></div>
+        <div class="label" style="left: 860px; top: 250px; font-size: 11px; width: 60px;">
+            ◀──<br>
+            Audio Out
+        </div>
+
+        <div class="title">Figure 4: Hardware Control Interface Layout<br>
+        <span style="font-size: 13px; font-weight: normal;">(Top View of Device)</span></div>
+    </div>
+</body>
+</html>
