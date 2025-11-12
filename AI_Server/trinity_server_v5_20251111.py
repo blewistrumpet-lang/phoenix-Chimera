@@ -157,6 +157,7 @@ app.add_middleware(
 class GenerateRequest(BaseModel):
     prompt: str
     session: Optional[str] = ""
+    request_id: Optional[str] = ""  # Plugin sends this for progress tracking
 
 class GenerateResponse(BaseModel):
     success: bool
@@ -177,7 +178,8 @@ class HealthResponse(BaseModel):
 @app.post("/generate", response_model=GenerateResponse)
 async def generate_preset(request: GenerateRequest):
     """Generate preset using Trinity v5.0 Pipeline with progress tracking"""
-    request_id = f"req_{int(time.time() * 1000)}"
+    # Use request_id from plugin if provided, otherwise generate one
+    request_id = request.request_id or request.session or f"req_{int(time.time() * 1000)}"
 
     try:
         logger.info(f"🎯 [{request_id}] Generate request: '{request.prompt}'")
